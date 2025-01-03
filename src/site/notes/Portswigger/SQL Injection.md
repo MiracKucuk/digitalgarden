@@ -1,5 +1,5 @@
 ---
-{"dg-publish":true,"permalink":"/portswigger/sql-injection/","tags":["gardenEntry"]}
+{"dg-publish":true,"permalink":"/portswigger/sql-injection/"}
 ---
 
 
