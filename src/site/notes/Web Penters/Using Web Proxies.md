@@ -1,5 +1,5 @@
 ---
-{"dg-publish":true,"permalink":"/web-penters/using-web-proxies/","tags":["gardenEntry"]}
+{"dg-publish":true,"permalink":"/web-penters/using-web-proxies/"}
 ---
 
 
