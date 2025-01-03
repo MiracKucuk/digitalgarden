@@ -1,5 +1,5 @@
 ---
-{"dg-publish":true,"permalink":"/web-penters/xss/"}
+{"dg-publish":true,"permalink":"/web-penters/xss/","tags":["gardenEntry"]}
 ---
 
 
