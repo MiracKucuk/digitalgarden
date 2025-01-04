@@ -807,9 +807,11 @@ LDAP'taki **BIND**, bir LDAP oturumunda kimlik doğrulama durumunu belirlemek i�
 
 
 ### MSRPC
-Yukarıda belirtildiği gibi MSRPC, Microsoft'un client-server modeli tabanlı uygulamalar için kullanılan bir prosesler arası iletişim tekniği olan Remote Procedure Call (RPC) uygulamasıdır. Windows sistemleri, dört temel RPC arayüzünü kullanarak Active Directory'deki sistemlere erişmek için MSRPC'yi kullanır.
+Yukarıda belirtildiği gibi MSRPC, Microsoft'un client-server modeli tabanlı uygulamalar için kullanılan bir prosesler arası iletişim tekniği olan Remote Procedure Call (RPC) uygulamasıdır. Windows sistemleri, dört temel RPC interface'ini kullanarak Active Directory'deki sistemlere erişmek için MSRPC'yi kullanır.
 
-==lsarpc== : Bir bilgisayardaki lokal security politikasını yöneten, denetim politikasını kontrol eden ve etkileşimli kimlik doğrulama hizmetleri sağlayan [Local Security Authority](https://networkencyclopedia.com/local-security-authority-lsa/) (LSA) sistemine yönelik bir dizi RPC çağrısı. LSARPC, domain güvenlik politikaları üzerinde yönetim gerçekleştirmek için kullanılır.
+==lsarpc== : Bir bilgisayardaki lokal security politikasını yöneten, denetim politikasını kontrol eden ve etkileşimli kimlik doğrulama servisleri sağlayan [Local Security Authority](https://networkencyclopedia.com/local-security-authority-lsa/) (LSA) sistemine yönelik bir dizi RPC çağrısı. LSARPC, domain güvenlik politikaları üzerinde yönetim gerçekleştirmek için kullanılır. 
+
+* [[lsarpc hakkında daha fazla bilgi\|lsarpc hakkında daha fazla bilgi]]
 
 ==netlogon== : Netlogon, domain ortamındaki kullanıcıların ve diğer servislerin kimliklerini doğrulamak için kullanılan bir Windows prosesidir. Arka planda sürekli çalışan bir servisdir.
 
