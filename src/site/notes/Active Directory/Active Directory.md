@@ -811,19 +811,25 @@ Yukarıda belirtildiği gibi MSRPC, Microsoft'un client-server modeli tabanlı u
 
 ==lsarpc== : Bir bilgisayardaki lokal security politikasını yöneten, denetim politikasını kontrol eden ve etkileşimli kimlik doğrulama servisleri sağlayan [Local Security Authority](https://networkencyclopedia.com/local-security-authority-lsa/) (LSA) sistemine yönelik bir dizi RPC çağrısı. LSARPC, domain güvenlik politikaları üzerinde yönetim gerçekleştirmek için kullanılır. 
 
-* [[lsarpc hakkında daha fazla bilgi\|lsarpc hakkında daha fazla bilgi]]
+* [[Bağlantılar/lsarpc hakkında daha fazla bilgi\|lsarpc hakkında daha fazla bilgi]]
 
 ==netlogon== : Netlogon, domain ortamındaki kullanıcıların ve diğer servislerin kimliklerini doğrulamak için kullanılan bir Windows prosesidir. Arka planda sürekli çalışan bir servisdir.
 
-==samr== : Remote SAM (samr), kullanıcılar ve gruplar hakkında bilgi depolayan domain hesap veritabanı için yönetim fonksiyonelliği sağlar. BT yöneticileri, yöneticilerin güvenlik ilkeleri hakkında bilgi oluşturmasını, okumasını, güncellemesini ve silmesini sağlayarak kullanıcıları, grupları ve bilgisayarları yönetmek için bu protokolü kullanır. Saldırganlar (ve pentesterlar) samr protokolünü kullanarak [BloodHound](https://github.com/BloodHoundAD/) gibi araçlarla iç domain hakkında keşif yapabilir, AD ağının görsel haritasını çıkarabilir ve “saldırı yolları” oluşturarak yönetici erişiminin ya da tüm domainin ele geçirilmesinin nasıl başarılabileceğini görsel olarak gösterebilirler. Kuruluşlar, varsayılan olarak kimliği doğrulanmış tüm domain kullanıcıları AD domain'i hakkında önemli miktarda bilgi toplamak için bu sorguları yapabileceğinden, bir Windows registry anahtarını yalnızca yöneticilerin remote SAM sorguları yapmasına izin verecek şekilde değiştirerek bu tür keşiflere karşı [koruma](Organizations can [protect](https://stealthbits.com/blog/making-internal-reconnaissance-harder-using-netcease-and-samri1o/) against this type of reconnaissance by changing a Windows registry key to only allow a) sağlayabilir.
+* [[Bağlantılar/netlogon hakkında daha fazla bilgi\|netlogon hakkında daha fazla bilgi]]
 
-==drsuapi== : drsuapi, çokluDC ortamında Domain Controller'lar arasında çoğaltma ile ilgili görevleri gerçekleştirmek için kullanılan Directory Replication Service (DRS) Remote Protocol'ü uygulayan Microsoft API'sidir. Saldırganlar drsuapi'yi kullanarak Active Directory domain veritabanı (NTDS.dit) [dosyasının bir kopyasını oluşturabilir](https://attack.mitre.org/techniques/T1003/003/) ve domain'deki tüm hesaplar için parola hash'lerini alabilir; bu hash'ler daha sonra daha fazla sisteme erişmek için Pass-the-Hash saldırıları gerçekleştirmek için kullanılabilir veya Remote Desktop (RDP) ve WinRM gibi uzaktan yönetim protokollerini kullanarak sistemlerde oturum açmak için açık metin parolasını elde etmek üzere Hashcat gibi bir araç kullanarak çevrimdışı olarak kırılabilir.
+==samr== : Remote SAM (samr), user'lar ve gruplar hakkında bilgi depolayan domain hesap veritabanı için yönetim fonksiyonelliği sağlar. BT yöneticileri, yöneticilerin security policy'leri hakkında bilgi oluşturmasını, okumasını, güncellemesini ve silmesini sağlayarak kullanıcıları, grupları ve bilgisayarları yönetmek için bu protokolü kullanır. Saldırganlar (ve pentesterlar) samr protokolünü kullanarak [BloodHound](https://github.com/BloodHoundAD/) gibi araçlarla iç domain hakkında keşif yapabilir, AD ağının görsel haritasını çıkarabilir ve “saldırı yolları” oluşturarak administrative erişiminin ya da tüm domainin ele geçirilmesinin nasıl başarılabileceğini görsel olarak gösterebilirler. Kuruluşlar, varsayılan olarak kimliği doğrulanmış tüm domain kullanıcıları AD domain'i hakkında önemli miktarda bilgi toplamak için bu sorguları yapabileceğinden, bir Windows registry key'ini yalnızca yöneticilerin remote SAM sorguları yapmasına izin verecek şekilde değiştirerek bu tür keşiflere karşı [koruma](Organizations can [protect](https://stealthbits.com/blog/making-internal-reconnaissance-harder-using-netcease-and-samri1o/) against this type of reconnaissance by changing a Windows registry key to only allow a) sağlayabilir.
 
-Kerberos hangi ağ portunu kullanıyor? (88)
+* [[samr hakkında daha fazla bilgi \|samr hakkında daha fazla bilgi ]]
 
-Adları IP adreslerine çevirmek için hangi protokol kullanılır? (kısaltma) (DNS)
+==drsuapi== : drsuapi, multi-DC ortamında Domain Controller'lar arasında çoğaltma ile ilgili görevleri gerçekleştirmek için kullanılan Directory Replication Service (DRS) Remote Protocol'ü uygulayan Microsoft API'sidir. Saldırganlar drsuapi'yi kullanarak Active Directory domain veritabanı (NTDS.dit) [dosyasının bir kopyasını oluşturabilir](https://attack.mitre.org/techniques/T1003/003/) ve domain'deki tüm hesaplar için parola hash'lerini alabilir; bu hash'ler daha sonra daha fazla sisteme erişmek için Pass-the-Hash saldırıları gerçekleştirmek için kullanılabilir veya Remote Desktop (RDP) ve WinRM gibi remote  yönetim protokollerini kullanarak sistemlerde oturum açmak için açık metin parolasını elde etmek üzere Hashcat gibi bir araç kullanarak çevrimdışı olarak kırılabilir.
 
-RFC 4511 hangi protokolü belirtir? (kısaltma)  (LDAP)
+* [[drsuapi hakkında daha fazla bilgi \|drsuapi hakkında daha fazla bilgi ]]
+
+Soru : Kerberos hangi ağ portunu kullanıyor? (88)
+
+Soru : Adları IP adreslerine çevirmek için hangi protokol kullanılır? (kısaltma) (DNS)
+
+Soru : RFC 4511 hangi protokolü belirtir? (kısaltma)  (LDAP)
 
 
 ### NTLM Authentication
@@ -835,9 +841,9 @@ Kerberos ve LDAP'ın yanı sıra Active Directory, AD'deki uygulamalar ve servis
 
 
 ### LM
-LAN Manager (LM veya LANMAN) hash'leri Windows işletim sistemi tarafından kullanılan en eski parola depolama mekanizmasıdır. LM 1987 yılında OS/2 işletim sisteminde kullanılmaya başlanmıştır. Eğer kullanılıyorsa, bir Windows host üzerindeki SAM veritabanında ve bir Domain Controller üzerindeki NTDS.DIT veritabanında saklanırlar. LM hash'leri için kullanılan hash algoritmasındaki önemli güvenlik zayıflıkları nedeniyle, Windows Vista/Server 2008'den bu yana varsayılan olarak kapatılmıştır. Ancak, özellikle eski sistemlerin hala kullanıldığı büyük ortamlarda hala yaygın olarak karşılaşılmaktadır. LM kullanan parolalar en fazla 14 karakterle sınırlıdır. Parolalar büyük/küçük harfe duyarlı değildir ve karma değer oluşturulmadan önce büyük harfe dönüştürülür, bu da anahtar alanını toplam 69 karakterle sınırlayarak Hashcat gibi bir araç kullanarak bu hashleri kırmayı nispeten kolaylaştırır.
+LAN Manager (LM veya LANMAN) hash'leri Windows işletim sistemi tarafından kullanılan en eski parola depolama mekanizmasıdır. LM 1987 yılında OS/2 işletim sisteminde kullanılmaya başlanmıştır. Eğer kullanılıyorsa, bir Windows host üzerindeki SAM veritabanında ve bir Domain Controller üzerindeki ==NTDS.DIT== veritabanında saklanırlar. LM hash'leri için kullanılan hash algoritmasındaki önemli güvenlik zayıflıkları nedeniyle, Windows Vista/Server 2008'den bu yana varsayılan olarak kapatılmıştır. Ancak, özellikle eski sistemlerin hala kullanıldığı büyük ortamlarda hala yaygın olarak karşılaşılmaktadır. LM kullanan parolalar en fazla 14 karakterle sınırlıdır. Parolalar büyük/küçük harfe duyarlı değildir ve hash değer oluşturulmadan önce büyük harfe dönüştürülür, bu da anahtar alanını toplam 69 karakterle sınırlayarak Hashcat gibi bir araç kullanarak bu hashleri kırmayı nispeten kolaylaştırır.
 
-Hashing işleminden önce, 14 karakterlik bir parola ilk olarak iki adet yedi karakterlik parçaya bölünür. Parola on dört karakterden azsa, doğru değere ulaşmak için NULL karakterlerle doldurulacaktır. Her parçadan iki DES anahtarı oluşturulur. Bu parçalar daha sonra KGS!@#$% dizesi kullanılarak şifrelenir ve iki adet 8 baytlık şifreli metin değeri oluşturulur. Bu iki değer daha sonra birleştirilerek bir LM hash'i elde edilir. Bu hash algoritması, bir saldırganın on dört karakterin tamamı yerine yalnızca yedi karakteri iki kez brute force yapması gerektiği anlamına gelir, bu da bir veya daha fazla GPU'lu bir sistemde LM hash'lerini kırmayı hızlı hale getirir. Bir parola yedi karakter veya daha az ise, LM hash'inin ikinci yarısı her zaman aynı değerde olacaktır ve hatta Hashcat gibi araçlara bile gerek kalmadan görsel olarak belirlenebilir. LM hash'lerinin kullanımına [Group Policy ](https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/network-security-do-not-store-lan-manager-hash-value-on-next-password-change)kullanılarak izin verilmeyebilir. Bir LM hash'i 299bd128c1101fd6 biçimini alır.
+Hashing işleminden önce, 14 karakterlik bir parola ilk olarak iki adet yedi karakterlik parçaya bölünür. Parola on dört karakterden azsa, doğru değere ulaşmak için NULL karakterlerle doldurulacaktır. Her parçadan iki DES anahtarı oluşturulur. Bu parçalar daha sonra ==KGS!@#$%== stringi kullanılarak şifrelenir ve iki adet 8 baytlık şifreli metin değeri oluşturulur. Bu iki değer daha sonra birleştirilerek bir LM hash'i elde edilir. Bu hash algoritması, bir saldırganın on dört karakterin tamamı yerine yalnızca yedi karakteri iki kez brute force yapması gerektiği anlamına gelir, bu da bir veya daha fazla GPU'lu bir sistemde LM hash'lerini kırmayı hızlı hale getirir. Bir parola yedi karakter veya daha az ise, LM hash'inin ikinci yarısı her zaman aynı değerde olacaktır ve hatta Hashcat gibi araçlara bile gerek kalmadan görsel olarak belirlenebilir. LM hash'lerinin kullanımına [Group Policy ](https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/network-security-do-not-store-lan-manager-hash-value-on-next-password-change)kullanılarak izin verilmeyebilir. Bir LM hash'i 299bd128c1101fd6 biçimini alır.
 
 Not: Windows Vista ve Windows Server 2008'den önceki Windows işletim sistemleri (Windows NT4, Windows 2000, Windows 2003, Windows XP) varsayılan olarak bir kullanıcının parolasının hem LM hash'ini hem de NTLM hash'ini depolar.
 
@@ -845,9 +851,50 @@ Not: Windows Vista ve Windows Server 2008'den önceki Windows işletim sistemler
 ### NTHash (NTLM)
 ==NT LAN Manager (NTLM)== hash'leri modern Windows sistemlerinde kullanılır. Bu bir challenge-response kimlik doğrulama protokolüdür ve kimlik doğrulamak için üç mesaj kullanır: bir client ilk olarak sunucuya bir ==NEGOTIATE_MESSAGE== gönderir, sunucunun cevabı ise client'ın kimliğini doğrulamak için bir ==CHALLENGE_MESSAGE=='dır. Son olarak, client bir ==AUTHENTICATE_MESSAGE== ile yanıt verir. Bu hash'ler local olarak SAM veritabanında veya bir Domain Controller üzerindeki NTDS.DIT veritabanı dosyasında saklanır. Protokolün kimlik doğrulama gerçekleştirmek için seçebileceği iki hashlenmiş parola değeri vardır: LM hash (yukarıda tartışıldığı gibi) ve parolanın little-endian UTF-16 değerinin MD4 hash'i olan NT hash. Algoritma şu şekilde görselleştirilebilir: ==MD4(UTF-16-LE(password)==).
 
+---
+
+###### ÖZET 
+
+1. **NTLM Kimlik Doğrulama Protokolü**:
+    
+    - NTLM, modern Windows sistemlerinde kullanılan bir **challenge-response** (meydan okuma-cevap) kimlik doğrulama protokolüdür.
+    - Kimlik doğrulama sürecinde üç mesaj kullanılır:
+        - **NEGOTIATE_MESSAGE**: İlk olarak, client sunucuya bu mesajı gönderir.
+        - **CHALLENGE_MESSAGE**: Sunucu, client'ın kimliğini doğrulamak için bu mesajı gönderir.
+        - **AUTHENTICATE_MESSAGE**: Son olarak, client bu mesajla yanıt verir.
+
+2. **NTLM Hash'lerinin Saklanması**:
+    
+    - **LM Hash** ve **NT Hash** olmak üzere iki tür hash değeri vardır.
+        - Bu hash'ler, **SAM (Security Account Manager)** veritabanı veya **NTDS.DIT** (Domain Controller üzerindeki veritabanı dosyasında) saklanır.
+
+3. **Hash Türleri**:
+    
+    - **LM Hash**: Eski bir hash türüdür, ancak genellikle zayıf bir güvenlik sağlar ve modern sistemlerde nadiren kullanılır.
+    - **NT Hash**: Kullanıcının parolasının **little-endian UTF-16** formatında şifrelenmiş haliyle, **MD4** algoritmasıyla oluşturulan hash değeridir. Bu değer daha güvenlidir.
+
+4. **NT Hash Algoritması**:
+    
+    - **NT Hash** algoritması şu şekilde çalışır:
+        - **UTF-16-LE** (little-endian) formatında şifrelenmiş parola alınır.
+        - Ardından bu şifreli parola, **MD4** algoritması ile hashlenir.
+        - Sonuçta elde edilen değer, **NT Hash** olarak saklanır.
+
+5. **Kimlik Doğrulama Adımları**:
+    
+    - Kullanıcı, bu hash'leri kullanarak kimlik doğrulama işlemine girer.
+    - **NTLM** kimlik doğrulaması, bu hash'leri kullanarak, password doğrulaması yapılmadan önce **challenge-response** mesajları aracılığıyla kimlik doğrulaması sağlar.
+
+Bu protokol, şifreler üzerine yapılabilecek saldırılara karşı daha güvenli olmakla birlikte, günümüzde daha güvenli alternatifler (Kerberos gibi) tercih edilmektedir.
+
+---
+
+
+
 #### NTLM Authentication Request
+
 ![Pasted image 20241001185648.png](/img/user/resimler/Pasted%20image%2020241001185648.png)
-LM hash'lerinden (65.536 karakterlik Unicode karakter setinin tamamını destekler) çok daha güçlü olsalar da, Hashcat gibi bir araç kullanılarak nispeten hızlı bir şekilde çevrimdışı olarak brute-forced edilebilirler. GPU saldırıları, 8 karakterlik NTLM anahtar uzayının tamamının ==3 saatten== kısa bir sürede brute-forced edilebileceğini göstermiştir. Daha uzun NTLM hash'lerinin kırılması, seçilen parolaya bağlı olarak daha zor olabilir ve uzun parolalar (15+ karakter) bile kurallarla birlikte çevrimdışı bir sözlük saldırısı kullanılarak kırılabilir. NTLM aynı zamanda pass-the-hash saldırısına karşı da savunmasızdır, bu da bir saldırganın parolanın açık metin değerini bilmesine gerek kalmadan kullanıcının local yönetici olduğu hedef sistemlerde kimlik doğrulaması yapmak için yalnızca NTLM hash'ini (başka bir başarılı saldırı yoluyla elde ettikten sonra) kullanabileceği anlamına gelir.
+LM hash'lerinden (65.536 karakterlik Unicode karakter setinin tamamını destekler) çok daha güçlü olsalar da, Hashcat gibi bir araç kullanılarak nispeten hızlı bir şekilde çevrimdışı olarak brute-forced edilebilirler. GPU saldırıları, 8 karakterlik NTLM anahtar uzayının tamamının ==3 saatten== kısa bir sürede brute-forced edilebileceğini göstermiştir. Daha uzun NTLM hash'lerinin kırılması, seçilen parolaya bağlı olarak daha zor olabilir ve uzun parolalar (15+ karakter) bile kurallarla birlikte çevrimdışı bir sözlük saldırısı kullanılarak kırılabilir. NTLM aynı zamanda ==pass-the-hash== saldırısına karşı da savunmasızdır, bu da bir saldırganın parolanın açık metin değerini bilmesine gerek kalmadan kullanıcının local admin olduğu hedef sistemlerde kimlik doğrulaması yapmak için yalnızca NTLM hash'ini (başka bir başarılı saldırı yoluyla elde ettikten sonra) kullanabileceği anlamına gelir.
 
 Bir NT hash'i, tam NTLM hash'inin ikinci yarısı olan b4b9b02e6f09a9bd760f388b67351e2b şeklini alır. Bir NTLM hash'i şu şekilde görünür:
 
@@ -861,13 +908,14 @@ Yukarıdaki hash'e baktığımızda, NTLM hash'ini tek tek parçalarına ayırab
 * ==e46b9e548fa0d122de7f59fb6d48eaa2== NT hash'idir. Bu hash, açık metin değerini ortaya çıkarmak için çevrimdışı olarak kırılabilir (parolanın uzunluğuna/gücüne bağlı olarak) veya bir pass-the-hash saldırısı için kullanılabilir. Aşağıda [CrackMapExec](https://github.com/byt3bl33d3r/CrackMapExec) aracı kullanılarak yapılan başarılı bir pass-the-hash saldırısı örneği yer almaktadır:
 
 ![Pasted image 20241001190136.png](/img/user/resimler/Pasted%20image%2020241001190136.png)
+
 Artık NTLM'nin yeteneklerini ve yapısını anladığımıza göre, protokolün NTLMv1 ve NTLMv2 üzerinden ilerleyişini inceleyelim.
 
-Not: Ne LANMAN ne de NTLM bir salt kullanmaz.
+Not: Ne LANMAN (LM) ne de NTLM bir ==salt== kullanmaz.
 
 
 ### NTLMv1 (Net-NTLMv1)
-NTLM protokolü NT hash'ini kullanarak server ve client arasında bir challenge/response gerçekleştirir. NTLMv1 hem NT hem de LM hash'ini kullanır, bu da [Responder](https://github.com/lgandx/Responder) gibi bir aracı kullanarak veya bir[ NTLM relay saldırısı](https://byt3bl33d3r.github.io/practical-guide-to-ntlm-relaying-in-2017-aka-getting-a-foothold-in-under-5-minutes.html) yoluyla bir hash yakaladıktan sonra çevrimdışı “kırmayı” kolaylaştırabilir (her ikisi de bu modülün kapsamı dışındadır ve Lateral Movement ile ilgili daha sonraki modüllerde ele alınacaktır). Bu protokol ağ kimlik doğrulaması için kullanılır ve Net-NTLMv1 hash'inin kendisi bir challenge/response algoritmasından oluşturulur. Server istemciye 8 baytlık rastgele bir sayı (challenge) gönderir ve client 24 baytlık bir yanıt döndürür. Bu hash'ler pass-the-hash saldırıları için KULLANILAMAZ. Algoritma aşağıdaki gibi görünür:
+NTLM protokolü NT hash'ini kullanarak server ve client arasında bir challenge/response gerçekleştirir. NTLMv1 hem NT hem de LM hash'ini kullanır, bu da [Responder](https://github.com/lgandx/Responder) gibi bir aracı kullanarak veya bir[ NTLM relay saldırısı](https://byt3bl33d3r.github.io/practical-guide-to-ntlm-relaying-in-2017-aka-getting-a-foothold-in-under-5-minutes.html) yoluyla bir hash yakaladıktan sonra çevrimdışı “kırmayı” kolaylaştırabilir (her ikisi de bu modülün kapsamı dışındadır ve Lateral Movement ile ilgili daha sonraki modüllerde ele alınacaktır). Bu protokol ağ kimlik doğrulaması için kullanılır ve Net-NTLMv1 hash'inin kendisi bir challenge/response algoritmasından oluşturulur. Server client'e 8 baytlık rastgele bir sayı (challenge) gönderir ve client 24 baytlık bir response döndürür. Bu hash'ler pass-the-hash saldırıları için KULLANILAMAZ. Algoritma aşağıdaki gibi görünür:
 
 
 ### V1 Challenge & Response Algorithm
@@ -885,7 +933,53 @@ NTLMv1, modern NTLM kimlik doğrulamasının yapı taşıdır. Her protokol gibi
 
 
 ### NTLMv2 (Net-NTLMv2)
-NTLMv2 protokolü ilk olarak Windows NT 4.0 SP4'te tanıtılmış ve NTLMv1'e daha güçlü bir alternatif olarak oluşturulmuştur. 2000 yılından beri Windows'ta varsayılan olarak kullanılmaktadır. NTLMv1'in duyarlı olduğu belirli sahtekarlık saldırılarına karşı güçlendirilmiştir. NTLMv2, sunucu tarafından alınan 8 baytlık meydan okumaya iki yanıt gönderir. Bu yanıtlar, meydan okumanın 16 baytlık bir HMAC-MD5 hash'ini, client'tan rastgele oluşturulmuş bir meydan okumayı ve kullanıcının kimlik bilgilerinin bir HMAC-MD5 hash'ini içerir. Geçerli saati, 8 baytlık rastgele bir değeri ve alan adını içeren değişken uzunlukta bir istemci meydan okuması kullanılarak ikinci bir yanıt gönderilir. Algoritma aşağıdaki gibidir:
+NTLMv2 protokolü ilk olarak Windows NT 4.0 SP4'te tanıtılmış ve NTLMv1'e daha güçlü bir alternatif olarak oluşturulmuştur. 2000 yılından beri Windows'ta varsayılan olarak kullanılmaktadır. NTLMv1'in duyarlı olduğu belirli spoofing  saldırılarına karşı güçlendirilmiştir. NTLMv2, server tarafından alınan 8 baytlık challenge'a iki response gönderir. Bu response'lar, challenge'ın 16 baytlık bir HMAC-MD5 hash'ini, client'tan rastgele oluşturulmuş bir challenge'ı ve kullanıcının kimlik bilgilerinin bir HMAC-MD5 hash'ini içerir. Geçerli saati, 8 baytlık rastgele bir değeri ve alan adını içeren değişken uzunlukta bir istemci meydan okuması kullanılarak ikinci bir yanıt gönderilir. Algoritma aşağıdaki gibidir:
+
+---
+
+NTLMv2 protokolünü daha ayrıntılı ve madde madde açıklayayım:
+
+1. **NTLMv2'nin Tanıtımı ve Geliştirilmesi:**
+    
+    - **NTLMv2**, Windows NT 4.0 SP4 ile tanıtıldı.
+    - **NTLMv2**, daha önceki protokol olan **NTLMv1**'in güvenlik açıklarını kapatmak için geliştirilmiş bir alternatif olarak tasarlandı.
+    - **Windows Server 2000**'den itibaren **varsayılan kimlik doğrulama protokolü** olarak kullanıma sunuldu.
+
+2. **NTLMv2'nin Güçlendirilmiş Güvenliği:**
+    
+    - **NTLMv1**'in karşılaştığı bazı **sahtecilik (spoofing)** saldırılarına karşı **NTLMv2** daha dayanıklıdır.
+    - Yani NTLMv2, güvenlik açıklarını kapatarak daha güvenli bir kimlik doğrulama sağlar.
+
+3. **NTLMv2'nin Responsları:**
+    
+    - NTLMv2, sunucudan aldığı **8 baytlık bir challenge**  ile iki farklı **yanıt** gönderir.
+
+4. **Birinci Yanıt:**
+    
+    - Bu yanıt, **HMAC-MD5** (Hash-based Message Authentication Code - MD5) algoritması ile oluşturulmuş bir **16 baytlık hash** içerir.
+    - Bu hash, aşağıdaki bileşenlerin birleşiminden türetilir:
+        - **Sunucudan alınan challenge**.
+        - **Client tarafından rastgele oluşturulan challenge**.
+        - **Kullanıcının kimlik bilgileri** (şifre veya parola).
+
+5. **İkinci Yanıt:**
+    
+    - İkinci yanıt, **değişken uzunluktaki client challenge'ı** içerir.
+    - Bu challenge, aşağıdaki bileşenleri içerir:
+        - **Mevcut zaman** (istek gönderildiği andaki zaman).
+        - **8 baytlık rastgele bir değer**.
+        - **Doamin adı ** (domain name).
+
+6. **Genel Algoritma:**
+    
+    - NTLMv2 protokolü, bu iki yanıtla birlikte kimlik doğrulaması gerçekleştirilir. Hem client hem de server, bu yanıtları doğrulamak için aynı algoritmayı kullanır.
+    - NTLMv2'nin güvenliği, kullanıcının kimlik bilgilerini ve çeşitli rastgele verileri içerdiği için NTLMv1'e göre daha güçlüdür.
+
+Kısaca, NTLMv2'nin yapısı daha güvenli olup, kimlik doğrulama için hem sunucu hem de client tarafından oluşturulan karmaşık veriler ve HMAC-MD5 hash'leri kullanır. Bu sayede daha güvenli bir doğrulama ve sahtecilik engellemesi sağlanır.
+
+![Pasted image 20250104234858.png](/img/user/resimler/Pasted%20image%2020250104234858.png)
+
+---
 
 
 #### V2 Challenge & Response Algorithm
@@ -902,22 +996,25 @@ Geliştiricilerin NTLMv2'nin kırılmasını zorlaştırarak ve birden fazla aş
 
 
 ### Domain Cached Credentials (MSCache2)
-Bir AD ortamında, bu bölümde ve bir önceki bölümde bahsedilen kimlik doğrulama yöntemleri, erişmeye çalıştığımız hostun ağın “beyni” olan Domain Controller ile iletişim kurmasını gerektirir. [Microsoft MS Cache v1 ve v2](https://webstersprodigy.net/lander) algoritmasını (==Domain Cached Credentials== (DCC) olarak da bilinir), domain'e bağlı bir host'un bir domain controller ile iletişim kuramaması (örneğin, bir ağ kesintisi veya başka bir teknik sorun nedeniyle) ve dolayısıyla NTLM/Kerberos kimlik doğrulamasının söz konusu host'a erişmek için çalışmaması gibi olası sorunları çözmek için geliştirmiştir. Host'lar, makinede başarıyla oturum açan tüm domain kullanıcıları için son ==10== hash'i ==HKEY_LOCAL_MACHINE\SECURITY\Cache== registy key (anahtarına) kaydeder. Bu hash'ler pass-the-hash saldırılarında kullanılamaz. Ayrıca, son derece güçlü bir GPU kırma donanımı kullanıldığında bile Hashcat gibi bir araçla hash kırmak çok yavaştır, bu nedenle bu hashleri kırma girişimlerinin genellikle son derece hedefli olması veya kullanımda olan çok zayıf bir parolaya dayanması gerekir. Bu hashler bir saldırgan veya pentester tarafından bir hosta local yönetici erişimi sağlandıktan sonra elde edilebilir ve aşağıdaki formata sahiptir: ==$DCC2$10240#bjones#e4e938d12fe5974dc42a90120bd9c90f==. Sızma testi uzmanları olarak, bir AD ortamını değerlendirirken karşılaşabileceğimiz çeşitli hash türlerini, bunların güçlü ve zayıf yönlerini, nasıl kötüye kullanılabileceklerini (cleartext, pass-the-hash veya relayed'e kırma) ve bir saldırının ne zaman boşa çıkabileceğini (örneğin, bir dizi Domain Cached Credentials'ı kırmaya çalışmak için günler harcamak) anlamamız çok önemlidir.
+Bir AD ortamında, bu bölümde ve bir önceki bölümde bahsedilen kimlik doğrulama yöntemleri, erişmeye çalıştığımız hostun ağın “beyni” olan Domain Controller ile iletişim kurmasını gerektirir. [Microsoft MS Cache v1 ve v2](https://webstersprodigy.net/lander) algoritmasını (==Domain Cached Credentials== (DCC) olarak da bilinir), domain'e bağlı bir host'un bir domain controller ile iletişim kuramaması (örneğin, bir ağ kesintisi veya başka bir teknik sorun nedeniyle) ve dolayısıyla NTLM/Kerberos kimlik doğrulamasının söz konusu host'a erişmek için çalışmaması gibi olası sorunları çözmek için geliştirmiştir. Host'lar, makinede başarıyla oturum açan tüm domain kullanıcıları için son ==10== hash'i ==HKEY_LOCAL_MACHINE\SECURITY\Cache== registy key (anahtarına) kaydeder. Bu hash'ler pass-the-hash saldırılarında kullanılamaz. Ayrıca, son derece güçlü bir GPU kırma donanımı kullanıldığında bile Hashcat gibi bir araçla hash kırmak çok yavaştır, bu nedenle bu hashleri kırma girişimlerinin genellikle son derece hedefli olması veya kullanımda olan çok zayıf bir parolaya dayanması gerekir. Bu hashler bir saldırgan veya pentester tarafından bir hosta local admin erişimi sağlandıktan sonra elde edilebilir ve aşağıdaki formata sahiptir: ==$DCC2$10240#bjones#e4e938d12fe5974dc42a90120bd9c90f==. Sızma testi uzmanları olarak, bir AD ortamını değerlendirirken karşılaşabileceğimiz çeşitli hash türlerini, bunların güçlü ve zayıf yönlerini, nasıl kötüye kullanılabileceklerini (cleartext, pass-the-hash veya relayed'e kırma) ve bir saldırının ne zaman boşa çıkabileceğini (örneğin, bir dizi Domain Cached Credentials'ı kırmaya çalışmak için günler harcamak) anlamamız çok önemlidir.
 
-Kimlik doğrulama protokollerini ve ilgili parola hash'lerini ele aldığımıza göre şimdi hem sızma testçileri hem de saldırganlar için genellikle en önemli hedef olan Active Directory'deki kullanıcılara ve gruplara bakalım. Çeşitli ayrıcalıklara sahip olabilirler ve bir ortamda yanal olarak hareket etmek veya korunan kaynaklara erişim sağlamak için kullanılabilirler.
+Kimlik doğrulama protokollerini ve ilgili parola hash'lerini ele aldığımıza göre şimdi hem penetration tester hem de attackerlar için genellikle en önemli hedef olan Active Directory'deki kullanıcılara ve gruplara bakalım. Çeşitli ayrıcalıklara sahip olabilirler ve bir ortamda lateral olarak hareket etmek veya korunan kaynaklara erişim sağlamak için kullanılabilirler.
 
 
-Hangi Hashing protokolü simetrik ve asimetrik kriptografi yeteneğine sahiptir? (Kerberos)
+Soru : Hangi Hashing protokolü simetrik ve asimetrik kriptografi yeteneğine sahiptir? (Kerberos)
 
-NTLM kimlik doğrulaması için üç mesaj kullanır; Negotiate, Challenge ve <__>. Eksik mesaj nedir? (boşluğu doldurun) (authenticate)
+Soru : NTLM kimlik doğrulaması için üç mesaj kullanır; Negotiate, Challenge ve <__>. Eksik mesaj nedir? (boşluğu doldurun) (authenticate)
 
-Domain Cached Credentials mekanizması varsayılan olarak bir host'a kaç tane hash kaydeder? (10)
+Soru : Domain Cached Credentials mekanizması varsayılan olarak bir host'a kaç tane hash kaydeder? (10)
 
 
 ### User and Machine Accounts
-User hesapları hem lokal sistemlerde (AD'ye bağlı olmayan) hem de Active Directory'de bir kişiye veya bir programa (sistem hizmeti gibi) bir bilgisayarda oturum açma ve haklarına göre kaynaklara erişme yeteneği vermek için oluşturulur. Bir kullanıcı oturum açtığında, sistem parolasını doğrular ve bir access token (erişim belirteci) oluşturur. Bu token bir prosesin veya thread'in güvenlik içeriğini tanımlar ve kullanıcının güvenlik kimliğini ve grup üyeliğini içerir. Bir kullanıcı bir prosesle etkileşime girdiğinde, bu token sunulur. User accounts (kullanıcı hesapları), çalışanların/yüklenicilerin bir bilgisayarda oturum açmasına ve kaynaklara erişmesine, programları veya hizmetleri belirli bir güvenlik contextında çalıştırmasına (örneğin, bir ağ hizmeti hesabı yerine yüksek ayrıcalıklı bir kullanıcı olarak çalıştırma) ve ağ dosya paylaşımları, dosyalar, uygulamalar vb. gibi objectlere ve bunların özelliklerine erişimi yönetmesine izin vermek için kullanılır. Kullanıcılar, bir veya daha fazla üye içerebilen gruplara atanabilir. Bu gruplar kaynaklara erişimi kontrol etmek için de kullanılabilir. Bir yönetici için ayrıcalıkları her bir kullanıcıya birçok kez atamak yerine bir gruba (tüm grup üyelerinin devraldığı) bir kez atamak daha kolay olabilir. Bu, yönetimi basitleştirmeye yardımcı olur ve kullanıcı haklarının verilmesini ve iptal edilmesini kolaylaştırır.
 
-Standart kullanıcı hesaplarının sağlanması ve yönetilmesi Active Directory'nin temel unsurlarından biridir. Tipik olarak, karşılaştığımız her şirkette kullanıcı başına en az bir AD kullanıcı hesabı sağlanır. Bazı kullanıcıların iş rollerine göre (örneğin, bir BT yöneticisi veya Yardım Masası üyesi) iki veya daha fazla hesabı olabilir. Belirli bir kullanıcıya bağlı standart kullanıcı ve yönetici hesaplarının yanı sıra, arka planda belirli bir uygulamayı veya hizmeti çalıştırmak veya domain ortamında diğer hayati işlevleri yerine getirmek için kullanılan birçok hizmet hesabı görürüz. 1.000 çalışanı olan bir kuruluşun 1.200 veya daha fazla aktif kullanıcı hesabı olabilir! Ayrıca eski çalışanlardan, geçici/mevsimlik çalışanlardan, stajyerlerden vb. yüzlerce devre dışı bırakılmış hesabı olan kuruluşlar da görebiliriz. Bazı şirketler denetim amacıyla bu hesapların kayıtlarını tutmak zorundadır, bu nedenle çalışan işten çıkarıldığında bu hesapları devre dışı bırakırlar (ve umarız tüm ayrıcalıkları kaldırırlar), ancak silmezler. FORMER EMPLOYEES gibi devre dışı bırakılmış birçok hesap içeren bir OU görmek yaygındır.
+User hesapları hem lokal sistemlerde (AD'ye bağlı olmayan) hem de Active Directory'de bir kişiye veya bir programa (sistem servisi gibi) bir bilgisayarda oturum açma ve haklarına göre kaynaklara erişme yeteneği vermek için oluşturulur. Bir kullanıcı oturum açtığında, sistem parolasını doğrular ve bir access token  oluşturur. Bu token bir prosesin veya thread'in güvenlik içeriğini tanımlar ve kullanıcının güvenlik kimliğini ve grup üyeliğini içerir. Bir kullanıcı bir prosesle etkileşime girdiğinde, bu token sunulur. User accounts (kullanıcı hesapları), çalışanların/işverenleri bir bilgisayarda oturum açmasına ve kaynaklara erişmesine, programları veya servisleri belirli bir güvenlik contextında çalıştırmasına (örneğin, bir ağ servisi hesabı yerine yüksek ayrıcalıklı bir kullanıcı olarak çalıştırma) ve ağ dosya paylaşımları, dosyalar, uygulamalar vb. gibi objectlere ve bunların özelliklerine erişimi yönetmesine izin vermek için kullanılır. Kullanıcılar, bir veya daha fazla üye içerebilen gruplara atanabilir. Bu gruplar kaynaklara erişimi kontrol etmek için de kullanılabilir. Bir admin için ayrıcalıkları her bir kullanıcıya birçok kez atamak yerine bir gruba (tüm grup üyelerinin devraldığı) bir kez atamak daha kolay olabilir. Bu, yönetimi basitleştirmeye yardımcı olur ve kullanıcı haklarının verilmesini ve iptal edilmesini kolaylaştırır.
+
+* Kısaca : Kullanıcı hesapları, oturum açma ve kaynaklara erişimi sağlar; access token ile güvenlik contex'i tanımlanır, gruplar ise erişim ve hak yönetimini kolaylaştırır.
+
+Standart kullanıcı hesaplarının sağlanması ve yönetilmesi Active Directory'nin temel unsurlarından biridir. Tipik olarak, karşılaştığımız her şirkette kullanıcı başına en az bir AD kullanıcı hesabı sağlanır. Bazı kullanıcıların iş rollerine göre (örneğin, bir BT admin veya Help Desk üyesi) iki veya daha fazla hesabı olabilir. Belirli bir kullanıcıya bağlı standart kullanıcı ve admin hesaplarının yanı sıra, arka planda belirli bir uygulamayı veya servisi çalıştırmak veya domain ortamında diğer hayati fonksiyonları yerine getirmek için kullanılan birçok servis hesabı görürüz. 1.000 çalışanı olan bir kuruluşun 1.200 veya daha fazla aktif kullanıcı hesabı olabilir! Ayrıca eski çalışanlardan, geçici/mevsimlik çalışanlardan, stajyerlerden vb. yüzlerce devre dışı bırakılmış hesabı olan kuruluşlar da görebiliriz. Bazı şirketler denetim amacıyla bu hesapların kayıtlarını tutmak zorundadır, bu nedenle çalışan işten çıkarıldığında bu hesapları devre dışı bırakırlar (ve umarız tüm ayrıcalıkları kaldırırlar), ancak silmezler. FORMER EMPLOYEES gibi devre dışı bırakılmış birçok hesap içeren bir OU görmek yaygındır.
 
 ![Pasted image 20241001201747.png](/img/user/resimler/Pasted%20image%2020241001201747.png)
 Bu modülde daha sonra göreceğimiz gibi, kullanıcı hesaplarına Active Directory'de birçok hak verilebilir. Temel olarak ortamın çoğuna okuma erişimi olan salt okunur kullanıcılar (standart bir Domain User'ın aldığı izinler), Enterprise Admin'e ( domain'deki her objectnin tam kontrolüne sahip) ve aradaki sayısız kombinasyona kadar yapılandırılabilirler. Kullanıcılara bu kadar çok hak atanabildiği için, nispeten kolay bir şekilde yanlış yapılandırılabilir ve bir saldırganın veya sızma test uzmanının yararlanabileceği istenmeyen haklar verilebilir. Kullanıcı hesapları muazzam bir saldırı yüzeyi sunar ve genellikle bir sızma testi sırasında bir dayanak noktası elde etmek için kilit bir odak noktasıdır. Kullanıcılar genellikle herhangi bir kuruluştaki en zayıf halkadır. İnsan davranışını yönetmek ve her kullanıcının zayıf veya paylaşılan parolalar seçmesini, yetkisiz yazılımlar yüklemesini veya yöneticilerin dikkatsiz hatalar yapmasını veya hesap yönetimi konusunda aşırı müsamahakâr davranmasını hesaba katmak zordur. Bununla mücadele etmek için, bir kuruluşun kullanıcı hesapları etrafında ortaya çıkabilecek sorunlarla mücadele etmek için politikalara ve prosedürlere sahip olması ve kullanıcıların domain'e getirdiği doğal riski azaltmak için derinlemesine savunmaya sahip olması gerekir.
@@ -926,34 +1023,59 @@ Kullanıcılarla ilgili yanlış yapılandırmalar ve saldırılarla ilgili ayr�
 
 
 ### Local Accounts
+
 Local hesaplar belirli bir sunucu veya workstation üzerinde local olarak saklanır. Bu hesaplara o host üzerinde tek tek ya da grup üyeliği yoluyla haklar atanabilir. Atanan tüm haklar yalnızca söz konusu host için verilebilir ve domain genelinde çalışmaz. Lokal kullanıcı hesapları güvenlik sorumluları olarak kabul edilir ancak yalnızca bağımsız bir host üzerindeki kaynaklara erişimi yönetebilir ve bunların güvenliğini sağlayabilir. Bir Windows sisteminde oluşturulan birkaç varsayılan lokal kullanıcı hesabı vardır:
 
-* ==Administrator==: Bu hesap SID S-1-5-domain-500'e sahiptir ve yeni bir Windows kurulumunda oluşturulan ilk hesaptır. Sistemdeki hemen hemen her kaynak üzerinde tam denetime sahiptir. Silinemez veya kilitlenemez, ancak devre dışı bırakılabilir veya yeniden adlandırılabilir. Windows 10 ve Server 2016 host'ları varsayılan olarak built-in administrator hesabını devre dışı bırakır ve kurulum sırasında lokal administrator grubunda başka bir lokal hesap oluşturur.
+* ==Administrator==: Bu hesap `SID S-1-5-domain-500`'e sahiptir ve yeni bir Windows kurulumunda oluşturulan ilk hesaptır. Sistemdeki hemen hemen her kaynak üzerinde tam denetime sahiptir. Silinemez veya kilitlenemez, ancak devre dışı bırakılabilir veya yeniden adlandırılabilir. Windows 10 ve Server 2016 host'ları varsayılan olarak built-in administrator hesabını `devre dışı bırakır` ve kurulum sırasında lokal administrator grubunda başka bir lokal hesap oluşturur.
 
 * ==Guest (Misafir)==: bu hesap varsayılan olarak devre dışıdır. Bu hesabın amacı, bilgisayarda hesabı olmayan kullanıcıların sınırlı erişim haklarıyla geçici olarak oturum açmasına izin vermektir. Varsayılan olarak boş bir parolaya sahiptir ve bir host'a anonim erişime izin vermenin güvenlik riski nedeniyle genellikle devre dışı bırakılması önerilir.
 
-* ==SYSTEM==: Bir Windows host üzerindeki SYSTEM (veya NT AUTHORITY\SYSTEM) hesabı, işletim sistemi tarafından iç fonksiyonlarının çoğunu gerçekleştirmek için kurulan ve kullanılan varsayılan hesaptır. Linux'taki Root hesabının aksine, SYSTEM bir servis hesabıdır ve normal bir kullanıcıyla tamamen aynı contextda çalışmaz. Bir host üzerinde çalışan proseslerin ve hizmetlerin çoğu SYSTEM contextı altında çalıştırılır. Bu hesapla ilgili dikkat edilmesi gereken bir nokta, bu hesap için bir profilin mevcut olmamasıdır, ancak host üzerindeki neredeyse her şey üzerinde izinlere sahip olacaktır. User Manager'da görünmez ve herhangi bir gruba eklenemez. SYSTEM hesabı, bir Windows hostunda ulaşılabilecek en yüksek izin düzeyidir ve varsayılan olarak bir Windows sistemindeki tüm dosyalar için Full Control izinlerine sahiptir.
+* ==SYSTEM==: Bir Windows host üzerindeki SYSTEM (veya NT AUTHORITY\SYSTEM) hesabı, işletim sistemi tarafından iç fonksiyonlarının çoğunu gerçekleştirmek için kurulan ve kullanılan varsayılan hesaptır. Linux'taki Root hesabının aksine, SYSTEM bir servis hesabıdır ve normal bir kullanıcıyla tamamen aynı contextda çalışmaz. Bir host üzerinde çalışan proseslerin ve servislerin çoğu SYSTEM context'i altında çalıştırılır. Bu hesapla ilgili dikkat edilmesi gereken bir nokta, bu hesap için bir profilin mevcut olmamasıdır, ancak host üzerindeki neredeyse her şey üzerinde izinlere sahip olacaktır. User Manager'da görünmez ve herhangi bir gruba eklenemez. SYSTEM hesabı, bir Windows hostunda ulaşılabilecek en yüksek izin düzeyidir ve varsayılan olarak bir Windows sistemindeki tüm dosyalar için Full Control izinlerine sahiptir.
 
-* ==Network Service==: Bu, Windows hizmetlerini çalıştırmak için Service Control Manager (SCM) tarafından kullanılan önceden tanımlanmış bir lokal hesaptır. Bir hizmet bu özel hesap contextında çalıştığında, uzak hizmetlere kimlik bilgilerini sunacaktır.
+* ==Network Service==: Bu, Windows servislerini çalıştırmak için Service Control Manager (SCM) tarafından kullanılan önceden tanımlanmış bir lokal hesaptır. Bir servis bu özel hesap contextında çalıştığında, remote servislere kimlik bilgilerini sunacaktır.
 
-*  ==Local Service==: Bu, Windows hizmetlerini çalıştırmak için Service Control Manager (SCM) tarafından kullanılan önceden tanımlanmış başka bir lokal hesaptır. Bilgisayarda minimum ayrıcalıklarla yapılandırılır ve ağa anonim kimlik bilgileri sunar.
+	* Bir servis **Network Service** hesabı context'iinde çalıştırıldığında, remote servislere erişim gerektiğinde **kimlik bilgilerini (credentials)** kullanarak kendini doğrular. Yani, bu özel hesap remote sistemlerde işlem yapmak için bir kimlik doğrulama mekanizması sunar. Ancak, **Network Service** hesabının kimlik bilgileri, genellikle sistemin makine hesabı (örneğin, `MACHINE$`) olarak temsil edilir ve bu bilgiler, remote kaynaklara erişim sağlamak için kullanılır.
+
+Kısaca, servis, başka bir bilgisayardaki bir kaynağa erişmesi gerektiğinde, kendi kimliğini (örneğin, makinenin adı ve security context) göndererek doğrulama yapar.
+
+*  ==Local Service==: Bu, Windows servislerini çalıştırmak için Service Control Manager (SCM) tarafından kullanılan önceden tanımlanmış başka bir lokal hesaptır. Bilgisayarda minimum ayrıcalıklarla yapılandırılır ve ağa anonim kimlik bilgileri sunar.
 
 Çeşitli hesapların tek bir Windows sisteminde ve bir domain ağında birlikte nasıl çalıştığını daha iyi anlamak için Microsoft'un [lokal varsayılan hesaplarla](https://docs.microsoft.com/en-us/windows/security/identity-protection/access-control/local-accounts) ilgili belgelerini derinlemesine incelemeye değer. Bunları incelemek ve aralarındaki farkları anlamak için biraz zaman ayırın.
 
 
 ### Domain Users
-Domain kullanıcılarının local kullanıcılardan farkı, user hesaplarına veya hesabın üyesi olduğu gruba verilen izinlere bağlı olarak dosya sunucuları, yazıcılar, intranet host'ları ve diğer objectler gibi kaynaklara erişmek için domain'den haklara sahip olmalarıdır. Domain kullanıcı hesapları, lokal kullanıcıların aksine, domain içindeki herhangi bir hostta oturum açabilir. Birçok farklı Active Directory hesap türü hakkında daha fazla bilgi için bu [bağlantıya](https://docs.microsoft.com/en-us/windows/security/identity-protection/access-control/active-directory-accounts) göz atın. Ancak akılda tutulması gereken bir hesap KRBTGT hesabıdır. Bu, AD altyapısında built-in olarak bulunan bir local hesap türüdür. Bu hesap, domain kaynakları için kimlik doğrulama ve erişim sağlayan Key Distribution servisi için bir servis hesabı olarak görev yapar. Bu hesap birçok saldırganın ortak hedefidir çünkü kontrol veya erişim elde etmek bir saldırganın domain'e sınırsız erişime sahip olmasını sağlar. [Golden Ticket](https://attack.mitre.org/techniques/T1558/001/) saldırısı gibi saldırılar yoluyla bir domain'de ayrıcalık yükseltme ve kalıcılık için kullanılabilir.
+Domain kullanıcılarının local kullanıcılardan farkı, user hesaplarına veya hesabın üyesi olduğu gruba verilen izinlere bağlı olarak dosya sunucuları, yazıcılar, intranet host'ları ve diğer objectler gibi kaynaklara erişmek için domain'den haklara sahip olmalarıdır. Domain kullanıcı hesapları, lokal kullanıcıların aksine, domain içindeki herhangi bir hostta oturum açabilir. Birçok farklı Active Directory hesap türü hakkında daha fazla bilgi için bu [bağlantıya](https://docs.microsoft.com/en-us/windows/security/identity-protection/access-control/active-directory-accounts) göz atın. Ancak akılda tutulması gereken bir hesap ==KRBTGT== hesabıdır. Bu, AD altyapısında built-in olarak bulunan bir local hesap türüdür. Bu hesap, domain kaynakları için kimlik doğrulama ve erişim sağlayan Key Distribution servisi için bir servis hesabı olarak görev yapar. Bu hesap birçok saldırganın ortak hedefidir çünkü kontrol veya erişim elde etmek bir saldırganın domain'e sınırsız erişime sahip olmasını sağlar. [Golden Ticket](https://attack.mitre.org/techniques/T1558/001/) saldırısı gibi saldırılar yoluyla bir domain'de ayrıcalık yükseltme ve kalıcılık için kullanılabilir.
 
 
-### User Adlandırma Attributes
-Active Directory'de güvenlik, oturum açma adı veya kimliği gibi kullanıcı objectlerini tanımlamaya yardımcı olmak için bir dizi kullanıcı adlandırma özniteliği kullanılarak geliştirilebilir. Aşağıda AD'deki birkaç önemli Adlandırma Özniteliği verilmiştir:
-![Pasted image 20241001204111.png](/img/user/resimler/Pasted%20image%2020241001204111.png)
+### User Naming Attributes
+Active Directory'de güvenlik, oturum açma adı veya kimliği gibi kullanıcı objectlerini tanımlamaya yardımcı olmak için bir dizi kullanıcı adlandırma attribute kullanılarak geliştirilebilir. Aşağıda AD'deki birkaç önemli Adlandırma Özniteliği verilmiştir:
 
+| **Özellik**                 | **Açıklama**                                                                                                                                             |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **UserPrincipalName (UPN)** | Kullanıcının birincil oturum açma adı. Geleneksel olarak, kullanıcıya ait e-posta adresi formatında kullanılır.                                          |
+| **ObjectGUID**              | Kullanıcının benzersiz tanımlayıcısıdır. AD'de değişmez ve kullanıcı silinse bile benzersizliğini korur.                                                 |
+| **SAMAccountName**          | Eski Windows clientlerde ve sunucuları için desteklenen bir oturum açma adıdır.                                                                          |
+| **objectSID**               | Kullanıcının **Security Identifier (SID)** kimliğidir. Güvenlik etkileşimlerinde kullanıcı ve grup üyeliklerini tanımlamak için kullanılır.              |
+| **sIDHistory**              | Kullanıcının önceki SID'lerini içerir. Genellikle domain taşımalarında görülür. Yeni domain'deki SID **objectSID** olurken, eski SID'ler buraya eklenir. |
 
-### Ortak Kullanıcı Özellikleri
-![Pasted image 20241001204200.png](/img/user/resimler/Pasted%20image%2020241001204200.png)
+### Ortak Kullanıcı Attribute'leri
 
-Kullanıcı objectsi özniteliklerine daha derin bir bakış için bu [sayfaya](https://learn.microsoft.com/en-us/windows/win32/ad/user-object-attributes) göz atın. AD'deki herhangi bir object için birçok öznitelik ayarlanabilir. Birçok object hiçbir zaman kullanılmayacak veya güvenlik uzmanları olarak bizleri ilgilendirmeyecektir. Yine de, hassas veriler içerebilecek veya bir saldırıya yardımcı olabilecek en yaygın ve daha belirsiz olanları tanımak önemlidir.
+```powershell-session
+PS C:\htb Get-ADUser -Identity htb-student
+
+DistinguishedName : CN=htb student,CN=Users,DC=INLANEFREIGHT,DC=LOCAL
+Enabled           : True
+GivenName         : htb
+Name              : htb student
+ObjectClass       : user
+ObjectGUID        : aa799587-c641-4c23-a2f7-75850b4dd7e3
+SamAccountName    : htb-student
+SID               : S-1-5-21-3842939050-3880317879-2865463114-1111
+Surname           : student
+UserPrincipalName : htb-student@INLANEFREIGHT.LOCAL
+```
+
+Kullanıcı objectsi attribute'larına daha derin bir bakış için bu [sayfaya](https://learn.microsoft.com/en-us/windows/win32/ad/user-object-attributes) göz atın. AD'deki herhangi bir object için birçok attribute ayarlanabilir. Birçok object hiçbir zaman kullanılmayacak veya güvenlik uzmanları olarak bizleri ilgilendirmeyecektir. Yine de, hassas veriler içerebilecek veya bir saldırıya yardımcı olabilecek en yaygın ve daha belirsiz olanları tanımak önemlidir.
 
 
 ### Domain-joined ve Domain-joined Olmayan Makineler
@@ -961,44 +1083,50 @@ Bilgisayar kaynakları söz konusu olduğunda, tipik olarak yönetildikleri birk
 
 
 ##### Domain joined
-Bir domain'e bağlanan host'lar kurum içinde daha kolay bilgi paylaşımına ve kaynakları, ilkeleri ve güncellemeleri toplayabilecekleri merkezi bir yönetim noktasına (DC) sahip olurlar. Bir domain'e bağlanan bir host, domain'in Group Policy'si aracılığıyla gerekli tüm konfigürasyonları veya değişiklikleri edinecektir. Buradaki avantaj, domain'deki bir kullanıcının oturum açabilmesi ve sadece üzerinde çalıştığı hosttan değil, domain'e bağlı herhangi bir hosttan kaynaklara erişebilmesidir. Bu, kurumsal ortamlarda göreceğiniz tipik kurulumdur.
+Bir domain'e bağlanan host'lar kurum içinde daha kolay bilgi paylaşımına ve kaynakları, politikaları ve güncellemeleri toplayabilecekleri merkezi bir yönetim noktasına (DC) sahip olurlar. Bir domain'e bağlanan bir host, domain'in Group Policy'si aracılığıyla gerekli tüm konfigürasyonları veya değişiklikleri edinecektir. Buradaki avantaj, domain'deki bir kullanıcının oturum açabilmesi ve sadece üzerinde çalıştığı hosttan değil, domain'e bağlı herhangi bir hosttan kaynaklara erişebilmesidir. Bu, kurumsal ortamlarda göreceğiniz tipik kurulumdur.
 
 
 ##### Non-domain joined
-Domain'e bağlı olmayan bilgisayarlar veya bir workgroup'taki bilgisayarlar domain ilkesi tarafından yönetilmez. Bunu göz önünde bulundurarak, local ağınızın dışındaki kaynakları paylaşmak, bir domain üzerinde olacağından çok daha karmaşıktır. Bu, ev kullanımı amaçlı bilgisayarlar veya aynı LAN üzerindeki küçük işletme kümeleri için uygundur. Bu kurulumun avantajı, bireysel kullanıcıların hostlarında yapmak istedikleri her türlü değişiklikten sorumlu olmalarıdır. Bir workgroup bilgisayarındaki tüm kullanıcı hesapları yalnızca o hostta bulunur ve profiller workgroup içindeki diğer hostlara taşınmaz.
+Domain'e bağlı olmayan bilgisayarlar veya bir workgroup'taki bilgisayarlar domain politikası tarafından yönetilmez. Bunu göz önünde bulundurarak, local ağınızın dışındaki kaynakları paylaşmak, bir domain üzerinde olacağından çok daha karmaşıktır. Bu, ev kullanımı amaçlı bilgisayarlar veya aynı LAN üzerindeki küçük işletme kümeleri için uygundur. Bu kurulumun avantajı, bireysel kullanıcıların hostlarında yapmak istedikleri her türlü değişiklikten sorumlu olmalarıdır. Bir workgroup bilgisayarındaki tüm kullanıcı hesapları yalnızca o hostta bulunur ve profiller workgroup içindeki diğer hostlara taşınmaz.
 
 AD ortamındaki bir makine hesabının (==NT AUTHORITY\SYSTEM== düzeyi erişim) standart bir domain kullanıcı hesabıyla aynı hakların çoğuna sahip olacağına dikkat etmek önemlidir. Bu önemlidir çünkü bir domain'i numaralandırmaya ve saldırmaya başlamak için (daha sonraki modüllerde göreceğimiz gibi) her zaman tek bir kullanıcının hesabı için bir dizi geçerli kimlik bilgisi edinmemiz gerekmez. Başarılı bir remote code execution exploit yoluyla veya bir host üzerinde ayrıcalıkları yükselterek domain-joined bir Windows hostuna SYSTEM seviyesinde erişim elde edebiliriz. Bu erişim genellikle yalnızca belirli bir host üzerindeki hassas verileri (parolalar, SSH anahtarları, hassas dosyalar vb.) yağmalamak için yararlı olduğu için göz ardı edilir. Gerçekte, SYSTEM hesabı contextında erişim, domain içindeki verilerin çoğuna okuma erişimi sağlar ve AD ile ilgili uygulanabilir saldırılara geçmeden önce domain hakkında mümkün olduğunca fazla bilgi toplamak için harika bir başlangıç noktasıdır.
 
-Doğru veya Yanlış; Lokal bir kullanıcı hesabı, domain'e bağlı herhangi bir host'ta oturum açmak için kullanılabilir. (Yanlış)
+Soru : Doğru veya Yanlış; Lokal bir kullanıcı hesabı, domain'e bağlı herhangi bir host'ta oturum açmak için kullanılabilir. (Yanlış)
 
-Hangi varsayılan kullanıcı hesabı “S-1-5-domain-500” SID'sine sahiptir? (Administrator)
+Soru : Hangi varsayılan kullanıcı hesabı “S-1-5-domain-500” SID'sine sahiptir? (Administrator)
 
-Bir Windows host'unda mümkün olan en yüksek izin düzeyine sahip hesap hangisidir? (System)
+Soru : Bir Windows host'unda mümkün olan en yüksek izin düzeyine sahip hesap hangisidir? (System)
 
-Hangi kullanıcı adlandırma özelliği kullanıcıya özgüdür ve hesap silinse bile öyle kalacaktır? (ObjectGUID)
+Soru : Hangi kullanıcı adlandırma özelliği kullanıcıya özgüdür ve hesap silinse bile öyle kalacaktır? (ObjectGUID)
 
 
 ### Active Directory Grupları
 User'lardan sonra gruplar Active Directory'deki bir diğer önemli objectdir. Benzer kullanıcıları bir araya getirebilir ve toplu olarak hak ve erişim atayabilirler. Gruplar saldırganlar ve sızma testçileri için bir başka önemli hedeftir, çünkü üyelerine verdikleri haklar kolayca görülemeyebilir, ancak doğru şekilde ayarlanmadığında kötüye kullanılabilecek aşırı (ve hatta istenmeyen) ayrıcalıklar verebilir. Active Directory'de [birçok built-in grup](https://docs.microsoft.com/en-us/windows/security/identity-protection/access-control/active-directory-security-groups#about-active-directory-groups) vardır ve çoğu kuruluş ayrıca hakları ve ayrıcalıkları tanımlamak için kendi gruplarını oluşturarak domain içindeki erişimi daha da yönetir. Bir AD ortamındaki grupların sayısı çığ gibi büyüyerek hantal hale gelebilir ve kontrol edilmediği takdirde istenmeyen erişimlere yol açabilir. Farklı grup türlerini kullanmanın etkisini anlamak ve her kuruluşun kendi domain'inde hangi grupların bulunduğunu, bu grupların üyelerine verdiği ayrıcalıkları periyodik olarak denetlemesi ve bir kullanıcının günlük işlerini gerçekleştirmesi için gerekli olanın ötesinde aşırı grup üyeliği olup olmadığını kontrol etmesi çok önemlidir. İleride, var olan farklı grup türlerini ve atanabilecekleri kapsamları tartışacağız.
 
-Sıkça karşılaşılan bir soru, Gruplar ve Organizasyonel Birimler (OU'lar) arasındaki farktır. Modülde daha önce tartışıldığı gibi, OU'lar, yönetimi kolaylaştırmak ve Group Policy ayarlarını domain'deki belirli objectlere dağıtmak için kullanıcıları, grupları ve bilgisayarları gruplandırmak için kullanışlıdır. Gruplar öncelikle kaynaklara erişim izinleri atamak için kullanılır. OU'lar, bir kullanıcıya grup üyeliği yoluyla devralabileceği ek yönetici hakları vermeden parolaları sıfırlama veya kullanıcı hesaplarının kilidini açma gibi yönetim görevlerini devretmek için de kullanılabilir.
+Gruplar (Groups) ve Organizational Units (OUs) arasındaki fark, sıkça sorulan bir sorudur. Modülde daha önce tartışıldığı gibi, **OUs**, kullanıcıları, grupları ve bilgisayarları gruplandırarak yönetimi kolaylaştırmak ve domain'deki belirli objectlere **Group Policy** ayarlarını uygulamak için kullanılır.
+
+**Gruplar (Groups)** ise genellikle kaynaklara erişim izinlerini atamak için kullanılır. Ayrıca, **OUs**, bir kullanıcıya ek yönetici yetkileri (örneğin, grup üyeliği aracılığıyla devralınabilecek haklar) vermeden şifre sıfırlama veya kullanıcı hesaplarının kilidini açma gibi belirli yönetim görevlerini devretmek için de kullanılabilir.
 
 
 ### Grup Türleri
 Daha basit bir ifadeyle, gruplar kullanıcıları, bilgisayarları ve iletişim objectlerini, izinler üzerinde yönetim kolaylığı sağlayan ve yazıcılar ve dosya paylaşım erişimi gibi kaynakların atanmasını kolaylaştıran yönetim birimlerine yerleştirmek için kullanılır. Örneğin, bir yöneticinin bir departmanın 50 üyesine yeni bir paylaşım sürücüsüne erişim ataması gerekiyorsa, her kullanıcının hesabını tek tek eklemek zaman alıcı olacaktır. İzinlerin bu şekilde verilmesi, kaynaklara kimin erişimi olduğunu denetlemeyi ve izinleri temizlemeyi/iptal etmeyi de zorlaştıracaktır. Bunun yerine, bir sistem yöneticisi mevcut bir grubu kullanabilir ya da yeni bir grup oluşturabilir ve bu gruba kaynak üzerinde belirli izinler verebilir. Buradan itibaren, gruptaki her kullanıcı gruptaki üyeliklerine göre izinleri devralacaktır. Bir veya daha fazla kullanıcı için izinlerin değiştirilmesi veya iptal edilmesi gerekirse, bu kullanıcılar gruptan çıkarılabilir ve diğer kullanıcılar bundan etkilenmez ve izinlerine dokunulmaz.
 
-Active Directory'deki grupların iki temel özelliği vardır: ==type== ve ==scope==. Grup type'ı grubun amacını tanımlarken, grup scope'u grubun domain veya forest içinde nasıl kullanılabileceğini gösterir. Yeni bir grup oluştururken, bir grup türü seçmeliyiz. İki ana tür vardır: ==security== (güvenlik) ve ==distribution== (dağıtım) grupları.
+Active Directory'deki grupların iki temel özelliği vardır: ==type== ve ==scope== . ==Grup type'ı== grubun amacını tanımlarken, ==grup scope=='u grubun domain veya forest içinde nasıl kullanılabileceğini gösterir. Yeni bir grup oluştururken, bir grup türü seçmeliyiz. İki ana tür vardır: ==security== (güvenlik) ve ==distribution== (dağıtım) grupları.
 
 
 ### Group Type And Scope
-![Pasted image 20241001223322.png](/img/user/resimler/Pasted%20image%2020241001223322.png)
-==Security groups (Güvenlik grupları)== türü, öncelikle izinleri ve hakları teker teker atamak yerine bir kullanıcı topluluğuna atamayı kolaylaştırmak içindir. Belirli bir kaynak için izinler ve haklar atarken yönetimi basitleştirir ve ek yükü azaltırlar. Bir güvenlik grubuna eklenen tüm kullanıcılar, gruba atanan tüm izinleri devralır, bu da grubun izinlerini değiştirmeden kullanıcıları grupların içine ve dışına taşımayı kolaylaştırır.
 
-==Distribution groups (Dağıtım grupları)== türü, Microsoft Exchange gibi e-posta uygulamaları tarafından mesajları grup üyelerine dağıtmak için kullanılır. Posta listeleri gibi çalışırlar ve Microsoft Outlook'ta bir e-posta oluştururken “Kime” alanına e-postaların otomatik olarak eklenmesini sağlarlar. Bu grup türü, bir domain ortamındaki kaynaklara izin atamak için kullanılamaz.
+![Pasted image 20241001223322.png](/img/user/resimler/Pasted%20image%2020241001223322.png)
+
+==Security groups (Güvenlik grupları)== türü, öncelikle izinleri ve hakları teker teker atamak yerine bir kullanıcı topluluğuna atamayı kolaylaştırmak içindir. Belirli bir kaynak için izinler ve haklar atarken yönetimi basitleştirir ve ek yükü azaltırlar. Bir security grubuna eklenen tüm kullanıcılar, gruba atanan tüm izinleri devralır, bu da grubun izinlerini değiştirmeden kullanıcıları grupların içine ve dışına taşımayı kolaylaştırır.
+
+==Distribution groups (Dağıtım grupları)== türü, Microsoft Exchange gibi e-posta uygulamaları tarafından mesajları grup üyelerine dağıtmak için kullanılır. Posta listeleri gibi çalışırlar ve Microsoft Outlook'ta bir e-posta oluştururken “Kime” alanına e-postaların otomatik olarak eklenmesini sağlarlar. Bu grup type'ı, bir domain ortamındaki kaynaklara izin atamak için kullanılamaz.
 
 
 ### Group Scopes
+
 Yeni bir grup oluştururken atanabilecek üç farklı grup kapsamı vardır.
+
 * Domain Local Group
 * Global Group
 * Universal Group
@@ -1008,15 +1136,19 @@ Domain lokal grupları yalnızca oluşturulduğu domain'deki domain kaynakların
 
 
 ### Global Group
+
 Global gruplar, başka bir domain'deki kaynaklara erişim izni vermek için kullanılabilir. Bir global grup yalnızca oluşturulduğu domain'deki hesapları içerebilir. Global gruplar hem diğer global gruplara hem de lokal gruplara eklenebilir.
 
 
 ### Universal Group
-Universal grup kapsamı, birden fazla domain'e dağıtılmış kaynakları yönetmek için kullanılabilir ve aynı forest içindeki herhangi bir objectye izinler verilebilir. Bir kuruluş içindeki tüm domainler tarafından kullanılabilirler ve herhangi bir domainin kullanıcılarını içerebilirler. Domain lokal ve global gruplarının aksine, evrensel gruplar Global Katalog'da (GC) saklanır ve evrensel bir gruba object eklenmesi veya gruptan object çıkarılması forest çapında replikasyonu tetikler. Yöneticilerin diğer grupları ( global gruplar gibi) universal grupların üyesi olarak tutmaları önerilir çünkü universal gruplar içindeki global grup üyeliğinin global gruplardaki bireysel kullanıcı üyeliğinden daha az değişme olasılığı vardır. Çoğaltma yalnızca bir kullanıcı genel bir gruptan çıkarıldığında bireysel domain düzeyinde tetiklenir. Evrensel gruplar içinde tek tek kullanıcılar ve bilgisayarlar ( global gruplar yerine) tutulursa, her değişiklik yapıldığında forest çapında replikasyon tetiklenir. Bu da çok fazla ağ yükü ve sorun potansiyeli yaratabilir. Aşağıda AD'deki grupların ve kapsam ayarlarının bir örneği bulunmaktadır. Lütfen bazı kritik gruplara ve kapsamlarına dikkat edin. (Örneğin, Domain yöneticilerine kıyasla Enterprise ve Schema yöneticileri)
+
+Universal grup kapsamı, birden fazla domain'e dağıtılmış kaynakları yönetmek için kullanılabilir ve aynı forest içindeki herhangi bir objectye izinler verilebilir. Bir kuruluş içindeki tüm domainler tarafından kullanılabilirler ve herhangi bir domainin kullanıcılarını içerebilirler. Domain lokal ve global gruplarının aksine, evrensel gruplar Global Katalog'da (GC) saklanır ve evrensel bir gruba object eklenmesi veya gruptan object çıkarılması forest çapında replikasyonu tetikler. Yöneticilerin diğer grupları (global gruplar gibi) universal grupların üyesi olarak tutmaları önerilir çünkü universal gruplar içindeki global grup üyeliğinin global gruplardaki bireysel kullanıcı üyeliğinden daha az değişme olasılığı vardır. Replikasyon yalnızca bir kullanıcı genel bir gruptan çıkarıldığında bireysel domain düzeyinde tetiklenir. Evrensel gruplar içinde tek tek kullanıcılar ve bilgisayarlar ( global gruplar yerine) tutulursa, her değişiklik yapıldığında forest çapında replikasyon tetiklenir. Bu da çok fazla ağ yükü ve sorun potansiyeli yaratabilir. Aşağıda AD'deki grupların ve scope ayarlarının bir örneği bulunmaktadır. Lütfen bazı kritik gruplara ve kapsamlarına dikkat edin. (Örneğin, Domain Adminlere kıyasla Enterprise ve Schema adminleri)
 
 
 ### AD Group Scope Examples
+
 ![Pasted image 20241001223939.png](/img/user/resimler/Pasted%20image%2020241001223939.png)
+
 Grup skopları değiştirilebilir, ancak birkaç uyarı vardır:
 
 * Bir Global Grup ancak başka bir Global Grubun parçası DEĞİLSE bir Universal Gruba dönüştürülebilir.
@@ -1029,21 +1161,27 @@ Grup skopları değiştirilebilir, ancak birkaç uyarı vardır:
 
 
 ## Built-in vs. Custom Groups
-Bir domain oluşturulduğunda Domain Local Group scope ile birkaç built-in güvenlik grubu oluşturulur. Bu gruplar belirli yönetim amaçları için kullanılır ve bir sonraki bölümde daha ayrıntılı olarak ele alınacaktır. Bu built-in gruplara yalnızca kullanıcı hesaplarının eklenebileceğini ve grup iç içe geçmesine (grup içinde gruplar) izin vermediklerini unutmamak önemlidir. Bazı built-in grup örnekleri, bir Global güvenlik grubu olan ve yalnızca kendi domainindeki hesapları içerebilen Domain Admins'i içerir. Bir kuruluş B domaininden bir hesabın A domainindeki bir domain controller üzerinde yönetim işlevlerini yerine getirmesine izin vermek isterse, hesabın bir Domain Local grubu olan built-in Administrators grubuna eklenmesi gerekir. Active Directory birçok grupla önceden doldurulmuş olarak gelse de, çoğu kuruluşun kendi amaçları için ek gruplar (hem güvenlik hem de dağıtım) oluşturması yaygındır. Bir AD ortamındaki değişiklikler/eklemeler de ek grupların oluşturulmasını tetikleyebilir. Örneğin, Microsoft Exchange bir domain'e eklendiğinde, domain'e çeşitli farklı güvenlik grupları eklenir, bunlardan bazıları oldukça ayrıcalıklıdır ve düzgün yönetilmezse domain içinde ayrıcalıklı erişim elde etmek için kullanılabilir.
+
+Bir domain oluşturulduğunda, Domain Local Group kapsamına sahip birkaç built-in security grubu oluşturulur. Bu gruplar, belirli yönetim amaçları için kullanılır ve bir sonraki bölümde daha detaylı olarak ele alınacaktır. Önemli bir nokta, bu built-in gruplara yalnızca kullanıcı hesaplarının eklenebileceğidir, çünkü grup içi gruplaşmayı (gruplar içinde gruplar) desteklemezler.
+
+Örneklerden biri, yalnızca kendi domainindeki hesapları içerebilen **Domain Admins** adlı Global security grubudur. Eğer bir organizasyon, domain B'deki bir hesabın domain A'daki bir domain controller'ında yönetimsel işlemler yapmasına izin vermek istiyorsa, bu hesap **Administrators** adlı local gruba eklenmelidir, çünkü bu grup bir Domain Local grubudur.
+
+Active Directory, birçok grup ile önceden doldurulmuş olarak gelir, ancak çoğu organizasyon, kendi amaçları için ek gruplar (hem security hem de distribution grupları) oluşturmayı yaygın olarak tercih eder. AD ortamına yapılan değişiklikler ve eklemeler, yeni grupların oluşturulmasına da yol açabilir. Örneğin, Microsoft Exchange bir domain'e eklendiğinde, domain'e çeşitli security grupları ekler; bunlardan bazıları yüksek ayrıcalıklara sahip olup, doğru yönetilmezse domain içinde ayrıcalıklı erişim sağlamak için kullanılabilir.
 
 
 ### Nested Group Membership
-İç içe grup üyeliği AD'de önemli bir kavramdır. Daha önce de belirtildiği gibi, bir Domain Local Group aynı domain içindeki başka bir Domain Local Group'un üyesi olabilir. Bu üyelik sayesinde, bir kullanıcı doğrudan kendi hesabına veya hatta doğrudan üyesi olduğu gruba değil, grubunun üyesi olduğu gruba atanan ayrıcalıkları devralabilir. Bu durum bazen bir kullanıcıya domain'i derinlemesine değerlendirmeden ortaya çıkarılması zor olan istenmeyen ayrıcalıklar verilmesine yol açabilir. BloodHound gibi araçlar, bir kullanıcının bir veya daha fazla grup iç içe geçmesi yoluyla devralabileceği ayrıcalıkların ortaya çıkarılmasında özellikle yararlıdır. Bu, sızma testi uzmanları için nüanslı yanlış yapılandırmaları ortaya çıkarmak için önemli bir araçtır ve aynı zamanda sistem yöneticileri ve benzerleri için domainlerinin güvenlik duruşu hakkında derinlemesine (görsel olarak) bilgi edinmek için son derece güçlüdür.
 
-Aşağıda, iç içe grup üyeliği yoluyla devralınan ayrıcalıklara bir örnek verilmiştir. ==DCorner==, Helpdesk Level 1'in doğrudan bir üyesi olmasa da Help Desk'teki üyelikleri onlara Helpdesk Level 1'in herhangi bir üyesinin sahip olduğu ayrıcalıkların aynısını verir. Bu durumda ayrıcalık, 1. Seviye Adminler grubuna (GenericWrite) bir üye eklemelerine izin verecektir. Bu grup domain içinde herhangi bir yükseltilmiş ayrıcalık sağlıyorsa, muhtemelen bir sızma test cihazı için önemli bir hedef olacaktır. Burada, kullanıcımızı gruba ekleyebilir ve daha fazla erişim için kullanılabilecek bir veya daha fazla hosta lokal yönetici erişimi gibi Tier 1 Admins grubunun üyelerine verilen ayrıcalıkları elde edebiliriz.
+İç içe grup üyeliği AD'de önemli bir kavramdır. Daha önce de belirtildiği gibi, bir Domain Local Group aynı domain içindeki başka bir Domain Local Group'un üyesi olabilir. Bu üyelik sayesinde, bir kullanıcı doğrudan kendi hesabına veya hatta doğrudan üyesi olduğu gruba değil, grubunun üyesi olduğu gruba atanan ayrıcalıkları devralabilir. Bu durum bazen bir kullanıcıya domain'i derinlemesine değerlendirmeden ortaya çıkarılması zor olan istenmeyen ayrıcalıklar verilmesine yol açabilir. BloodHound gibi araçlar, bir kullanıcının bir veya daha fazla grup iç içe geçmesi yoluyla devralabileceği ayrıcalıkların ortaya çıkarılmasında özellikle yararlıdır. Bu, sızma testi uzmanları için ince ayrıntıları yanlış yapılandırmaları ortaya çıkarmak için önemli bir araçtır ve aynı zamanda sistem yöneticileri ve benzerleri için domainlerinin güvenlik duruşu hakkında derinlemesine (görsel olarak) bilgi edinmek için son derece güçlüdür.
 
+Aşağıda, iç içe grup üyeliği yoluyla miras alınan ayrıcalıkların bir örneği verilmiştir. **DCorner**, **Helpdesk Level 1** grubunun doğrudan bir üyesi olmasa da, **Help Desk** grubuna üyeliği sayesinde **Helpdesk Level 1** grubunun tüm üyelerinin sahip olduğu ayrıcalıkları kazanır. Bu durumda, bu ayrıcalık, **Tier 1 Admins** grubuna bir üye eklemelerine (GenericWrite) olanak tanıyacaktır. Eğer bu grup, domain içinde herhangi bir yükseltilmiş ayrıcalık sağlıyorsa, bu muhtemelen bir sızma testi uzmanı için önemli bir hedef olacaktır. Burada, kullanıcımızı gruba ekleyip, **Tier 1 Admins** grubunun üyelerine sağlanan ayrıcalıklara (örneğin, bir veya birden fazla hosta yerel yönetici erişimi) sahip olabiliriz, bu da daha fazla erişim sağlamak için kullanılabilir.
 
 ### BloodHound ile İç İçe Grupları İnceleme
+
 ![Pasted image 20241001224539.png](/img/user/resimler/Pasted%20image%2020241001224539.png)
 
 
 ## Important Group Attributes
-Kullanıcılar gibi grupların da birçok [özelliği](http://www.selfadsi.org/group-attributes.htm) vardır. En [önemli grup özelliklerinden](https://learn.microsoft.com/en-us/windows/win32/ad/group-objects) bazıları şunlardır:
+Kullanıcılar gibi grupların da birçok [attribute'ler](http://www.selfadsi.org/group-attributes.htm) vardır. En [önemli grup özelliklerinden](https://learn.microsoft.com/en-us/windows/win32/ad/group-objects) bazıları şunlardır:
 
 ==cn==: cn veya Common-Name, Active Directory Domain Services'daki grubun adıdır.
 
@@ -1056,13 +1194,49 @@ Kullanıcılar gibi grupların da birçok [özelliği](http://www.selfadsi.org/g
 ==objectSid==: Bu, grubu bir güvenlik sorumlusu olarak tanımlamak için kullanılan benzersiz değer olan grubun güvenlik tanımlayıcısı veya SID'sidir.
 
 
-Gruplar, AD'de diğer objectleri bir arada gruplandırmak ve hakların ve erişimin yönetimini kolaylaştırmak için kullanılabilen temel objectlerdir. Grup türleri ve kapsamları arasındaki farkları incelemek için zaman ayırın. Bu bilgi, AD'yi yönetmenin yanı sıra aynı ve farklı domainlerdeki gruplar arasındaki ilişkileri ve bir sızma testinin keşif aşamasında hangi bilgilerin numaralandırılabileceğini anlamak için de faydalıdır. Tek bir domain içinde ve güven sınırları ötesinde saldırılar gerçekleştirmek için farklı grup türlerinin nasıl kullanılabileceğini anlamak, sahip olunması gereken mükemmel bir bilgidir. Bu bölümde Grupları derinlemesine inceledik, şimdi Haklar ve Ayrıcalıklar  (`Rights` and `Privileges`.) arasındaki farkları inceleyelim.
+Gruplar, AD'de diğer objectleri bir arada gruplandırmak ve hakların ve erişimin yönetimini kolaylaştırmak için kullanılabilen temel objectlerdir. Grup type'ları ve scope'ları arasındaki farkları incelemek için zaman ayırın. Bu bilgi, AD'yi yönetmenin yanı sıra aynı ve farklı domainlerdeki gruplar arasındaki ilişkileri ve bir sızma testinin keşif aşamasında hangi bilgilerin numaralandırılabileceğini anlamak için de faydalıdır. Tek bir domain içinde ve güven sınırları ötesinde saldırılar gerçekleştirmek için farklı grup türlerinin nasıl kullanılabileceğini anlamak, sahip olunması gereken mükemmel bir bilgidir. Bu bölümde Grupları derinlemesine inceledik, şimdi Haklar ve Ayrıcalıklar  (`Rights` and `Privileges`.) arasındaki farkları inceleyelim.
 
 Soru : Kullanıcılara izin ve hak atamak için en iyi hangi grup türü kullanılır?
 Cevap : Security
 
 Soru : Doğru veya Yanlış; Bir “Global Grup” yalnızca oluşturulduğu domain'deki hesapları içerebilir.
-Cevap :True
+Cevap : True
 
 Soru :  Bir Universal grubu bir Domain Local grubuna dönüştürülebilir mi? (evet veya hayır)
 Cevap : yes
+
+
+# Active Directory Rights and Privileges
+
+Rights (haklar) ve privileges AD yönetiminin temel taşlarıdır ve yanlış yönetildikleri takdirde saldırganlar veya penetrasyon testçileri tarafından kolayca kötüye kullanılabilirler. Access Rights ve privileges AD'de (ve genel olarak bilgi güvenliğinde) iki önemli konudur ve aralarındaki farkı anlamamız gerekir. Right'lar genellikle ==kullanıcılara veya gruplara== atanır ve dosya gibi bir objeye erişim izinleriyle ilgilenirken, ==privilege'ler kullanıcıya bir programı çalıştırma, sistemi kapatma, parolaları sıfırlama vb.== gibi bir eylemi gerçekleştirme izni verir. Privilege'lar kullanıcılara bireysel olarak atanabilir veya built-in ya da özel grup üyeliği yoluyla verilebilir. Windows bilgisayarlarda ==User Rights Assignment (Kullanıcı Hakları Ataması)== adı verilen bir kavram vardır ve bunlar haklar olarak adlandırılsa da aslında bir kullanıcıya verilen privilege türleridir. Bunları bu bölümün ilerleyen kısımlarında tartışacağız. Daha geniş anlamda rights ve privileges arasındaki farkları ve bunların bir AD ortamına tam olarak nasıl uygulandığını kesin olarak kavramamız gerekir.
+
+
+## Built-in AD Groups
+
+AD birçok [varsayılan veya built-in security grubu](https://docs.microsoft.com/en-us/windows/security/identity-protection/access-control/active-directory-security-groups) içerir, bunlardan bazıları üyelerine bir domain içindeki privilege'leri yükseltmek ve nihayetinde bir Domain Controller (DC) üzerinde Domain Admin veya SYSTEM ayrıcalıkları elde etmek için kötüye kullanılabilecek güçlü rights and privilege'lar verir. Bu grupların birçoğuna üyelik sıkı bir şekilde yönetilmelidir çünkü aşırı grup üyeliği/ayrıcalıkları birçok AD ağında saldırganların kötüye kullanmaya çalıştığı yaygın bir kusurdur. En yaygın built-in gruplardan bazıları aşağıda listelenmiştir.
+
+
+| **Grup Adı**                           | **Açıklama**                                                                                                                                                                                                                                                                                                                                                                           |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Account Operators**                  | Üyeler, kullanıcılar, local gruplar ve global gruplar dahil olmak üzere çoğu türdeki hesapları oluşturabilir ve değiştirebilir, ayrıca domain controller'lara local olarak giriş yapabilirler. Administrator hesabını, admin kullanıcı hesaplarını veya Administrators, Server Operators, Account Operators, Backup Operators veya Print Operators gruplarının üyelerini yönetemezler. |
+| **Administrators**                     | Üyeler, bir bilgisayar veya bir domain üzerindeki tüm kaynaklara tam ve sınırsız erişime sahiptirler. Domain controller üzerinde bu grupta iseler, domaini yönetebilirler.                                                                                                                                                                                                             |
+| **Backup Operators**                   | Üyeler, bir bilgisayardaki tüm dosyaları, dosyaların izinlerine bakılmaksızın yedekleyebilir ve geri yükleyebilirler. Backup Operators, bilgisayara giriş yapabilir ve bilgisayarı kapatabilir. Ayrıca, DC'lere local olarak giriş yapabilirler ve Domain Admins olarak kabul edilmelidirler. SAM/NTDS veritabanının yedeklerini alabilirler.                                          |
+| **DnsAdmins**                          | Üyeler, ağ DNS bilgilerine erişime sahiptir. Bu grup yalnızca DNS sunucusu rolü domain controller'da yüklendiğinde veya daha önce yüklendiğinde oluşturulur.                                                                                                                                                                                                                           |
+| **Domain Admins**                      | Üyeler, domaini yönetmek için tam erişime sahiptir ve tüm domain’e bağlı makinelerde local administrator grubunun üyeleridirler.                                                                                                                                                                                                                                                       |
+| **Domain Computers**                   | Domain içinde oluşturulan tüm bilgisayarlar (domain controller’lar hariç) bu gruba eklenir.                                                                                                                                                                                                                                                                                            |
+| **Domain Controllers**                 | Domain içindeki tüm domain controller'ları içerir. Yeni DC'ler otomatik olarak bu gruba eklenir.                                                                                                                                                                                                                                                                                       |
+| **Domain Guests**                      | Bu grup, domainin built-in Guest hesabını içerir. Üyeler, bir domain'e bağlı bilgisayara local misafir olarak giriş yaptıklarında domain profili oluşturulmasını sağlar.                                                                                                                                                                                                               |
+| **Domain Users**                       | Bu grup, domaindeki tüm kullanıcı hesaplarını içerir. Domainde yeni bir kullanıcı hesabı oluşturulduğunda otomatik olarak bu gruba eklenir.                                                                                                                                                                                                                                            |
+| **Enterprise Admins**                  | Bu gruptaki üyelik, domain içinde tam yapılandırma erişimi sağlar. Bu grup yalnızca bir AD forest'ının root domaininde bulunur. Bu gruptaki üyeler, bir child domaini eklemek veya bir trust oluşturmak gibi forest çapında değişiklik yapabilme yeteneğine sahiptir. Root domainin Administrator hesabı, bu gruptaki tek üyedir.                                                      |
+| **Event Log Readers**                  | Üyeler, local bilgisayarlarda event loglarını okuyabilirler. Bu grup, bir host domain controller olarak yükseltildiğinde oluşturulur.                                                                                                                                                                                                                                                  |
+| **Group Policy Creator Owners**        | Üyeler, domain içinde Group Policy Nesnelerini (GPO) oluşturabilir, düzenleyebilir veya silebilirler.                                                                                                                                                                                                                                                                                  |
+| **Hyper-V Administrators**             | Üyeler, Hyper-V'nin tüm özelliklerine tam ve sınırsız erişime sahiptirler. Domain içinde virtual DC'ler varsa, Hyper-V Administrators gibi sanallaştırma yöneticileri Domain Admins olarak kabul edilmelidirler.                                                                                                                                                                       |
+| **IIS_IUSRS**                          | Bu, Internet Information Services (IIS) tarafından kullanılan built-in bir gruptur, IIS 7.0 ve sonrasında kullanılmaktadır.                                                                                                                                                                                                                                                            |
+| **Pre–Windows 2000 Compatible Access** | Bu grup, Windows NT 4.0 ve önceki sürümleri çalıştıran bilgisayarlar için geriye uyumluluk sağlamak amacıyla vardır. Bu gruptaki üyelik genellikle eski bir yapılandırmanın kalıntısıdır. Bu, ağdaki herkesin geçerli bir AD kullanıcı adı ve şifresi olmadan AD'den bilgi okumasına neden olabilir.                                                                                   |
+| **Print Operators**                    | Üyeler, domain controller’lara bağlı yazıcıları yönetebilir, oluşturabilir, paylaşabilir ve silebilirler. Ayrıca AD içindeki yazıcı nesnelerini yönetebilirler. Üyeler, DC'lere local olarak giriş yapabilirler ve kötü amaçlı bir yazıcı driver'ı yükleyerek domain içinde ayrıcalıkları yükseltebilirler.                                                                            |
+| **Protected Users**                    | Bu grubun üyelerine, kimlik bilgisi çalınmasına ve Kerberos kötüye kullanımına karşı ek korumalar sağlanır.                                                                                                                                                                                                                                                                            |
+| **Read-only Domain Controllers**       | Domain içindeki tüm salt okunur domain controller'ları içerir.                                                                                                                                                                                                                                                                                                                         |
+| **Remote Desktop Users**               | Bu grup, kullanıcılara ve gruplara, bir hosta Remote Desktop (RDP) ile bağlanma izni vermek için kullanılır. Bu grup yeniden adlandırılamaz, silinemez veya taşınamaz.                                                                                                                                                                                                                 |
+| **Remote Management Users**            | Bu grup, kullanıcılara Windows Remote Management (WinRM) ile bilgisayarlara remote erişim sağlamak için kullanılabilir.                                                                                                                                                                                                                                                                |
+| **Schema Admins**                      | Üyeler, Active Directory şemasını değiştirebilirler; bu, AD içindeki tüm objelerin nasıl tanımlandığını belirler. Bu grup yalnızca AD forest'ının root domaininde bulunur. Root domainin Administrator hesabı, bu gruptaki tek üyedir.                                                                                                                                                 |
+| **Server Operators**                   | Bu grup yalnızca domain controller’larda bulunur. Üyeler, domain controller’larda servisleri değiştirebilir, SMB paylaşımlarına erişebilir ve dosya yedekleme işlemleri yapabilirler. Varsayılan olarak, bu grubun üyesi yoktur.                                                                                                                                                       |
