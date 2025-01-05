@@ -9,18 +9,18 @@ Sızma testinin ve dolayısıyla numaralandırmanın dinamik bir süreç olduğu
 * `Host-based enumeration`
 * `OS-based enumeration`
 
-https://academy.hackthebox.com/storage/modules/112/enum-method3.png
+[Ayrıntılı Resim](https://academy.hackthebox.com/storage/modules/112/enum-method3.png)
 
 Not: Gösterilen her katmanın bileşenleri ana kategorileri temsil etmektedir ve aranacak tüm bileşenlerin tam listesi değildir. Ayrıca, burada birinci ve ikinci katmanın (İnternet Varlığı, Gateway) Active Directory altyapısı gibi intranet için tam olarak geçerli olmadığı belirtilmelidir. İç altyapıya yönelik katmanlar diğer modüllerde ele alınacaktır.
 
-|**Katman**|**Açıklama**|**Bilgi Kategorileri**|
-|---|---|---|
-|**İnternet Varlığı**|Şirketin internet üzerindeki varlığını ve dışarıdan erişilebilen altyapısını tanımlama.|Domain'ler, Subdomain'ler, vHost'lar, ASN, Netblock'lar, IP Adresleri, Bulut Sunucuları, Güvenlik Önlemleri|
-|**Ağ Geçidi**|Şirketin dış ve iç altyapısını korumak için olası güvenlik önlemlerini belirleme.|Firewall'lar, DMZ, IPS/IDS, EDR, Proxy'ler, NAC, Ağ Segmentasyonu, VPN, Cloudflare|
-|**Erişilebilir Servisler**|Dışarıda veya içeride barındırılan erişilebilir arayüzleri ve servisleri tanımlama.|Servis Türü, İşlevsellik, Konfigürasyon, Port, Versiyon, Arayüz|
-|**Process'ler**|Servislerle ilişkili iç process'leri, kaynakları ve hedefleri tanımlama.|PID, İşlenen Veriler, Görevler, Kaynak, Hedef|
-|**Yetkiler**|Erişilebilir servislere yönelik iç izin ve yetkileri belirleme.|Gruplar, Kullanıcılar, İzinler, Kısıtlamalar, Ortam|
-|**OS Yapılandırması**|İç bileşenleri ve sistem yapılandırmasını tanımlama.|OS Türü, Yama Seviyesi, Ağ Konfigürasyonu, OS Ortamı, Konfigürasyon Dosyaları, Hassas Private Dosyalar|
+| **Katman**                 | **Açıklama**                                                                            | **Bilgi Kategorileri**                                                                                      |
+| -------------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| **İnternet Varlığı**       | Şirketin internet üzerindeki varlığını ve dışarıdan erişilebilen altyapısını tanımlama. | Domain'ler, Subdomain'ler, vHost'lar, ASN, Netblock'lar, IP Adresleri, Bulut Sunucuları, Güvenlik Önlemleri |
+| **Ağ Geçidi**              | Şirketin dış ve iç altyapısını korumak için olası güvenlik önlemlerini belirleme.       | Firewall'lar, DMZ, IPS/IDS, EDR, Proxy'ler, NAC, Ağ Segmentasyonu, VPN, Cloudflare                          |
+| **Erişilebilir Servisler** | Dışarıda veya içeride barındırılan erişilebilir arayüzleri ve servisleri tanımlama.     | Servis Türü, İşlevsellik, Konfigürasyon, Port, Versiyon, Arayüz                                             |
+| **Process'ler**            | Servislerle ilişkili iç process'leri, kaynakları ve hedefleri tanımlama.                | PID, İşlenen Veriler, Görevler, Kaynak, Hedef                                                               |
+| **Yetkiler**               | Erişilebilir servislere yönelik iç izin ve yetkileri belirleme.                         | Gruplar, Kullanıcılar, İzinler, Kısıtlamalar, Ortam                                                         |
+| **OS Yapılandırması**      | İç bileşenleri ve sistem yapılandırmasını tanımlama.                                    | OS Türü, Yama Seviyesi, Ağ Konfigürasyonu, OS Ortamı, Konfigürasyon Dosyaları, Hassas Private Dosyalar      |
 
 **Önemli Not:** İnsan faktörü ve çalışanlar tarafından **OSINT** kullanılarak elde edilebilecek bilgiler, basitlik sağlamak amacıyla "İnternet Varlığı" katmanından çıkarılmıştır.
 
