@@ -7,7 +7,7 @@ Bu PHP kodu, kullanıcı oturumunu sonlandırarak güvenlik amacıyla kullanıc�
 
 ---
 
-### 1. **`<?php`**
+### 1. **`php`**
 
 - **Amacı**: PHP kodunun başladığını belirtir.
 

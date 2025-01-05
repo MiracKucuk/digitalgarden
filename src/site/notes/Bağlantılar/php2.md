@@ -2,7 +2,7 @@
 {"dg-publish":true,"permalink":"/baglantilar/php2/"}
 ---
 
-### 1. **`<?php`**
+### 1. **`php`**
 
 - **Amacı**: PHP kodunun başladığını belirtir.
 
