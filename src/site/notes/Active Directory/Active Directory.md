@@ -1234,9 +1234,81 @@ AD birçok [varsayılan veya built-in security grubu](https://docs.microsoft.com
 | **IIS_IUSRS**                          | Bu, Internet Information Services (IIS) tarafından kullanılan built-in bir gruptur, IIS 7.0 ve sonrasında kullanılmaktadır.                                                                                                                                                                                                                                                            |
 | **Pre–Windows 2000 Compatible Access** | Bu grup, Windows NT 4.0 ve önceki sürümleri çalıştıran bilgisayarlar için geriye uyumluluk sağlamak amacıyla vardır. Bu gruptaki üyelik genellikle eski bir yapılandırmanın kalıntısıdır. Bu, ağdaki herkesin geçerli bir AD kullanıcı adı ve şifresi olmadan AD'den bilgi okumasına neden olabilir.                                                                                   |
 | **Print Operators**                    | Üyeler, domain controller’lara bağlı yazıcıları yönetebilir, oluşturabilir, paylaşabilir ve silebilirler. Ayrıca AD içindeki yazıcı nesnelerini yönetebilirler. Üyeler, DC'lere local olarak giriş yapabilirler ve kötü amaçlı bir yazıcı driver'ı yükleyerek domain içinde ayrıcalıkları yükseltebilirler.                                                                            |
-| **Protected Users**                    | Bu grubun üyelerine, kimlik bilgisi çalınmasına ve Kerberos kötüye kullanımına karşı ek korumalar sağlanır.                                                                                                                                                                                                                                                                            |
+| **Protected Users**                    | Bu [grubun](https://docs.microsoft.com/en-us/windows/security/identity-protection/access-control/active-directory-security-groups#protected-users) üyelerine, kimlik bilgisi çalınmasına ve Kerberos kötüye kullanımına karşı ek korumalar sağlanır.                                                                                                                                   |
 | **Read-only Domain Controllers**       | Domain içindeki tüm salt okunur domain controller'ları içerir.                                                                                                                                                                                                                                                                                                                         |
 | **Remote Desktop Users**               | Bu grup, kullanıcılara ve gruplara, bir hosta Remote Desktop (RDP) ile bağlanma izni vermek için kullanılır. Bu grup yeniden adlandırılamaz, silinemez veya taşınamaz.                                                                                                                                                                                                                 |
-| **Remote Management Users**            | Bu grup, kullanıcılara Windows Remote Management (WinRM) ile bilgisayarlara remote erişim sağlamak için kullanılabilir.                                                                                                                                                                                                                                                                |
+| **Remote Management Users**            | Bu grup, kullanıcılara [Windows Remote Management](https://docs.microsoft.com/en-us/windows/win32/winrm/portal) (WinRM) ile bilgisayarlara remote erişim sağlamak için kullanılabilir.                                                                                                                                                                                                 |
 | **Schema Admins**                      | Üyeler, Active Directory şemasını değiştirebilirler; bu, AD içindeki tüm objelerin nasıl tanımlandığını belirler. Bu grup yalnızca AD forest'ının root domaininde bulunur. Root domainin Administrator hesabı, bu gruptaki tek üyedir.                                                                                                                                                 |
 | **Server Operators**                   | Bu grup yalnızca domain controller’larda bulunur. Üyeler, domain controller’larda servisleri değiştirebilir, SMB paylaşımlarına erişebilir ve dosya yedekleme işlemleri yapabilirler. Varsayılan olarak, bu grubun üyesi yoktur.                                                                                                                                                       |
+Aşağıda, domain adminleri ve server operatörleri ile ilgili bazı çıktılar verilmiştir.
+
+
+### Server Operators Group Details
+
+```powershell-session
+PS C:\htb>  Get-ADGroup -Identity "Server Operators" -Properties *
+
+adminCount                      : 1
+CanonicalName                   : INLANEFREIGHT.LOCAL/Builtin/Server Operators
+CN                              : Server Operators
+Created                         : 10/27/2021 8:14:34 AM
+createTimeStamp                 : 10/27/2021 8:14:34 AM
+Deleted                         : 
+Description                     : Members can administer domain servers
+DisplayName                     : 
+DistinguishedName               : CN=Server Operators,CN=Builtin,DC=INLANEFREIGHT,DC=LOCAL
+dSCorePropagationData           : {10/28/2021 1:47:52 PM, 10/28/2021 1:44:12 PM, 10/28/2021 1:44:11 PM, 10/27/2021 
+                                  8:50:25 AM...}
+GroupCategory                   : Security
+GroupScope                      : DomainLocal
+groupType                       : -2147483643
+HomePage                        : 
+instanceType                    : 4
+isCriticalSystemObject          : True
+isDeleted                       : 
+LastKnownParent                 : 
+ManagedBy                       : 
+MemberOf                        : {}
+Members                         : {}
+Modified                        : 10/28/2021 1:47:52 PM
+modifyTimeStamp                 : 10/28/2021 1:47:52 PM
+Name                            : Server Operators
+nTSecurityDescriptor            : System.DirectoryServices.ActiveDirectorySecurity
+ObjectCategory                  : CN=Group,CN=Schema,CN=Configuration,DC=INLANEFREIGHT,DC=LOCAL
+ObjectClass                     : group
+ObjectGUID                      : 0887487b-7b07-4d85-82aa-40d25526ec17
+objectSid                       : S-1-5-32-549
+ProtectedFromAccidentalDeletion : False
+SamAccountName                  : Server Operators
+sAMAccountType                  : 536870912
+sDRightsEffective               : 0
+SID                             : S-1-5-32-549
+SIDHistory                      : {}
+systemFlags                     : -1946157056
+uSNChanged                      : 228556
+uSNCreated                      : 12360
+whenChanged                     : 10/28/2021 1:47:52 PM
+whenCreated                     : 10/27/2021 8:14:34 AM
+```
+
+Yukarıda gördüğümüz gibi, Server Operators grubunun varsayılan durumu hiçbir üyeye sahip olmamaktır ve varsayılan olarak bir domain local grubudur. Buna karşılık, aşağıda görülen Domain Admins grubunun birkaç üyesi ve kendisine atanmış servis hesapları vardır. Domain Admins ayrıca domain local yerine Global gruplardır. Grup üyeliği hakkında daha fazla bilgiyi bu modülün ilerleyen bölümlerinde bulabilirsiniz. Bu gruplara kimlerin erişimine izin verdiğiniz konusunda dikkatli olun. Bir saldırgan, bu gruplara atanmış bir kullanıcıya erişim sağlarsa kuruluşun anahtarlarını kolayca elde edebilir.
+
+
+#### Domain Admins Group Membership
+
+```powershell-session
+PS C:\htb>  Get-ADGroup -Identity "Domain Admins" -Properties * | select DistinguishedName,GroupCategory,GroupScope,Name,Members
+
+DistinguishedName : CN=Domain Admins,CN=Users,DC=INLANEFREIGHT,DC=LOCAL
+GroupCategory     : Security
+GroupScope        : Global
+Name              : Domain Admins
+Members           : {CN=htb-student_adm,CN=Users,DC=INLANEFREIGHT,DC=LOCAL, CN=sharepoint
+                    admin,CN=Users,DC=INLANEFREIGHT,DC=LOCAL, CN=FREIGHTLOGISTICSUSER,OU=Service
+                    Accounts,OU=Corp,DC=INLANEFREIGHT,DC=LOCAL, CN=PROXYAGENT,OU=Service
+                    Accounts,OU=Corp,DC=INLANEFREIGHT,DC=LOCAL...}
+```
+
+
+#### User Rights Ataması
+
