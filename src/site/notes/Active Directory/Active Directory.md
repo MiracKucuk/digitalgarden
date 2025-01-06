@@ -1312,3 +1312,117 @@ Members           : {CN=htb-student_adm,CN=Users,DC=INLANEFREIGHT,DC=LOCAL, CN=s
 
 #### User Rights Ataması
 
+Mevcut grup üyeliklerine ve administrator'ların Group Policy (GPO) aracılığıyla atayabileceği privilege'lar gibi diğer faktörlere bağlı olarak, kullanıcılar hesaplarına atanmış çeşitli haklara sahip olabilirler. [User Rights Assignment](https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/user-rights-assignment) (Kullanıcı Hakları Ataması) hakkındaki bu Microsoft makalesi, Windows'ta ayarlanabilen kullanıcı haklarının her biri hakkında ayrıntılı bir açıklama sunmaktadır. Burada listelenen her right (hak) penetrasyon testçileri veya savunucular olarak güvenlik açısından bizim için önemli değildir, ancak bir hesaba verilen bazı rightlar privilege escalation (ayrıcalık yükseltme) veya hassas dosyalara erişim gibi istenmeyen sonuçlara yol açabilir. Örneğin, kontrol ettiğimiz bir veya daha fazla kullanıcıyı içeren bir OU'ya uygulanan bir Group Policy Object (GPO) üzerinde yazma erişimi elde edebileceğimizi varsayalım. Bu örnekte, bir kullanıcıya hedeflenen hakları atamak için [SharpGPOAbuse](https://github.com/FSecureLABS/SharpGPOAbuse) gibi bir araçtan yararlanabiliriz. Bu yeni haklarla erişimimizi ilerletmek için domain'de birçok eylem gerçekleştirebiliriz. Birkaç örnek şunlardır:
+
+| **Yetki (Privilege)**             | **Açıklama**                                                                                                                                                                                                                                 |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **SeRemoteInteractiveLogonRight** | Hedef kullanıcıya Remote Desktop (RDP) aracılığıyla bir host'a giriş yapma hakkı verir. Bu hak, hassas verilerin ele geçirilmesi veya ayrıcalıkların yükseltilmesi için kullanılabilir.                                                      |
+| **SeBackupPrivilege**             | Kullanıcıya sistem yedeklemeleri oluşturma yetkisi tanır. Bu yetki, SAM ve SYSTEM **Registry** Registry hives ile **NTDS.dit** gibi dosyaların ele geçirilmesi için kullanılabilir. Bu dosyalar, şifrelerin geri alınmasında kullanılabilir. |
+| **SeDebugPrivilege**              | Kullanıcının bir **process**in belleğini hata ayıklama ve düzenleme yeteneği kazanmasını sağlar. Bu yetkiyle, **Mimikatz** gibi araçlarla **LSASS** belleğinden kimlik bilgileri alınabilir.                                                 |
+| **SeImpersonatePrivilege**        | Ayrıcalıklı bir hesabın (ör. **NT AUTHORITY\SYSTEM**) **token**ını taklit etme yetkisi verir. Bu, **JuicyPotato**, **RogueWinRM** veya **PrintSpoofer** ile ayrıcalık yükseltmek için kullanılabilir.                                        |
+| **SeLoadDriverPrivilege**         | Cihaz driverlarını yükleme ve kaldırma yetkisi verir. Bu yetki, sistemin ele geçirilmesi veya ayrıcalıkların yükseltilmesi için kullanılabilir.                                                                                              |
+| **SeTakeOwnershipPrivilege**      | Bir **process**in bir **object**in sahipliğini ele geçirmesine izin verir. Bu yetki, erişim izni olmayan dosya veya paylaşılan kaynaklara erişim sağlamak için kullanılabilir.                                                               |
+
+Kullanıcı haklarını kötüye kullanmak için [burada](https://blog.palantir.com/windows-privilege-abuse-auditing-detection-and-defense-3078a403d74e) ve [burada](https://book.hacktricks.xyz/windows/windows-local-privilege-escalation/privilege-escalation-abusing-tokens) ayrıntıları verilen birçok teknik mevcuttur. Bu modülün kapsamı dışında olsa da, bir kullanıcı hesabına yanlış ayrıcalık atamanın Active Directory'de yaratabileceği etkiyi anlamak önemlidir. Küçük bir admin hatası tüm sistemin veya kurumun tehlikeye girmesine yol açabilir.
+
+
+### Domain Admin Rights Yükseltilmemiş
+
+Yükseltilmemiş bir konsolda aşağıdakileri görebiliriz, bu da standart domain kullanıcısı için mevcut olandan daha fazlası gibi görünmemektedir. Bunun nedeni, CMD veya PowerShell konsolunu yükseltilmiş bir contexte çalıştırmadığımız sürece Windows sistemlerinin varsayılan olarak bize tüm hakları etkinleştirmemesidir. Bu, her uygulamanın mümkün olan en yüksek ayrıcalıklarla çalışmasını önlemek içindir. Bu, Windows Privilege Escalation modülünde derinlemesine ele alınan [User Account Control (UAC)](https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works) adı verilen bir şey tarafından kontrol edilir.
+
+```powershell-session
+PS C:\htb> whoami /priv
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                          State
+============================= ==================================== ========
+SeShutdownPrivilege           Shut down the system                 Disabled
+SeChangeNotifyPrivilege       Bypass traverse checking             Enabled
+SeUndockPrivilege             Remove computer from docking station Disabled
+SeIncreaseWorkingSetPrivilege Increase a process working set       Disabled
+SeTimeZonePrivilege           Change the time zone                 Disabled
+```
+
+
+#### Domain Admin Rights Elevated (Yükseltilmiş)
+
+Aynı komutu yükseltilmiş bir PowerShell konsolundan girersek, kullanabileceğimiz hakların tam listesini görebiliriz:
+
+```powershell-session
+PS C:\htb> whoami /priv
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                            Description                                                        State
+========================================= ================================================================== ========
+SeIncreaseQuotaPrivilege                  Adjust memory quotas for a process                                 Disabled
+SeMachineAccountPrivilege                 Add workstations to domain                                         Disabled
+SeSecurityPrivilege                       Manage auditing and security log                                   Disabled
+SeTakeOwnershipPrivilege                  Take ownership of files or other objects                           Disabled
+SeLoadDriverPrivilege                     Load and unload device drivers                                     Disabled
+SeSystemProfilePrivilege                  Profile system performance                                         Disabled
+SeSystemtimePrivilege                     Change the system time                                             Disabled
+SeProfileSingleProcessPrivilege           Profile single process                                             Disabled
+SeIncreaseBasePriorityPrivilege           Increase scheduling priority                                       Disabled
+SeCreatePagefilePrivilege                 Create a pagefile                                                  Disabled
+SeBackupPrivilege                         Back up files and directories                                      Disabled
+SeRestorePrivilege                        Restore files and directories                                      Disabled
+SeShutdownPrivilege                       Shut down the system                                               Disabled
+SeDebugPrivilege                          Debug programs                                                     Enabled
+SeSystemEnvironmentPrivilege              Modify firmware environment values                                 Disabled
+SeChangeNotifyPrivilege                   Bypass traverse checking                                           Enabled
+SeRemoteShutdownPrivilege                 Force shutdown from a remote system                                Disabled
+SeUndockPrivilege                         Remove computer from docking station                               Disabled
+SeEnableDelegationPrivilege               Enable computer and user accounts to be trusted for delegation     Disabled
+SeManageVolumePrivilege                   Perform volume maintenance tasks                                   Disabled
+SeImpersonatePrivilege                    Impersonate a client after authentication                          Enabled
+SeCreateGlobalPrivilege                   Create global objects                                              Enabled
+SeIncreaseWorkingSetPrivilege             Increase a process working set                                     Disabled
+SeTimeZonePrivilege                       Change the time zone                                               Disabled
+SeCreateSymbolicLinkPrivilege             Create symbolic links                                              Disabled
+SeDelegateSessionUserImpersonatePrivilege Obtain an impersonation token for another user in the same session Disabled
+```
+
+
+User rights (Kullanıcı hakları), yerleştirildikleri gruplara veya atanan ayrıcalıklara göre artar. Aşağıda bir ==Backup Operators== grup üyesine verilen hakların bir örneği yer almaktadır. Bu gruptaki kullanıcılar şu anda UAC tarafından kısıtlanan diğer haklara sahiptir (güçlü ==SeBackupPrivilege== gibi ek haklar standart bir konsol oturumunda varsayılan olarak etkinleştirilmez). Yine de, bu komuttan ==SeShutdownPrivilege=='a sahip olduklarını görebiliriz, bu da bir domain controller'ı kapatabilecekleri anlamına gelir. Bu ayrıcalık tek başına hassas verilere erişim sağlamak için kullanılamaz, ancak bir domain controller'da local olarak oturum açmaları durumunda (RDP veya WinRM aracılığıyla remote olarak değil) büyük bir servis kesintisine neden olabilir.
+
+
+#### Backup Operator Rights
+
+```powershell-session
+PS C:\htb> whoami /priv
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                    State
+============================= ============================== ========
+SeShutdownPrivilege           Shut down the system           Disabled
+SeChangeNotifyPrivilege       Bypass traverse checking       Enabled
+SeIncreaseWorkingSetPrivilege Increase a process working set Disabled
+```
+
+Saldırganlar ve savunmacılar olarak, Active Directory'deki built-in security gruplarına üyelik yoluyla kullanıcılara verilen hakları anlamamız gerekir. Domain'e daha fazla erişim sağlamak veya domain'i tehlikeye atmak için kullanılabilecek bu gruplardan birine veya daha fazlasına eklenmiş, görünüşte düşük ayrıcalıklı kullanıcılar bulmak nadir değildir. Bu gruplara erişim sıkı bir şekilde kontrol edilmelidir. Bu grupların çoğunu boş bırakmak ve bir gruba yalnızca tek seferlik bir eylem gerçekleştirilmesi veya tekrarlayan bir görevin ayarlanması gerektiğinde bir hesap eklemek genellikle en iyi uygulamadır. Bu bölümde tartışılan gruplardan birine eklenen veya ekstra ayrıcalıklar verilen tüm hesaplar sıkı bir şekilde kontrol edilmeli ve izlenmeli, çok güçlü bir parola veya parola atanmalı ve bir sistem yöneticisi tarafından günlük görevlerini yerine getirmek için kullanılan bir hesaptan ayrı olmalıdır.
+
+AD'de kullanıcı ayrıcalıkları ve built-in grup üyeliğiyle ilgili bazı güvenlik konularına değinmeye başladığımıza göre, şimdi bir Active Directory kurulumunun güvenliğini sağlamak için bazı kritik noktaların üzerinden geçelim.
+
+
+Soru : Hangi built-in grubu bir kullanıcıya bir bilgisayara tam ve sınırsız erişim sağlar?
+
+Cevap : Administrators
+
+Soru : Hangi kullanıcı hakkı bir kullanıcıya bir sistemin yedeklerini alma yetkisi verir?
+
+Cevap : SeBackupPrivilege
+
+Soru : Hangi Windows komutu bize mevcut kullanıcıya atanmış tüm kullanıcı haklarını gösterebilir?
+
+Cevap : whoami /priv
+
+
+
+
+Active Directory'de Güvenlik
