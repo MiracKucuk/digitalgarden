@@ -371,7 +371,7 @@ Failed to connect with SMB1 -- no workgroup available
 
 ### RPC - TCP 445
 
-Kullanıcıları listelemek için RPC üzerinden kontrol etmeyi deneyebilirim. [BlackHills'in bu konuda](https://www.blackhillsinfosec.com/password-spraying-other-fun-with-rpcclient/) iyi bir yazısı var. Yazının türkçelşetirilmiş hali --> [[BlackHills-T\|BlackHills-T]]
+Kullanıcıları listelemek için RPC üzerinden kontrol etmeyi deneyebilirim. [BlackHills'in bu konuda](https://www.blackhillsinfosec.com/password-spraying-other-fun-with-rpcclient/) iyi bir yazısı var. Yazının türkçelşetirilmiş hali --> [[Bağlantılar/BlackHills-T\|BlackHills-T]]
 
 Null auth ile bağlanacağım:
 
@@ -721,11 +721,11 @@ The command completed successfully.
 
 Bloodhound'un kurulumunu [Reel](https://0xdf.gitlab.io/2018/11/10/htb-reel.html#bloodhound) yazımda anlatmıştım. Verileri yüklemek için
 
-![Pasted image 20250106175637.png](/img/user/Pasted%20image%2020250106175637.png)
+![Pasted image 20250106175637.png](/img/user/resimler/Pasted%20image%2020250106175637.png)
 
 butonuna tıklıyorum ve zip exfil'imi seçiyorum. “ Queries” altında, “Find Shorter Paths to Domain Admin” seçeneğine tıklayacağım ve aşağıdaki grafiği elde edeceğim:
 
-![Pasted image 20250106175703.png](/img/user/Pasted%20image%2020250106175703.png)
+![Pasted image 20250106175703.png](/img/user/resimler/Pasted%20image%2020250106175703.png)
 
 ---
 Grafik, bir Active Directory ortamındaki kullanıcılar ve gruplar arasındaki erişim ilişkilerini gösteriyor. Şu anki erişim noktanız olan svc-alfresco@HTB.LOCAL'dan Administrator@HTB.LOCAL (Domain Admins grubunun üyesi) seviyesine erişmek için hangi adımları izlemeniz gerektiğini açıklıyor.
@@ -774,7 +774,7 @@ Bu terim, erişim sürecindeki kritik adımları ifade eder:
 
 Kullanıcım, Account Operators'ın bir üyesi olan Privileged IT Account'un bir üyesi olan Service Account'ta olduğu için, temelde kullanıcım Account Operators'ın bir üyesi gibidir. Ve Account Operators, Exchange Windows Permissions grubunda Generic All ayrıcalığına sahiptir. Bloodhound'da kenara sağ tıklayıp help'i seçersem, açılan pencerede bir “Abuse Info” sekmesi görüntüleniyor:
 
-![Pasted image 20250106182642.png](/img/user/Pasted%20image%2020250106182642.png)
+![Pasted image 20250106182642.png](/img/user/resimler/Pasted%20image%2020250106182642.png)
 
 Bu, bunun nasıl kötüye kullanılacağına dair tam bir arka plan veriyor ve aşağı kaydırırsam bir örnek görüyorum:
 
@@ -946,13 +946,13 @@ DCSync saldırısına hangi portların dahil olduğunu merak ettim. Böylece, Wi
 
 İstatistikler altında, bunu yükleyen Conversations'ı görmek için bir seçenek var:
 
-![Pasted image 20250106183559.png](/img/user/Pasted%20image%2020250106183559.png)
+![Pasted image 20250106183559.png](/img/user/resimler/Pasted%20image%2020250106183559.png)
 
 Hostumun dört bağlantı başlattığını görebiliyorum, hepsi TCP (aksi takdirde UDP'nin ardından bir numara olurdu). İkisi 445'e, biri 135'e ve biri de 49667'ye. Tüm bu portlar nmap'te açıktı.
 
 135'e olan bağlantılar sadece bir sonraki bağlanmam gereken RPC portunu bildirmek içindi. Bu portu filtrelersem (tcp.port == 135), bağlantının kurulduğunu görebiliyorum ve kaldırılmadan önceki son pakette, IP ve port dahil olmak üzere nasıl bağlanılacağı hakkında bilgi var:
 
-![Pasted image 20250106183640.png](/img/user/Pasted%20image%2020250106183640.png)
+![Pasted image 20250106183640.png](/img/user/resimler/Pasted%20image%2020250106183640.png)
 
 ### Cleanup Script
 
