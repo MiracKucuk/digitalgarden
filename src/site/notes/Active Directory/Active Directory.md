@@ -1425,4 +1425,4 @@ Cevap : whoami /priv
 
 
 
-Active Directory'de Güvenlik
+### Active Directory'de Güvenlik
