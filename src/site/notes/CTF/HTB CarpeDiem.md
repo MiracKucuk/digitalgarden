@@ -343,3 +343,123 @@ Bir başvuru gönderdiğimde neler olduğunu incelediğimde, aslında iki POST i
 ![Pasted image 20250108001156.png](/img/user/Pasted%20image%2020250108001156.png)
 
 
+Birincisi rezervasyonla ilgili bilgileri içerir:
+
+```
+POST /classes/Master.php?f=rent_avail HTTP/1.1
+Host: portal.carpediem.htb
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:107.0) Gecko/20100101 Firefox/107.0
+Accept: application/json, text/javascript, */*; q=0.01
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+X-Requested-With: XMLHttpRequest
+Content-Length: 49
+Origin: http://portal.carpediem.htb
+Connection: close
+Referer: http://portal.carpediem.htb/?p=view_bike&id=37693cfc748049e45d87b8c7d8b9aacd
+Cookie: PHPSESSID=3f3b1c31ece180ebe219b6053acf79e9
+Pragma: no-cache
+Cache-Control: no-cache
+
+ds=2022-11-29&de=2022-12-07&bike_id=23&max_unit=3
+```
+
+İkincisi aynı verileri form verisi olarak gönderir:
+
+```
+POST /classes/Master.php?f=save_booking HTTP/1.1
+Host: portal.carpediem.htb
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:107.0) Gecko/20100101 Firefox/107.0
+Accept: application/json, text/javascript, */*; q=0.01
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+X-Requested-With: XMLHttpRequest
+Content-Type: multipart/form-data; boundary=---------------------------12614741991968432430841744607
+Content-Length: 654
+Origin: http://portal.carpediem.htb
+Connection: close
+Referer: http://portal.carpediem.htb/?p=view_bike&id=37693cfc748049e45d87b8c7d8b9aacd
+Cookie: PHPSESSID=3f3b1c31ece180ebe219b6053acf79e9
+Pragma: no-cache
+Cache-Control: no-cache
+
+-----------------------------12614741991968432430841744607
+Content-Disposition: form-data; name="bike_id"
+
+23
+-----------------------------12614741991968432430841744607
+Content-Disposition: form-data; name="date_start"
+
+2022-11-29
+-----------------------------12614741991968432430841744607
+Content-Disposition: form-data; name="date_end"
+
+2022-12-07
+-----------------------------12614741991968432430841744607
+Content-Disposition: form-data; name="rent_days"
+
+9
+-----------------------------12614741991968432430841744607
+Content-Disposition: form-data; name="amount"
+
+9000
+-----------------------------12614741991968432430841744607--
+```
+
+
+İkinci POST isteğinin birincisinden bilgi alması mümkün olabilir, ancak öyle görünmüyor. İkinci POST isteği muhtemelen veriyi (büyük ihtimalle veritabanına) kaydeden istektir, bu yüzden burada XSS payload'ları deneyeceğim. Sayılar muhtemelen iyi hedefler değildir, ancak tarihlerin string (metin) olarak işlenip işlenmediğini kontrol edebilirim. Örneğin:
+
+![Pasted image 20250108002139.png](/img/user/Pasted%20image%2020250108002139.png)
+
+![Pasted image 20250108002058.png](/img/user/Pasted%20image%2020250108002058.png)
+
+Bunu göndermek {“status”: “success”} döndürüyor, ancak Python web sunucumda hiçbir zaman bir istek olmuyor. Her iki istekle de oynayarak biraz daha deneyeceğim, ancak hiçbir şey geri ulaşmıyor.
+
+
+### Admin Access
+
+#### Enumeration
+
+Biraz daha kurcalayarak, hesaplarla etkileşime giren isteklere bakacağım. Hesap oluşturmak için yapılan POST isteği **/classes/Master.php?f=register** yoluna gider. POST body'sinde çok ilginç bir şey yok, sadece formdaki veriler bulunuyor.
+
+Hesabımı değiştirmek için yapılan POST isteği daha ilginç:
+
+```
+POST /classes/Master.php?f=update_account HTTP/1.1
+Host: portal.carpediem.htb
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:107.0) Gecko/20100101 Firefox/107.0
+Accept: application/json, text/javascript, */*; q=0.01
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+X-Requested-With: XMLHttpRequest
+Content-Length: 125
+Origin: http://portal.carpediem.htb
+Connection: close
+Referer: http://portal.carpediem.htb/?p=edit_account
+Cookie: PHPSESSID=3f3b1c31ece180ebe219b6053acf79e9
+
+id=25&login_type=2&firstname=0xdf&lastname=0xdf&contact=0xdf%40carpediem.htb&gender=Male&address=0xdf&username=0xdf&password=
+```
+
+Formdaki tüm görünür alanların yanı sıra **==id==** ve ==**login_type**== de dahil ediliyor. Bunlar, HTML kaynağında görülebilen gizli alanlardan geliyor:
+
+![Pasted image 20250108014604.png](/img/user/Pasted%20image%2020250108014604.png)
+
+#### Update login_type
+
+**id** büyük olasılıkla veritabanındaki kullanıcı kimliğimi temsil ediyor. Sitenin bu bilgiye ihtiyaç duyması mantıklı, ancak muhtemelen bu bilgiyi cookielerden de alabilirdi.
+
+Bu POST isteğini Burp Repeater’a gönderip üzerinde oynamalar yapacağım.
+
+**id** değerini değiştirdiğimde, şu yanıt dönüyor: `{"status":"failed","msg":"Username or ID already exists."`. Bu mesaj pek mantıklı değil, ancak diğer kullanıcıların bilgileriyle oynayamıyor gibi görünüyorum (nedenini **Beyond Root** kısmında açıklayacağım).
+
+Sonrasında, **login_type** değerini 2’den başka bir değere değiştirmeyi deneyeceğim. 0 olarak ayarladığımda, başarılı bir yanıt dönüyor:
+
+![Pasted image 20250108014751.png](/img/user/Pasted%20image%2020250108014751.png)
+
+Sitede dolaşırken herhangi bir değişiklik fark edilmiyor ve **/admin** hala "Access Denied!" yanıtını döndürüyor.
+
+Ancak, kullanıcıma ait **login_type** değerini 1 olarak değiştirdiğimde, **/admin** sayfası yükleniyor!
+
