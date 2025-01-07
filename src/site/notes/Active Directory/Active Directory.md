@@ -1426,3 +1426,33 @@ Cevap : whoami /priv
 
 
 ### Active Directory'de Güvenlik
+
+Bu modülde ilerledikçe, **Active Directory**'ye entegre edilmiş birçok özellik ve işlevi inceledik. Bunların hepsi, merkezi yönetim ve hızlı bilgi paylaşımını büyük bir kullanıcı kitlesiyle gerçekleştirme premisine dayanır. Bu nedenle, **Active Directory** tasarım itibariyle güvensiz kabul edilebilir. Varsayılan bir **Active Directory** kurulumu, bir **AD** uygulamasını güvence altına almak için kullanılabilecek birçok güçlendirme önlemi, ayar ve aracı eksik olacaktır. **Siber güvenlik** konusunu düşündüğümüzde, akla gelen ilk şeylerden biri **Gizlilik (Confidentiality)**, **Bütünlük (Integrity)** ve **Erişilebilirlik (Availability)** arasındaki dengeyi sağlamak, yani [**CIA Triadı**dır](https://www.f5.com/labs/articles/education/what-is-the-cia-triad). Bu dengeyi bulmak zordur ve **AD**, temelinde **Erişilebilirlik** ve **Gizlilik** üzerine yoğunlaşır.
+
+#### CIA Triad
+
+![Pasted image 20250107034147.png](/img/user/Pasted%20image%2020250107034147.png)
+
+
+- **Veri Tam ve Doğru mu?**  
+    Bütünlük, kullanıcılara sağlanan verilerin bozulmadığının ve saklandığı süre boyunca değişmeden kaldığının güvencesidir.
+    
+- **Her Şey Erişim Kontrolüyle İlgilidir**  
+    Gizlilik, veriyi özel tutma çabasıdır ve yalnızca erişim hakkı olan kişilerin verilere ulaşmasını sağlar.
+    
+- **Her Zaman Çalışır, Her Zaman Erişilebilir**  
+    Kullanıcıların gerektiğinde kaynaklara erişebilmesi, erişilebilirliğin temel amacıdır.
+
+
+AD'yi yaygın saldırılara karşı güçlendirmek için etkinleştirilebilen/ayarlanabilen Microsoft'un built-in özelliklerini kullanarak teraziyi dengelemeye yardımcı olabiliriz. Aşağıdaki liste kapsamlı değildir. Uygun bir savunma-derinlik yaklaşımı (doğru bir varlık envanterine sahip olma, güvenlik açığı yamaları, yapılandırma yönetimi, end point  koruması, güvenlik bilinci eğitimi, ağ segmentasyonu, vb) sağlamak için bir kuruluşta diğer birçok genel güvenlik güçlendirme ilkesi bulunmalıdır. Bu bölüm, her kuruluşun faydalanabileceği asgari genel AD güvenlik en iyi uygulamaları olarak düşünülebilir. Active Directory Savunması konusunu daha sonraki bir modülde derinlemesine inceleyeceğiz. AD için birkaç genel hardening ( güçlendirme ) önlemi ile başlayalım.
+
+
+### Genel Active Directory Hardening Önlemleri
+
+[Microsoft Local Administrator Password Solution (LAPS)](https://www.microsoft.com/en-us/download/details.aspx?id=46899), Windows host'lardaki local administrator parolalarını randomize etmek ve rotasyona tabi tutmak ve yanal hareketi önlemek için kullanılır.
+
+#### LAPS
+
+Hesaplar, parolaları sabit bir aralıkta (örn. 12 saat, 24 saat vb.) rotasyona tabi tutulacak şekilde ayarlanabilir. Bu ücretsiz araç, AD ortamında güvenliği ihlal edilmiş tek bir hostun etkisini azaltmada faydalı olabilir. Kuruluşlar bunun gibi araçlara tek başına güvenmemelidir. Yine de, diğer güçlendirme önlemleri ve en iyi güvenlik uygulamalarıyla birleştirildiğinde, lokal administrator hesabı parola yönetimi için çok etkili bir araç olabilir.
+
+Diyelim ki bir organizasyon, Windows işletim sistemi kullanan bilgisayarlarında "admin" adlı bir local admin hesabı kullanıyor. Eğer bu hesabın parolası sabit kalıyorsa ve bir saldırgan bu parolayı ele geçirirse, bu saldırganın organizasyonun her bilgisayarına giriş yapması çok kolay olur. Ancak LAPS kullanıldığında, her 12 saatte bir bu local admin hesabının parolası rastgele değişir. Bu, bir saldırganın yalnızca sabah ele geçirdiği parolayı akşam kullanmasını engeller.
