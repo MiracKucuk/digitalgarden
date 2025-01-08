@@ -1431,7 +1431,7 @@ Bu modülde ilerledikçe, **Active Directory**'ye entegre edilmiş birçok özel
 
 #### CIA Triad
 
-![Pasted image 20250107034147.png](/img/user/Pasted%20image%2020250107034147.png)
+![Pasted image 20250107034147.png](/img/user/resimler/Pasted%20image%2020250107034147.png)
 
 
 - **Veri Tam ve Doğru mu?**  

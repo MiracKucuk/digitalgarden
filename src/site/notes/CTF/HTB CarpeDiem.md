@@ -68,7 +68,7 @@ Nmap done: 1 IP address (1 host up) scanned in 9.93 seconds
 
 Site, “ coming soon” geri sayımı için çok uzun bir zamanlayıcı dışında fazla bilgi sunmuyor:
 
-![Pasted image 20250107234202.png](/img/user/Pasted%20image%2020250107234202.png)
+![Pasted image 20250107234202.png](/img/user/resimler/Pasted%20image%2020250107234202.png)
 
 Sanal makinemdeki /etc/hosts dosyasına ekleyeceğim bir domain adı veriyor.
 
@@ -161,48 +161,48 @@ Requests/sec.: 111.9753
 
 Bu site motosikletler hakkında:
 
-![Pasted image 20250107234612.png](/img/user/Pasted%20image%2020250107234612.png)
+![Pasted image 20250107234612.png](/img/user/resimler/Pasted%20image%2020250107234612.png)
 
 
 “About” (Hakkında) bağlantısı sadece bazı lorem ipsum metinleri verir. “ Categories” (Kategoriler) ve “Brand” (Marka), filtreleme yapabilen açılır pencereler sağlar:
 
-![Pasted image 20250107234658.png](/img/user/Pasted%20image%2020250107234658.png)
+![Pasted image 20250107234658.png](/img/user/resimler/Pasted%20image%2020250107234658.png)
 
 
 #### With Account
 
 “ Login ” tıklandığında bir form açılır penceresi görüntülenir:
 
-![Pasted image 20250107234727.png](/img/user/Pasted%20image%2020250107234727.png)
+![Pasted image 20250107234727.png](/img/user/resimler/Pasted%20image%2020250107234727.png)
 
 “ Create Account” (Hesap Oluştur) bağlantısı bir kayıt formu sunmaktadır:
 
-![Pasted image 20250107235040.png](/img/user/Pasted%20image%2020250107235040.png)
+![Pasted image 20250107235040.png](/img/user/resimler/Pasted%20image%2020250107235040.png)
 
 Formu doldurduktan sonra, “Login” ifadesi “Hi, 0xdf!” ve bir çıkış (logout) simgesiyle değiştirilir:
 
-![Pasted image 20250107235112.png](/img/user/Pasted%20image%2020250107235112.png)
+![Pasted image 20250107235112.png](/img/user/resimler/Pasted%20image%2020250107235112.png)
 
 “Hello, 0xdf!” bölümünden hesabımla ilgili bir sayfa olması dışında diğer her şey aynı:
 
-![Pasted image 20250107235141.png](/img/user/Pasted%20image%2020250107235141.png)
+![Pasted image 20250107235141.png](/img/user/resimler/Pasted%20image%2020250107235141.png)
 
 “ Manage Account” bir şeyleri değiştirmek için bir sayfaya yönlendirir:
 
-![Pasted image 20250107235209.png](/img/user/Pasted%20image%2020250107235209.png)
+![Pasted image 20250107235209.png](/img/user/resimler/Pasted%20image%2020250107235209.png)
 
 Her motosiklet görüntülendiğinde, bir “Book this Bike” düğmesi bulunur. Giriş yapılmamışsa, giriş formu açılır. Aksi takdirde, bir motosiklet ayırtma formu açılır:
 
-![Pasted image 20250107235258.png](/img/user/Pasted%20image%2020250107235258.png)
+![Pasted image 20250107235258.png](/img/user/resimler/Pasted%20image%2020250107235258.png)
 
 
 Gönderirken gösteriyor:
 
-![Pasted image 20250107235312.png](/img/user/Pasted%20image%2020250107235312.png)
+![Pasted image 20250107235312.png](/img/user/resimler/Pasted%20image%2020250107235312.png)
 
 Artık tüm rezervasyonlar “My Bookings” sayfasında görünmektedir:
 
-![Pasted image 20250107235335.png](/img/user/Pasted%20image%2020250107235335.png)
+![Pasted image 20250107235335.png](/img/user/resimler/Pasted%20image%2020250107235335.png)
 
 #### Tech Stack
 
@@ -228,7 +228,7 @@ URL yapısı da oldukça ilginç. “Home” sayfası dışındaki her sayfa bir
 
 Bu noktada, p değişkenine göre sayfaları ya dahil eden ya da dallandıran bir PHP sayfası görebiliyorum. p değerini `index` olarak ayarlamayı deneyeceğim ve ne olduğunu göreceğim. Sayfa çöküyor:
 
-![Pasted image 20250107235649.png](/img/user/Pasted%20image%2020250107235649.png)
+![Pasted image 20250107235649.png](/img/user/resimler/Pasted%20image%2020250107235649.png)
 
 Bu, sayfanın `index.php` dosyasını dahil etmeye çalışması, ardından `index.php` dosyasının tekrar kendini dahil etmeye çalışması ve bu döngünün belleğin tükenmesine kadar devam etmesi durumudur. Aynı zamanda, disk üzerindeki web dizininin tam yolunu da ortaya çıkarır.
 
@@ -311,7 +311,7 @@ by Ben "epi" Risher 🤓                 ver: 2.7.1
 
 En ilginç bulgu /admin. Bunu ziyaret etmeye çalışmak bir açılır pencere döndürür:
 
- ![Pasted image 20250108000621.png](/img/user/Pasted%20image%2020250108000621.png)
+ ![Pasted image 20250108000621.png](/img/user/resimler/Pasted%20image%2020250108000621.png)
 
 
 ## Shell as www-data in Portal Container
@@ -328,7 +328,7 @@ PHP filtrelerini kullanarak dosyaların kaynak kodlarını base64 ile encode etm
 ?p=php://filter/convert.base64-encode/resource=index
 ```
 
-![Pasted image 20250108000829.png](/img/user/Pasted%20image%2020250108000829.png)
+![Pasted image 20250108000829.png](/img/user/resimler/Pasted%20image%2020250108000829.png)
 
 En iyi tahminim, filtreye izin vermemek için bir şekilde filtreleme yaptığıdır. Beyond Root'ta neler olduğunu göstereceğim.
 
@@ -340,7 +340,7 @@ Bir motosiklet rezervasyonu geri aldığımda, mesajda “The management will co
 Bir başvuru gönderdiğimde neler olduğunu incelediğimde, aslında iki POST isteği yapıldığını görüyorum, bunlar **/classes/Master.php** yoluna gönderiliyor:
 
 
-![Pasted image 20250108001156.png](/img/user/Pasted%20image%2020250108001156.png)
+![Pasted image 20250108001156.png](/img/user/resimler/Pasted%20image%2020250108001156.png)
 
 
 Birincisi rezervasyonla ilgili bilgileri içerir:
@@ -410,9 +410,9 @@ Content-Disposition: form-data; name="amount"
 
 İkinci POST isteğinin birincisinden bilgi alması mümkün olabilir, ancak öyle görünmüyor. İkinci POST isteği muhtemelen veriyi (büyük ihtimalle veritabanına) kaydeden istektir, bu yüzden burada XSS payload'ları deneyeceğim. Sayılar muhtemelen iyi hedefler değildir, ancak tarihlerin string (metin) olarak işlenip işlenmediğini kontrol edebilirim. Örneğin:
 
-![Pasted image 20250108002139.png](/img/user/Pasted%20image%2020250108002139.png)
+![Pasted image 20250108002139.png](/img/user/resimler/Pasted%20image%2020250108002139.png)
 
-![Pasted image 20250108002058.png](/img/user/Pasted%20image%2020250108002058.png)
+![Pasted image 20250108002058.png](/img/user/resimler/Pasted%20image%2020250108002058.png)
 
 Bunu göndermek {“status”: “success”} döndürüyor, ancak Python web sunucumda hiçbir zaman bir istek olmuyor. Her iki istekle de oynayarak biraz daha deneyeceğim, ancak hiçbir şey geri ulaşmıyor.
 
@@ -463,6 +463,8 @@ Sitede dolaşırken herhangi bir değişiklik fark edilmiyor ve **/admin** hala 
 
 Ancak, kullanıcıma ait **login_type** değerini 1 olarak değiştirdiğimde, **/admin** sayfası yükleniyor!
 
+
+https://www.filmmodu.tv/no-country-for-old-men-turkce-dublaj-fhd-film-izle 1.17
 
 ### /admin Enumeration
 

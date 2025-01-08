@@ -101,22 +101,22 @@ Web sitesinde bir Git deposu var. nmap bunu daha önce bulamadı çünkü http:/
 
 Web sitesi bir görüntü boyutu küçültme aracıdır:
 
-![Pasted image 20250107024601.png](/img/user/Pasted%20image%2020250107024601.png)
+![Pasted image 20250107024601.png](/img/user/resimler/Pasted%20image%2020250107024601.png)
 
 
 Bir resim verip “ Shrink” e tıklarsam, daha küçük resmin URL'sini döndürüyor:
 
-![Pasted image 20250107024624.png](/img/user/Pasted%20image%2020250107024624.png)
+![Pasted image 20250107024624.png](/img/user/resimler/Pasted%20image%2020250107024624.png)
 
 URL, yüklenen görüntünün küçültülmüş bir versiyonuna yönlendiriyor. `/shrunk` adresini ziyaret etmeye çalıştığımda ise 403 Forbidden hatası alıyorum.
 
 Bir hesap oluşturup giriş yaptığımda, **/dashboard.php** adresinde bir **dashboard** açılıyor. Bu **dashboard**, şu anda boş olan bir tabloyla orijinal dosyaları ve küçültülmüş URL'leri gösteriyor.
 
-![Pasted image 20250107024750.png](/img/user/Pasted%20image%2020250107024750.png)
+![Pasted image 20250107024750.png](/img/user/resimler/Pasted%20image%2020250107024750.png)
 
 Aynı resmi farklı isimlerle ve aynı isimle yükleyerek oynayacağım:
 
-![Pasted image 20250107024819.png](/img/user/Pasted%20image%2020250107024819.png)
+![Pasted image 20250107024819.png](/img/user/resimler/Pasted%20image%2020250107024819.png)
 
 Resim veya resim adı aynı olsa bile yeni resim adı her yüklemede değişiyor gibi görünüyor. Ayrıca her zaman 655c ile başlıyor, bu da adı oluşturanın bir hash olmadığını gösteriyor.
 
@@ -459,7 +459,7 @@ Compiler: gcc (7.5)
 
 Bu versiyonu arattığınızda CVE-2022-44268 için bir sürü referans bulabilirsiniz:
 
-![Pasted image 20250107030044.png](/img/user/Pasted%20image%2020250107030044.png)
+![Pasted image 20250107030044.png](/img/user/resimler/Pasted%20image%2020250107030044.png)
 
 Sorun “profile” text stringinin ImageMagick tarafından nasıl ele alındığı ile ilgilidir. [Metabaseq'teki bu gönderi](https://www.metabaseq.com/imagemagick-zero-days/), ayrıntılarla gerçekten güzel bir iş çıkarıyor ve bu üst düzey açıklamayı sunuyor:
 
@@ -974,7 +974,7 @@ Bu sürüm v2.3.2.
 
 “binwalk CVE” araması CVE-2022-4510'a bir sürü referans döndürür:
 
-![Pasted image 20250107032730.png](/img/user/Pasted%20image%2020250107032730.png)
+![Pasted image 20250107032730.png](/img/user/resimler/Pasted%20image%2020250107032730.png)
 
 Bu sürüm savunmasız olmalıdır.
 
