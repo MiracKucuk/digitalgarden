@@ -3,10 +3,10 @@
 ---
 
 
-![Pasted image 20250108190926.png](/img/user/Pasted%20image%2020250108190926.png)
+![Pasted image 20250108190926.png](/img/user/resimler/Pasted%20image%2020250108190926.png)
 
 
-Araştırma, kullanıcıların resim yüklemesine izin veren ve bu resimlerde [[Exiftool\|Exiftool]] çalıştıran bir web sitesiyle başlıyor. Kullanılan sürümde bir komut enjeksiyonu zafiyeti var. Bu zafiyeti inceleyecek ve ardından bir başlangıç erişimi elde etmek için istismar edeceğim. Daha sonra bir dizi **Windows olay günlüğü** bulup bunları analiz ederek bir parola çıkaracağım. Son olarak, **root** olarak çalışan bir kötü amaçlı yazılım bulup, bunu anlamaya çalışarak komut yürütme elde edeceğim.
+Araştırma, kullanıcıların resim yüklemesine izin veren ve bu resimlerde [[Bağlantılar/Exiftool\|Exiftool]] çalıştıran bir web sitesiyle başlıyor. Kullanılan sürümde bir komut enjeksiyonu zafiyeti var. Bu zafiyeti inceleyecek ve ardından bir başlangıç erişimi elde etmek için istismar edeceğim. Daha sonra bir dizi **Windows olay günlüğü** bulup bunları analiz ederek bir parola çıkaracağım. Son olarak, **root** olarak çalışan bir kötü amaçlı yazılım bulup, bunu anlamaya çalışarak komut yürütme elde edeceğim.
 
 ## Box Info
 
@@ -70,15 +70,15 @@ Port 80'de eforenzics.htb'ye bir yönlendirme var. Farklı yanıt veren herhangi
 
 Site bir forensics  şirketi için:
 
-![Pasted image 20250108192122.png](/img/user/Pasted%20image%2020250108192122.png)
+![Pasted image 20250108192122.png](/img/user/resimler/Pasted%20image%2020250108192122.png)
 
 Sayfadaki tüm linkler, /service.html adresine gidenler hariç, sayfadaki diğer linklere gitmektedir. Bu sayfa özellikle JPG dosyaları üzerinde “Image Forensics” sunmaktadır:
 
-![Pasted image 20250108192220.png](/img/user/Pasted%20image%2020250108192220.png)
+![Pasted image 20250108192220.png](/img/user/resimler/Pasted%20image%2020250108192220.png)
 
 Bir JPG verdiğinizde, bir “report” için bir link sunuyor:
 
-![Pasted image 20250108192253.png](/img/user/Pasted%20image%2020250108192253.png)
+![Pasted image 20250108192253.png](/img/user/resimler/Pasted%20image%2020250108192253.png)
 
 Bu report `[özel karakterler kaldırılmış orijinal dosya adı].txt` şeklindedir. Yani htb.jpg, htbjpg.txt olur:
 
@@ -181,7 +181,7 @@ Birkaç tane var ama ilginç bir şey yok.
 
 Google'da “exiftool 12.37” araması yapıldığında, en üstteki sonuç 12.38'den önce Exiftool'daki bir command injection açığı ile ilgilidir:
 
-![Pasted image 20250108193013.png](/img/user/Pasted%20image%2020250108193013.png)
+![Pasted image 20250108193013.png](/img/user/resimler/Pasted%20image%2020250108193013.png)
 
 Sorun, bu [gist](https://gist.github.com/ert-plus/1414276e4cb5d56dd431c2f0429e4429)'te açıklandığı gibi, Perl'in `open` komutuyla "|" karakteriyle biten dosya adlarını nasıl işlediğiyle ilgilidir. [Pikaboo](https://0xdf.gitlab.io/2021/12/04/htb-pikaboo.html#exploit-cvsupdate)'da, Perl'in `<>` operatörünü kullanan bir script'e bunu kötüye kullanma sürecini adım adım anlatmıştım. Bu operatör, içinde bir `open` çağrısını da içeren bir kısayoldur. Exiftool, Perl ile yazılmıştır ve 12.38 sürümünden önce, dosya adının (kullanıcı tarafından kontrol edilen) komut yürütme sağlamak için kullanılabileceği gerçeğini gözden kaçırıyordu.
 
@@ -205,7 +205,7 @@ Bu bölümdeki hiçbir şey, _Investigation_ (Araştırma) sömürüsüne devam 
 
 Bunu test etmek için, Burp Proxy geçmişinde bir image gönderdiğim HTTP isteğini bulacağım ve bunu Repeater'a göndereceğim:
 
-![Pasted image 20250108193656.png](/img/user/Pasted%20image%2020250108193656.png)
+![Pasted image 20250108193656.png](/img/user/resimler/Pasted%20image%2020250108193656.png)
 
 
 Dosya adı form data meta verilerinde ayarlanmıştır. Bunu ping -c 10.10.14.6| olarak değiştireceğim ve ICMP'yi dinlemek için tcpdump'ı başlatacağım. İstek gönderildiğinde, bir ICMP paketi geri geliyor:
@@ -240,7 +240,7 @@ Kısaca = ifadesini olmamasını istiyoruz .
 
 Şimdi bunu dosya adı olarak göndereceğim:
 
-![Pasted image 20250108194133.png](/img/user/Pasted%20image%2020250108194133.png)
+![Pasted image 20250108194133.png](/img/user/resimler/Pasted%20image%2020250108194133.png)
 
 Takılıyor, ama dinleme nc'sinde bir shell var:
 
@@ -383,15 +383,15 @@ oxdf@hacky$ msgconvert Windows\ Event\ Logs\ for\ Analysis.msg --mbox emails.mbo
 
 Bu, mesajı **emails.mbox** dosyasındaki bir posta kutusuna yazar. Ben de bunu **mutt -f emails.mbox** komutuyla açacağım. Mail dosyası oluşturulup oluşturulmayacağı sorulduğunda "hayır" diyeceğim, ve bu, posta kutusunu tek bir e-posta ile açar.
 
-![Pasted image 20250108195647.png](/img/user/Pasted%20image%2020250108195647.png)
+![Pasted image 20250108195647.png](/img/user/resimler/Pasted%20image%2020250108195647.png)
 
 E-postaya gitmek için enter tuşuna basacağım:
 
-![Pasted image 20250108195702.png](/img/user/Pasted%20image%2020250108195702.png)
+![Pasted image 20250108195702.png](/img/user/resimler/Pasted%20image%2020250108195702.png)
 
 Tom'dan bir mesaj ve bir attachment var. attachment'ları görmek için V'ye basacağım:
 
-![Pasted image 20250108195741.png](/img/user/Pasted%20image%2020250108195741.png)
+![Pasted image 20250108195741.png](/img/user/resimler/Pasted%20image%2020250108195741.png)
 
 Ok tuşuyla evtx-logs.zip dosyasına geleceğim ve kaydetmek için s tuşuna basacağım. Mutt'tan çıktıktan sonra, attachment'ı açacağım:
 

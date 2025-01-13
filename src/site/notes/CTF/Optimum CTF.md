@@ -3,7 +3,7 @@
 ---
 
 
-![Pasted image 20250109022154.png](/img/user/Pasted%20image%2020250109022154.png)
+![Pasted image 20250109022154.png](/img/user/resimler/Pasted%20image%2020250109022154.png)
 
 Optimum, HTB'deki altıncı kutuydu, üzerinde iki **CVE** bulunan bir Windows host'u. İlk **CVE**, **HttpFileServer** yazılımındaki bir remote kod yürütme açığını içeriyor. Bunu bir **shell** almak için kullanacağım. **Privesc** (yetki yükseltme) için ise yamalanmamış **kernel** açıklarına bakacağım. Bugün, bu açıkları listelemek için **Watson** kullanırım (ki bu aynı zamanda **winPEAS**'e entegre edilmiştir), ancak yeni sürümü bu eski kutuda çalıştırmak gerçekten zorlayıcı, bu yüzden bu açıkları tanımlamak için **Sherlock**'u (Watson'un öncüsü) kullanacağım. Bir süreliğine, shell'imin **32-bit** bir processte çalıştığını fark etmeyip **kernel** açıklarımın başarısız olmasına neden oldum. Bunu da analiz ederken göstereceğim.
 
@@ -61,7 +61,7 @@ nmap hostu Windows olarak tanımlıyor, ancak HTTP sunucusu IIS'e benzemiyor, bu
 
 Web sitesi tam da nmap komut dosyalarının tanımladığı şeydir - HttpFileServer (HFS):
 
-![Pasted image 20250109022626.png](/img/user/Pasted%20image%2020250109022626.png)
+![Pasted image 20250109022626.png](/img/user/resimler/Pasted%20image%2020250109022626.png)
 
 
 Bazı basit kimlik tahminlerini denedim ama olmadı.
@@ -362,7 +362,7 @@ False
 
 Bunun nedeni HFS prosesinin muhtemelen 32 bit proses olarak çalışıyor olmasıdır. Bu tablo ([ss64.com](https://ss64.com/nt/syntax-64bit.html)'dan alınmıştır) mevcut session mimarisine göre farklı yolların nasıl çalıştığını göstermektedir:
 
-![Pasted image 20250109033027.png](/img/user/Pasted%20image%2020250109033027.png)
+![Pasted image 20250109033027.png](/img/user/resimler/Pasted%20image%2020250109033027.png)
 
 Bir 32-bit oturum içerisindeyken, `C:\windows\system32` yolundan PowerShell çağrısı yaptığınızda, 32-bit sürüm çalıştırılır. 32-bit bir oturumda çalışırken, 64-bit bir işletim sistemine karşı kernel exploit'lerini çalıştırmaya çalışmak başarısız olacaktır.
 

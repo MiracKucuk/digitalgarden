@@ -445,7 +445,7 @@ id=25&login_type=2&firstname=0xdf&lastname=0xdf&contact=0xdf%40carpediem.htb&gen
 
 Formdaki tüm görünür alanların yanı sıra **==id==** ve ==**login_type**== de dahil ediliyor. Bunlar, HTML kaynağında görülebilen gizli alanlardan geliyor:
 
-![Pasted image 20250108014604.png](/img/user/Pasted%20image%2020250108014604.png)
+![Pasted image 20250108014604.png](/img/user/resimler/Pasted%20image%2020250108014604.png)
 
 #### Update login_type
 
@@ -457,7 +457,7 @@ Bu POST isteğini Burp Repeater’a gönderip üzerinde oynamalar yapacağım.
 
 Sonrasında, **login_type** değerini 2’den başka bir değere değiştirmeyi deneyeceğim. 0 olarak ayarladığımda, başarılı bir yanıt dönüyor:
 
-![Pasted image 20250108014751.png](/img/user/Pasted%20image%2020250108014751.png)
+![Pasted image 20250108014751.png](/img/user/resimler/Pasted%20image%2020250108014751.png)
 
 Sitede dolaşırken herhangi bir değişiklik fark edilmiyor ve **/admin** hala "Access Denied!" yanıtını döndürüyor.
 
@@ -472,17 +472,17 @@ https://www.filmmodu.tv/no-country-for-old-men-turkce-dublaj-fhd-film-izle 1.17
 
 Admin panelinde bir Dashboard ve bir dizi başka sayfa vardır:
 
-![Pasted image 20250108015538.png](/img/user/Pasted%20image%2020250108015538.png)
+![Pasted image 20250108015538.png](/img/user/resimler/Pasted%20image%2020250108015538.png)
 
 “Bike List” sayfası, bisikletlerin bulunduğu DB'deki tablo üzerinde bir GUI'ye benziyor:
 
-![Pasted image 20250108020238.png](/img/user/Pasted%20image%2020250108020238.png)
+![Pasted image 20250108020238.png](/img/user/resimler/Pasted%20image%2020250108020238.png)
 
 Herhangi bir şeyi gerçekten düzenlemeye çalıştığımda hata veriyor.
 
 “Booking List” bölümünde benimki de dahil olmak üzere bir sürü rezervasyon görünüyor ama XSS denediğim rezervasyonlar görünmüyor:
 
-![Pasted image 20250108020333.png](/img/user/Pasted%20image%2020250108020333.png)
+![Pasted image 20250108020333.png](/img/user/resimler/Pasted%20image%2020250108020333.png)
 
 "Booking Report" sayfası, yalnızca bazı filtrelerle aynı veriyi gösteriyor.
 
@@ -493,7 +493,7 @@ Herhangi bir şeyi gerçekten düzenlemeye çalıştığımda hata veriyor.
 
 "Submit Trudesk Ticket" ilginç görünüyor, ancak aslında işe yaramayan bir form:
 
-![Pasted image 20250108020635.png](/img/user/Pasted%20image%2020250108020635.png)
+![Pasted image 20250108020635.png](/img/user/resimler/Pasted%20image%2020250108020635.png)
 
 En üstte şöyle yazıyor:
 
@@ -501,7 +501,7 @@ NOT: Trudesk entegrasyonu henüz uygulanmamıştır. Lütfen tüm taleplerinizi 
 
 Raw HTML'e baktığımızda, orada bir form var:
 
-![Pasted image 20250108020848.png](/img/user/Pasted%20image%2020250108020848.png)
+![Pasted image 20250108020848.png](/img/user/resimler/Pasted%20image%2020250108020848.png)
 
 Boş bir `action` değeri, formun mevcut URL'ye gönderileceği anlamına gelir, bu da **/admin/?page=maintenance/helpdesk** oluyor. Bu form gönderimini manuel olarak yeniden oluşturabilirim, ancak gönderdiğim herhangi bir şey bu sayfada herhangi bir farklılık göstermiyor gibi görünüyor. Arka planda bir şeyler olabilir, ancak şu an için bir şeyler yapmak adına elimde yeterli veri yok.
 
@@ -510,21 +510,21 @@ Boş bir `action` değeri, formun mevcut URL'ye gönderileceği anlamına gelir,
 
 Bu sayfada yükleme fonksiyonlarının hala geliştirme aşamasında olduğu yazıyor:
 
-![Pasted image 20250108021203.png](/img/user/Pasted%20image%2020250108021203.png)
+![Pasted image 20250108021203.png](/img/user/resimler/Pasted%20image%2020250108021203.png)
 
 
 “Action” menüsü birkaç seçenek sunuyor, ancak “View” ve “Edit” pek bir şey yapmıyor gibi görünüyor:
 
-![Pasted image 20250108021725.png](/img/user/Pasted%20image%2020250108021725.png)
+![Pasted image 20250108021725.png](/img/user/resimler/Pasted%20image%2020250108021725.png)
 
 Hem “ Add” (Ekle) hem de “Delete” (Sil) bir uyarı gösterir:
 
 
-![Pasted image 20250108021745.png](/img/user/Pasted%20image%2020250108021745.png)
+![Pasted image 20250108021745.png](/img/user/resimler/Pasted%20image%2020250108021745.png)
 
 Her biri için “ Continue” (Devam) düğmesine tıklandığında bir hata mesajı görüntülenir:
 
-![Pasted image 20250108021805.png](/img/user/Pasted%20image%2020250108021805.png)
+![Pasted image 20250108021805.png](/img/user/resimler/Pasted%20image%2020250108021805.png)
 
 "Delete" seçeneği, **/classes/User.php?f=delete_file** adresine bir POST isteği gönderiyor ve 200 OK yanıtı dönüyor, ancak yanıtın bir body'si yok, bu yüzden hatanın ne olduğunu anlayamıyorum.
 
@@ -552,7 +552,7 @@ Content-Length: 40
 
 Upload isteğini Burp Repeater'a göndereceğim ve onu oluşturmaya başlayacağım. Form verileri [IETF RFC-7578](https://www.rfc-editor.org/rfc/rfc7578)'de tanımlanmıştır, ancak bu[ StackOverflow yanıtı](https://stackoverflow.com/a/8660740), burada biraz işaretlediğim kısa bir örnek vermek için iyi bir iş çıkarır:
 
-![Pasted image 20250108022221.png](/img/user/Pasted%20image%2020250108022221.png)
+![Pasted image 20250108022221.png](/img/user/resimler/Pasted%20image%2020250108022221.png)
 
 Kırmızı ile gösterilen kısımda, `Content-Type` header'ı `multipart/form-data` olacak ve ardından çeşitli parametreleri ayırmak için kullanılan **`boundary`** tanımlanacak. Standart bir POST isteğinde bu `&` olurdu, ancak bir formda, her öğenin hem metadata hem de veri içermesine olanak tanır. Bu nedenle, her parametre bu dize ile ayrılır. Kullanılan her sınır dizesi (boundary) başına ek bir `--` ile önceden gelir ve son sınır dizisinin sonuna da `--`eklenir.
 
@@ -564,22 +564,22 @@ ChatGPT'ye de bunu sormayı deneyeceğim ve o da güzel bir cevap verecek:
 
 File input içeren bir HTML formuyla ilişkili HTTP isteği neye benzer ? 
 
-![Pasted image 20250108023507.png](/img/user/Pasted%20image%2020250108023507.png)
+![Pasted image 20250108023507.png](/img/user/resimler/Pasted%20image%2020250108023507.png)
 
 
 #### Build Upload Request
 
 İsteği **/classes/Users.php** adresine göndereceğim ve Repeater’da **Content-Type** başlığını ve örnekteki dosya öğesini ekleyeceğim. **Boundary** değerini değiştireceğim, bu da herhangi bir şey olabileceğini göstermek için yapılacak, ayrıca dosya hakkında metadata’yı biraz düzenleyeceğim:
 
-![Pasted image 20250108023805.png](/img/user/Pasted%20image%2020250108023805.png)
+![Pasted image 20250108023805.png](/img/user/resimler/Pasted%20image%2020250108023805.png)
 
 Sunucu, `file_upload'un` eksik olduğunu belirten bir hata ile yanıt veriyor. Bu, büyük olasılıkla öğenin adına atıfta bulunuyor ve bu örnekte adı `uploadedfile` olarak geçiyor. Adı güncelleyeceğim ve bu işe yarıyor; bir yol (path) döndürüyor.
 
-![Pasted image 20250108032123.png](/img/user/Pasted%20image%2020250108032123.png)
+![Pasted image 20250108032123.png](/img/user/resimler/Pasted%20image%2020250108032123.png)
 
 Bu dosya sunucuda:
 
-![Pasted image 20250108032408.png](/img/user/Pasted%20image%2020250108032408.png)
+![Pasted image 20250108032408.png](/img/user/resimler/Pasted%20image%2020250108032408.png)
 
 Bu bölüm bazıları için sinir bozucu olabilir, çünkü farklı bir hata mesajı almak için `filename=something` içeren bir form **object**'ine sahip olmam gerekiyor. Bu, bir `<input type="file">` HTML etiketi tarafından oluşturulan standart form verisidir. Buradaki **name=file_upload** ise uygulamaya özel bir isimdir ve bu nedenle bu bilginin açığa çıkması için bir hata mesajına ihtiyaç duyulmaktadır.
 
@@ -589,7 +589,7 @@ Bu isteği bir PHP web shell içerecek şekilde güncelleyeceğim. Görünüşe 
 
 It works:
 
-![Pasted image 20250108040415.png](/img/user/Pasted%20image%2020250108040415.png)
+![Pasted image 20250108040415.png](/img/user/resimler/Pasted%20image%2020250108040415.png)
 
 
 ### Shell
@@ -833,7 +833,7 @@ www-data@3c371615b7aa:/tmp$ ./chisel_1.7.7_linux_amd64 client 10.10.14.6:8000 R:
 
 Hem proxychains'i hem de FoxyProxy'yi bu socks proxy'yi kullanacak şekilde yapılandıracağım ve artık bu subnet üzerindeki hostlarla etkileşime geçebileceğim. Örneğin, .1 “Coming Soon” sitesini gösteriyor:
 
-![Pasted image 20250108061950.png](/img/user/Pasted%20image%2020250108061950.png)
+![Pasted image 20250108061950.png](/img/user/resimler/Pasted%20image%2020250108061950.png)
 
 
 #### 172.17.0.1 - host
@@ -844,7 +844,7 @@ Tipik olarak Docker'da .1 host'tur. CarpeDiem için verilen IP'de gördükleriml
 
 nmap bu hostun HTTP (80), HTTPS (443) ve FTP (21) üzerinde dinleme yaptığını gösterdi. HTTP sitesi sadece HTTPS'ye yönlendiriyor. Bu bir [Backdrop CMS](https://backdropcms.org/) örneğidir:
 
-![Pasted image 20250108062038.png](/img/user/Pasted%20image%2020250108062038.png)
+![Pasted image 20250108062038.png](/img/user/resimler/Pasted%20image%2020250108062038.png)
 
 **backdrop.carpediem.htb** hostname'ini gösteriyor. Bunu **hosts** dosyama ekleyeceğim, ancak sanal makinemden doğrudan erişemiyorum. Giriş bilgilerine sahip değilim (yukarıdaki kimlik bilgileri çalışmıyor) ve **Backdrop CMS** için doğrulama gerektirmeyen herhangi bir açık bulamıyorum.
 

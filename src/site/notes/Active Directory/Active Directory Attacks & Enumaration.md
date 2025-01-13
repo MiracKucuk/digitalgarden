@@ -3239,6 +3239,7 @@ Soru :  SAPService hesabı için TGS biletini alın. Bileti çevrimdışı olara
 
 Cevap : 
 
+
 1- ssh ile atack hostunda bağlandım . 
 
 2- 

