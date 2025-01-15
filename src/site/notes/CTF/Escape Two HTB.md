@@ -3,7 +3,7 @@
 ---
 
 
-![Pasted image 20250113143346.png](/img/user/Pasted%20image%2020250113143346.png)
+![Pasted image 20250113143346.png](/img/user/resimler/Pasted%20image%2020250113143346.png)
 
 Gerçek hayattaki Windows pentestlerinde yaygın olduğu gibi, bu kutuyu aşağıdaki hesabın kimlik bilgileriyle başlatacaksınız: `rose` / `KxEPkKe6R8su`
 
@@ -302,7 +302,7 @@ Bu tarama sonucu, hedef sistemin (EscapeTwo.htb) bir **Windows Active Directory 
 
 ### SMB User
 
-![Pasted image 20250113152431.png](/img/user/Pasted%20image%2020250113152431.png)
+![Pasted image 20250113152431.png](/img/user/resimler/Pasted%20image%2020250113152431.png)
 
 - **`--rid-brute`**: RID (Relative Identifier) brute-forcing yapılmasını sağlar. Bu özellik, SMB üzerinden kullanıcı hesaplarını tanımlamak için SID'ler (Security Identifier) içinde kullanılan RID'leri çözmek amacıyla kullanılır. Brute-forcing işlemi, kullanıcı ve grup hesaplarının RID'lerini çıkartarak hedef sistemde hangi kullanıcıların veya grupların olduğunu belirler.
 - **`| grep SidTypeUser`**: Komutun çıktısındaki yalnızca kullanıcı SID türlerini (**SidTypeUser**) filtreler ve gösterir. **SidTypeUser** ifadesiyle filtreleme yaparak yalnızca kullanıcı hesaplarını (örneğin, sistemdeki kullanıcı adlarını) döndürür.
@@ -310,12 +310,12 @@ Bu tarama sonucu, hedef sistemin (EscapeTwo.htb) bir **Windows Active Directory 
 
 ### SMB File Leak
 
-![Pasted image 20250113152605.png](/img/user/Pasted%20image%2020250113152605.png)
+![Pasted image 20250113152605.png](/img/user/resimler/Pasted%20image%2020250113152605.png)
 
 
 #### Accounting Department
 
-![Pasted image 20250113153012.png](/img/user/Pasted%20image%2020250113153012.png)
+![Pasted image 20250113153012.png](/img/user/resimler/Pasted%20image%2020250113153012.png)
 
 
 #### accounts.xlsx ve accounting_2024.xlsx dosyasının görüntülenmesi
@@ -324,16 +324,16 @@ https://jumpshare.com web sitesi ile görüntüleyebiliriz.
 
 İlk dosya önemsiz. 
 
-![Pasted image 20250113155008.png](/img/user/Pasted%20image%2020250113155008.png)
+![Pasted image 20250113155008.png](/img/user/resimler/Pasted%20image%2020250113155008.png)
 
 İkinci dosyada Mssql veritabanı kullanıcı adı ve şifresi var. 
 
-![Pasted image 20250113155100.png](/img/user/Pasted%20image%2020250113155100.png)
+![Pasted image 20250113155100.png](/img/user/resimler/Pasted%20image%2020250113155100.png)
 
 
 ## MSSQL xp_cmdshell
 
-![Pasted image 20250113155654.png](/img/user/Pasted%20image%2020250113155654.png)
+![Pasted image 20250113155654.png](/img/user/resimler/Pasted%20image%2020250113155654.png)
 
 ```
 SELECT DB_NAME() AS CurrentDatabase;
@@ -341,59 +341,59 @@ SELECT DB_NAME() AS CurrentDatabase;
 
 Bu SQL sorgusu, mevcut veritabanı contex'ınde kontrol etmek için kullanılır.
 
-![Pasted image 20250113155929.png](/img/user/Pasted%20image%2020250113155929.png)
+![Pasted image 20250113155929.png](/img/user/resimler/Pasted%20image%2020250113155929.png)
 
 Varsayılan xp_cmdshell açık değildir ve manuel olarak ayarlanması gerekir.
 
 ##### Etkinleştirme
 
-![Pasted image 20250113160044.png](/img/user/Pasted%20image%2020250113160044.png)
+![Pasted image 20250113160044.png](/img/user/resimler/Pasted%20image%2020250113160044.png)
 
 ##### Kontrol
 
-![Pasted image 20250113160139.png](/img/user/Pasted%20image%2020250113160139.png)
+![Pasted image 20250113160139.png](/img/user/resimler/Pasted%20image%2020250113160139.png)
 
-![Pasted image 20250113160203.png](/img/user/Pasted%20image%2020250113160203.png)
+![Pasted image 20250113160203.png](/img/user/resimler/Pasted%20image%2020250113160203.png)
 
 Bu komut, **SQL Server** üzerindeki **`xp_cmdshell`** saklı yordamını kullanarak işletim sistemi seviyesinde bir komut çalıştırır. Burada **`chdir`** komutu, işletim sistemi komut satırında mevcut çalışma dizinini gösterir.
 
 https://www.revshells.com/  'dan reverse shell oluşturalım . 
 
-![Pasted image 20250113175805.png](/img/user/Pasted%20image%2020250113175805.png)
+![Pasted image 20250113175805.png](/img/user/resimler/Pasted%20image%2020250113175805.png)
 
 
-![Pasted image 20250113180039.png](/img/user/Pasted%20image%2020250113180039.png)
+![Pasted image 20250113180039.png](/img/user/resimler/Pasted%20image%2020250113180039.png)
 
-![Pasted image 20250113180025.png](/img/user/Pasted%20image%2020250113180025.png)
+![Pasted image 20250113180025.png](/img/user/resimler/Pasted%20image%2020250113180025.png)
 
-![Pasted image 20250113180400.png](/img/user/Pasted%20image%2020250113180400.png)
+![Pasted image 20250113180400.png](/img/user/resimler/Pasted%20image%2020250113180400.png)
 
 
 ### sql_svc bilgilerini sızdıran bir yapılandırma dosyası
 
-![Pasted image 20250113180753.png](/img/user/Pasted%20image%2020250113180753.png)
+![Pasted image 20250113180753.png](/img/user/resimler/Pasted%20image%2020250113180753.png)
 
-![Pasted image 20250113180821.png](/img/user/Pasted%20image%2020250113180821.png)
+![Pasted image 20250113180821.png](/img/user/resimler/Pasted%20image%2020250113180821.png)
 
 Bu parola ile crackmapexec ile numaralandırdığımız kullancılarda denenebilir. Ryan da çalışıyor. 
 
-![Pasted image 20250113183300.png](/img/user/Pasted%20image%2020250113183300.png)
+![Pasted image 20250113183300.png](/img/user/resimler/Pasted%20image%2020250113183300.png)
 
 ## Privilege Escalation
 
 ### Evil-winrm'de ipconfig'i görüntüleme
 
-![Pasted image 20250113183926.png](/img/user/Pasted%20image%2020250113183926.png)
+![Pasted image 20250113183926.png](/img/user/resimler/Pasted%20image%2020250113183926.png)
 
 sequel.htb ve dc01.seqeul.htb dosyalarını /etc/hosts dosyasına ekleyin
 
-![Pasted image 20250113184137.png](/img/user/Pasted%20image%2020250113184137.png)
+![Pasted image 20250113184137.png](/img/user/resimler/Pasted%20image%2020250113184137.png)
 
 ### Bloodhound
 
-![Pasted image 20250113184431.png](/img/user/Pasted%20image%2020250113184431.png)
+![Pasted image 20250113184431.png](/img/user/resimler/Pasted%20image%2020250113184431.png)
 
-![Pasted image 20250113192809.png](/img/user/Pasted%20image%2020250113192809.png)
+![Pasted image 20250113192809.png](/img/user/resimler/Pasted%20image%2020250113192809.png)
 
 Hangi object'lerin üzerinte writeOwner yapabilceğimizi sorguluyoruz. (CA_SVC@SEQUL.HTB)
 
@@ -403,12 +403,12 @@ ve CA_SVC bir sertifika veren kurumdur
 
 Böylece CA_SVC'nin sahibini Ryan olarak ayarlayabilirsiniz.
 
-![Pasted image 20250113193016.png](/img/user/Pasted%20image%2020250113193016.png)
+![Pasted image 20250113193016.png](/img/user/resimler/Pasted%20image%2020250113193016.png)
 
 
 ### Set Owner
 
-![Pasted image 20250113193350.png](/img/user/Pasted%20image%2020250113193350.png)
+![Pasted image 20250113193350.png](/img/user/resimler/Pasted%20image%2020250113193350.png)
 
 Bu çıktı, **Active Directory**'deki **ca_svc** adlı servis hesabının sahipliğinin başarıyla **ryan** kullanıcısına aktarıldığını gösteriyor.
 
@@ -456,8 +456,8 @@ Bu komut, **Impacket** aracını kullanarak Active Directory object'lerin güven
     - **`'sequel.htb'`**: Bu, Active Directory etki alanı adıdır (Domain Name).
     - **`"ryan":"WqSZAF6CysDQbGb3"`**: Bu, **ryan** kullanıcısının şifresini belirtir. Burada **ryan** kullanıcısı belirtilen etki alanında (`sequel.htb`) giriş yapmak için kullanılan kullanıcı adı ve paroladır.
 
-![Pasted image 20250113194702.png](/img/user/Pasted%20image%2020250113194702.png)
-![Pasted image 20250113194710.png](/img/user/Pasted%20image%2020250113194710.png)
+![Pasted image 20250113194702.png](/img/user/resimler/Pasted%20image%2020250113194702.png)
+![Pasted image 20250113194710.png](/img/user/resimler/Pasted%20image%2020250113194710.png)
 
 
 ### ESC4 to ESC1
@@ -497,11 +497,11 @@ Başarıyla çalıştırıldığında, komut aşağıdaki gibi bilgileri döndü
 
 Eğer bir hata alırsanız, genellikle kimlik doğrulama veya ağ erişimi ile ilgili sorunlar olabilir (örneğin, doğru domain controller'a bağlanamamış olabilirsiniz).
 
-![Pasted image 20250113195510.png](/img/user/Pasted%20image%2020250113195510.png)
+![Pasted image 20250113195510.png](/img/user/resimler/Pasted%20image%2020250113195510.png)
 
 Aşağıdaki hatayla karşılaşırsanız 👇 zamanı manuel olarak güncellemeniz gerekir
 
-![Pasted image 20250113195554.png](/img/user/Pasted%20image%2020250113195554.png)
+![Pasted image 20250113195554.png](/img/user/resimler/Pasted%20image%2020250113195554.png)
 
 ```
 ntpdate sequel.htb
@@ -511,21 +511,21 @@ ntpdate sequel.htb
 
 Hedef makineye yüklemek için Certify.exe kullanıyorum.
 
-![Pasted image 20250113202209.png](/img/user/Pasted%20image%2020250113202209.png)
+![Pasted image 20250113202209.png](/img/user/resimler/Pasted%20image%2020250113202209.png)
 
-![Pasted image 20250113202643.png](/img/user/Pasted%20image%2020250113202643.png)
+![Pasted image 20250113202643.png](/img/user/resimler/Pasted%20image%2020250113202643.png)
 
 ca_svc'nin bu sertifika için geçersiz kılınabilir izinlere sahip olduğunu görebilirsiniz 👆, işte bunu nasıl geçersiz kılacağınız
 
-![Pasted image 20250113202948.png](/img/user/Pasted%20image%2020250113202948.png)
+![Pasted image 20250113202948.png](/img/user/resimler/Pasted%20image%2020250113202948.png)
 
 Kerberos isteği aracılığıyla hedef sistem için bir kimlik doğrulama bileti almak üzere ca_svc kullanıcısının kimlik bilgisi hash'ini kullanın
 
 certipy-ad req -u ca_svc -hashes '3b181b914e7a9d5508ea1e20bc2b7fce' -ca sequel-DC01-CA -target sequel.htb -dc-ip 10.10.11.51 -template DunderMifflinAuthentication -upn administrator@sequel.htb -ns 10.10.11.51 -dns 10.10.11.51 -debug
 
-![Pasted image 20250113210140.png](/img/user/Pasted%20image%2020250113210140.png)
+![Pasted image 20250113210140.png](/img/user/resimler/Pasted%20image%2020250113210140.png)
 
-![Pasted image 20250113210241.png](/img/user/Pasted%20image%2020250113210241.png)
+![Pasted image 20250113210241.png](/img/user/resimler/Pasted%20image%2020250113210241.png)
 
 root.txt dosyasını almak için Evil-Winrm girişi
 

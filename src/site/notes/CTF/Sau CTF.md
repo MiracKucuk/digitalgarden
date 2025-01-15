@@ -25,11 +25,11 @@ Sau, HackTheBox'tan kolay bir kutu. Bir web sitesindeki SSRF açığını bulup 
 
 nmap, SSH (22) ve HTTP (55555) olmak üzere iki açık TCP portunun yanı sıra 80 ve 8338 olmak üzere iki filtrelenmiş port bulur:
 
-![Pasted image 20250110234115.png](/img/user/Pasted%20image%2020250110234115.png)
+![Pasted image 20250110234115.png](/img/user/resimler/Pasted%20image%2020250110234115.png)
 
 OpenSSH [sürümlerine](https://packages.ubuntu.com/search?keywords=openssh-server) göre, host muhtemelen Ubuntu 20.04 focal çalıştırıyor.
 
-![Pasted image 20250110234332.png](/img/user/Pasted%20image%2020250110234332.png)
+![Pasted image 20250110234332.png](/img/user/resimler/Pasted%20image%2020250110234332.png)
 
 ```
 nmap -p 22,55555 -sCV 10.10.11.224
@@ -151,21 +151,21 @@ Nmap done: 1 IP address (1 host up) scanned in 105.97 seconds
 
 Site, HTTP isteklerini toplamak ve incelemek için kullanılan bir servisdir:
 
-![Pasted image 20250110234713.png](/img/user/Pasted%20image%2020250110234713.png)
+![Pasted image 20250110234713.png](/img/user/resimler/Pasted%20image%2020250110234713.png)
 
 Create tıklandığında, gelecekte sepete erişmek için kullanılabilecek bir token döndürür:
 
-![Pasted image 20250110234826.png](/img/user/Pasted%20image%2020250110234826.png)
+![Pasted image 20250110234826.png](/img/user/resimler/Pasted%20image%2020250110234826.png)
 
 Sepet açıldığında, nasıl doldurulacağı gösterilir:
 
-![Pasted image 20250110234906.png](/img/user/Pasted%20image%2020250110234906.png)
+![Pasted image 20250110234906.png](/img/user/resimler/Pasted%20image%2020250110234906.png)
 
 Eğer http://10.10.11.224:55555/h5lgafg adresinde curl çalıştırırsam, sepette görünür:
 
-![Pasted image 20250110235106.png](/img/user/Pasted%20image%2020250110235106.png)
+![Pasted image 20250110235106.png](/img/user/resimler/Pasted%20image%2020250110235106.png)
 
-![Pasted image 20250110235122.png](/img/user/Pasted%20image%2020250110235122.png)
+![Pasted image 20250110235122.png](/img/user/resimler/Pasted%20image%2020250110235122.png)
 
 #### Tech Stack
 
@@ -183,17 +183,17 @@ Tüm URL'ler extension-less görünüyor ve dizin sayfasını indiren bir tane b
 
 Ana sayfanın footer'ında “Powered by [request-baskets](https://github.com/darklynx/request-baskets) | Version: 1.2.1” yazıyor. Bu Go ile yazılmış bir yazılım.
 
-![Pasted image 20250110235555.png](/img/user/Pasted%20image%2020250110235555.png)
+![Pasted image 20250110235555.png](/img/user/resimler/Pasted%20image%2020250110235555.png)
 
 
 #### Directory Brute Force
 
 Feroxbuster'ı siteye karşı çalıştıracağım:
 
-![Pasted image 20250111000338.png](/img/user/Pasted%20image%2020250111000338.png)
-![Pasted image 20250111000356.png](/img/user/Pasted%20image%2020250111000356.png)
-![Pasted image 20250111000416.png](/img/user/Pasted%20image%2020250111000416.png)
-![Pasted image 20250111000500.png](/img/user/Pasted%20image%2020250111000500.png)
+![Pasted image 20250111000338.png](/img/user/resimler/Pasted%20image%2020250111000338.png)
+![Pasted image 20250111000356.png](/img/user/resimler/Pasted%20image%2020250111000356.png)
+![Pasted image 20250111000416.png](/img/user/resimler/Pasted%20image%2020250111000416.png)
+![Pasted image 20250111000500.png](/img/user/resimler/Pasted%20image%2020250111000500.png)
 
 Bazı hatalar buluyor ama ilginç bir şey yok.
 
@@ -205,9 +205,9 @@ Bazı hatalar buluyor ama ilginç bir şey yok.
 
 “request-baskets exploit” araması [CVE-2023-27163](https://medium.com/@li_allouche/request-baskets-1-2-1-server-side-request-forgery-cve-2023-27163-2bab94f201f7) hakkındaki bu blog yazısına yönlendiriyor. Bu bir server-side request forgery (SSRF) açığıdır, yani sunucunun benim adıma istek göndermesini sağlayabilirim. Yazıda 1.2.1 sürümünün savunmasız olduğu belirtiliyor:
 
-![Pasted image 20250111000750.png](/img/user/Pasted%20image%2020250111000750.png)
+![Pasted image 20250111000750.png](/img/user/resimler/Pasted%20image%2020250111000750.png)
 
-[[Mediıum Request-Baskets Türkçe\|Mediıum Request-Baskets Türkçe]]
+[[Bağlantılar/Mediıum Request-Baskets Türkçe\|Mediıum Request-Baskets Türkçe]]
 
 ---
 
@@ -220,23 +220,23 @@ CVE-2023–27163, Request-Baskets içinde tespit edilen kritik bir **Server-Side
 
 Burada bundan faydalanmak için güzel bir [POC](https://github.com/entr0pie/CVE-2023-27163/blob/main/CVE-2023-27163.sh) var. Port 80'i okumayı denemek için çalıştıracağım:
 
-![Pasted image 20250111002209.png](/img/user/Pasted%20image%2020250111002209.png)
+![Pasted image 20250111002209.png](/img/user/resimler/Pasted%20image%2020250111002209.png)
 Sonuçları görmek için ziyaret edebileceğim bir URL veriyor:
 
 http://10.10.11.224:55555/noudql
 
-![Pasted image 20250111002333.png](/img/user/Pasted%20image%2020250111002333.png)
+![Pasted image 20250111002333.png](/img/user/resimler/Pasted%20image%2020250111002333.png)
 
 CSS ve resimler yüklenmiyor, ama en azından Mailtrail v0.53 olduğunu görebiliyorum.
 
-![Pasted image 20250111002534.png](/img/user/Pasted%20image%2020250111002534.png)
+![Pasted image 20250111002534.png](/img/user/resimler/Pasted%20image%2020250111002534.png)
 
 Aynı şeyi 8338'de de deneyeceğim ve aynı uygulama olduğunu göreceğim.
 
 
 ### RCE in Mailtrail
 
-![Pasted image 20250111005703.png](/img/user/Pasted%20image%2020250111005703.png)
+![Pasted image 20250111005703.png](/img/user/resimler/Pasted%20image%2020250111005703.png)
 
 #### Identify
 
@@ -282,20 +282,20 @@ def main():
 
 Bunu exploit etmek için, **POC**'yi alacağım ama 28. satırda `/login` eklediği yeri çıkaracağım. Yeni bir **SSRF** URL'si alacağım ve bu URL `/login`'e gidecek.
 
-![Pasted image 20250111010253.png](/img/user/Pasted%20image%2020250111010253.png)
+![Pasted image 20250111010253.png](/img/user/resimler/Pasted%20image%2020250111010253.png)
 
-![Pasted image 20250111010408.png](/img/user/Pasted%20image%2020250111010408.png)
+![Pasted image 20250111010408.png](/img/user/resimler/Pasted%20image%2020250111010408.png)
 
-![Pasted image 20250111010426.png](/img/user/Pasted%20image%2020250111010426.png)
+![Pasted image 20250111010426.png](/img/user/resimler/Pasted%20image%2020250111010426.png)
 
 
-![Pasted image 20250111010444.png](/img/user/Pasted%20image%2020250111010444.png)
+![Pasted image 20250111010444.png](/img/user/resimler/Pasted%20image%2020250111010444.png)
 
 Şimdi değiştirilmiş exploit scriptini çalıştıracağım: Çalıştırmadan önce portu dinleyelim . 
 
-![Pasted image 20250111010558.png](/img/user/Pasted%20image%2020250111010558.png)
+![Pasted image 20250111010558.png](/img/user/resimler/Pasted%20image%2020250111010558.png)
 
-![Pasted image 20250111010722.png](/img/user/Pasted%20image%2020250111010722.png)
+![Pasted image 20250111010722.png](/img/user/resimler/Pasted%20image%2020250111010722.png)
 
 Shell'imı yükseltmek için standart numarayı kullanacağım.
 
@@ -321,7 +321,7 @@ puma@sau:/opt/maltrail$
 
 Puma kullanıcısının home dizininden user.txt dosyasını alacağım:
 
-![Pasted image 20250111011626.png](/img/user/Pasted%20image%2020250111011626.png)
+![Pasted image 20250111011626.png](/img/user/resimler/Pasted%20image%2020250111011626.png)
 
 ## Shell as root
 
@@ -331,7 +331,7 @@ Puma kullanıcısı ==sudo== kullanarak bazı ==systemctl== komutlarını parola
 
 **puma** kullanıcısı, **systemctl status trail.service** komutunu şifresiz çalıştırabilir, ancak diğer tüm komutları çalıştırmak için şifre girmesi gerekir.
 
-![Pasted image 20250111011701.png](/img/user/Pasted%20image%2020250111011701.png)
+![Pasted image 20250111011701.png](/img/user/resimler/Pasted%20image%2020250111011701.png)
 
 Bu komutu çalıştırmak servisin durumunu yazdırır
 
@@ -344,7 +344,7 @@ Bu komut, aşağıdaki bilgileri sağlar:
 - Servis ile ilgili log kayıtları ve hata mesajları.
 - Servisin ne zaman başladığı ve son durumu.
 
-![Pasted image 20250111011916.png](/img/user/Pasted%20image%2020250111011916.png)
+![Pasted image 20250111011916.png](/img/user/resimler/Pasted%20image%2020250111011916.png)
 
 
 ### Exploit Less
@@ -354,8 +354,8 @@ Bu komut, aşağıdaki bilgileri sağlar:
 
 Terminalin altında metin var ve aslında asılı kalmış. Eğer less komutunda !sh yazarsam, bu sh komutunu çalıştıracak ve bir shell'e düşeceğim.
 
-![Pasted image 20250111013135.png](/img/user/Pasted%20image%2020250111013135.png)
+![Pasted image 20250111013135.png](/img/user/resimler/Pasted%20image%2020250111013135.png)
 
-![Pasted image 20250111013115.png](/img/user/Pasted%20image%2020250111013115.png)
+![Pasted image 20250111013115.png](/img/user/resimler/Pasted%20image%2020250111013115.png)
 
-![Pasted image 20250111013211.png](/img/user/Pasted%20image%2020250111013211.png)
+![Pasted image 20250111013211.png](/img/user/resimler/Pasted%20image%2020250111013211.png)

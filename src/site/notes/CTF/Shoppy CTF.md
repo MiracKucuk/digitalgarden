@@ -22,7 +22,7 @@ Shoppy, HackTheBox haftalık makinelerinden exploit etmesi en kolay olanlardan b
 
 ### nmap
 
-![Pasted image 20250111141103.png](/img/user/Pasted%20image%2020250111141103.png)
+![Pasted image 20250111141103.png](/img/user/resimler/Pasted%20image%2020250111141103.png)
 
 ```
 nmap -p 22,80,9093 -sCV 10.10.11.180
@@ -136,12 +136,12 @@ OpenSSH sürümüne göre, host muhtemelen Debian 11 bullseye çalıştırıyor.
 
 DNS adlarının kullanıldığını göz önüne alarak, sunucunun herhangi bir **subdomain**'e farklı tepki verip vermediğini kontrol etmek için **wfuzz** kullanacağım. İlk olarak, filtre olmadan çalıştırarak varsayılan yanıtı kontrol edebilirim:
 
-![Pasted image 20250111141610.png](/img/user/Pasted%20image%2020250111141610.png)
+![Pasted image 20250111141610.png](/img/user/resimler/Pasted%20image%2020250111141610.png)
 
 Görünüşe göre 169 karakter varsayılandır, bu yüzden bunu --hh 169 ile filtreleyeceğim:
 
-![Pasted image 20250111142509.png](/img/user/Pasted%20image%2020250111142509.png)
-![Pasted image 20250111142600.png](/img/user/Pasted%20image%2020250111142600.png)
+![Pasted image 20250111142509.png](/img/user/resimler/Pasted%20image%2020250111142509.png)
+![Pasted image 20250111142600.png](/img/user/resimler/Pasted%20image%2020250111142600.png)
 
 
 Hem shoppy.htb hem de mattermost.shoppy.htb'yi /etc/hosts dosyama ekleyeceğim:
@@ -156,7 +156,7 @@ Hem shoppy.htb hem de mattermost.shoppy.htb'yi /etc/hosts dosyama ekleyeceğim:
 
 Sitede sadece mağazanın yakında açılacağı yazıyor:
 
-![Pasted image 20250111142813.png](/img/user/Pasted%20image%2020250111142813.png)
+![Pasted image 20250111142813.png](/img/user/resimler/Pasted%20image%2020250111142813.png)
 
 #### Tech Stack
 
@@ -164,16 +164,16 @@ Varsayılan yol için dosya adlarını tahmin edeceğim, örneğin `/index.html`
 
 HTTP yanıt başlıkları ek bilgi sağlamıyor.
 
-![Pasted image 20250111150408.png](/img/user/Pasted%20image%2020250111150408.png)
+![Pasted image 20250111150408.png](/img/user/resimler/Pasted%20image%2020250111150408.png)
 
 
 #### Directory Brute Force
 
 Sitede bağlantılı olmayan yolları aramak için feroxbuster'ı siteye karşı çalıştıracağım:
 
-![Pasted image 20250111150548.png](/img/user/Pasted%20image%2020250111150548.png)
+![Pasted image 20250111150548.png](/img/user/resimler/Pasted%20image%2020250111150548.png)
 
-![Pasted image 20250111151136.png](/img/user/Pasted%20image%2020250111151136.png)
+![Pasted image 20250111151136.png](/img/user/resimler/Pasted%20image%2020250111151136.png)
 
 /admin ve /login en ilginç olanlarıdır (ancak ilki sadece ikincisine yönlendirir)
 
@@ -181,11 +181,11 @@ Sitede bağlantılı olmayan yolları aramak için feroxbuster'ı siteye karşı
 
 /login bir giriş formu verir:
 
-![Pasted image 20250111151232.png](/img/user/Pasted%20image%2020250111151232.png)
+![Pasted image 20250111151232.png](/img/user/resimler/Pasted%20image%2020250111151232.png)
 
 Birkaç tahmin denedim, var olmayan kullanıcı ile yanlış şifre arasında belirgin bir fark yok (yine de bir admin kullanıcısı olduğundan emin değilim). Girdiğim her şey sadece “Yanlış Kimlik Bilgileri” döndürüyor:
 
-![Pasted image 20250111151303.png](/img/user/Pasted%20image%2020250111151303.png)
+![Pasted image 20250111151303.png](/img/user/resimler/Pasted%20image%2020250111151303.png)
 
 
 ### mattermost.shoppy.htb - TCP 80
@@ -194,7 +194,7 @@ Birkaç tahmin denedim, var olmayan kullanıcı ile yanlış şifre arasında be
 
 Bu, açık kaynaklı bir Slack alternatifi olan **[Mattermost](https://github.com/mattermost/mattermost-server)**'un bir örneğine benziyor. `/login` adresine bir giriş formuna yönlendiriyor.
 
-![Pasted image 20250111151417.png](/img/user/Pasted%20image%2020250111151417.png)
+![Pasted image 20250111151417.png](/img/user/resimler/Pasted%20image%2020250111151417.png)
 
 #### Tech Stack
 
@@ -230,7 +230,7 @@ Burada **dizin brute force** işlemine geçmeyeceğim, bunun yerine potansiyel g
 
 Bunu HTTP üzerinden ziyaret etmek bir tür log döndürür:
 
-![Pasted image 20250111151820.png](/img/user/Pasted%20image%2020250111151820.png)
+![Pasted image 20250111151820.png](/img/user/resimler/Pasted%20image%2020250111151820.png)
 
 Görünüşe göre, bu veriler Go programlama dilinin çalışma zamanı (runtime) hakkında bilgi sağlayan metrikler. Bu tür veriler genellikle bir uygulamanın bellek kullanımı, çöp toplama (garbage collection - GC) processleri, ve sistemin genel sağlık durumu hakkında detaylı bilgiler içerir.
 
@@ -238,7 +238,7 @@ Bunun ne olduğunu anlamaya çalışırken biraz araştırmaya daldım. **Port 9
 
 Dosyanın alt kısmında **playbook_plugin_process** sıkça geçiyor. Bu da bir [**Mattermost**](https://github.com/mattermost/mattermost-plugin-playbooks) özelliği olabilir.
 
-![Pasted image 20250111152118.png](/img/user/Pasted%20image%2020250111152118.png)
+![Pasted image 20250111152118.png](/img/user/resimler/Pasted%20image%2020250111152118.png)
 
 Neyse ki, burada bana çok faydalı görünen fazla bilgi yok.
 
@@ -251,9 +251,9 @@ Neyse ki, burada bana çok faydalı görünen fazla bilgi yok.
 
 Bir form gördüğümde her zaman hızlı bir şekilde birkaç SQL enjeksiyon payload'u yerleştiririm. Bu durumda, oturum açma isteğini Burp Repeater'a göndereceğim ve basit bir ' eklemeyi deneyeceğim. İstek tam bir dakika bekletildikten sonra 504 Gateway Time-out döndürüyor:
 
-![Pasted image 20250111152430.png](/img/user/Pasted%20image%2020250111152430.png)
+![Pasted image 20250111152430.png](/img/user/resimler/Pasted%20image%2020250111152430.png)
 
-![Pasted image 20250111152807.png](/img/user/Pasted%20image%2020250111152807.png)
+![Pasted image 20250111152807.png](/img/user/resimler/Pasted%20image%2020250111152807.png)
 
 Bu, sunucunun bu istekle gerçekten zor zamanlar geçirdiğini gösteriyor ve hiçbir şey olmayabilir veya bir şey olabilir.
 
@@ -271,23 +271,23 @@ Burası için işe yaramaz ve aynı şekilde takılmasına neden olur.
 
 Başka bir yöntem, JSON formatına dönüştürmektir. ==**Content-Type**== başlığını ve **payload**'ı değiştireceğim. Enjeksiyon olmadan, bu düzgün çalışır (girişin başarısız olduğunu belirten 302 döner).
 
-![Pasted image 20250111153146.png](/img/user/Pasted%20image%2020250111153146.png)
+![Pasted image 20250111153146.png](/img/user/resimler/Pasted%20image%2020250111153146.png)
 
-![Pasted image 20250111153152.png](/img/user/Pasted%20image%2020250111153152.png)
+![Pasted image 20250111153152.png](/img/user/resimler/Pasted%20image%2020250111153152.png)
 
 Şimdi [NodeBlog](https://0xdf.gitlab.io/2022/01/10/htb-nodeblog.html#auth-bypass-via-nosql-injection)'da işe yarayan yöntemi deneyebilirim, ancak takılıyor ve nihayetinde bir zaman aşımı hatası döndürüyor.
 
-![Pasted image 20250111154238.png](/img/user/Pasted%20image%2020250111154238.png)
+![Pasted image 20250111154238.png](/img/user/resimler/Pasted%20image%2020250111154238.png)
 
-![Pasted image 20250111154354.png](/img/user/Pasted%20image%2020250111154354.png)
+![Pasted image 20250111154354.png](/img/user/resimler/Pasted%20image%2020250111154354.png)
 
 Bir noktada yanlışlıkla “$ne” kelimesini etrafında “ işareti olmadan gönderdim ve bu da 400 değerini döndürdü:
 
-![Pasted image 20250111154409.png](/img/user/Pasted%20image%2020250111154409.png)
+![Pasted image 20250111154409.png](/img/user/resimler/Pasted%20image%2020250111154409.png)
 
 Bu yanıtı işlemek bir hata izi gösteriyor.
 
-![Pasted image 20250111154454.png](/img/user/Pasted%20image%2020250111154454.png)
+![Pasted image 20250111154454.png](/img/user/resimler/Pasted%20image%2020250111154454.png)
 
 $ karakterini sevmediğini ve bu durumun JSON ayrıştırma seviyesinde, potansiyel bir veritabanı çağrısına ulaşmadan önce olduğunu fark ettim. Burada bir çıkmaz gibi görünüyor. Ancak ilginç bazı bilgiler sızdırdım:
 
@@ -311,7 +311,7 @@ username=admin' || 'a'=='a&password=admin
 ```
 
 
-![Pasted image 20250111154916.png](/img/user/Pasted%20image%2020250111154916.png)
+![Pasted image 20250111154916.png](/img/user/resimler/Pasted%20image%2020250111154916.png)
 
 Sonuçlar geldi:
 
@@ -359,40 +359,40 @@ Beyond Root'ta bu ve başka bir NoSQL güvenlik açığını inceleyeceğim.
 
 Repeater'dan cookie alarak ya da NoSQL payload ile Firefox'tan giriş yaparak admin paneline girebiliyorum:
 
-![Pasted image 20250111155246.png](/img/user/Pasted%20image%2020250111155246.png)
+![Pasted image 20250111155246.png](/img/user/resimler/Pasted%20image%2020250111155246.png)
 
 Bu sayfa nispeten statik görünüyor. "Search for users" butonu, /admin/search-users sayfasına yönlendiriyor.,
 
-![Pasted image 20250111155337.png](/img/user/Pasted%20image%2020250111155337.png)
+![Pasted image 20250111155337.png](/img/user/resimler/Pasted%20image%2020250111155337.png)
 
 
 Eğer “random” için arama yaparsam, hiçbir şey bulamıyor. “admin” için arama yaparsam, bir indirme sunuyor:
 
-![Pasted image 20250111155421.png](/img/user/Pasted%20image%2020250111155421.png)
+![Pasted image 20250111155421.png](/img/user/resimler/Pasted%20image%2020250111155421.png)
 
 
 
-![Pasted image 20250111155402.png](/img/user/Pasted%20image%2020250111155402.png)
+![Pasted image 20250111155402.png](/img/user/resimler/Pasted%20image%2020250111155402.png)
 
 Admin'in kimliğini, kullanıcı adını ve şifresini içeren export-search.json dosyasını açar:
 
-![Pasted image 20250111155448.png](/img/user/Pasted%20image%2020250111155448.png)
-![Pasted image 20250111155557.png](/img/user/Pasted%20image%2020250111155557.png)
+![Pasted image 20250111155448.png](/img/user/resimler/Pasted%20image%2020250111155448.png)
+![Pasted image 20250111155557.png](/img/user/resimler/Pasted%20image%2020250111155557.png)
 
 Hash MD5'e benziyor, ancak rockyou.txt ile kırılmıyor.
 
-![Pasted image 20250111155701.png](/img/user/Pasted%20image%2020250111155701.png)
+![Pasted image 20250111155701.png](/img/user/resimler/Pasted%20image%2020250111155701.png)
 
 
 #### NoSQL Injection Again
 
 Uygulama zaten NoSQL enjeksiyonuna karşı savunmasız olduğunu göstermişti, bu yüzden tekrar deneyeceğim:
 
-![Pasted image 20250111155726.png](/img/user/Pasted%20image%2020250111155726.png)
+![Pasted image 20250111155726.png](/img/user/resimler/Pasted%20image%2020250111155726.png)
 
 Bu, isim "admin" olduğunda veya `1==1` olduğunda (ki bu her zaman doğrudur!) bir kayıt alır. İşe yarıyor, sonuç olarak dosyada ikinci bir hesap var.
 
-![Pasted image 20250111155836.png](/img/user/Pasted%20image%2020250111155836.png)
+![Pasted image 20250111155836.png](/img/user/resimler/Pasted%20image%2020250111155836.png)
 
 
 #### Crack Hash
@@ -401,18 +401,18 @@ MD5 hash'leri (bunun gibi 32 hex karakter uzunluğundadır) salt falan değildir
 
 admin için
 
-![Pasted image 20250111160008.png](/img/user/Pasted%20image%2020250111160008.png)
+![Pasted image 20250111160008.png](/img/user/resimler/Pasted%20image%2020250111160008.png)
 
 josh için Anında geri geliyor:
 
-![Pasted image 20250111160024.png](/img/user/Pasted%20image%2020250111160024.png)
+![Pasted image 20250111160024.png](/img/user/resimler/Pasted%20image%2020250111160024.png)
 
 
 #### Log into Mattermost
 
 Bu şifre ile josh kullanıcı adı Mattermost'ta oturum açar:
 
-![Pasted image 20250111160116.png](/img/user/Pasted%20image%2020250111160116.png)
+![Pasted image 20250111160116.png](/img/user/resimler/Pasted%20image%2020250111160116.png)
 
 ### Jaeger için Creds
 
@@ -420,31 +420,31 @@ Farklı channel'ları okurken, çoğu sadece havadan sudan konuşuyor, ancak iki
 
 Chat'teki iki ilginç konuşmacı Josh ve Jaeger. Josh'un profilinde bir developer olduğu, Jaeger'in ise CEO olduğu görülüyor:
 
-![Pasted image 20250111160350.png](/img/user/Pasted%20image%2020250111160350.png)
+![Pasted image 20250111160350.png](/img/user/resimler/Pasted%20image%2020250111160350.png)
 
-![Pasted image 20250111160346.png](/img/user/Pasted%20image%2020250111160346.png)
+![Pasted image 20250111160346.png](/img/user/resimler/Pasted%20image%2020250111160346.png)
 
-![Pasted image 20250111160418.png](/img/user/Pasted%20image%2020250111160418.png)
+![Pasted image 20250111160418.png](/img/user/resimler/Pasted%20image%2020250111160418.png)
 
-![Pasted image 20250111160428.png](/img/user/Pasted%20image%2020250111160428.png)
+![Pasted image 20250111160428.png](/img/user/resimler/Pasted%20image%2020250111160428.png)
 
 Public “Development” kanalında Josh, C++'da bir password manager yapmaktan bahsediyor. Bir shell aldığımda buna göz atacağım:
 
-![Pasted image 20250111160523.png](/img/user/Pasted%20image%2020250111160523.png)
+![Pasted image 20250111160523.png](/img/user/resimler/Pasted%20image%2020250111160523.png)
 
 “ Deploy Machine” gizli kanalında Josh ve Jaeger arasında başka bir konuşma var. Jaeger bir kullanıcı adı ve parola ile bir makine kurulmasını istiyor:
 
-![Pasted image 20250111160555.png](/img/user/Pasted%20image%2020250111160555.png)
+![Pasted image 20250111160555.png](/img/user/resimler/Pasted%20image%2020250111160555.png)
 
 ### SSH
 
 Bu kimliklerle, kutuya jaeger olarak SSH yapabilirim:
 
-![Pasted image 20250111161047.png](/img/user/Pasted%20image%2020250111161047.png)
+![Pasted image 20250111161047.png](/img/user/resimler/Pasted%20image%2020250111161047.png)
 
 Doğrudan bağlanmak hata veriyor . Çıkat ayrıntıları chatgpt'ye verdiğimde doğru kodu buldum . 
 
-![Pasted image 20250111161356.png](/img/user/Pasted%20image%2020250111161356.png)
+![Pasted image 20250111161356.png](/img/user/resimler/Pasted%20image%2020250111161356.png)
 
 ---
 
@@ -475,19 +475,19 @@ Bu nedenle, bu komut sayesinde sadece **parola doğrulaması** yapılacak ve bu 
 
 jaeger /home/deploy/password-manager öğesini deploy olarak çalıştırabilir:
 
-![Pasted image 20250111161518.png](/img/user/Pasted%20image%2020250111161518.png)
+![Pasted image 20250111161518.png](/img/user/resimler/Pasted%20image%2020250111161518.png)
 
 `/home/deploy` dosyasında binary dosyanın yanı sıra source ve `creds.txt` dosyası da bulunmaktadır:
 
-![Pasted image 20250111161639.png](/img/user/Pasted%20image%2020250111161639.png)
+![Pasted image 20250111161639.png](/img/user/resimler/Pasted%20image%2020250111161639.png)
 
 Jaeger olarak sadece binary dosyasını okuyabiliyorum. `Sudo` ile deploy olarak da çalıştırabilirim:
 
-![Pasted image 20250111161914.png](/img/user/Pasted%20image%2020250111161914.png)
+![Pasted image 20250111161914.png](/img/user/resimler/Pasted%20image%2020250111161914.png)
 
 Scp ile makineme geri kopyalayacağım:
 
-![Pasted image 20250111162017.png](/img/user/Pasted%20image%2020250111162017.png)
+![Pasted image 20250111162017.png](/img/user/resimler/Pasted%20image%2020250111162017.png)
 
 ### Reverse Engineering
 
@@ -495,60 +495,60 @@ Scp ile makineme geri kopyalayacağım:
 
 Binary 64-bit ELF'dir:
 
-![Pasted image 20250111162049.png](/img/user/Pasted%20image%2020250111162049.png)
+![Pasted image 20250111162049.png](/img/user/resimler/Pasted%20image%2020250111162049.png)
 
 Ghidra'da incelemek için açacağım. C++ Ghidra'da karmaşık, ama program oldukça basit.
 
 Hoş geldiniz ve şifre promptunu  yazdırıyor:
 
-![Pasted image 20250111164710.png](/img/user/Pasted%20image%2020250111164710.png)
+![Pasted image 20250111164710.png](/img/user/resimler/Pasted%20image%2020250111164710.png)
 
 export --> main
 
-![Pasted image 20250111164831.png](/img/user/Pasted%20image%2020250111164831.png)
+![Pasted image 20250111164831.png](/img/user/resimler/Pasted%20image%2020250111164831.png)
 
 Hoş geldiniz ve şifre prompt'unu yazdırır.
 
-![Pasted image 20250111165940.png](/img/user/Pasted%20image%2020250111165940.png)
+![Pasted image 20250111165940.png](/img/user/resimler/Pasted%20image%2020250111165940.png)
 
 Daha sonra bir string oluşturur ve input içine kaydeder:
 
-![Pasted image 20250111170008.png](/img/user/Pasted%20image%2020250111170008.png)
+![Pasted image 20250111170008.png](/img/user/resimler/Pasted%20image%2020250111170008.png)
 
 Şimdi başka bir string oluşturur ve ona “S”, “a”, “m”, “p”, “l”, “e” karakterlerini ekler:
 
-![Pasted image 20250111170701.png](/img/user/Pasted%20image%2020250111170701.png)
+![Pasted image 20250111170701.png](/img/user/resimler/Pasted%20image%2020250111170701.png)
 
 Input'u “Sample” ile karşılaştırır ve eşleşmezlerse (pass_match'te 0 olmayan return), “Access denied!” mesajını yazdırır:
 
-![Pasted image 20250111170748.png](/img/user/Pasted%20image%2020250111170748.png)
+![Pasted image 20250111170748.png](/img/user/resimler/Pasted%20image%2020250111170748.png)
 
 Aksi takdirde, “ Access granted” yazdırır ve ardından system(“cat /home/deploy/creds.txt”) çağrısı yapar:
 
-![Pasted image 20250111170826.png](/img/user/Pasted%20image%2020250111170826.png)
+![Pasted image 20250111170826.png](/img/user/resimler/Pasted%20image%2020250111170826.png)
 
 #### strings
 
 Yazar, şifreyi her karakteri bir seferde ekleyerek saklamayı tercih etmiş. Bu yöntemle, şifre doğrudan dizelerde görünmez. Ancak bu yöntemin etkili olup olmadığını görmek için, hex (onaltılık) çıktı üzerinde inceleme yapıyoruz. "xxd" komutunu kullanarak, password manager'ın binary dosyasındaki verileri hex formatında görüntülüyoruz.
 
-![Pasted image 20250111171151.png](/img/user/Pasted%20image%2020250111171151.png)
+![Pasted image 20250111171151.png](/img/user/resimler/Pasted%20image%2020250111171151.png)
 
 
-![Pasted image 20250111171245.png](/img/user/Pasted%20image%2020250111171245.png)
+![Pasted image 20250111171245.png](/img/user/resimler/Pasted%20image%2020250111171245.png)
 
-![Pasted image 20250111171318.png](/img/user/Pasted%20image%2020250111171318.png)
+![Pasted image 20250111171318.png](/img/user/resimler/Pasted%20image%2020250111171318.png)
 
-![Pasted image 20250111171402.png](/img/user/Pasted%20image%2020250111171402.png)
+![Pasted image 20250111171402.png](/img/user/resimler/Pasted%20image%2020250111171402.png)
 
 su, kullanıcıları şifreleri ile değiştirmeme izin veriyor:
 
 deploy varsayılan shell olarak sh'ye sahip gibi görünüyor, ama ben bash'e geçeceğim. Bunu /etc/passwd dosyasında görebiliyorum:
 
-![Pasted image 20250111171602.png](/img/user/Pasted%20image%2020250111171602.png)
+![Pasted image 20250111171602.png](/img/user/resimler/Pasted%20image%2020250111171602.png)
 
-![Pasted image 20250111171621.png](/img/user/Pasted%20image%2020250111171621.png)
+![Pasted image 20250111171621.png](/img/user/resimler/Pasted%20image%2020250111171621.png)
 
-![Pasted image 20250111171634.png](/img/user/Pasted%20image%2020250111171634.png)
+![Pasted image 20250111171634.png](/img/user/resimler/Pasted%20image%2020250111171634.png)
 
 ## Shell as root
 
@@ -558,15 +558,15 @@ home/deploy içinde başka ilginç bir dosya yok ve dosya sisteminde başka hiç
 
 deploy ek bir grupta yer almaktadır:
 
-![Pasted image 20250111171707.png](/img/user/Pasted%20image%2020250111171707.png)
+![Pasted image 20250111171707.png](/img/user/resimler/Pasted%20image%2020250111171707.png)
 
 docker kutuya yüklenir ve docker grubunda konuşlandırıldığı için, hiçbir konteyner çalışmıyor olsa da onunla etkileşime girebilirler:
 
-![Pasted image 20250111171738.png](/img/user/Pasted%20image%2020250111171738.png)
+![Pasted image 20250111171738.png](/img/user/resimler/Pasted%20image%2020250111171738.png)
 
 "Kutuda bir tane image var, [Alpine](https://hub.docker.com/_/alpine), çok küçük bir image ve sınırlı işlevselliğe sahip."
 
-![Pasted image 20250111171847.png](/img/user/Pasted%20image%2020250111171847.png)
+![Pasted image 20250111171847.png](/img/user/resimler/Pasted%20image%2020250111171847.png)
 
 
 ### Access Filesystem as root
@@ -585,17 +585,17 @@ Container’ı docker run komutu ve aşağıdaki seçeneklerle başlatacağım:
 
 Ayrıca, image ismini (alpine) ve çalıştırılacak komutu (`/bin/sh`, çünkü Alpine'de `bash` yok) vereceğim. Bunlarla image’ı başlatabilir ve host'un dosya sistemini `/mnt` içinde bulabilirim.
 
-![Pasted image 20250111172208.png](/img/user/Pasted%20image%2020250111172208.png)
+![Pasted image 20250111172208.png](/img/user/resimler/Pasted%20image%2020250111172208.png)
 
 #### Neat Upgrade
 
 [Docker GTFObins](https://gtfobins.github.io/gtfobins/docker/) sayfasındaki güzel bir numara, komut olarak sh yerine chroot kullanmaktır. Gerçekten konteyner dosya sistemine ihtiyacım yok. Bu yüzden chroot /mnt /bin/sh komutunu vereceğim (çalıştırılacak bir komut da veriyorum, [man sayfasına](https://linux.die.net/man/1/chroot) bakabilirsiniz). Bu, dosya sisteminin kökünü /mnt olarak ayarlayacak ve ardından bir shell çalıştıracak. Bu, sanki tekrar sadece host üzerinde çalışıyormuşum gibi bir his veriyor.
 
-![Pasted image 20250111172344.png](/img/user/Pasted%20image%2020250111172344.png)
+![Pasted image 20250111172344.png](/img/user/resimler/Pasted%20image%2020250111172344.png)
 
-![Pasted image 20250111172601.png](/img/user/Pasted%20image%2020250111172601.png)
+![Pasted image 20250111172601.png](/img/user/resimler/Pasted%20image%2020250111172601.png)
 
-![Pasted image 20250111172607.png](/img/user/Pasted%20image%2020250111172607.png)
+![Pasted image 20250111172607.png](/img/user/resimler/Pasted%20image%2020250111172607.png)
 
 
 ## Beyond Root - NoSQL Injection
@@ -616,11 +616,11 @@ true || true && false
 
 Bu nasıl değerlendiriliyor? Bir tarayıcıda kontrol edebilirim:
 
-![Pasted image 20250111200151.png](/img/user/Pasted%20image%2020250111200151.png)
+![Pasted image 20250111200151.png](/img/user/resimler/Pasted%20image%2020250111200151.png)
 
 Ama neden işe yarıyor? JavaScript için [Operatör Önceliği](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_Precedence#table), operatörleri 18'den 1'e kadar işlenen 1-18 numaralı gruplar halinde gruplandırır. Mantıksal AND (&&) 4. grupta ve Mantıksal OR (||) 3. grupta yer alır:
 
-![Pasted image 20250111200235.png](/img/user/Pasted%20image%2020250111200235.png)
+![Pasted image 20250111200235.png](/img/user/resimler/Pasted%20image%2020250111200235.png)
 
 Dolayısıyla, admin kullanıcı için sorgu her satırda biraz daha basitleştirilebilir:
 
