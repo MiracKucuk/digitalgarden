@@ -121,7 +121,7 @@ Nmap done: 1 IP address (1 host up) scanned in 585.78 seconds
 
 ## GetAllUserName
 
-![Pasted image 20250119125149.png](/img/user/Pasted%20image%2020250119125149.png)
+![Pasted image 20250119125149.png](/img/user/resimler/Pasted%20image%2020250119125149.png)
 
 ---
 
@@ -140,40 +140,40 @@ Nmap done: 1 IP address (1 host up) scanned in 585.78 seconds
 
 ## Bloodhound
 
-![Pasted image 20250119125550.png](/img/user/Pasted%20image%2020250119125550.png)
+![Pasted image 20250119125550.png](/img/user/resimler/Pasted%20image%2020250119125550.png)
 
 Analiz için bloodhoundGUI'ye aktarıldı.
 
 Judith kullanıcısının Management grubunun sahibini değiştirebildiği veya grubun access control list'ini (ACL) değiştirebildiği keşfedildi.
 
-![Pasted image 20250119125712.png](/img/user/Pasted%20image%2020250119125712.png)
+![Pasted image 20250119125712.png](/img/user/resimler/Pasted%20image%2020250119125712.png)
 
 Ardından bloodhound yazarak GUI'yi açıyoruz. 
 
 Analiz için bloodhoundGUI'ye aktarıldı.
 
 
-![Pasted image 20250119130234.png](/img/user/Pasted%20image%2020250119130234.png)
+![Pasted image 20250119130234.png](/img/user/resimler/Pasted%20image%2020250119130234.png)
 
 Unmark User as Owned diyoruz çünkü bu hesabın credential'ları mevcut.
 
 Judith kullanıcısının Management grubunun sahibini değiştirebildiği veya grubun access control list'ini (ACL) değiştirebildiği keşfedildi.
 
-![Pasted image 20250119130448.png](/img/user/Pasted%20image%2020250119130448.png)
+![Pasted image 20250119130448.png](/img/user/resimler/Pasted%20image%2020250119130448.png)
 
-![Pasted image 20250119130402.png](/img/user/Pasted%20image%2020250119130402.png)
+![Pasted image 20250119130402.png](/img/user/resimler/Pasted%20image%2020250119130402.png)
 
-![Pasted image 20250119132426.png](/img/user/Pasted%20image%2020250119132426.png)
+![Pasted image 20250119132426.png](/img/user/resimler/Pasted%20image%2020250119132426.png)
 
 Management grubu SVC'lerden birine yazabilir.
 
-![Pasted image 20250119130716.png](/img/user/Pasted%20image%2020250119130716.png)
+![Pasted image 20250119130716.png](/img/user/resimler/Pasted%20image%2020250119130716.png)
 
 SVC CA_OPERATOR üzerinde tam kontrole sahiptir.
 
-![Pasted image 20250119130919.png](/img/user/Pasted%20image%2020250119130919.png)
+![Pasted image 20250119130919.png](/img/user/resimler/Pasted%20image%2020250119130919.png)
 
-![Pasted image 20250119130941.png](/img/user/Pasted%20image%2020250119130941.png)
+![Pasted image 20250119130941.png](/img/user/resimler/Pasted%20image%2020250119130941.png)
 
 
 ## User
@@ -184,7 +184,7 @@ Management grubunun ACL'sini judith.mader kullanıcısına grubun üyelerini yö
 impacket-dacledit  -action 'write' -rights 'WriteMembers' -target-dn "CN=MANAGEMENT,CN=USERS,DC=CERTIFIED,DC=HTB" -principal "judith.mader" "certified.htb/judith.mader:judith09"
 ```
 
-![Pasted image 20250119131350.png](/img/user/Pasted%20image%2020250119131350.png)
+![Pasted image 20250119131350.png](/img/user/resimler/Pasted%20image%2020250119131350.png)
 
 ---
 
@@ -202,7 +202,7 @@ impacket-dacledit  -action 'write' -rights 'WriteMembers' -target-dn "CN=MANAGEM
 
 Judith'in kendisini Management grubuna ekleyin. 
 
-![Pasted image 20250119141031.png](/img/user/Pasted%20image%2020250119141031.png)
+![Pasted image 20250119141031.png](/img/user/resimler/Pasted%20image%2020250119141031.png)
 
 **Domain Sürekliliği: Shadow Credentials – FreeBuf Ağ Güvenliği Sektör Portalı**  
 **KillingTree/pywhisker: "Shadow Credentials" saldırıları için C# aracının Python versiyonu (github.com)**
@@ -211,27 +211,27 @@ Araç bir args hatası verirse, main() fonksiyonuna gidin ve args için ayrışt
 
 pywhisker.py aracı bir Kerberos kimlik doğrulama baypası gerçekleştirir ve hedef nesnenin msDS-KeyCredentialLink özelliğini değiştirerek hedefle ilişkili sertifika ve anahtarı oluşturur ve saklar.
 
-![Pasted image 20250119142003.png](/img/user/Pasted%20image%2020250119142003.png)
+![Pasted image 20250119142003.png](/img/user/resimler/Pasted%20image%2020250119142003.png)
 
 Sonra, management_svc için TGT (Ticket Granting Ticket) talep edin. Eğer hata alırsanız, zaman dilimini senkronize etmek için ntpdate kullanmanız gerekebilir.
 
 PKINITtools içindeki gettgtpkinit.py script'ini kullanarak bir Kerberos TGT talep edin ve daha önce oluşturduğunuz sertifika ve anahtarları kullanın.
 
-![Pasted image 20250119143359.png](/img/user/Pasted%20image%2020250119143359.png)
+![Pasted image 20250119143359.png](/img/user/resimler/Pasted%20image%2020250119143359.png)
 
-![Pasted image 20250119143458.png](/img/user/Pasted%20image%2020250119143458.png)
+![Pasted image 20250119143458.png](/img/user/resimler/Pasted%20image%2020250119143458.png)
 Daha önce elde edilmiş TGT ile management_svc hesabının NT hash'ini istemek ve kurtarmak için PKINITtools içindeki getnthash.py scriptini kullanın
 
-![Pasted image 20250119143654.png](/img/user/Pasted%20image%2020250119143654.png)
+![Pasted image 20250119143654.png](/img/user/resimler/Pasted%20image%2020250119143654.png)
 
 NThash ile remote oturum açmak için Evil-winrm kullanabilirsiniz.
 
-![Pasted image 20250119143806.png](/img/user/Pasted%20image%2020250119143806.png)
+![Pasted image 20250119143806.png](/img/user/resimler/Pasted%20image%2020250119143806.png)
 
 
 ## Root
 
-![Pasted image 20250119144023.png](/img/user/Pasted%20image%2020250119144023.png)
+![Pasted image 20250119144023.png](/img/user/resimler/Pasted%20image%2020250119144023.png)
 
 management_svc, ca_operator üzerinde tam kontrole sahiptir.
 
@@ -239,11 +239,11 @@ ca'nın parolasını değiştirmeyi deneyin
 
 /etc/host'a DC01.certified.htb'yi ekleyin
 
-![Pasted image 20250119144637.png](/img/user/Pasted%20image%2020250119144637.png)
+![Pasted image 20250119144637.png](/img/user/resimler/Pasted%20image%2020250119144637.png)
 
 Değişikliğin başarılı olup olmadığını kontrol edin
 
-![Pasted image 20250119144744.png](/img/user/Pasted%20image%2020250119144744.png)
+![Pasted image 20250119144744.png](/img/user/resimler/Pasted%20image%2020250119144744.png)
 
 ### No Security Extension – ESC9
 
@@ -251,25 +251,25 @@ Değişikliğin başarılı olup olmadığını kontrol edin
 
 Certipy aracını kullanarak judith.mader@certified.htb kullanıcısı ile ilgili sertifika bilgilerini bulup elde etmek ve certified-DC01-CA Certificate Authority (CA) yapılandırmasını elde etmektir.
 
-![Pasted image 20250119145113.png](/img/user/Pasted%20image%2020250119145113.png)
+![Pasted image 20250119145113.png](/img/user/resimler/Pasted%20image%2020250119145113.png)
 
 "NoSecurityExtension bulundu, bu nedenle ESC9 saldırısı yapılabilir.
 
 Certipy aracını kullanarak NT hash (a091c1832bcdd4677c28b5a6a1295584) ca_operator hesabına güncelledim ve bu hesabın userPrincipalName (UPN) değerini Administrator olarak değiştirdim."
 
-![Pasted image 20250119145220.png](/img/user/Pasted%20image%2020250119145220.png)
+![Pasted image 20250119145220.png](/img/user/resimler/Pasted%20image%2020250119145220.png)
 
 Bir sertifika başarıyla talep edildi ve Administrator hesabıyla ilişkilendirildi (talep ca_operator kullanıcısı için olsa bile). Bu, artık Administrator hesabını temsil edebilecek bir sertifika olduğu anlamına gelir.
 
-![Pasted image 20250119145343.png](/img/user/Pasted%20image%2020250119145343.png)
+![Pasted image 20250119145343.png](/img/user/resimler/Pasted%20image%2020250119145343.png)
 
 Certipy aracını kullanarak administrator.pfx sertifika dosyası aracılığıyla administrator@certified.htb kullanıcısı olarak Kerberos kimlik doğrulaması ve başarıyla TGT ve NT hash elde etme
 
-![Pasted image 20250119145445.png](/img/user/Pasted%20image%2020250119145445.png)
+![Pasted image 20250119145445.png](/img/user/resimler/Pasted%20image%2020250119145445.png)
 
 Son olarak, evil-winrm ile oturum açarak root.txt dosyasını alabilirsiniz.
 
-![Pasted image 20250119145605.png](/img/user/Pasted%20image%2020250119145605.png)
+![Pasted image 20250119145605.png](/img/user/resimler/Pasted%20image%2020250119145605.png)
 
-![Pasted image 20250119145622.png](/img/user/Pasted%20image%2020250119145622.png)
+![Pasted image 20250119145622.png](/img/user/resimler/Pasted%20image%2020250119145622.png)
 

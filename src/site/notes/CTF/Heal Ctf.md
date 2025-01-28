@@ -5,47 +5,47 @@
 
 ### Nmap 
 
-![Pasted image 20250120001434.png](/img/user/Pasted%20image%2020250120001434.png)
+![Pasted image 20250120001434.png](/img/user/resimler/Pasted%20image%2020250120001434.png)
 
 Open ports: 22, 80
 
 ## SubdomainFuzz
 
-![Pasted image 20250119164752.png](/img/user/Pasted%20image%2020250119164752.png)
+![Pasted image 20250119164752.png](/img/user/resimler/Pasted%20image%2020250119164752.png)
 
 Mevcut domain: api.heal.htb, /etc/hosts dosyasına eklendi
 
-![Pasted image 20250119164856.png](/img/user/Pasted%20image%2020250119164856.png)
+![Pasted image 20250119164856.png](/img/user/resimler/Pasted%20image%2020250119164856.png)
 
 heal.htb adresine gidip kaydolduktan sonra rotalar incelendiğinde şöyle bir rota ortaya çıktı. (Dizin brute-force yapınce çöküyor saçma bir şekilde.)
 
 heal.htb/survey rotası altında bir subdomain bulundu: take-survey.heal.htb
 
-![Pasted image 20250120002640.png](/img/user/Pasted%20image%2020250120002640.png)
+![Pasted image 20250120002640.png](/img/user/resimler/Pasted%20image%2020250120002640.png)
 
 heal.htb/survey rotası altında bir subdomain bulundu: take-survey.heal.htb
 
 Bunu /etc/hosts dosyasına ekleyin ve Administrator'ın kullanıcı adını bulmak için aşağıdaki şekilde erişin: ralph
 
-![Pasted image 20250120002743.png](/img/user/Pasted%20image%2020250120002743.png)
+![Pasted image 20250120002743.png](/img/user/resimler/Pasted%20image%2020250120002743.png)
 
 Bunu /etc/hosts dosyasına ekleyin ve Administrator'ın kullanıcı adını bulmak için aşağıdaki şekilde erişin: ralph
 
-![Pasted image 20250120004951.png](/img/user/Pasted%20image%2020250120004951.png)
+![Pasted image 20250120004951.png](/img/user/resimler/Pasted%20image%2020250120004951.png)
 
 ## Directory Brute-Force
 
-![Pasted image 20250120010630.png](/img/user/Pasted%20image%2020250120010630.png)
+![Pasted image 20250120010630.png](/img/user/resimler/Pasted%20image%2020250120010630.png)
 
 yaklaşık 403 adres buldu fakat çoğu adres bir dizin üzerine dağılıyor /admin
 
-![Pasted image 20250120010712.png](/img/user/Pasted%20image%2020250120010712.png)
+![Pasted image 20250120010712.png](/img/user/resimler/Pasted%20image%2020250120010712.png)
 
 /admin rotasına bakalım . Bizi bir yönlendirmeye tabi tutuyor.
 
 http://take-survey.heal.htb/index.php/admin/authentication/sa/login
 
-![Pasted image 20250120010739.png](/img/user/Pasted%20image%2020250120010739.png)
+![Pasted image 20250120010739.png](/img/user/resimler/Pasted%20image%2020250120010739.png)
 
 Rastgele bir hesap kaydı oluşturun ve ardından şu URL'ye gidin: **[http://heal.htb/resume](http://heal.htb/resume)**.
 
@@ -57,9 +57,9 @@ Rastgele bir hesap kaydı oluşturun ve ardından şu URL'ye gidin: **[http://he
 GET /download?filename=../../../../../etc/passwd
 ```
 
-![Pasted image 20250120011408.png](/img/user/Pasted%20image%2020250120011408.png)
+![Pasted image 20250120011408.png](/img/user/resimler/Pasted%20image%2020250120011408.png)
 
-![Pasted image 20250120011949.png](/img/user/Pasted%20image%2020250120011949.png)
+![Pasted image 20250120011949.png](/img/user/resimler/Pasted%20image%2020250120011949.png)
 
 ```
 root:x:0:0:root:/root:/bin/bash
@@ -107,9 +107,9 @@ Kullanıcı adı: ralph, ron olan iki kullanıcı bulundu (/home dizinine sahip 
 
 Sitenin Ruby on Rails kullandığını öğrendiğimizden beri, yapılandırma dosyasını aradık ve şu adreste bulduk
 
-![Pasted image 20250120012505.png](/img/user/Pasted%20image%2020250120012505.png)
+![Pasted image 20250120012505.png](/img/user/resimler/Pasted%20image%2020250120012505.png)
 
-![Pasted image 20250120012534.png](/img/user/Pasted%20image%2020250120012534.png)
+![Pasted image 20250120012534.png](/img/user/resimler/Pasted%20image%2020250120012534.png)
 ```
 # SQLite. Versions 3.8.0 and up are supported.
 #   gem install sqlite3
@@ -147,28 +147,28 @@ database: storage/development.sqlite3
 
 İndirelim. (repeater'daki isteğe sağ tıklayın ve Show response in browse'ı eçin ve verin url'i browser'ınıza girin)
 
-![Pasted image 20250120013035.png](/img/user/Pasted%20image%2020250120013035.png)
+![Pasted image 20250120013035.png](/img/user/resimler/Pasted%20image%2020250120013035.png)
 
-![Pasted image 20250120013136.png](/img/user/Pasted%20image%2020250120013136.png)
+![Pasted image 20250120013136.png](/img/user/resimler/Pasted%20image%2020250120013136.png)
 
-![Pasted image 20250120013238.png](/img/user/Pasted%20image%2020250120013238.png)
+![Pasted image 20250120013238.png](/img/user/resimler/Pasted%20image%2020250120013238.png)
 
 John ile şifre kırma
 
-![Pasted image 20250120013339.png](/img/user/Pasted%20image%2020250120013339.png)
+![Pasted image 20250120013339.png](/img/user/resimler/Pasted%20image%2020250120013339.png)
 
-![Pasted image 20250120013404.png](/img/user/Pasted%20image%2020250120013404.png)
+![Pasted image 20250120013404.png](/img/user/resimler/Pasted%20image%2020250120013404.png)
 
 SSH girişi kabul etmiyor , ancak web sitesinin backend'ine giriş yapabilirsiniz
 
-![Pasted image 20250120013515.png](/img/user/Pasted%20image%2020250120013515.png)
+![Pasted image 20250120013515.png](/img/user/resimler/Pasted%20image%2020250120013515.png)
 
-![Pasted image 20250120013541.png](/img/user/Pasted%20image%2020250120013541.png)
+![Pasted image 20250120013541.png](/img/user/resimler/Pasted%20image%2020250120013541.png)
 
 
 ## LimeSurvey-RCE
 
-![Pasted image 20250120013656.png](/img/user/Pasted%20image%2020250120013656.png)
+![Pasted image 20250120013656.png](/img/user/resimler/Pasted%20image%2020250120013656.png)
 
 Genellikle CMS veya bir uygulama arayüzüne girdiğimizde ilk yapacağımız şeylerden biri versionu tespit etmektir. Bunu en basit yöntem ctrl +f yapıp verison yazmak . Alternatif yöntemler curl, response ve request headerlarına bakmak, kaynak kod kurcalamak , url'e random bir dizin yazıp hata sayfasından tespit etmek gibi . 
 
@@ -178,29 +178,29 @@ https://github.com/Y1LD1R1M-1337/Limesurvey-RCE
 
 Aşağıdaki değişikliklerin yapılması gerekir, siteyle eşleşmesi için 6.0 uyumluluk sürümünü eklediğinizden emin olun, aksi takdirde yükleme başarılı olmayacaktır
 
-![Pasted image 20250120014255.png](/img/user/Pasted%20image%2020250120014255.png)
+![Pasted image 20250120014255.png](/img/user/resimler/Pasted%20image%2020250120014255.png)
 
 Bounce SHELL'deki IP ve port numarasını değiştirin.
 
-![Pasted image 20250120014359.png](/img/user/Pasted%20image%2020250120014359.png)
+![Pasted image 20250120014359.png](/img/user/resimler/Pasted%20image%2020250120014359.png)
 
 Paketleyelim . 
 
 
-![Pasted image 20250120020148.png](/img/user/Pasted%20image%2020250120020148.png)
+![Pasted image 20250120020148.png](/img/user/resimler/Pasted%20image%2020250120020148.png)
 Plugini yükleyin ve etkinleştirin
 
-![Pasted image 20250120014752.png](/img/user/Pasted%20image%2020250120014752.png)
+![Pasted image 20250120014752.png](/img/user/resimler/Pasted%20image%2020250120014752.png)
 
-![Pasted image 20250120014808.png](/img/user/Pasted%20image%2020250120014808.png)
+![Pasted image 20250120014808.png](/img/user/resimler/Pasted%20image%2020250120014808.png)
 
 Active edelim 
 
-![Pasted image 20250120014838.png](/img/user/Pasted%20image%2020250120014838.png)
+![Pasted image 20250120014838.png](/img/user/resimler/Pasted%20image%2020250120014838.png)
 
 Ardından shell'i bounce etmek için http://take-survey.heal.htb/upload/plugins/Y1LD1R1M/php-rev.php yolunu ziyaret edin
 
-![Pasted image 20250120020437.png](/img/user/Pasted%20image%2020250120020437.png)
+![Pasted image 20250120020437.png](/img/user/resimler/Pasted%20image%2020250120020437.png)
 
 ```
 python3 -c "import pty;pty.spawn('/bin/bash')"
@@ -292,7 +292,7 @@ return array(
 
 Önemli olan kısım 
 
-![Pasted image 20250120024808.png](/img/user/Pasted%20image%2020250120024808.png)
+![Pasted image 20250120024808.png](/img/user/resimler/Pasted%20image%2020250120024808.png)
 
 Burada gerçekten garip olan şey, users tablosunda yalnızca bir ralph kullanıcısı olması ve parola hash'inin yukarıdaki 147258369 ile tamamen aynı çıkmasıdır. Bu, veritabanında istismar edilebilecek hiçbir şey olmadığı anlamına gelir.
 
@@ -305,32 +305,32 @@ username：ron
 password：AdmiDi0_pA$w0rd
 ```
 
-![Pasted image 20250120025104.png](/img/user/Pasted%20image%2020250120025104.png)
+![Pasted image 20250120025104.png](/img/user/resimler/Pasted%20image%2020250120025104.png)
 
-![Pasted image 20250120031339.png](/img/user/Pasted%20image%2020250120031339.png)
+![Pasted image 20250120031339.png](/img/user/resimler/Pasted%20image%2020250120031339.png)
 
 ## Privilege Escalation
 
 Linpeas.sh dosyasını yükledim ve bir dizi portun açık olduğunu gördüm
 
-![Pasted image 20250120030613.png](/img/user/Pasted%20image%2020250120030613.png)
+![Pasted image 20250120030613.png](/img/user/resimler/Pasted%20image%2020250120030613.png)
 
 8500 numaralı portu ssh üzerinden yönlendirme
 
-![Pasted image 20250120030658.png](/img/user/Pasted%20image%2020250120030658.png)
+![Pasted image 20250120030658.png](/img/user/resimler/Pasted%20image%2020250120030658.png)
 
-![Pasted image 20250120030703.png](/img/user/Pasted%20image%2020250120030703.png)
+![Pasted image 20250120030703.png](/img/user/resimler/Pasted%20image%2020250120030703.png)
 
 Sayfanın kaynak kodunda sürüm bilgisi bulundu: 1.19.2
 
-![Pasted image 20250120030807.png](/img/user/Pasted%20image%2020250120030807.png)
+![Pasted image 20250120030807.png](/img/user/resimler/Pasted%20image%2020250120030807.png)
 
 Sürüm açıklarını arayarak, Exploit-DB'de exploit edilebilecek scriptler buldum
 
-![Pasted image 20250120030946.png](/img/user/Pasted%20image%2020250120030946.png)
+![Pasted image 20250120030946.png](/img/user/resimler/Pasted%20image%2020250120030946.png)
 
-![Pasted image 20250120031156.png](/img/user/Pasted%20image%2020250120031156.png)
+![Pasted image 20250120031156.png](/img/user/resimler/Pasted%20image%2020250120031156.png)
 
-![Pasted image 20250120031203.png](/img/user/Pasted%20image%2020250120031203.png)
+![Pasted image 20250120031203.png](/img/user/resimler/Pasted%20image%2020250120031203.png)
 
-![Pasted image 20250120031420.png](/img/user/Pasted%20image%2020250120031420.png)
+![Pasted image 20250120031420.png](/img/user/resimler/Pasted%20image%2020250120031420.png)

