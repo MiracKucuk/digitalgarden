@@ -201,7 +201,7 @@ Domain, bilgisayarlar, kullanıcılar, OU'lar, gruplar vb. gibi objectlerden olu
 
 
 ### Forest
-Forest, Active Directory domain'lerinden oluşan bir koleksiyondur. En üst kapsayıcıdır ve domainler, kullanıcılar, gruplar, bilgisayarlar ve Group Policy objectleri dahil ancak bunlarla sınırlı olmamak üzere aşağıda tanıtılan tüm AD objectlerini içerir. Bir forest bir veya birden fazla domain içerebilir ve ABD'deki bir eyalet veya AB'deki bir ülke gibi düşünülebilir. Her forest bağımsız olarak çalışır ancak diğer forest'larla çeşitli güven ilişkilerine sahip olabilir.
+Forest, Active Directory domain'lerinden oluşan bir koleksiyondur. En üst konteyner'dır ve domainler, kullanıcılar, gruplar, bilgisayarlar ve Group Policy objectleri dahil ancak bunlarla sınırlı olmamak üzere aşağıda tanıtılan tüm AD objectlerini içerir. Bir forest bir veya birden fazla domain içerebilir ve ABD'deki bir eyalet veya AB'deki bir ülke gibi düşünülebilir. Her forest bağımsız olarak çalışır ancak diğer forest'larla çeşitli trust ilişkilerine sahip olabilir.
 
 
 ### Tree
