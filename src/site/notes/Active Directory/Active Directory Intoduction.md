@@ -28,7 +28,7 @@ Active Directory (AD) güvenliği, son on yılda güvenlik araştırmacıların�
 
 ### 2021
 
-- **PrintNightmare**: Windows Print Spooler'ındaki remote kod çalıştırma açığı.
+- **PrintNightmare**: Windows ==Print Spooler'ındaki== remote kod çalıştırma açığı.
 - **Shadow Credentials**: Düşük ayrıcalıklı kullanıcıların başka hesapları taklit etmesine ve ayrıcalık yükseltmesine olanak tanır.
 - **noPac Attack**: Aralık 2021'de keşfedilen bu saldırı, standart bir domain kullanıcısından tüm domain kontrolünü ele geçirme imkânı sağlar.
 
@@ -77,9 +77,9 @@ Bu araştırmalar ve araçlar, AD ortamlarını güvence altına alabilmek için
 
 
 # Active Directory Structure
-[Active Directory (AD)](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview), Windows ağ ortamları için bir ==dizin== hizmetidir. Kullanıcılar, bilgisayarlar, gruplar, ağ aygıtları ve dosya paylaşımları, grup policy'ler, sunucular ve workstationlar ve trustlar dahil olmak üzere bir kuruluşun kaynaklarının ==merkezi== olarak yönetilmesini sağlayan dağıtılmış, hiyerarşik bir yapıdır. AD, bir Windows domain ortamında ==kimlik doğrulama== ve ==yetkilendirme== fonksiyonları sağlar. Active Directory Domain Services (AD DS) gibi bir dizin hizmeti, bir kuruluşa dizin verilerini depolama ve aynı ağdaki hem standart kullanıcılar hem de yöneticiler için kullanılabilir hale getirme yolları sunar. [AD DS (Active Directory Domain Services)](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview), kullanıcı adları ve parolalar gibi bilgileri depolar ve yetkili kullanıcıların bu bilgilere erişmesi için gereken hakları yönetir. İlk olarak Windows Server 2000 ile birlikte gönderilmiştir; son yıllarda artan saldırılara maruz kalmıştır. Geriye dönük olarak uyumlu olacak şekilde tasarlanmıştır ve birçok özelliği tartışmalı bir şekilde “varsayılan olarak güvenli” değildir. Özellikle kolayca yanlış yapılandırılabileceği büyük ortamlarda düzgün bir şekilde yönetilmesi zordur.
+[Active Directory (AD)](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview), Windows ağ ortamları için bir ==dizin== servisidir. Kullanıcılar, bilgisayarlar, gruplar, ağ aygıtları ve dosya paylaşımları, grup policy'ler, sunucular ve workstationlar ve trustlar dahil olmak üzere bir kuruluşun kaynaklarının ==merkezi== olarak yönetilmesini sağlayan dağıtılmış, hiyerarşik bir yapıdır. AD, bir Windows domain ortamında ==kimlik doğrulama== ve ==yetkilendirme== fonksiyonları sağlar. Active Directory Domain Services (AD DS) gibi bir dizin hizmeti, bir kuruluşa dizin verilerini depolama ve aynı ağdaki hem standart kullanıcılar hem de yöneticiler için kullanılabilir hale getirme yolları sunar. [AD DS (Active Directory Domain Services)](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview), kullanıcı adları ve parolalar gibi bilgileri depolar ve yetkili kullanıcıların bu bilgilere erişmesi için gereken hakları yönetir. İlk olarak Windows Server 2000 ile birlikte gönderilmiştir; son yıllarda artan saldırılara maruz kalmıştır. Geriye dönük olarak uyumlu olacak şekilde tasarlanmıştır ve birçok özelliği tartışmalı bir şekilde “varsayılan olarak güvenli” değildir. Özellikle kolayca yanlış yapılandırılabileceği büyük ortamlarda düzgün bir şekilde yönetilmesi zordur.
 
-Active Directory kusurları ve yanlış yapılandırmaları genellikle bir dayanak noktası (“internal access”) elde etmek, bir ağ içinde yanal ve dikey olarak hareket etmek ve veritabanları, dosya paylaşımları, kaynak kodu ve daha fazlası gibi korunan kaynaklara yetkisiz erişim elde etmek için kullanılabilir. AD esasen, ayrıcalık düzeylerine bakılmaksızın domain içindeki tüm kullanıcıların erişebildiği büyük bir veritabanıdır. Ek ayrıcalıkları olmayan temel bir AD kullanıcı hesabı, bunlarla sınırlı olmamak üzere AD'de bulunan objectlerin çoğunu numaralandırmak için kullanılabilir:
+Active Directory kusurları ve yanlış yapılandırmaları genellikle bir dayanak noktası (==“internal access”==) elde etmek, bir ağ içinde yanal ve dikey olarak hareket etmek ve veritabanları, dosya paylaşımları, kaynak kodu ve daha fazlası gibi korunan kaynaklara yetkisiz erişim elde etmek için kullanılabilir. AD esasen, ayrıcalık düzeylerine bakılmaksızın domain içindeki tüm kullanıcıların erişebildiği büyük bir veritabanıdır. Ek ayrıcalıkları olmayan temel bir AD kullanıcı hesabı, bunlarla sınırlı olmamak üzere AD'de bulunan objectlerin çoğunu numaralandırmak için kullanılabilir:
 
 |                          |                             |
 | ------------------------ | --------------------------- |
@@ -178,7 +178,7 @@ Her **object**'in belirli **attributes** (özellikleri) vardır. Bu **attributes
 **Schema**, sadece **object**'lerin türlerini (sınıflarını) değil, aynı zamanda her **object**'in nasıl oluşturulacağını ve hangi özelliklere sahip olması gerektiğini de tanımlar.
 
 - **Sınıf** (Class): **Schema** içinde tanımlanan bir kategori ya da türdür. Örneğin, **user** ve **computer** birer **sınıf**tır.
-- **Object örneği (Instance)**: Bir **sınıf**tan oluşturulmuş bir nesnedir. Yani, bir **sınıf**'ın belirli bir örneği **object**'tir.
+- **Object örneği (Instance)**: Bir **sınıf**tan oluşturulmuş bir objedir. Yani, bir **sınıf**'ın belirli bir örneği **object**'tir.
 
 Örneğin:
 
@@ -191,7 +191,7 @@ Bu durumda, **RDS01** bilgisayarı bir **object**'tir ve **computer** sınıfın
 
 - **Active Directory Schema**, **object**'lerin türlerini (sınıflarını) ve her bir **object**'in sahip olması gereken **attributes**'ları tanımlar.
 - **Sınıf**: **Object**'lerin türüdür (örneğin **user** veya **computer**).
-- **Object örneği** (Instance): Bir **sınıf**tan oluşturulmuş gerçek bir nesnedir (örneğin, **RDS01** bilgisayar **computer** sınıfının bir örneğidir).
+- **Object örneği** (Instance): Bir **sınıf**tan oluşturulmuş gerçek bir objedir (örneğin, **RDS01** bilgisayar **computer** sınıfının bir örneğidir).
 
 Bu şekilde **Schema**, Active Directory'deki tüm **object**'lerin nasıl oluşturulacağı ve nasıl düzenleneceği konusunda bir kılavuz işlevi görür.
 
@@ -231,7 +231,7 @@ Yani, her **tree** farklı bir **ad alanı**na sahip olsa da, her **tree**'de ke
 
 #### Global Katalog:
 
-**Global Katalog (GC)**, Active Directory'deki tüm domain'lere ait objectlerin temel bilgilerini depolayan ve hızlı sorgulama için kullanılan bir veri deposudur.
+**Global Katalog (GC)**, Active Directory'deki ==tüm domain'lere ait objectlerin== temel bilgilerini depolayan ve hızlı sorgulama için kullanılan bir veri deposudur.
 
 Bir **tree**'deki tüm **domain**'ler, o **tree**'ye ait **object**'ler hakkında tüm bilgileri içeren ortak bir **Global Katalog** paylaşır. Bu katalog, **tree** içindeki tüm **domain**'lerdeki ==**object**== bilgilerini merkezi bir şekilde saklar ve bu bilgilere kolayca erişilmesini sağlar.
 
@@ -243,11 +243,11 @@ Bir **tree**'deki tüm **domain**'ler, o **tree**'ye ait **object**'ler hakkınd
 - Bir **Global Katalog**, bir **tree** içindeki tüm **domain**'ler ve **object** bilgilerini merkezi olarak depolar.
 
 ### Container
-**Container** (Konteyner) **object**'leri, **Active Directory**'de **diğer object**'leri tutan, yani içinde başka **object**'lerin barındığı bir yapıdır. **Container object**'leri, **dizin** (directory) yapısındaki **alt tree** hiyerarşisinde belirli bir konumda yer alır.
+**Container** (Konteyner) **object**'leri, **Active Directory**'de **diğer object**'leri tutan, yani içinde başka **object**'lerin barındığı bir yapıdır. **Container object**'leri, **dizin** (directory) yapısındaki **alt tree** hiyerarşisinde belirli bir konumda yer alır. Kısaca Active Directory'de (AD), bir **konteyner**, kullanıcılar, gruplar, bilgisayarlar veya diğer nesneleri düzenlemek ve yönetmek için kullanılan bir mantıksal birimdir.
 
 #### Container Nedir?
 
-Active Directory'deki konteynar, **organizasyon birimlerini (OU) veya objecleri düzenlemek ve yönetmek için kullanılan bir yapılandırma birimidir** ve diğer nesneleri içinde barındırabilir.
+Active Directory'deki konteynar, **organizasyon birimlerini (OU) veya objecleri düzenlemek ve yönetmek için kullanılan bir yapılandırma birimidir** ve diğer objeleri içinde barındırabilir.
 
 **Container object**'leri, adından da anlaşılacağı gibi, bir tür "kutudur" ve başka **object**'leri bu kutunun içinde saklar. Bu **object**'ler genellikle kullanıcılar, bilgisayarlar, gruplar ve diğer kaynaklar olabilir.
 
@@ -261,20 +261,20 @@ Active Directory'deki konteynar, **organizasyon birimlerini (OU) veya objecleri 
 #### Container ile Diğer Object'ler Arasındaki Fark:
 
 - **Container**: Diğer **object**'leri tutar ve hiyerarşik yapıda yer alır.
-- **Object**: Kendine ait özellikleri ve bilgileri olan gerçek bir nesnedir. Örneğin, bir **user object** veya **computer object**.
+- **Object**: Kendine ait özellikleri ve bilgileri olan gerçek bir objedir. Örneğin, bir **user object** veya **computer object**.
 
 #### Container'ın Hiyerarşideki Yeri:
 
 **Container object**'leri, **Active Directory**'nin hiyerarşisinde belirli bir konumda bulunur ve altında başka **object**'ler yer alır. Bu yapılar, **Active Directory**'deki **tree** veya **forest** yapılarının düzenli ve mantıklı bir şekilde organize edilmesini sağlar.
 
-Örnek:
+#### Örnek:
 
 - **Active Directory Tree** içinde bir **domain**, bir **container object** olabilir ve bu **domain** içinde **organizational units (OU)** gibi daha küçük **container**'lar olabilir.
 - Bir **OU**, içinde birden çok **user** ve **computer object**'i barındırabilir.
 
 #### Özet:
 
-**Container** object'leri, **Active Directory**'de diğer **object**'leri içinde barındıran ve ==hiyerarşinin== bir parçası olan yapılardır. Bir **container**, diğer **object**'lerin düzenli bir şekilde gruplandırılmasını sağlar ve bu şekilde yönetilebilir hale gelir.
+**Container** object'leri, **Active Directory**'de diğer **object**'leri ==içinde barındıran== ve ==hiyerarşinin== bir parçası olan yapılardır. Bir **container**, diğer **object**'lerin düzenli bir şekilde gruplandırılmasını sağlar ve bu şekilde yönetilebilir hale gelir.
 
 
 ### Leaf
@@ -380,7 +380,7 @@ Active Directory'deki konteynar, **organizasyon birimlerini (OU) veya objecleri 
 #### 2. **SID'in Benzersizliği:**
 
 - Bir SID **bir kez kullanılır** ve bir daha **tekrar kullanılmaz**. Yani her SID, sadece bir security policy veya **grup** ile ilişkilidir.
-- Security policy silinse bile, o SID **asla başka bir kullanıcı veya grup için kullanılmaz**. Bu, SID'in her zaman **benzersiz** olduğunu ve her bir SID'nin belirli bir güvenlik ilkesine ait olduğunu garanti eder.
+- Security policy silinse bile, o SID **asla başka bir kullanıcı veya grup için kullanılmaz**. Bu, SID'in her zaman **benzersiz** olduğunu ve her bir SID'nin belirli bir security policy'e ait olduğunu garanti eder.
 
 #### 3. **SID ve Erişim Token'ları:**
 
