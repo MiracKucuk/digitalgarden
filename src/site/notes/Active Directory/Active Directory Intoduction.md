@@ -4,9 +4,9 @@
 
 
 ### Neden Active Directory?
-Active Directory (AD), Windows ağ ortamları için bir ==dizin== hizmetidir. Kullanıcılar, bilgisayarlar, gruplar, ağ aygıtları, dosya paylaşımları, group  policy, aygıtlar ve trustlar dahil olmak üzere bir kuruluşun kaynaklarının ==merkezi== olarak yönetilmesini sağlayan dağıtılmış, ==hiyerarşik== bir yapıdır. AD, bir Windows domain ortamında ==kimlik doğrulama ve yetkilendirme== işlevleri sağlar. 
+Active Directory (AD), Windows ağ ortamları için bir ==dizin== servisidir. Kullanıcılar, bilgisayarlar, gruplar, ağ aygıtları, dosya paylaşımları, group  policy, aygıtlar ve trustlar dahil olmak üzere bir kuruluşun kaynaklarının ==merkezi== olarak yönetilmesini sağlayan dağıtılmış, ==hiyerarşik== bir yapıdır. AD, bir Windows domain ortamında ==kimlik doğrulama ve yetkilendirme== işlevleri sağlar. 
 
-Geriye dönük uyumlu olacak şekilde tasarlanmıştır ve birçok özelliği tartışmalı bir şekilde “varsayılan olarak güvenli” değildir ve kolayca yanlış yapılandırılabilir. Bu zayıflık, bir ağ içinde lateral ve dikey olarak hareket etmek ve yetkisiz erişim elde etmek için kullanılabilir. AD esasen, ayrıcalık düzeylerine bakılmaksızın domain içindeki tüm kullanıcıların erişebildiği büyük bir ==salt okunur veritabanıdır==. Ek ayrıcalıkları olmayan temel bir AD kullanıcı hesabı, AD içindeki çoğu object'i numaralandırabilir.
+Geriye dönük uyumlu olacak şekilde tasarlanmıştır ve birçok özelliği tartışmalı bir şekilde ==“varsayılan olarak güvenli” değildir== ve kolayca yanlış yapılandırılabilir. Bu zayıflık, bir ağ içinde lateral ve dikey olarak hareket etmek ve yetkisiz erişim elde etmek için kullanılabilir. AD esasen, ayrıcalık düzeylerine bakılmaksızın domain içindeki tüm kullanıcıların erişebildiği büyük bir ==salt okunur veritabanıdır==. Ek ayrıcalıkları olmayan temel bir AD kullanıcı hesabı, AD içindeki çoğu object'i numaralandırabilir.
 
 "==Geriye dönük uyumlu olacak şekilde tasarlanmıştır==" ifadesi, Active Directory (AD) gibi sistemlerin, eski sürümleriyle veya eski sistemlerle sorunsuz çalışabilmesi için tasarlandığını belirtir. Yani, AD'nin daha eski Windows sürümleriyle, eski protokollerle veya eski altyapılarla uyumlu çalışması sağlanmıştır. Bu tür tasarımlar, eski sistemlerde çalışan yazılımların ve yapılandırmaların yeni sürümlerde de çalışmaya devam etmesini amaçlar"
 
