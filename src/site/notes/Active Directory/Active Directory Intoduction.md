@@ -374,7 +374,7 @@ Active Directory'deki konteynar, **organizasyon birimlerini (OU) veya objecleri 
 ### Security Identifier (Güvenlik Tanımlayıcısı) (SID)
 #### 1. **SID Nedir?**
 
-- **Security Identifier (SID)**, bir security principal veya ==**security grubu**== için **benzersiz** bir tanımlayıcıdır.
+- **Security Identifier (SID)**, bir ==security principal== veya ==**security grubu**== için **benzersiz** bir tanımlayıcıdır.
 - Her **hesap**, **grup** veya **process** için, **Active Directory** ortamında, **domain controller** tarafından verilen ve **güvenli bir veritabanında** saklanan **kendine özgü** bir SID bulunur.
 
 #### 2. **SID'in Benzersizliği:**
@@ -444,7 +444,7 @@ Active Directory'deki konteynar, **organizasyon birimlerini (OU) veya objecleri 
 #### 5. **Distinguished Name ve Erişim:**
 
 - DN, object'in **tam ve benzersiz** bir şekilde bulunmasını sağlar. AD içinde aynı isme sahip birden fazla object olabilir, ancak her object'in **DN**'i benzersizdir.
-- Bu, **LDAP sorguları** veya **Active Directory yönetimi** sırasında doğru object'e erişim sağlamak için kullanılır.
+- ==Bu, **LDAP sorguları** veya **Active Directory yönetimi** sırasında doğru object'e erişim sağlamak için kullanılır.==
 
 #### Özet:
 
@@ -454,7 +454,14 @@ Active Directory'deki konteynar, **organizasyon birimlerini (OU) veya objecleri 
 
 
 ### Relative Distinguished Name (RDN)
-[Relative Distinguished Name](https://docs.microsoft.com/en-us/windows/win32/ad/object-names-and-identities) (RDN), objectyi adlandırma hiyerarşisinde geçerli düzeydeki ==diğer objectlerden benzersiz olarak tanımlayan== Distinguished Name'in tek bir bileşenidir. Örneğimizde, bjones objectnin Relative Distinguished Name (Göreli Ayırt Edici Ad) öğesidir. AD, aynı üst kapsayıcı altında aynı ada sahip iki objectye izin vermez, ancak farklı DN'lere sahip oldukları için domainde yine de benzersiz olan aynı RDN'lere sahip iki object olabilir. Örneğin, cn=bjones,dc=dev,dc=inlanefreight,dc=local objectsi cn=bjones,dc=inlanefreight,dc=local objectsinden farklı olarak tanınır.
+[Relative Distinguished Name](https://docs.microsoft.com/en-us/windows/win32/ad/object-names-and-identities) (RDN), objectyi adlandırma hiyerarşisinde geçerli düzeydeki ==diğer objectlerden benzersiz olarak tanımlayan== Distinguished Name'in tek bir bileşenidir. Örneğimizde, bjones objectnin Relative Distinguished Name (Göreli Ayırt Edici Ad) öğesidir. AD, aynı üst konteynar altında aynı ada sahip iki objectye izin vermez, ancak farklı DN'lere sahip oldukları için domainde yine de benzersiz olan aynı RDN'lere sahip iki object olabilir. Örneğin, `cn=bjones,dc=dev,dc=inlanefreight,dc=local` objectsi `cn=bjones,dc=inlanefreight,dc=local` objectsinden farklı olarak tanınır.
+
+* **Relative Distinguished Name (RDN)**, **Distinguished Name (DN)** içindeki her bir bileşeni temsil eder.
+* Bir **RDN**, o objenin bulunduğu düzeyde benzersiz olmasını sağlar. Yani, RDN sadece bulunduğu konteyner içinde diğer objelerden benzersizdir.
+
+- **RDN**: `cn=bjones` — Bu, objesinin adına karşılık gelir ve yalnızca objenin bulunduğu düzeyde benzersizdir. Yani, aynı düzeyde başka bir obje de `cn=bjones` adıyla var olabilir.
+- **DN**: `cn=bjones,ou=users,dc=dev,dc=inlanefreight,dc=local` — Bu, objeyi tamamen tanımlar ve her **DN** benzersizdir.
+
 
 ![Pasted image 20240927132125.png](/img/user/resimler/Pasted%20image%2020240927132125.png)
 
@@ -462,11 +469,49 @@ Active Directory'deki konteynar, **organizasyon birimlerini (OU) veya objecleri 
 [sAMAccountName](https://learn.microsoft.com/en-us/windows/win32/ad/naming-properties#samaccountname) kullanıcının oturum açma adıdır. Burada sadece bjones olacaktır. Benzersiz bir değer ve 20 veya daha az karakter olmalıdır.
 
 ### userPrincipalName
-[userPrincipalName](https://social.technet.microsoft.com/wiki/contents/articles/52250.active-directory-user-principal-name.aspx) özniteliği, AD'deki kullanıcıları tanımlamanın başka bir yoludur. Bu attribute, bjones@inlanefreight.local biçiminde bir önek (kullanıcı hesabı adı) ve bir sonekten ( domain adı) oluşur. Bu attribute zorunlu değildir.
+[userPrincipalName](https://social.technet.microsoft.com/wiki/contents/articles/52250.active-directory-user-principal-name.aspx) attribute'u, AD'deki kullanıcıları tanımlamanın başka bir yoludur. Bu attribute, bjones@inlanefreight.local biçiminde bir önek (kullanıcı hesabı adı) ve bir sonekten ( domain adı) oluşur. Bu attribute zorunlu değildir.
 
 
-### FSMO Rolleri
-AD'nin ilk günlerinde, bir ortamda birden fazla DC'niz varsa, hangi DC'nin değişiklik yapacağı konusunda kavga ederlerdi ve bazen değişiklikler düzgün yapılmazdı. Microsoft daha sonra “son yazan kazanır” uygulamasını hayata geçirdi, bu da son değişiklik işleri bozarsa kendi sorunlarını ortaya çıkarabilirdi. Daha sonra tek bir             “master” DC'nin domain'e değişiklikleri uygulayabildiği, diğerlerinin ise sadece kimlik doğrulama isteklerini yerine getirdiği bir model getirdiler. Bu hatalı bir tasarımdı çünkü master DC devre dışı kalırsa, geri yüklenene kadar ortamda hiçbir değişiklik yapılamıyordu. Bu tek hata noktası modelini çözmek için Microsoft, bir DC'nin sahip olabileceği çeşitli sorumlulukları [Flexible Single Master Operation](https://docs.microsoft.com/en-us/troubleshoot/windows-server/identity/fsmo-roles) (FSMO) rollerine ayırdı. Bunlar Domain Controller'lara (DC) kesintisiz olarak kullanıcıların kimliklerini doğrulamaya ve izinler vermeye devam etme (yetkilendirme ve kimlik doğrulama) olanağı verir. Beş FSMO rolü vardır: Schema Master ve Domain Naming Master (forest başına birer tane), Relative ID (RID) Master ( domain başına bir tane), Primary Domain Controller (PDC) Emulator (domain başına bir tane) ve Infrastructure Master (domain başına bir tane). Beş rolün tümü, yeni bir AD forest'ında forest root domain'indeki ilk DC'ye atanır. Bir forest'a her yeni domain eklendiğinde, yeni domain'e yalnızca RID Master, PDC Emulator ve Infrastructure Master rolleri atanır. FSMO rolleri genellikle domain controller'lar oluşturulduğunda ayarlanır, ancak gerekirse sysadmins bu rolleri aktarabilir. Bu roller AD'de çoğaltmanın sorunsuz çalışmasına yardımcı olur ve kritik hizmetlerin doğru şekilde çalışmasını sağlar. Bu rollerin her birini bu bölümün ilerleyen kısımlarında ayrıntılı olarak inceleyeceğiz.
+### FSMO Rolleri (Flexible Single Master Operation)
+
+Active Directory (AD) ortamında, özellikle çoklu Domain Controller (DC) olduğunda, birden fazla DC'nin aynı anda değişiklik yapmaya çalışması sorunlara yol açabiliyor. İlk başlarda, bu tür bir ortamda hangi DC’nin değişiklik yapacağı konusunda bir karışıklık oluyordu ve bazen değişiklikler düzgün şekilde uygulanamıyordu. Bunun sonucunda, ortamda uyumsuzluklar ve hatalar oluşabiliyordu.
+
+Microsoft bu problemi çözmek amacıyla, "==son yazan kazanır==" modelini geliştirdi. Ancak bu modelin de kendi sorunları vardı. Örneğin, son değişiklikler işlerse bile bazen işler karmaşık hale gelebiliyordu ve bu da ortama zarar verebiliyordu. Bu yüzden Microsoft, daha iyi bir model oluşturdu ve şu şekilde bir düzen getirdi:
+
+**“Bir DC yalnızca belirli değişiklikleri yapabilir ve diğer DC'ler sadece kimlik doğrulama ve yetkilendirme işlemlerini yapabilir.”**
+
+Bununla birlikte, Microsoft, bu çözümü daha güvenilir hale getirebilmek için Active Directory (AD) ortamındaki rollerin sorumluluklarını daha spesifik hale getirdi ve =="Flexible Single Master Operation" (FSMO==) adlı bir kavramı devreye soktu. FSMO, AD ortamındaki önemli sorumlulukları belirli bir DC’ye vererek, ortamın düzgün çalışmasını sağlıyor.
+
+#### FSMO Rolleri
+
+AD ortamındaki her Domain Controller (DC), bazı temel sorumlulukları yerine getirir. FSMO, bu sorumlulukları belirli DC'lere atar ve her bir role bir ana sorumlu atanır. Böylece, ortamda daha fazla denetim ve istikrar sağlanır.
+
+FSMO rollerinin 5 ana türü vardır:
+
+1. **Schema Master**: Bu rol, AD şemasındaki tüm yapısal değişikliklerden sorumludur. Bir AD Forest'ında ==yalnızca bir tane Schema Master== bulunur.
+    
+2. **Domain Naming Master**: Yeni domainler oluşturulduğunda veya mevcut domainler arasında değişiklikler yapıldığında, bu rol devreye girer. Bir AD Forest'ında yalnızca bir tane Domain Naming Master bulunur.
+    
+3. **RID Master**: Her domainin içinde benzersiz kimlik numaraları (RID'ler) atanır. Bu rol, kullanıcı ve grup nesneleri için benzersiz ID'lerin atanmasından sorumludur. Bir domain içinde yalnızca bir tane RID Master bulunur.
+    
+4. **PDC Emulator**: Eski Windows NT sistemleri ile uyumluluğu sağlamak için kullanılan bu rol, daha çok zaman senkronizasyonu ve şifre sıfırlama işlemleri gibi kritik görevleri yerine getirir. Her domain içinde yalnızca bir tane PDC Emulator bulunur.
+    
+5. **Infrastructure Master**: Bu rol, domainler arasında geçiş yaparken, kullanıcı ve grup bilgilerini güncel tutar. Bir domain içinde yalnızca bir tane Infrastructure Master bulunur.
+    
+
+#### FSMO Rolleri ve Dağıtımı
+
+Yeni bir AD forest'ı kurulduğunda, bu roller ilk başta forest’ın kök domain’indeki Domain Controller'a atanır. Ancak, bir forest’a yeni domain eklenirse, sadece **RID Master**, **PDC Emulator** ve **Infrastructure Master** rolleri yeni domain'e atanır. **Schema Master** ve **Domain Naming Master** rolleri her zaman forest genelinde yalnızca bir yerde bulunur.
+
+FSMO rolleri genellikle domain controller'lar oluşturulduğunda otomatik olarak atanır. Ancak, sistem yöneticileri gerektiğinde bu rolleri başka bir DC'ye devredebilir. Örneğin, bir DC’nin devre dışı kalması durumunda, FSMO rollerini başka bir DC’ye transfer etmek gerekebilir.
+
+#### Neden FSMO Rolleri Önemlidir?
+
+FSMO rollerinin doğru şekilde atanması, Active Directory’nin sorunsuz çalışması için kritik öneme sahiptir. Bu roller, AD’deki veritabanlarının doğru şekilde yönetilmesine, kimlik doğrulama ve yetkilendirme işlemlerinin düzgün bir şekilde yapılmasına, domainler arası geçişlerin sağlıklı bir şekilde yapılmasına ve genel sistemin istikrarlı çalışmasına yardımcı olur.
+
+#### Özetle:
+
+FSMO, Active Directory'nin doğru çalışmasını sağlamak için önemli rollerin her birini belirli Domain Controller'lara atar. Bu sayede, ortamda herhangi bir aksama ya da veri tutarsızlığı yaşanmaz. Sistemdeki kritik servislerin düzgün çalışması için bu rollerin doğru şekilde dağıtılması ve gerektiğinde transfer edilmesi önemlidir.
 
 
 ### Global Catalog
