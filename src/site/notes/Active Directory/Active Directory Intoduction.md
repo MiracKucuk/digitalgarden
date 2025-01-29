@@ -1144,6 +1144,12 @@ AP-REP paketinin içerisinde message H vardır. Message H client Server session 
 Client elindeki client server session keyi kullanarak message H'yi açar ve mesajın içinde kendi gönderdiği message G'yi elde ettiğinde Hedef SMTP Server'a authentice olduğunu doğrulamış olur. Ve böylece client kerberos authentication kullanarak giriş yapmak istediği SMTP Server'a giriş yapabilmiş olur.
 
 **Yukarıda anlatılan aşamalar detaylı bir şekilde aşağıdaki görsellerde verilmiştir:**
+![Pasted image 20250130015639.png](/img/user/Pasted%20image%2020250130015639.png)
+
+![Pasted image 20250130015650.png](/img/user/Pasted%20image%2020250130015650.png)
+
+![Pasted image 20250130015701.png](/img/user/Pasted%20image%2020250130015701.png)
+
 
 ```
 +-------------------+       +-------------------+
@@ -1221,6 +1227,47 @@ Kerberos protokolü 88 numaralı portu kullanır (hem TCP hem de UDP). Bir Activ
 ## DNS
 Active Directory Domain Services (AD DS), client'ların ( workstation'lar, server'lar ve domain ile iletişim kuran diğer sistemler) Domain Controllers'ı bulmalarını ve dizin servisini barındıran Domain Controllers'ın kendi aralarında iletişim kurmalarını sağlamak için DNS kullanır. DNS, host adlarını IP adreslerine çözümlemek için kullanılır ve iç ağlar ve internet genelinde yaygın olarak kullanılır. Private iç ağlar, serverlar, clientlar ve peerlar arasındaki iletişimi kolaylaştırmak için Active Directory DNS namespaces kullanır. AD, ağ üzerinde ==servis record'ları (SRV)== şeklinde çalışan servislerin bir veritabanını tutar. Bu servis record'ları AD ortamındaki Client'ların dosya sunucusu, yazıcı veya Domain Controller gibi ihtiyaç duydukları servisleri bulmalarını sağlar. Dinamik DNS, bir sistemin IP adresinin değişmesi durumunda DNS veritabanında otomatik olarak değişiklik yapmak için kullanılır. Bu girişleri manuel olarak yapmak çok zaman alır ve hataya yer bırakır. DNS veritabanında bir host için doğru IP adresi yoksa, client'lar bu host'u ağ üzerinde bulamaz ve onunla iletişim kuramazlar. Bir client ağa katıldığında, DNS servisine bir sorgu göndererek, DNS veritabanından bir ==SRV record== alarak ve Domain Controller'ın hostname'ini client'a ileterek Domain Controller'ı bulur. Client daha sonra Domain Controller'ın IP adresini almak için bu hostname'i kullanır. DNS, TCP ve UDP port 53'ü kullanır. UDP port 53 varsayılandır, ancak artık iletişim kurulamadığında ve DNS mesajları 512 bayttan büyük olduğunda TCP'ye geri döner.
 
+
+Bir SRV kaydı şu bilgileri içerir:
+
+- **Hizmet Adı (Service)**: Hizmetin adı (örneğin, `_ldap`, `_sip`, `_kerberos`).
+    
+- **Protokol (Protocol)**: Kullanılan protokol (örneğin, `_tcp`, `_udp`).
+    
+- **Domain**: Hizmetin bulunduğu domain.
+    
+- **Öncelik (Priority)**: servisin öncelik değeri (düşük değer daha yüksek öncelik anlamına gelir).
+    
+- **Ağırlık (Weight)**: Aynı önceliğe sahip sunucular arasında yük dağılımı için kullanılır.
+    
+- **Port **: Servisin çalıştığı port numarası.
+    
+- **Hedef (Target)**: Hizmeti sağlayan sunucunun adresi (örneğin, `server.example.com`).
+
+##### **SRV Record Formatı**
+
+```
+_Service._Protocol.Domain. TTL IN SRV Priority Weight Port Target
+```
+
+
+Örneğin, bir LDAP hizmeti için SRV kaydı şu şekilde olabilir:
+
+```
+_ldap._tcp.example.com. 3600 IN SRV 10 50 389 ldapserver.example.com.
+```
+
+##### **SRV Record Kullanım Alanları**
+
+- **Kerberos**: KDC (Key Distribution Center) sunucularını bulmak için.
+    
+- **LDAP**: LDAP sunucularını keşfetmek için.
+    
+- **SIP**: VoIP hizmetlerinde kullanılan SIP sunucularını belirtmek için.
+    
+- **Active Directory**: Domain Controller'ları bulmak için.
+
+
 ##### Özet : 
 
 - Active Directory Domain Services (AD DS), client'ların Domain Controllers'ı bulmasını ve Domain Controllers'ın kendi aralarında iletişim kurmasını sağlamak için DNS kullanır.
@@ -1234,6 +1281,9 @@ Active Directory Domain Services (AD DS), client'ların ( workstation'lar, serve
 - Client'lar, AD ortamındaki ihtiyaç duydukları servisleri (dosya sunucusu, yazıcı, Domain Controller vb.) SRV record'ları ile bulurlar.
 
 - Dinamik DNS, bir sistemin IP adresi değiştiğinde DNS veritabanını otomatik olarak günceller.
+
+- **SRV Record (Service Record)**, DNS (Domain Name System) içinde kullanılan bir kayıt türüdür. Belirli bir hizmetin (service) hangi sunucuda ve hangi portta çalıştığını belirtmek için kullanılır. SRV record, özellikle ağ üzerindeki servislerin otomatik olarak keşfedilmesini sağlar.
+
 
 - Manuel DNS güncellemeleri zaman alıcı ve hata yapmaya açıktır.
 
@@ -1267,11 +1317,12 @@ Tek bir hostun IP adresini bulmak istersek, bunu tersten yapabiliriz. Bunu FQDN 
 
 
 ## LDAP
-Active Directory, dizin aramaları için[ Lightweight Directory Access Protocol](https://en.wikipedia.org/wiki/Lightweight_Directory_Access_Protocol)'ü (LDAP) destekler. LDAP, çeşitli dizin servislerine (AD gibi) yönelik kimlik doğrulama için kullanılan açık kaynaklı ve platformlar arası bir protokoldür. En son LDAP spesifikasyonu RFC 4511 olarak yayınlanan [Versiyon 3](https://tools.ietf.org/html/rfc4511)'tür. LDAP'ın AD ortamında nasıl çalıştığını anlamak saldırganlar ve savunmacılar için çok önemlidir. LDAP 389 numaralı portu kullanır ve SSL üzerinden LDAP (LDAPS) 636 numaralı port üzerinden iletişim kurar.
+
+Active Directory, dizin aramaları için[ Lightweight Directory Access Protocol](https://en.wikipedia.org/wiki/Lightweight_Directory_Access_Protocol)'ü (LDAP) destekler. LDAP, çeşitli dizin servislerine (AD gibi) yönelik kimlik doğrulama için kullanılan açık kaynaklı ve platformlar arası bir protokoldür. En son LDAP spesifikasyonu RFC 4511 olarak yayınlanan [Versiyon 3](https://tools.ietf.org/html/rfc4511)'tür. LDAP'ın AD ortamında nasıl çalıştığını anlamak saldırganlar ve savunmacılar için çok önemlidir. ==LDAP 389== numaralı portu kullanır ve SSL üzerinden ==LDAP (LDAPS) 636== numaralı port üzerinden iletişim kurar.
 
 AD, kullanıcı hesap bilgilerini ve parolalar gibi güvenlik bilgilerini depolar ve bu bilgilerin ağ üzerindeki diğer cihazlarla paylaşılmasını kolaylaştırır. LDAP, uygulamaların dizin servislerini sağlayan diğer sunucularla iletişim kurmak için kullandığı dildir. Başka bir deyişle, LDAP ağ ortamındaki sistemlerin AD ile “==konuşabilmesini==” sağlar.
 
-Bir LDAP oturumu ilk olarak Directory System Agent olarak da bilinen bir LDAP sunucusuna bağlanarak başlar. AD'deki Domain Controller, güvenlik kimlik doğrulama istekleri gibi LDAP isteklerini etkin bir şekilde dinler.
+Bir LDAP oturumu ilk olarak ==Directory System Agent== olarak da bilinen bir LDAP sunucusuna bağlanarak başlar. AD'deki Domain Controller, güvenlik kimlik doğrulama istekleri gibi LDAP isteklerini etkin bir şekilde dinler.
 
 ![Pasted image 20241001155009.png](/img/user/resimler/Pasted%20image%2020241001155009.png)
 - **Client Application** , kullanıcı bilgileri için bir request gönderir.
@@ -1280,13 +1331,15 @@ Bir LDAP oturumu ilk olarak Directory System Agent olarak da bilinen bir LDAP su
 - **Active Directory** kullanıcı bilgilerini bulur ve yanıt olarak **API Gateway**'e geri gönderir.
 - API Gateway, kullanıcı bilgilerini tekrar **Client Application**'a ileterek isteği tamamlar.
 
-AD ve LDAP arasındaki ilişki Apache ve HTTP ile karşılaştırılabilir. Apache'nin HTTP protokolünü kullanan bir web sunucusu olması gibi, Active Directory de LDAP protokolünü kullanan bir dizin sunucusudur.
+AD ve LDAP arasındaki ilişki Apache ve HTTP ile karşılaştırılabilir. Apache'nin HTTP protokolünü kullanan bir web sunucusu olması gibi, Active Directory de LDAP protokolünü kullanan bir ==dizin sunucusudur==.
 
 Nadiren de olsa, bir değerlendirme yaparken AD'ye sahip olmayan ancak LDAP kullanan kuruluşlarla karşılaşabilirsiniz, bu da büyük olasılıkla [OpenLDAP](https://en.wikipedia.org/wiki/OpenLDAP) gibi başka bir LDAP sunucusu kullandıkları anlamını taşır.
 
 
 ### AD LDAP Authentication (Kimlik Doğrulama)
-LDAP, bir LDAP oturumu için kimlik doğrulama durumunu ayarlamak üzere bir “BIND” işlemi kullanarak kimlik bilgilerini AD'ye karşı doğrulamak üzere ayarlanmıştır. İki tür LDAP kimlik doğrulaması vardır. 
+LDAP, bir LDAP oturumu için kimlik doğrulama durumunu ayarlamak üzere bir “==BIND==” işlemi kullanarak kimlik bilgilerini AD'ye karşı doğrulamak üzere ayarlanmıştır. İki tür LDAP kimlik doğrulaması vardır. 
+
+BIND, LDAP sunucusuna bir istemcinin kimlik bilgilerini göndererek kimlik doğrulama işlemi yaptığı bir ==protokol komutudur.==
 
 **BIND**, LDAP client'inin sunucuya bağlanıp kimlik doğrulaması yapması için kullanılan bir mekanizmadır.
 
@@ -1294,7 +1347,7 @@ LDAP, bir LDAP oturumu için kimlik doğrulama durumunu ayarlamak üzere bir “
 
 * ==SASL Authentication==: [Basit Kimlik Doğrulama ve Security Layer](https://en.wikipedia.org/wiki/Simple_Authentication_and_Security_Layer) (SASL) framework'ü LDAP sunucusuna bağlanmak için Kerberos gibi diğer kimlik doğrulama servislerini kullanır ve ardından LDAP'ye kimlik doğrulaması yapmak için bu kimlik doğrulama servisini (bu örnekte Kerberos) kullanır. LDAP sunucusu, yetkilendirme servisinde bir LDAP mesajı göndermek için LDAP protokolünü kullanır ve bu da başarılı ya da başarısız kimlik doğrulamasıyla sonuçlanan bir dizi challenge/response mesajı başlatır. SASL, kimlik doğrulama yöntemlerinin uygulama protokollerinden ayrılması nedeniyle ek güvenlik sağlayabilir.
 
-LDAP kimlik doğrulama mesajları varsayılan olarak açık metin olarak gönderilir, böylece herhangi biri iç ağdaki LDAP mesajlarını koklayabilir. Bu bilgileri aktarım sırasında korumak için TLS şifrelemesi veya benzerinin kullanılması önerilir.
+==LDAP kimlik doğrulama mesajları varsayılan olarak açık metin olarak gönderilir, böylece herhangi biri iç ağdaki LDAP mesajlarını koklayabilir.== Bu bilgileri aktarım sırasında korumak için TLS şifrelemesi veya benzerinin kullanılması önerilir.
 
 ---
 LDAP'taki **BIND**, bir LDAP oturumunda kimlik doğrulama durumunu belirlemek için kullanılan bir işlemdir. Bu işlem, client ile server arasında bir oturum başlatır ve client'in kimliğini doğrulamak için kullanılır. Başka bir deyişle, BIND, LDAP üzerinden erişim sağlamak için kimlik bilgilerini doğrulama sürecidir.
