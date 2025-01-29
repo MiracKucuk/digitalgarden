@@ -156,7 +156,7 @@ Her **object**, özelliklerini tanımlayan **attributes**'lere sahiptir ve bu **
 
 
 ### Schema
-**Active Directory Schema**, **Active Directory**'deki **object**'lerin nasıl yapılandırıldığını ve birbirleriyle nasıl ilişkilendirildiklerini tanımlayan bir **plan** gibidir. Bu **Schema**, ağdaki tüm **object**'lerin türlerini, bu **object**'lerin hangi özelliklere sahip olduklarını (attributes) ve her bir **object**'in nasıl düzenleneceğini belirler.
+**Active Directory Schema**, **Active Directory**'deki **object**'lerin nasıl yapılandırıldığını ve birbirleriyle nasıl ilişkilendirildiklerini tanımlayan bir **plan** (blueprint) gibidir. Bu **Schema**, ağdaki tüm **object**'lerin türlerini, bu **object**'lerin hangi özelliklere sahip olduklarını (attributes) ve her bir **object**'in nasıl düzenleneceğini belirler.
 
 #### Schema Ne İşe Yarar?
 
@@ -492,7 +492,7 @@ FSMO rollerinin 5 ana türü vardır:
     
 2. **Domain Naming Master**: Yeni domainler oluşturulduğunda veya mevcut domainler arasında değişiklikler yapıldığında, bu rol devreye girer. Bir AD Forest'ında yalnızca bir tane Domain Naming Master bulunur.
     
-3. **RID Master**: Her domainin içinde benzersiz kimlik numaraları (RID'ler) atanır. Bu rol, kullanıcı ve grup nesneleri için benzersiz ID'lerin atanmasından sorumludur. Bir domain içinde yalnızca bir tane RID Master bulunur.
+3. **RID Master**: Her domainin içinde benzersiz kimlik numaraları (RID'ler) atanır. Bu rol, kullanıcı ve grup nesneleri için benzersiz ID'lerin atanmasından sorumludur. Bir domain ==içinde yalnızca bir tane RID Master== bulunur.
     
 4. **PDC Emulator**: Eski Windows NT sistemleri ile uyumluluğu sağlamak için kullanılan bu rol, daha çok zaman senkronizasyonu ve şifre sıfırlama işlemleri gibi kritik görevleri yerine getirir. Her domain içinde yalnızca bir tane PDC Emulator bulunur.
     
@@ -501,7 +501,7 @@ FSMO rollerinin 5 ana türü vardır:
 
 #### FSMO Rolleri ve Dağıtımı
 
-Yeni bir AD forest'ı kurulduğunda, bu roller ilk başta forest’ın kök domain’indeki Domain Controller'a atanır. Ancak, bir forest’a yeni domain eklenirse, sadece **RID Master**, **PDC Emulator** ve **Infrastructure Master** rolleri yeni domain'e atanır. **Schema Master** ve **Domain Naming Master** rolleri her zaman forest genelinde yalnızca bir yerde bulunur.
+Yeni bir AD forest'ı kurulduğunda, bu roller ilk başta forest’ın root domain’indeki Domain Controller'a atanır. Ancak, bir forest’a yeni domain eklenirse, sadece **RID Master**, **PDC Emulator** ve **Infrastructure Master** rolleri yeni domain'e atanır. **Schema Master** ve **Domain Naming Master** rolleri her zaman forest genelinde yalnızca bir yerde bulunur.
 
 FSMO rolleri genellikle domain controller'lar oluşturulduğunda otomatik olarak atanır. Ancak, sistem yöneticileri gerektiğinde bu rolleri başka bir DC'ye devredebilir. Örneğin, bir DC’nin devre dışı kalması durumunda, FSMO rollerini başka bir DC’ye transfer etmek gerekebilir.
 
@@ -515,108 +515,269 @@ FSMO, Active Directory'nin doğru çalışmasını sağlamak için önemli rolle
 
 
 ### Global Catalog
-[Global katalog](https://learn.microsoft.com/en-us/windows/win32/ad/global-catalog) (GC), Active Directory forest'taki TÜM objectlerin kopyalarını depolayan bir domain controller'dır. GC, geçerli domain'deki tüm objectlerin tam bir kopyasını ve forest'taki diğer domain'lere ait objectlerin kısmi bir kopyasını saklar. Standart domain controller'lar kendi domain'ine ait objectlerin tam bir kopyasını tutar ancak forest'taki farklı domain'lere ait objectlerin kopyasını tutmaz. GC, hem kullanıcıların hem de uygulamaların forest'ındaki HERHANGİ bir domain'deki herhangi bir object hakkında bilgi bulmasını sağlar. GC, bir domain controller üzerinde etkinleştirilen bir özelliktir ve aşağıdaki fonksiyonları yerine getirir:
+[Global katalog](https://learn.microsoft.com/en-us/windows/win32/ad/global-catalog) (GC), Active Directory forest'taki ==TÜM objectlerin kopyalarını== depolayan bir domain controller'dır. GC, geçerli domain'deki tüm objectlerin tam bir kopyasını ve forest'taki diğer domain'lere ait objectlerin kısmi bir kopyasını saklar. Standart domain controller'lar kendi domain'ine ait objectlerin tam bir kopyasını tutar ancak forest'taki farklı domain'lere ait objectlerin kopyasını tutmaz. GC, hem kullanıcıların hem de uygulamaların forest'ındaki HERHANGİ bir domain'deki herhangi bir object hakkında bilgi bulmasını sağlar. GC, bir domain controller üzerinde etkinleştirilen bir özelliktir ve aşağıdaki fonksiyonları yerine getirir:
 * Authentication (bir access token oluşturulduğunda dahil edilen, bir kullanıcı hesabının ait olduğu tüm gruplar için sağlanan yetkilendirme)
-* Obje arama (bir forest içindeki dizin yapısını şeffaf hale getirerek, bir obje hakkında sadece bir öznitelik sağlayarak bir forest içindeki tüm domainler arasında arama yapılmasına izin verir).
+* Obje arama (bir forest içindeki dizin yapısını şeffaf hale getirerek, bir obje hakkında sadece bir attribute sağlayarak bir forest içindeki tüm domainler arasında arama yapılmasına izin verir).
 
 
-### Read-Only Domain Controller (RODC)
-[Read-Only Domain Controller](https://learn.microsoft.com/en-us/windows/win32/ad/rodc-and-active-directory-schema) (RODC) sadece okunabilir bir Active Directory veritabanına sahiptir. Bir RODC'de hiçbir AD hesabı parolası önbelleğe alınmaz (RODC bilgisayar hesabı ve RODC KRBTGT parolaları dışında.) Bir RODC'nin AD veritabanı, SYSVOL veya DNS aracılığıyla hiçbir değişiklik dışarı aktarılmaz. RODC'ler ayrıca salt okunur bir DNS sunucusu içerir, yönetici rolü ayrımına izin verir, ortamdaki replikasyon trafiğini azaltır ve SYSVOL değişikliklerinin diğer DC'lere replike edilmesini önler.
+### Read-Only Domain Controller (RODC) Nedir?
+
+**RODC**, Active Directory (AD) ortamında, ==sadece okuma işlemlerini== yapabilen özel bir Domain Controller türüdür. Yani, RODC üzerinde yapılan herhangi bir değişiklik, AD veritabanına yansımaz. RODC, bir DC (Domain Controller) gibi çalışabilir, ancak **veritabanı, SYSVOL ve DNS** gibi bileşenler sadece **okuma** modunda olup, değişiklikler yalnızca başka bir "normal" Domain Controller tarafından yapılabilir.
+
+#### RODC'nin Özellikleri:
+
+1. **Salt Okunur Veritabanı**: RODC üzerinde **Active Directory veritabanı** sadece okunabilir. Yani, kullanıcı bilgileri, grup üyelikleri gibi veriler burada sadece görüntülenebilir. Ancak, RODC'de bu verilere herhangi bir değişiklik yapılmaz. Değişiklikler ancak bir **yazılabilir (read-write) Domain Controller** üzerinden yapılabilir.
+    
+2. **Parola Cache'lenmemesi**: RODC, **kullanıcı parolalarını** local olarak saklamaz. Bu, güvenlik açısından önemli bir özelliktir çünkü RODC'ye fiziksel olarak erişim sağlansa dahi, burada saklanan parolalar saldırganların eline geçemez. Ancak **RODC bilgisayar hesabı ve RODC'nin kendi KRBTGT parolaları** dışında, parolalar cache'lenmez. Yani, bir kullanıcı ilk defa RODC üzerinden oturum açarsa, oturum açma işlemi bir yazılabilir Domain Controller üzerinden gerçekleşir.
+    
+3. **Veri Replikasyonu**: RODC'ler, **veritabanı değişikliklerini** diğer Domain Controller'larla senkronize etmez. Bu, **SYSVOL** (yazılım dağıtımı, grup policy vb. bilgileri tutan alan) gibi bileşenlerin RODC üzerinden **değiştirilmesini engeller**. Yani, RODC, sadece verileri **okur** ve sistemdeki diğer DC'lere **değişiklik göndermediği** için replikasyon trafiği de azalır. Bu da sistemin daha verimli çalışmasını sağlar.
+    
+4. **DNS Sunucusu**: RODC, aynı zamanda bir **DNS sunucusu** içerir, ancak bu DNS sunucu da sadece okunabilir durumdadır. Bu özellik, özellikle uzak şubelerde ya da güvenliği artırılmış bölgelerde RODC kullanılmasını destekler. DNS sunucusunun okuma işlemleri yapılabilir, ancak veritabanı güncellenemez.
+    
+5. **Yönetici Rolü Ayrımı (Delegation of Admin Roles)**: RODC'ler, **admin rolleri ayrımı** sağlar. Yani, RODC üzerinde, şube yöneticileri veya belirli kullanıcılar bazı yönetimsel görevleri yerine getirebilir, ancak genel AD veritabanına yapılan değişikliklere müdahale edemezler. Bu özellik, şube ofisleri veya uzak lokasyonlar için ideal bir çözüm sunar çünkü şube yöneticileri yalnızca gerekli görevleri yerine getirir, ancak tüm ağ üzerinde kapsamlı değişiklik yapma yetkisine sahip olmazlar.
+    
+6. **Güvenlik**: RODC, uzak ofislerde veya daha az güvenli ortamlarda kullanılmak üzere tasarlanmış bir çözüm sunar. Çünkü şube ofislerinde veya dış lokasyonlarda, merkezi Active Directory veritabanı üzerinde değişiklik yapma ihtiyacı olmayan kullanıcıların talepleri için RODC'ler kullanılır. Bu sayede, merkezi veritabanının güvenliği risk altında olmadan, kullanıcılara **okuma erişimi** sağlanır.
+    
+
+#### RODC Kullanım Senaryoları:
+
+- **Uzak Ofisler ve Şubeler**: Uzak ofislerde ve şubelerde, merkezi Active Directory sunucusuna doğrudan erişim sağlamak yerine, **RODC** kullanarak, şubedeki kullanıcıların kimlik doğrulama işlemleri gerçekleştirilir. Ancak, tüm değişiklikler ana domain controller’a iletilir.
+    
+- **Güvenlik Risklerinin Azaltılması**: Eğer uzak ofiste fiziksel güvenlik önlemleri zayıfsa, RODC kullanmak **parola güvenliği** açısından faydalıdır. Çünkü, RODC üzerinde parolalar saklanmaz, bu da olası bir fiziksel saldırı durumunda **gizliliğin korunmasını** sağlar.
+    
+- **Replikasyon Trafiği ve Yük Azaltma**: RODC’ler, diğer Domain Controller’larla sadece belirli zamanlarda replikasyon yapar, bu da replikasyon trafiğini azaltır ve genel ağ yükünü hafifletir.
+    
+
+#### Özetle:
+
+RODC, Active Directory’nin sadece okunabilir bir versiyonunu sunar ve bu da özellikle uzak ofislerde güvenliği artırırken, veritabanı değişikliklerini merkezi kontrol altına almayı sağlar. Bu, şube ofislerinde veya fiziksel güvenliğin daha düşük olduğu ortamlarda güvenlik risklerini azaltırken, ağda veri replikasyonunu optimize eder. Bu tür bir yapı, çoklu ofislerin olduğu büyük organizasyonlarda ideal bir çözüm sunar.
 
 
 ### Replication
-[Replikasyon](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/replication/active-directory-replication-concepts), AD objectleri güncelleştirildiğinde ve bir Domain Controller'dan diğerine aktarıldığında AD'de gerçekleşir. Bir DC eklendiğinde, bunlar arasındaki çoğaltmayı yönetmek için bağlantı objectleri oluşturulur. Bu bağlantılar, tüm DC'lerde bulunan Knowledge Consistency Checker (KCC) hizmeti tarafından yapılır. Replikasyon, değişikliklerin bir forestdaki diğer tüm DC'lerle senkronize edilmesini sağlar ve bir domain controller'ın arızalanması durumunda bir yedek oluşturulmasına yardımcı olur.
+[Replikasyon](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/replication/active-directory-replication-concepts), AD objectleri güncelleştirildiğinde ve bir Domain Controller'dan diğerine aktarıldığında AD'de gerçekleşir. Bir DC eklendiğinde, bunlar arasındaki replikasyon'u yönetmek için bağlantı objectleri oluşturulur. Bu bağlantılar, tüm DC'lerde bulunan Knowledge Consistency Checker (KCC) servisi tarafından yapılır. Replikasyon, değişikliklerin bir forestdaki diğer tüm DC'lerle senkronize edilmesini sağlar ve bir domain controller'ın arızalanması durumunda bir yedek oluşturulmasına yardımcı olur.
 
 
 ### Service Principal Name  (SPN)
-[Service Principal Name](https://learn.microsoft.com/en-us/windows/win32/ad/service-principal-names) (SPN) bir hizmet örneğini benzersiz bir şekilde tanımlar. Kerberos kimlik doğrulaması tarafından bir hizmet örneğini bir oturum açma hesabıyla ilişkilendirmek için kullanılırlar ve bir istemci uygulamanın hesap adını bilmesine gerek kalmadan bir hesabın kimliğini doğrulamak için hizmetten talepte bulunmasına olanak tanırlar.
+[Service Principal Name](https://learn.microsoft.com/en-us/windows/win32/ad/service-principal-names) (SPN) bir service örneğini benzersiz bir şekilde tanımlar. Kerberos kimlik doğrulaması tarafından bir servis örneğini bir oturum açma hesabıyla ilişkilendirmek için kullanılırlar ve bir client uygulamanın hesap adını bilmesine gerek kalmadan bir hesabın kimliğini doğrulamak için service'den talepte bulunmasına olanak tanırlar.
 
+#### Örnek Senaryo:
+
+Bir organizasyonda, **kerberos** ile kimlik doğrulaması yapan bir kullanıcı, bir **web sunucusu**na bağlanmak istiyor. Bu sunucunun adı `www.example.com` ve üzerinde çalışan servis, `HTTP` servisi. Burada **SPN** şu şekilde olabilir:
+
+```
+HTTP/www.example.com
+```
+
+Bu SPN, **HTTP** servisini **[www.example.com](http://www.example.com)** üzerinde benzersiz bir şekilde tanımlar. client, `HTTP/www.example.com` SPN'si ile Kerberos kimlik doğrulaması yaparak, doğru servise bağlanabilir.
 
 ### Group Policy Object (GPO)
-[Group Policy objectleri (GPO'lar)](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/policy/group-policy-objects) ilke ayarlarının sanal koleksiyonlarıdır. Her GPO'nun benzersiz bir GUID'si vardır. Bir GPO local dosya sistemi ayarlarını veya Active Directory ayarlarını içerebilir. GPO ayarları hem kullanıcı hem de bilgisayar objectlerine uygulanabilir. Domain içindeki tüm kullanıcılara ve bilgisayarlara uygulanabilir veya OU düzeyinde daha ayrıntılı olarak tanımlanabilirler.
+
+**Group Policy Object (GPO)**, Windows ortamlarında bilgisayarlar ve kullanıcılar için merkezi olarak yapılandırma ayarlarını ve politikalarını belirlemeye yarayan bir yönetim aracıdır.
+
+[Group Policy objectleri (GPO'lar)](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/policy/group-policy-objects) ==policy ayarlarının sanal koleksiyonlarıdır==. Her GPO'nun benzersiz bir GUID'si vardır. Bir GPO local dosya sistemi ayarlarını veya Active Directory ayarlarını içerebilir. GPO ayarları hem kullanıcı hem de bilgisayar objectlerine uygulanabilir. Domain içindeki tüm kullanıcılara ve bilgisayarlara uygulanabilir veya OU düzeyinde daha ayrıntılı olarak tanımlanabilirler.
 
 
 ### Access Control List (ACL)
 [Erişim Kontrol Listesi (ACL)](https://learn.microsoft.com/en-us/windows/win32/secauthz/access-control-lists), bir object için geçerli olan Erişim Kontrol Girişlerinin (ACE'ler) sıralı koleksiyonudur.
 
+**Access Control List (ACL)**, bir dosya, klasör veya ağ kaynağı üzerindeki erişim haklarını belirleyen bir listedir. Her ACL, kullanıcılar ve gruplar için izinleri tanımlar, böylece hangi kullanıcıların veya grupların kaynağa ne tür erişim (okuma, yazma, yürütme) sağladığını belirler. ACL'ler, güvenlik ve yönetim amaçlı olarak kaynaklara kimlerin erişebileceğini ve hangi işlemleri yapabileceğini denetler.
+
 ### Access Control Entries (ACEs)
-Bir ACL'deki her [Erişim Denetimi Girişi ](https://learn.microsoft.com/en-us/windows/win32/secauthz/access-control-entries)(ACE) bir mutemedi (kullanıcı hesabı, grup hesabı veya oturum açma oturumu) tanımlar ve söz konusu mutemet için izin verilen, reddedilen veya denetlenen erişim haklarını listeler.
+
+Her Access Control Entry (ACE), bir ACL'deki bir Trustee (kullanıcı hesabı, grup hesabı veya oturum açma oturumu) ilişkin kimlik bilgilerini belirler ve belirtilen Trustee için izin verilen, reddedilen veya denetlenen erişim haklarını listeler.
+
+**Trustee**: Erişim haklarına sahip olan kişi veya varlık, yani bir kullanıcı hesabı, grup hesabı veya oturum açma oturumudur.
+
+Access Control Entries (ACE), bir Access Control List (ACL) içinde bulunan ve belirli bir kullanıcı veya grubun bir kaynağa (dosya, dizin, nesne vb.) erişim izinlerini tanımlayan tek bir giriştir.
 
 ### Discretionary Access Control List (DACL)
-DACL'ler hangi güvenlik ilkelerine bir objectye erişim izni verildiğini veya reddedildiğini tanımlar; ACE'lerin bir listesini içerir. Bir işlem güvenli bir objectye erişmeye çalıştığında, sistem erişim izni verip vermeyeceğini belirlemek için objectnin DACL'sindeki ACE'leri kontrol eder. Bir objectnin DACL'si yoksa, sistem herkese tam erişim izni verir, ancak DACL'de ACE girişi yoksa, sistem tüm erişim girişimlerini reddeder. DACL'deki ACE'ler, istenen haklara izin veren bir eşleşme bulunana kadar veya erişim reddedilene kadar sırayla kontrol edilir.
+
+DACL'ler (Discretionary Access Control List), hangi security policy'lerine (kullanıcı veya gruplar) bir objeye erişim izni verildiğini veya reddedildiğini tanımlar; bu liste, ACE'lerden (Access Control Entries) oluşur. Bir process, güvenli bir nesneye erişmeye çalıştığında, sistem, erişime izin verilip verilmeyeceğini belirlemek için objenin DACL'sindeki ACE'leri kontrol eder. Eğer bir objenin DACL'si yoksa, sistem herkese tam erişim izni verir, ancak DACL'de hiç ACE girişi yoksa, sistem tüm erişim girişimlerini reddeder. DACL'deki ACE'ler, istenen hakları veren bir eşleşme bulunana veya erişim reddedilene kadar sırayla kontrol edilir.
+
+----
+
+### **DACL (Discretionary Access Control List) ve ACE (Access Control Entries) Nedir?**
+
+1. **DACL Nedir?**
+    
+    - DACL, bir objeye (dosya, dizin, kaynak vb.) kimlerin erişebileceğini veya erişemeyeceğini belirleyen bir listedir.
+        
+    - Bu liste, **ACE'lerden (Access Control Entries)** oluşur. Her ACE, belirli bir kullanıcı veya grubun erişim izinlerini tanımlar.
+        
+2. **ACE Nedir?**
+    
+    - ACE, DACL içindeki tek bir giriştir ve belirli bir kullanıcı veya gruba **izin verilen** veya **reddedilen** erişim haklarını belirtir.
+        
+    - Örneğin, bir ACE, "Ahmet" kullanıcısına bir dosyayı okuma izni verebilir veya "Yöneticiler" grubuna yazma iznini reddedebilir.
+        
+3. **Erişim Kontrolü Nasıl Çalışır?**
+    
+    - Bir process, bir objeye erişmeye çalıştığında, sistem şu adımları izler:
+        
+        - Nesnenin DACL'sini kontrol eder.
+            
+        - DACL içindeki ACE'leri sırayla inceler.
+            
+        - Eğer bir ACE, processin erişim talebini karşılıyorsa (izin veriyorsa veya reddediyorsa), process sonlandırılır.
+            
+        - Eğer hiçbir ACE eşleşmezse, erişim reddedilir.
+            
+4. **DACL Olmazsa Ne Olur?**
+    
+    - Eğer bir objenin **DACL'si yoksa**, sistem **herkese tam erişim** izni verir. Bu, herkesin o objeyi okuyabileceği, yazabileceği veya değiştirebileceği anlamına gelir.
+        
+5. **DACL Var Ama ACE Yoksa Ne Olur?**
+    
+    - Eğer bir objenin DACL'si var ancak içinde **hiç ACE yoksa**, sistem **tüm erişim girişimlerini reddeder**. Yani, hiç kimse o objeye erişemez.
+        
+6. **ACE'lerin Sırası Neden Önemli?**
+    
+    - DACL'deki ACE'ler, **sırayla** kontrol edilir. İlk eşleşen ACE, erişim kararını belirler. Bu nedenle, ACE'lerin doğru sıralanması önemlidir. Örneğin, bir kullanıcıya önce izin veren bir ACE, ardından erişimi reddeden bir ACE varsa, erişim izni verilir.
+        
+
+
+### **Özet:**
+
+- **DACL**, bir objeye kimlerin erişebileceğini belirler.
+    
+- **ACE**, DACL içindeki tek bir izin veya reddetme kuralıdır.
+    
+- DACL yoksa, **herkese tam erişim** verilir.
+    
+- DACL var ama ACE yoksa, **hiç kimse erişemez**.
+    
+- Erişim kontrolü, ACE'lerin sırayla kontrol edilmesiyle gerçekleşir.
+
+
+---
+
 
 ### Sistem Erişim Kontrol Listeleri (SACL)
-Yöneticilerin güvenli objectlere yapılan erişim denemelerini günlüğe kaydetmesini sağlar. ACE'ler, sistemin güvenlik olay günlüğünde bir kayıt oluşturmasına neden olan erişim girişimlerinin türlerini belirtir.
+Yöneticilerin güvenli objectlere yapılan erişim denemelerini loga kaydetmesini sağlar. ACE'ler, sistemin güvenlik olay günlüğünde bir kayıt oluşturmasına neden olan erişim girişimlerinin türlerini belirtir.
 
+**SACL (System Access Control List)**, bir objeye (dosya, dizin vb.) yapılan erişim girişimlerinin **kaydedilmesini** ve **denetlenmesini** sağlayan bir listedir. DACL'den farklı olarak, SACL erişim izinlerini yönetmez; sadece hangi erişim türlerinin (okuma, yazma, silme gibi) **log kaydı** olarak tutulacağını belirler. Özellikle güvenlik ve uyumluluk için kullanılır. Örneğin, bir dosyaya kimlerin eriştiğini veya değişiklik yaptığını kaydeder.
 
 ### Fully Qualified Domain Name (FQDN)
-FQDN, belirli bir bilgisayar veya ana bilgisayar için tam addır. Ana bilgisayar adı ve etki alanı adı ile [ana bilgisayar adı].[etki alanı adı].[tld] biçiminde yazılır. Bu, bir objectnin DNS tree hiyerarşisindeki konumunu belirtmek için kullanılır. FQDN, IP adresini bilmeden Active Directory'deki ana bilgisayarları bulmak için kullanılabilir, tıpkı ilişkili IP adresini yazmak yerine google.com gibi bir web sitesine göz atarken olduğu gibi. Örnek olarak INLANEFREIGHT.LOCAL etki alanındaki DC01 ana bilgisayarı verilebilir. Buradaki FQDN DC01.INLANEFREIGHT.LOCAL olacaktır.
+FQDN, belirli bir bilgisayar veya host için tam addır. Host adı ve domain adı ile `[host].[domain].[tld]` biçiminde yazılır. Bu, bir objectnin DNS tree hiyerarşisindeki konumunu belirtmek için kullanılır. FQDN, IP adresini bilmeden Active Directory'deki hostları bulmak için kullanılabilir, tıpkı ilişkili IP adresini yazmak yerine google.com gibi bir web sitesine göz atarken olduğu gibi. Örnek olarak INLANEFREIGHT.LOCAL domaindeki DC01 hostu verilebilir. Buradaki FQDN ==DC01.INLANEFREIGHT.LOCAL== olacaktır.
 
 
 ### Tombstone
-[Tombstone](https://ldapwiki.com/wiki/Wiki.jsp?page=Tombstone), AD'de silinen AD objectlerini tutan bir kapsayıcı objectsidir. Bir object AD'den silindiğinde, object Tombstone Lifetime olarak bilinen belirli bir süre boyunca kalır ve isDeleted özniteliği TRUE olarak ayarlanır. Bir object Tombstone Lifetime süresini aştığında, tamamen kaldırılır. Microsoft, yedeklemelerin kullanışlılığını artırmak için 180 günlük bir mezar taşı ömrü önerir, ancak bu değer ortamlar arasında farklılık gösterebilir. DC işletim sistemi sürümüne bağlı olarak, bu değer varsayılan olarak 60 veya 180 gün olacaktır. AD Recycle Bin'i olmayan bir domain'de bir object silinirse, bu object bir tombstone objectsi haline gelir. Bu durumda, object özniteliklerinin çoğundan arındırılır ve tombstoneLifetime süresi boyunca Silinen objectler kapsayıcısına yerleştirilir. Kurtarılabilir, ancak kaybolan öznitelikler artık kurtarılamaz.
+[Tombstone](https://ldapwiki.com/wiki/Wiki.jsp?page=Tombstone), AD'de silinen AD objectlerini tutan bir container objectsidir. Bir object AD'den silindiğinde, object ==Tombstone Lifetime== olarak bilinen belirli bir süre boyunca kalır ve ==isDeleted== attribute'u ==TRUE== olarak ayarlanır. Bir object Tombstone Lifetime süresini aştığında, tamamen kaldırılır. Microsoft, yedeklemelerin kullanışlılığını artırmak için 180 günlük bir Tombstone önerir, ancak bu değer ortamlar arasında farklılık gösterebilir. DC işletim sistemi sürümüne bağlı olarak, bu değer varsayılan olarak 60 veya 180 gün olacaktır. AD Recycle Bin'i olmayan bir domain'de bir object silinirse, bu object bir tombstone objectsi haline gelir. Bu durumda, object attributelerinin çoğundan arındırılır ve tombstoneLifetime süresi boyunca Silinen objectler container'a yerleştirilir. Kurtarılabilir, ancak ==kaybolan attribute'ler artık kurtarılamaz==.
 
+**AD Recycle Bin (Active Directory Geri Dönüşüm Kutusu)**, Active Directory'de yanlışlıkla silinen objelerin (kullanıcılar, gruplar, bilgisayarlar vb.) kolayca **geri getirilmesini** sağlayan bir özelliktir. Bu özellik sayesinde, silinen objelerin orijinal özellikleriyle (özellikler, üyelikler vb.) birlikte geri yüklenebilir.
 
 ### AD Recycle Bin 
-[AD Geri Dönüşüm Kutusu](https://techcommunity.microsoft.com/t5/ask-the-directory-services-team/the-ad-recycle-bin-understanding-implementing-best-practices-and/ba-p/396944), silinen AD objectlerinin kurtarılmasını kolaylaştırmak için ilk olarak Windows Server 2008 R2'de kullanıma sunulmuştur. Bu, sistem yöneticilerinin objectleri geri yüklemesini kolaylaştırarak yedeklerden geri yükleme, Active Directory Etki Alanı Hizmetlerini (AD DS) yeniden başlatma veya Domain Controller'ı yeniden başlatma ihtiyacını ortadan kaldırdı. AD Geri Dönüşüm Kutusu etkinleştirildiğinde, silinen objectler belirli bir süre korunur ve gerektiğinde geri yüklemeyi kolaylaştırır. Sistem yöneticileri bir objectnin silinmiş ve kurtarılabilir durumda ne kadar süre kalacağını ayarlayabilir. Bu belirtilmezse, object varsayılan değer olan 60 gün boyunca geri yüklenebilir. AD Geri Dönüşüm Kutusu'nu kullanmanın en büyük avantajı, silinen bir objectnin özniteliklerinin çoğunun korunmasıdır; bu da silinen bir objectyi önceki durumuna tamamen geri yüklemeyi çok daha kolay hale getirir.
+[AD Geri Dönüşüm Kutusu](https://techcommunity.microsoft.com/t5/ask-the-directory-services-team/the-ad-recycle-bin-understanding-implementing-best-practices-and/ba-p/396944), silinen AD objectlerinin kurtarılmasını kolaylaştırmak için ilk olarak Windows Server 2008 R2'de kullanıma sunulmuştur. Bu, sistem yöneticilerinin objectleri geri yüklemesini kolaylaştırarak yedeklerden geri yükleme, Active Directory Domain Servisleri (AD DS) yeniden başlatma veya Domain Controller'ı yeniden başlatma ihtiyacını ortadan kaldırdı. AD Geri Dönüşüm Kutusu etkinleştirildiğinde, silinen objectler belirli bir süre korunur ve gerektiğinde geri yüklemeyi kolaylaştırır. Sistem yöneticileri bir objectnin silinmiş ve kurtarılabilir durumda ne kadar süre kalacağını ayarlayabilir. Bu belirtilmezse, object varsayılan değer olan ==60 gün== boyunca geri yüklenebilir. AD Geri Dönüşüm Kutusu'nu kullanmanın en büyük avantajı, silinen bir objectnin attribute'lerinin çoğunun korunmasıdır; bu da silinen bir objectyi önceki durumuna tamamen geri yüklemeyi çok daha kolay hale getirir.
 
 
 ### SYSVOL
-[SYSVOL](https://social.technet.microsoft.com/wiki/contents/articles/8548.active-directory-sysvol-and-netlogon.aspx) klasörü veya paylaşımı, domain'deki sistem ilkeleri, Group Policy ayarları, oturum açma/kapatma komut dosyaları gibi genel dosyaların kopyalarını saklar ve genellikle AD ortamında çeşitli görevleri gerçekleştirmek için yürütülen diğer komut dosyalarını içerir. SYSVOL klasörünün içeriği, File Replication Services (FRS) kullanılarak ortamdaki tüm DC'lere çoğaltılır. SYSVOL yapısı hakkında daha fazla bilgiyi [buradan](https://networkencyclopedia.com/sysvol-share/#Components-and-Structure) okuyabilirsiniz.
+[SYSVOL](https://social.technet.microsoft.com/wiki/contents/articles/8548.active-directory-sysvol-and-netlogon.aspx) klasörü veya paylaşımı, domain'deki system policyleri, Group Policy ayarları, oturum açma/kapatma script dosyaları gibi genel dosyaların kopyalarını saklar ve genellikle AD ortamında çeşitli görevleri gerçekleştirmek için yürütülen diğer komut dosyalarını içerir. SYSVOL klasörünün içeriği, File Replication Services (FRS) kullanılarak ortamdaki tüm DC'lere çoğaltılır. SYSVOL yapısı hakkında daha fazla bilgiyi [buradan](https://networkencyclopedia.com/sysvol-share/#Components-and-Structure) okuyabilirsiniz.
+
+---
+**SYSVOL**, Active Directory (AD) ortamlarında, domain içinde paylaşılan bir klasördür ve Group Policy objeleri ile oturum açma komut dosyaları gibi önemli dosyaları depolamak için kullanılır. SYSVOL, domaindeki tüm Domain Controller'lar (DC) arasında otomatik olarak çoğaltılır ve bu sayede group policyleri ve diğer yapılandırmalar tüm DC'ler tarafından tutarlı bir şekilde uygulanabilir.
+
+---
+
 
 
 ### AdminSDHolder
-[AdminSDHolder](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/plan/security-best-practices/appendix-c--protected-accounts-and-groups-in-active-directory) objectsi, ayrıcalıklı olarak işaretlenmiş AD'deki built-in grupların üyeleri için ACL'leri yönetmek için kullanılır. Korumalı grupların üyelerine uygulanan Security Descriptor'ı tutan bir kapsayıcı görevi görür. SDProp (SD Propagator) işlemi, PDC Emulator Domain Controller üzerinde bir zamanlama ile çalışır. Bu işlem çalıştığında, korunan grupların üyelerini kontrol ederek onlara doğru ACL'nin uygulandığından emin olur. Varsayılan olarak her saat çalışır. Örneğin, bir saldırganın bir kullanıcıya Domain Admins grubunun bir üyesi üzerinde belirli haklar vermek için kötü amaçlı bir ACL girişi oluşturabildiğini varsayalım. Bu durumda, AD'deki diğer ayarları değiştirmedikleri sürece, SDProp işlemi belirlenen aralıkta çalıştığında bu haklar kaldırılacaktır (ve elde etmeyi umdukları kalıcılığı kaybedeceklerdir).
+[AdminSDHolder](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/plan/security-best-practices/appendix-c--protected-accounts-and-groups-in-active-directory) objectsi, ayrıcalıklı olarak işaretlenmiş AD'deki built-in grupların üyeleri için ACL'leri yönetmek için kullanılır. Korumalı grupların üyelerine uygulanan Security Descriptor'ı tutan bir konteynar görevi görür. SDProp (SD Propagator) işlemi, PDC Emulator Domain Controller üzerinde bir zamanlama ile çalışır. Bu işlem çalıştığında, korunan grupların üyelerini kontrol ederek onlara doğru ACL'nin uygulandığından emin olur. Varsayılan olarak her saat çalışır. Örneğin, bir saldırganın bir kullanıcıya Domain Admins grubunun bir üyesi üzerinde belirli haklar vermek için kötü amaçlı bir ACL girişi oluşturabildiğini varsayalım. Bu durumda, AD'deki diğer ayarları değiştirmedikleri sürece, SDProp işlemi belirlenen aralıkta çalıştığında bu haklar kaldırılacaktır (ve elde etmeyi umdukları kalıcılığı kaybedeceklerdir).
+
+----
+- **AdminSDHolder nedir?**
+    
+    - **AdminSDHolder**, Active Directory'deki ayrıcalıklı grupların (örneğin, Domain Admins, Enterprise Admins gibi) üyeleri için **Access Control List (ACL)**'leri yöneten özel bir objedir.
+    - Bu obje, korunan grupların üyelerine uygulanacak güvenlik tanımını (Security Descriptor) saklayan bir konteyner görevi görür.
+
+- **SDProp işlemi nedir ve nasıl çalışır?**
+    
+    - **SDProp (Security Descriptor Propagator)**, AdminSDHolder objesindeki ACL'leri korunan grupların üyelerine düzenli aralıklarla uygular.
+    - Bu işlem, yalnızca **Primary Domain Controller (PDC) Emulator** rolüne sahip Domain Controller üzerinde çalışır.
+    - **Varsayılan çalışma sıklığı:** SDProp işlemi her saat çalışacak şekilde yapılandırılmıştır.
+
+- **SDProp işleminin amacı nedir?**
+    
+    - Korumalı grupların üyelerine doğru ACL'lerin uygulandığından emin olmak.
+    - Yanlışlıkla veya kötü niyetli olarak yapılan ACL değişikliklerini otomatik olarak düzeltmek.
+
+- **Örnek durum:**
+    
+    - Bir saldırgan, bir kullanıcıya **Domain Admins** grubunun bir üyesi üzerinde kötü niyetli bir ACL eklediğinde, bu işlem bir güvenlik açığı yaratabilir.
+    - Ancak SDProp işlemi, belirli zaman aralıklarında çalıştığında bu değişikliği tespit eder ve AdminSDHolder'daki doğru ACL ile yeniden yapılandırır.
+    - Bu mekanizma, saldırganın yapmaya çalıştığı kalıcı izin değişikliklerini etkisiz hale getirir.
+
+---
+
 
 
 ### dsHeuristics
-[dsHeuristics](https://learn.microsoft.com/en-us/windows/win32/adschema/a-dsheuristics) özniteliği, forest çapında birden fazla yapılandırma ayarı tanımlamak için kullanılan Directory Service objectsinde ayarlanan bir string değeridir. Bu ayarlardan biri, built-in grupların [Protected Groups](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/plan/security-best-practices/appendix-c--protected-accounts-and-groups-in-active-directory) listesinden çıkarılmasıdır. Bu listedeki gruplar AdminSDHolder objectsi aracılığıyla değiştirilmeye karşı korunur. Bir grup dsHeuristics özniteliği aracılığıyla hariç tutulursa, SDProp işlemi çalıştığında onu etkileyen herhangi bir değişiklik geri alınmaz.
+[dsHeuristics](https://learn.microsoft.com/en-us/windows/win32/adschema/a-dsheuristics) attribute, forest çapında birden fazla yapılandırma ayarı tanımlamak için kullanılan Directory Service objectsinde ayarlanan bir string değeridir. Bu ayarlardan biri, built-in grupların [Protected Groups](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/plan/security-best-practices/appendix-c--protected-accounts-and-groups-in-active-directory) listesinden çıkarılmasıdır. Bu listedeki gruplar AdminSDHolder objectsi aracılığıyla değiştirilmeye karşı korunur. Bir grup dsHeuristics attribute'u aracılığıyla hariç tutulursa, SDProp işlemi çalıştığında onu etkileyen herhangi bir değişiklik geri alınmaz.
 
 
 ### adminCount
-[adminCount](https://learn.microsoft.com/en-us/windows/win32/adschema/a-admincount) özniteliği SDProp işleminin bir kullanıcıyı koruyup korumadığını belirler. Değer 0 olarak ayarlanırsa veya belirtilmezse, kullanıcı korunmaz. Öznitelik değeri value olarak ayarlanırsa, kullanıcı korunur. Saldırganlar genellikle dahili bir ortamda hedef almak için adminCount özniteliği 1 olarak ayarlanmış hesapları ararlar. Bunlar genellikle ayrıcalıklı hesaplardır ve daha fazla erişime veya etki alanının tamamen ele geçirilmesine yol açabilir.
+[adminCount](https://learn.microsoft.com/en-us/windows/win32/adschema/a-admincount) attribute'u SDProp işleminin bir kullanıcıyı koruyup korumadığını belirler. Değer 0 olarak ayarlanırsa veya belirtilmezse, kullanıcı korunmaz. Attribute değeri value olarak ayarlanırsa, kullanıcı korunur. Saldırganlar genellikle dahili bir ortamda hedef almak için adminCount attribute'u 1 olarak ayarlanmış hesapları ararlar. Bunlar genellikle ayrıcalıklı hesaplardır ve daha fazla erişime veya domainin tamamen ele geçirilmesine yol açabilir.
 
 ### Active Directory Kullanıcıları ve Bilgisayarları (ADUC)
-ADUC, AD'deki kullanıcıları, grupları, bilgisayarları ve kişileri yönetmek için yaygın olarak kullanılan bir GUI konsoludur. ADUC'de yapılan değişiklikler PowerShell aracılığıyla da yapılabilir.
+ADUC, AD'deki kullanıcıları, grupları, bilgisayarları ve kişileri yönetmek için yaygın olarak kullanılan bir ==GUI konsoludur==. ADUC'de yapılan değişiklikler PowerShell aracılığıyla da yapılabilir.
 
 ### ADSI Edit
-ADSI Edit, AD'deki objectleri yönetmek için kullanılan bir GUI aracıdır. ADUC'de bulunandan çok daha fazlasına erişim sağlar ve bir object üzerinde bulunan herhangi bir özniteliği ayarlamak veya silmek, object eklemek, kaldırmak ve taşımak için kullanılabilir. Kullanıcının AD'ye çok daha derin bir düzeyde erişmesini sağlayan güçlü bir araçtır. Buradaki değişiklikler AD'de büyük sorunlara neden olabileceğinden, bu aracı kullanırken çok dikkatli olunmalıdır.
+ADSI Edit, AD'deki objectleri yönetmek için kullanılan bir GUI aracıdır. ADUC'de bulunandan çok daha fazlasına erişim sağlar ve bir object üzerinde bulunan herhangi bir attribute'u ayarlamak veya silmek, object eklemek, kaldırmak ve taşımak için kullanılabilir. Kullanıcının AD'ye çok daha derin bir düzeyde erişmesini sağlayan güçlü bir araçtır. Buradaki değişiklikler AD'de büyük sorunlara neden olabileceğinden, bu aracı kullanırken çok dikkatli olunmalıdır.
 
 ### sIDHistory
-[Bu](https://learn.microsoft.com/en-us/defender-for-identity/security-assessment-unsecure-sid-history-attribute) öznitelik, bir objectye daha önce atanmış olan tüm SID'leri tutar. Genellikle geçişlerde kullanılır, böylece bir kullanıcı bir domain'den diğerine geçtiğinde aynı erişim seviyesini koruyabilir. Bu öznitelik, güvenli olmayan bir şekilde ayarlanırsa potansiyel olarak kötüye kullanılabilir ve SID Filtreleme (veya bir kullanıcının erişim belirtecinden başka bir etki alanından gelen ve yükseltilmiş erişim için kullanılabilecek SID'lerin kaldırılması) etkinleştirilmezse bir saldırganın bir hesabın geçişten önce sahip olduğu yükseltilmiş erişimi elde etmesine olanak tanır.
 
+- [**SID History ](https://docs.microsoft.com/en-us/defender-for-identity/cas-isp-unsecure-sid-history-attribute)Attribute nedir?**
+    
+    - Bir objectye daha önce atanmış olan **Security Identifier (SID)**'leri tutar.
+    - Genellikle kullanıcıların bir domain'den diğerine geçişlerinde aynı erişim seviyelerini koruması amacıyla kullanılır.
+- **Kullanım amacı:**
+    
+    - **Geçiş senaryolarında**, kullanıcıların eski domain'deki kaynaklara erişmeye devam edebilmesini sağlamak.
+    - Yeni domain'e taşındıktan sonra bile eski SID'leri içeren SID History sayesinde eski izinlere erişilebilir.
+- **Güvenlik riski:**
+    
+    - Eğer **SID History** attribute güvenli bir şekilde yapılandırılmazsa, kötüye kullanılabilir.
+    - Bir saldırgan, geçişten önce sahip olunan yükseltilmiş erişimi yeniden kazanabilir.
+- **SID Filtreleme nedir ve nasıl korunma sağlar?**
+    
+    - **SID Filtering**, bir domain'in access token'ından diğer domain'den gelen SID'leri kaldırır.
+    - Bu mekanizma, farklı domainlerden gelen SID'lerin kötüye kullanılmasını engeller.
+- **Örnek güvenlik açığı:**
+    
+    - SID Filtreleme etkin değilse, bir saldırgan geçiş sırasında bir hesabın eski domain'deki yükseltilmiş erişim SID'lerini kullanarak kaynaklara izinsiz erişim sağlayabilir.
 
+Bu nedenle, SID History güvenli şekilde ayarlanmalı ve **SID Filtering** mekanizması aktif hale getirilmelidir.
 ### NTDS.DIT
-NTDS.DIT dosyası Active Directory'nin kalbi olarak kabul edilebilir. Bir Domain Controller üzerinde C:\Windows\NTDS\ adresinde depolanır ve kullanıcı ve grup objectleri, grup üyeliği ve saldırganlar ve sızma testçileri için en önemlisi domain'deki tüm kullanıcıların parola hash'leri gibi AD verilerini depolayan bir veritabanıdır. Domain'in tam olarak ele geçirilmesinden sonra, bir saldırgan bu dosyayı alabilir, hash'leri çıkarabilir ve bunları bir pass-the-hash saldırısı gerçekleştirmek için kullanabilir ya da domain'deki ek kaynaklara erişmek için Hashcat gibi bir araç kullanarak çevrimdışı olarak kırabilir. [Parolayı tersine çevrilebilir şifreleme ile sakla ayarı etkinleştirilmişse](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption), NTDS.DIT bu ilke ayarlandıktan sonra oluşturulan veya parolasını değiştiren tüm kullanıcıların açık metin parolalarını da saklar. Nadiren de olsa, bazı kuruluşlar kimlik doğrulama için kullanıcının mevcut parolasını (Kerberos'u değil) kullanması gereken uygulamalar veya protokoller kullanıyorsa bu ayarı etkinleştirebilir.
+NTDS.DIT dosyası Active Directory'nin kalbi olarak kabul edilebilir. Bir Domain Controller üzerinde `C:\Windows\NTDS\` adresinde depolanır ve kullanıcı ve grup objectleri, grup üyeliği ve saldırganlar ve sızma testçileri için en önemlisi domain'deki tüm kullanıcıların parola hash'leri gibi AD verilerini depolayan bir veritabanıdır. Domain'in tam olarak ele geçirilmesinden sonra, bir saldırgan bu dosyayı alabilir, hash'leri çıkarabilir ve bunları bir pass-the-hash saldırısı gerçekleştirmek için kullanabilir ya da domain'deki ek kaynaklara erişmek için Hashcat gibi bir araç kullanarak çevrimdışı olarak kırabilir. [Parolayı tersine çevrilebilir şifreleme ile sakla ayarı etkinleştirilmişse](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption), NTDS.DIT bu politika ayarlandıktan sonra oluşturulan veya parolasını değiştiren tüm kullanıcıların açık metin parolalarını da saklar. Nadiren de olsa, bazı kuruluşlar kimlik doğrulama için kullanıcının mevcut parolasını (Kerberos'u değil) kullanması gereken uygulamalar veya protokoller kullanıyorsa bu ayarı etkinleştirebilir.
 
 
 ### MSBROWSE
-MSBROWSE, Windows tabanlı local alan ağlarının (LAN) ilk sürümlerinde tarama hizmetleri sağlamak için kullanılan bir Microsoft ağ protokolüdür. Ağda bulunan paylaşılan yazıcılar ve dosyalar gibi kaynakların bir listesini tutmak ve kullanıcıların bu kaynaklara kolayca göz atmasına ve erişmesine izin vermek için kullanılırdı.
+
+MSBROWSE, Windows tabanlı local alan ağlarının (LAN) ilk sürümlerinde ==tarama servisleri sağlamak için kullanılan bir Microsoft ağ protokolüdür==. Ağda bulunan paylaşılan yazıcılar ve dosyalar gibi kaynakların bir listesini tutmak ve kullanıcıların bu kaynaklara kolayca göz atmasına ve erişmesine izin vermek için kullanılırdı.
 
 Windows'un eski sürümlerinde Master Browser'ı aramak için nbtstat -A ip-adresini kullanabilirdik. Eğer MSBROWSE görürsek bu Master Browser olduğu anlamına gelir. Ayrıca nltest yardımcı programını kullanarak bir Windows Master Browser'ı Domain Controller'ların isimleri için sorgulayabilirdik.
 
-Günümüzde MSBROWSE büyük ölçüde eskimiştir ve artık yaygın olarak kullanılmamaktadır. Modern Windows tabanlı LAN'lar dosya ve yazıcı paylaşımı için Server Message Block (SMB) protokolünü ve tarama hizmetleri için Common Internet File System (CIFS) protokolünü kullanmaktadır.
+Günümüzde MSBROWSE büyük ölçüde eskimiştir ve artık yaygın olarak kullanılmamaktadır. Modern Windows tabanlı LAN'lar dosya ve yazıcı paylaşımı için ==Server Message Block (SMB)== protokolünü ve tarama hizmetleri için ==Common Internet File System (CIFS)== protokolünü kullanmaktadır.
 
 
-Bir Active Directory ortamının “Blueprint ”i olarak ne bilinir? (==Schema==)
+Soru : Bir Active Directory ortamının “Blueprint ”i olarak ne bilinir? (==Schema==)
 
 Bir Service örneğini benzersiz olarak tanımlayan nedir? (tam ad, boşluk bırakılmış, kısaltılmamış) (==Service Principal Name==)
 
 Doğru veya Yanlış; Group Policy objectleri kullanıcı ve bilgisayar objectlerine uygulanabilir. (==Evet==)
 
-AD'de silinen objectleri hangi kapsayıcı tutar? (==Tombstone==)
+AD'de silinen objectleri hangi konteynar tutar? (==Tombstone==)
 
 Bir domain'deki tüm kullanıcıların parolalarının hash'lerini içeren dosya hangisidir? (==NTDS.DIT==)
 
 
 
 #### Active Directory Objects
-AD'den bahsederken sık sık “ objeler” terimini göreceğiz. Obje nedir? object, Active ==Directory== ortamında bulunan OU'lar, yazıcılar, kullanıcılar, domain denetleyicileri gibi HERHANGİ bir kaynak olarak tanımlanabilir.
+AD'den bahsederken sık sık “ objeler ” terimini göreceğiz. Obje nedir? object, Active ==Directory== ortamında bulunan OU'lar, yazıcılar, kullanıcılar, domain controller gibi HERHANGİ bir kaynak olarak tanımlanabilir.
 
 ![Pasted image 20240927135340.png](/img/user/resimler/Pasted%20image%2020240927135340.png)
 
 ### Users
-Bunlar kuruluşun AD ortamındaki kullanıcılardır. Kullanıcılar ==leaf objectler== olarak kabul edilir; bu da içlerinde başka objectler barındıramayacakları anlamına gelir. Leaf objectye bir başka örnek de Microsoft Exchange'deki posta kutusudur. Bir user objectsi bir security sorumlusu olarak kabul edilir ve bir security Identifier'a (SID) ve bir genel benzersiz tanımlayıcıya (GUID) sahiptir. Kullanıcı objectleri, görünen adları, son oturum açma zamanı, son parola değiştirme tarihi, e-posta adresi, hesap açıklaması, yönetici, adres ve daha fazlası gibi birçok olası [attribute](http://www.kouti.com/tables/userattributes.htm) sahiptir. Belirli bir Active Directory ortamının nasıl kurulduğuna bağlı olarak, burada ayrıntılı olarak [açıklandığı](https://www.easy365manager.com/how-to-get-all-active-directory-user-object-attributes/) gibi TÜM olası attribute'ler hesaba katıldığında 800'den fazla olası kullanıcı attribute'i olabilir. Bu örnek, çoğu ortamda standart bir kullanıcı için tipik olarak doldurulanların çok ötesine geçer, ancak Active Directory'nin büyüklüğünü ve karmaşıklığını gösterir. Düşük ayrıcalıklı bir kullanıcıya erişim elde etmek bile birçok objectye ve kaynağa erişim sağlayabileceğinden ve tüm domainin (veya forest'in) ayrıntılı bir şekilde numaralandırılmasına izin verebileceğinden, saldırganlar için çok önemli bir hedeftir.
+Bunlar kuruluşun AD ortamındaki kullanıcılardır. Kullanıcılar ==leaf objectler== olarak kabul edilir; bu da içlerinde başka objectler barındıramayacakları anlamına gelir. Leaf objectye bir başka örnek de Microsoft Exchange'deki posta kutusudur. Bir user objectsi bir security sorumlusu olarak kabul edilir ve bir ==security Identifier'a (SID)== ve bir genel benzersiz tanımlayıcıya (==GUID==) sahiptir. Kullanıcı objectleri, görünen adları, son oturum açma zamanı, son parola değiştirme tarihi, e-posta adresi, hesap açıklaması, yönetici, adres ve daha fazlası gibi birçok olası [attribute](http://www.kouti.com/tables/userattributes.htm) sahiptir. Belirli bir Active Directory ortamının nasıl kurulduğuna bağlı olarak, burada ayrıntılı olarak [açıklandığı](https://www.easy365manager.com/how-to-get-all-active-directory-user-object-attributes/) gibi TÜM olası attribute'ler hesaba katıldığında 800'den fazla olası kullanıcı attribute'i olabilir. Bu örnek, çoğu ortamda standart bir kullanıcı için tipik olarak doldurulanların çok ötesine geçer, ancak Active Directory'nin büyüklüğünü ve karmaşıklığını gösterir. 
 
 
 ### Contacts
@@ -626,7 +787,7 @@ Bir kişi objesi genellikle external bir kullanıcıyı temsil etmek için kulla
 
 ### Printers
 
-Printer objesi, AD ağı içinde erişilebilen bir yazıcıya işaret eder. Kişi gibi, yazıcı da bir ==leaf objesidir== ve bir security principal değildir, bu nedenle yalnızca bir GUID'ye sahiptir. Yazıcıların, yazıcının adı, sürücü bilgileri, port numarası vb. gibi attribute'leri vardır.
+Printer objesi, AD ağı içinde erişilebilen bir yazıcıya işaret eder. Kişi gibi, yazıcı da bir ==leaf objesidir== ve bir ==security principal değildir==, bu nedenle yalnızca bir GUID'ye sahiptir. Yazıcıların, yazıcının adı, sürücü bilgileri, port numarası vb. gibi attribute'leri vardır.
 
 
 ### Computers
@@ -647,7 +808,7 @@ Açıkça erişim izni verilmeyen herkes, bu klasörün içeriğini listelemek v
 
 ### Groups
 
-Bir grup, kullanıcılar, bilgisayarlar ve hatta diğer gruplar dahil olmak üzere diğer objeleri içerebildiği için bir container objesi olarak kabul edilir. Bir grup bir security principal olarak kabul edilir ve bir SID ile bir GUID'ye sahiptir. AD'de gruplar, kullanıcı izinlerini ve diğer güvenli objelere (hem kullanıcılar hem de bilgisayarlar) erişimi yönetmenin bir yoludur. Diyelim ki 20 help desk kullanıcısına bir jump host üzerindeki Remote Management Users grubuna erişim vermek istiyoruz. Kullanıcıları tek tek eklemek yerine, grubu ekleyebiliriz ve kullanıcılar gruptaki üyelikleri aracılığıyla istenen izinleri devralırlar. Active Directory'de genellikle “ [nested groups](https://docs.microsoft.com/en-us/windows/win32/ad/nesting-a-group-in-another-group)” (bir grubun başka bir grubun üyesi olarak eklenmesi) olarak adlandırılan ve kullanıcı(lar)ın istenmeyen haklar elde etmesine yol açabilen durumları görürüz. Nested grup üyeliği, sızma testleri sırasında gördüğümüz ve sıklıkla yararlandığımız bir şeydir. BloodHound aracı, bir ağ içindeki saldırı yollarını keşfetmeye ve bunları grafiksel bir arayüzde göstermeye yardımcı olur. Grup üyeliğini denetlemek ve nested grup üyeliğinin bazen istenmeyen etkilerini ortaya çıkarmak/görmek için mükemmeldir. AD'deki gruplar birçok [attribute](http://www.selfadsi.org/group-attributes.htm) 'e sahip olabilir; en yaygın olanları grubun adı, açıklaması, üyeliği ve ait olduğu diğer gruplardır. Bu modülün ilerleyen bölümlerinde daha ayrıntılı olarak ele alacağımız birçok başka attribute de ayarlanabilir.
+Bir grup, kullanıcılar, bilgisayarlar ve hatta diğer gruplar dahil olmak üzere diğer objeleri içerebildiği için bir ==container objesi== olarak kabul edilir. Bir grup bir ==security principal olarak kabul edilir== ve bir SID ile bir GUID'ye sahiptir. AD'de gruplar, kullanıcı izinlerini ve diğer güvenli objelere (hem kullanıcılar hem de bilgisayarlar) erişimi yönetmenin bir yoludur. Diyelim ki 20 help desk kullanıcısına bir jump host üzerindeki Remote Management Users grubuna erişim vermek istiyoruz. Kullanıcıları tek tek eklemek yerine, grubu ekleyebiliriz ve kullanıcılar gruptaki üyelikleri aracılığıyla istenen izinleri devralırlar. Active Directory'de genellikle “ [nested groups](https://docs.microsoft.com/en-us/windows/win32/ad/nesting-a-group-in-another-group)” (bir grubun başka bir grubun üyesi olarak eklenmesi) olarak adlandırılan ve kullanıcı(lar)ın istenmeyen haklar elde etmesine yol açabilen durumları görürüz.  AD'deki gruplar birçok [attribute](http://www.selfadsi.org/group-attributes.htm) 'e sahip olabilir; en yaygın olanları grubun adı, açıklaması, üyeliği ve ait olduğu diğer gruplardır. Bu modülün ilerleyen bölümlerinde daha ayrıntılı olarak ele alacağımız birçok başka attribute de ayarlanabilir.
 
 ### Organizational Units (OUs)
 
@@ -665,7 +826,7 @@ Domain, bir AD ağının yapısıdır. Domain'ler, gruplar ve OU'lar gibi kontey
 
 ### Domain Controllers
 
-Domain Controller'lar esasen bir AD ağının beynidir. Kimlik doğrulama isteklerini ele alır, ağdaki kullanıcıları doğrular ve domain'deki çeşitli kaynaklara kimlerin erişebileceğini kontrol ederler. Tüm erişim istekleri domain controller aracılığıyla doğrulanır ve ayrıcalıklı erişim istekleri kullanıcılara atanan önceden belirlenmiş rollere dayanır. Ayrıca güvenlik politikalarını uygular ve domain'deki diğer tüm objeler hakkında bilgi depolar.
+Domain Controller'lar esasen bir AD ağının beynidir. Kimlik doğrulama isteklerini ele alır, ağdaki kullanıcıları doğrular ve domain'deki çeşitli kaynaklara kimlerin erişebileceğini kontrol ederler. Tüm erişim istekleri domain controller aracılığıyla doğrulanır ve ayrıcalıklı erişim istekleri kullanıcılara atanan önceden belirlenmiş rollere dayanır. Ayrıca security politikalarını uygular ve domain'deki diğer tüm objeler hakkında bilgi depolar.
 
 
 ### Sites
@@ -704,13 +865,14 @@ Cevap : ==Domain Controller==
 
 Daha önce de belirtildiği gibi, beş adet Flexible Single Master Operation (FSMO) rolü bulunmaktadır. Bu roller aşağıdaki gibi tanımlanabilir:
 
-|**Rol**|**Açıklama**|
-|---|---|
-|**Schema Master**|Bu rol, **Active Directory (AD)** şemasının okuma/yazma kopyasını yönetir. Şema, AD'deki bir **object**’e uygulanabilecek tüm **attribute**’leri tanımlar.|
-|**Domain Naming Master**|**Domain** isimlerini yönetir ve aynı **forest** içerisinde aynı ada sahip iki **domain** oluşturulmasını engeller.|
-|**Relative ID (RID) Master**|**RID Master**, **domain** içerisindeki diğer **DC**’lere yeni **object**’ler için kullanılabilecek **RID** blokları atar. Bu rol, birden fazla **object**’e aynı **SID** atanmasını engeller. **Domain object SID**’leri, **domain SID**’nin, **object**’e atanmış **RID** numarasıyla birleştirilmesiyle oluşturulur ve benzersiz bir **SID** sağlar.|
-|**PDC Emulator**|Bu role sahip olan **host**, **domain**’deki yetkili **DC**’dir ve kimlik doğrulama isteklerine, şifre değişikliklerine yanıt verir ve **Group Policy Object (GPO)**’ları yönetir. **PDC Emulator**, ayrıca **domain** içerisinde zamanı senkronize eder.|
-|**Infrastructure Master**|Bu rol, **GUID**, **SID** ve **DN**’leri **domain**’ler arasında çevirir. Bu rol, tek bir **forest** içinde birden fazla **domain** bulunan organizasyonlarda kullanılır ve bu **domain**’lerin birbiriyle iletişim kurmasına yardımcı olur. Eğer bu rol düzgün çalışmıyorsa, **Access Control List (ACL)**’lerde **SID**’ler tam çözümlenmiş isimler yerine **SID** olarak görünür.|
+| **Rol**                      | **Açıklama**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Schema Master**            | Bu rol, **Active Directory (AD)** şemasının okuma/yazma kopyasını yönetir. Şema, AD'deki bir **object**’e uygulanabilecek tüm **attribute**’leri tanımlar.                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| **Domain Naming Master**     | **Domain** isimlerini yönetir ve aynı **forest** içerisinde aynı ada sahip iki **domain** oluşturulmasını engeller.                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| **Relative ID (RID) Master** | **RID Master**, **domain** içerisindeki diğer **DC**’lere yeni **object**’ler için kullanılabilecek **RID** blokları atar. Bu rol, birden fazla **object**’e aynı **SID** atanmasını engeller. **Domain object SID**’leri, **domain SID**’nin, **object**’e atanmış **RID** numarasıyla birleştirilmesiyle oluşturulur ve benzersiz bir **SID** sağlar.                                                                                                                                                                                                                           |
+| **PDC Emulator**             | Bu role sahip olan **host**, **domain**’deki yetkili **DC**’dir ve kimlik doğrulama isteklerine, şifre değişikliklerine yanıt verir ve **Group Policy Object (GPO)**’ları yönetir. **PDC Emulator**, ayrıca **domain** içerisinde zamanı senkronize eder.                                                                                                                                                                                                                                                                                                                         |
+| **Infrastructure Master**    | Bu rol, **GUID**, **SID** ve **DN**’leri **domain**’ler arasında çevirir. Bu rol, tek bir **forest** içinde birden fazla **domain** bulunan organizasyonlarda kullanılır ve bu **domain**’lerin birbiriyle iletişim kurmasına yardımcı olur. Eğer bu rol düzgün çalışmıyorsa, **Access Control List (ACL)**’lerde **SID**’ler tam çözümlenmiş isimler yerine **SID** olarak görünür. **Infrastructure Master**, Active Directory'de domain içindeki obje referanslarını ve diğer domainlerdeki objelere ait referansları güncel tutarak doğru cross-domain bağlantılarını sağlar. |
+|                              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 
 
 Organizasyonun yapısına bağlı olarak, bu roller belirli **Domain Controller (DC)**’lara atanabilir veya her yeni **DC** eklendiğinde varsayılan olarak atanabilir. **FSMO** rolleriyle ilgili sorunlar, bir **domain** içerisinde kimlik doğrulama ve yetkilendirme zorluklarına yol açar.
@@ -718,7 +880,7 @@ Organizasyonun yapısına bağlı olarak, bu roller belirli **Domain Controller 
 
 #### Domain and Forest Functional Levels
 
-Microsoft, **Active Directory Domain Services (AD DS)**'de, **domain** ve **forest** seviyesindeki çeşitli özellikleri ve yetenekleri belirlemek için **functional level** kavramını tanıttı. **Functional level**’lar, ayrıca bir **domain** veya **forest** içinde hangi Windows Server işletim sistemlerinin **Domain Controller** olarak çalışabileceğini belirlemek için de kullanılır. [Bu](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/cc754918(v=ws.10)?redirectedfrom=MSDN) ve [bu](https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/active-directory-functional-levels) makaleler, Windows 2000 native’den Windows Server 2012 R2’ye kadar olan hem **domain** hem de **forest functional level**’larını açıklar. Aşağıda, Windows 2000 native’den Windows Server 2016’ya kadar olan **domain functional level**’larının farklarına hızlı bir bakış sunulmaktadır. Bu farklar, bir önceki seviyedeki tüm varsayılan **Active Directory Directory Services (AD DS)** özelliklerini (veya Windows 2000 native durumunda sadece varsayılan **AD DS** özelliklerini) içerir.
+Microsoft, **Active Directory Domain Services (AD DS)**'de, **domain** ve **forest** seviyesindeki çeşitli attribute'lar ve yetenekleri belirlemek için **functional level** kavramını tanıttı. **Functional level**’lar, ayrıca bir **domain** veya **forest** içinde hangi Windows Server işletim sistemlerinin **Domain Controller** olarak çalışabileceğini belirlemek için de kullanılır. [Bu](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/cc754918(v=ws.10)?redirectedfrom=MSDN) ve [bu](https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/active-directory-functional-levels) makaleler, Windows 2000 native’den Windows Server 2012 R2’ye kadar olan hem **domain** hem de **forest functional level**’larını açıklar. Aşağıda, Windows 2000 native’den Windows Server 2016’ya kadar olan **domain functional level**’larının farklarına hızlı bir bakış sunulmaktadır. Bu farklar, bir önceki seviyedeki tüm varsayılan **Active Directory Directory Services (AD DS)** özelliklerini (veya Windows 2000 native durumunda sadece varsayılan **AD DS** özelliklerini) içerir.
 
 | **Domain Functional Level** | **Mevcut Özellikler**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | **Desteklenen Domain Controller İşletim Sistemleri**                                                          |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
@@ -753,13 +915,13 @@ Bir **trust**, **forest-forest** veya **domain-domain** kimlik doğrulamasını 
 Birçok **trust** türü bulunmaktadır.
 
 
-| **Trust Türü**   | **Açıklama**                                                                                                                                                             |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Parent-child** | Aynı **forest** içindeki domainler arasında. **Child domain**, **parent domain** ile iki yönlü geçişli bir **trust** bağlantısına sahiptir.                              |
-| **Cross-link**   | **Child domain**'ler arasında kimlik doğrulamasını hızlandırmak için kullanılan bir **trust**.                                                                           |
-| **External**     | **Forest trust** ile zaten bağlı olmayan, ayrı **forest**'lerdeki iki ayrı domain arasında geçişli olmayan bir **trust**. Bu tür **trust**, **SID filtering** kullanır.  |
-| **Tree-root**    | Bir **forest root domain** ile yeni bir **tree root domain** arasında iki yönlü geçişli bir **trust**. Bir **tree root domain** kurulduğunda tasarım gereği oluşturulur. |
-| **Forest**       | İki **forest root domain** arasında geçişli bir **trust**.                                                                                                               |
+| **Trust Türü**   | **Açıklama**                                                                                                                                                                |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Parent-child** | Aynı **forest** içindeki domainler arasında. **Child domain**, **parent domain** ile iki yönlü geçişli bir **trust** bağlantısına sahiptir.                                 |
+| **Cross-link**   | **Child domain**'ler arasında kimlik doğrulamasını hızlandırmak için kullanılan bir **trust**.                                                                              |
+| **External**     | **Forest trust** ile zaten bağlı olmayan, ayrı **forest**'lerdeki iki ayrı domain arasında non-transitive bir **trust**. Bu tür **trust**, **SID filtering** kullanır.      |
+| **Tree-root**    | Bir **forest root domain** ile yeni bir **tree root domain** arasında iki yönlü transitive bir **trust**. Bir **tree root domain** kurulduğunda tasarım gereği oluşturulur. |
+| **Forest**       | İki **forest root domain** arasında transitive bir **trust**.                                                                                                               |
 
 #### Trust Example
 
@@ -769,14 +931,15 @@ Birçok **trust** türü bulunmaktadır.
 
 **Trust**lar **transitive** veya **non-transitive** olabilir.
 
-**Transitive trust**, **child domain**'in güvendiği **object**'lere de güvenin genişletildiği anlamına gelir.
+* ***Transitive trust**, **child domain**'in güvendiği **object**'lere de güvenin genişletildiği anlamına gelir.
 
-**Non-transitive trust**'ta yalnızca **child domain** kendisi güvenilendir.
+* ** Non-transitive trust**'ta yalnızca **child domain** kendisi güvenilendir.
 
 **Trust**lar **tek yönlü** veya **iki yönlü** (bidirectional) olarak ayarlanabilir.
 
-**Bidirectional trust**'larda her iki güvenen domain'in kullanıcıları da kaynaklara erişebilir.  
-**Tek yönlü trust**'ta yalnızca güvenilen domain'in kullanıcıları güvenen domain'deki kaynaklara erişebilir, tersine erişim mümkün değildir. **Trust** yönü, erişim yönünün tersidir.
+* ***Bidirectional trust**'larda her iki güvenen domain'in kullanıcıları da kaynaklara erişebilir.  
+
+* ***Tek yönlü trust**'ta yalnızca güvenilen domain'in kullanıcıları güvenen domain'deki kaynaklara erişebilir, tersine erişim mümkün değildir. **Trust** yönü, erişim yönünün tersidir.
 
 Çoğu zaman **domain trust**'ları yanlış bir şekilde kurulmakta ve istenmeyen saldırı yolları açmaktadır. Ayrıca, kullanım kolaylığı sağlamak için kurulan **trust**'lar, güvenlik etkileri açısından sonradan gözden geçirilmemiş olabilir. Birleşme ve satın almalar, edinilen şirketlerle **bidirectional trust**'lar oluşturabilir ve bu durum, edinilen şirketin çevresine istenmeden risk ekleyebilir. Genellikle, **Kerberoasting** gibi bir saldırıyı, ana domain dışında bir domain'e karşı gerçekleştirip, ana domain içinde yönetici erişimi olan bir kullanıcıyı elde etmek mümkündür.
 
@@ -798,7 +961,7 @@ Cevap : ==Relative ID master==
 
 
 # Kerberos, DNS, LDAP, MSRPC
-Windows işletim sistemleri iletişim kurmak için çeşitli protokoller kullanırken, Active Directory özellikle [Lightweight Directory Access Protocol](https://en.wikipedia.org/wiki/Lightweight_Directory_Access_Protocol) (LDAP), Microsoft'un [Kerberos](https://en.wikipedia.org/wiki/Kerberos_(protocol)) sürümü, kimlik doğrulama ve iletişim için [DNS](https://en.wikipedia.org/wiki/Domain_Name_System) ve istemci-sunucu modeli tabanlı uygulamalar için kullanılan bir işlemler arası iletişim tekniği olan [Remote Procedure Call'un](https://en.wikipedia.org/wiki/Remote_procedure_call) (RPC) Microsoft uygulaması olan MSRPC gerektirir.
+Windows işletim sistemleri iletişim kurmak için çeşitli protokoller kullanırken, Active Directory özellikle [Lightweight Directory Access Protocol](https://en.wikipedia.org/wiki/Lightweight_Directory_Access_Protocol) (LDAP), Microsoft'un [Kerberos](https://en.wikipedia.org/wiki/Kerberos_(protocol)) sürümü, kimlik doğrulama ve iletişim için [DNS](https://en.wikipedia.org/wiki/Domain_Name_System) ve client-server modeli tabanlı uygulamalar için kullanılan bir processler arası iletişim tekniği olan [Remote Procedure Call'un](https://en.wikipedia.org/wiki/Remote_procedure_call) (RPC) Microsoft uygulaması olan MSRPC gerektirir.
 
 - ==LDAP (Lightweight Directory Access Protocol):== Active Directory, dizin servislerine erişim ve yönetim için bu protokolü kullanır.
 
@@ -811,7 +974,7 @@ Windows işletim sistemleri iletişim kurmak için çeşitli protokoller kullan�
 - ==MSRPC (Microsoft Remote Procedure Call)==: Client-Server tabanlı uygulamalar arasında processler arası iletişim sağlayarak kaynaklara erişim ve yönetim süreçlerini kolaylaştırır.
 
 ## Kerberos
-Kerberos, Windows 2000'den beri domain hesapları için varsayılan ==kimlik doğrulama== protokolüdür. Kerberos açık bir standarttır ve aynı standardı kullanan diğer sistemlerle birlikte çalışabilirlik sağlar. Bir kullanıcı bilgisayarında oturum açtığında, Kerberos karşılıklı kimlik doğrulama yoluyla kimliklerini doğrulamak için kullanılır veya hem kullanıcı hem de server kimliklerini doğrular. Kerberos, kullanıcı parolalarını ağ üzerinden iletmek yerine ==biletlere (ticket)== dayanan ==stalles== bir kimlik doğrulama protokolüdür. Active Directory Domain Services'in (AD DS) bir parçası olarak, Domain Controller'larda bilet veren bir ==Kerberos Key Distribution Center (KDC)== bulunur. Bir kullanıcı bir sisteme oturum açma isteği başlattığında, kimlik doğrulaması için kullandığı client KDC'den bir bilet ister ve isteği kullanıcının parolasıyla şifreler. KDC kullanıcının parolasını kullanarak isteğin (AS-REQ) şifresini çözebilirse, bir Ticket Granting Ticket (TGT) oluşturur ve bunu kullanıcıya iletir. Kullanıcı daha sonra, ilişkili servisin NTLM parola hash'i ile şifrelenmiş bir Ticket Granting Service (TGS) bileti talep etmek için TGT'sini bir Domain Controller'a sunar. Son olarak, istemci TGS'yi şifre hash'iyle şifresini çözen uygulama veya service sunarak gerekli servise erişim talebinde bulunur. Tüm proses uygun şekilde tamamlanırsa, kullanıcının istenen hizmete veya uygulamaya erişmesine izin verilir.
+Kerberos, Windows 2000'den beri domain hesapları için varsayılan ==kimlik doğrulama== protokolüdür. Kerberos açık bir standarttır ve aynı standardı kullanan diğer sistemlerle birlikte çalışabilirlik sağlar. Bir kullanıcı bilgisayarında oturum açtığında, Kerberos karşılıklı kimlik doğrulama yoluyla kimliklerini doğrulamak için kullanılır veya hem kullanıcı hem de server kimliklerini doğrular. Kerberos, kullanıcı parolalarını ağ üzerinden iletmek yerine ==biletlere (ticket)== dayanan ==stalles== bir kimlik doğrulama protokolüdür. Active Directory Domain Services'in (AD DS) bir parçası olarak, Domain Controller'larda ticket veren bir ==Kerberos Key Distribution Center (KDC)== bulunur. Bir kullanıcı bir sisteme oturum açma isteği başlattığında, kimlik doğrulaması için kullandığı client KDC'den bir ticket ister ve isteği kullanıcının parolasıyla şifreler. KDC kullanıcının parolasını kullanarak isteğin (AS-REQ) şifresini çözebilirse, bir Ticket Granting Ticket (TGT) oluşturur ve bunu kullanıcıya iletir. Kullanıcı daha sonra, ilişkili servisin NTLM parola hash'i ile şifrelenmiş bir Ticket Granting Service (TGS) bileti talep etmek için TGT'sini bir Domain Controller'a sunar. Son olarak, istemci TGS'yi şifre hash'iyle şifresini çözen uygulama veya service sunarak gerekli servise erişim talebinde bulunur. Tüm proses uygun şekilde tamamlanırsa, kullanıcının istenen servise veya uygulamaya erişmesine izin verilir.
 
 Kerberos kimlik doğrulaması, kullanıcıların kimlik bilgilerini tüketilebilir kaynaklara yaptıkları taleplerden etkili bir şekilde ayırarak parolalarının ağ üzerinden iletilmemesini sağlar (örneğin, internal bir SharePoint intranet sitesine erişim). Kerberos Key Distribution Centre (KDC) önceki işlemleri kaydetmez. Bunun yerine, Kerberos Ticket Granting Service bileti (TGS) geçerli bir Ticket Granting Ticket'a (TGT) dayanır. Kullanıcı geçerli bir TGT'ye sahipse, kimliğini kanıtlamış olması gerektiğini varsayar. Aşağıdaki şemada bu süreç yüksek seviyede anlatılmaktadır.
 
@@ -869,7 +1032,7 @@ Kerberos kimlik doğrulaması, kullanıcıların kimlik bilgilerini tüketilebil
 
 
 
-##### 4. **Bilet Sistemi Kullanımı**
+##### 4. **Ticket Sistemi Kullanımı**
 
 - **Güvenlik:** Parolalar ağ üzerinde iletilmez.
 - **Stateless:** Kerberos, **stateless** bir kimlik doğrulama sistemidir.
@@ -896,23 +1059,6 @@ Kerberos kimlik doğrulaması, kullanıcıların kimlik bilgilerini tüketilebil
 
 ### Kerberos Authentication Process
 
-1. Kullanıcı oturum açar ve parolası, TGT biletini şifrelemek için kullanılan bir NTLM hash'ine dönüştürülür. Bu, kullanıcının kimlik bilgilerini kaynaklara yapılan isteklerden ayırır.
-
-	* **Kullanıcı Girişi**: Kullanıcı `password123` gibi bir parola girer. 
-	* **NTLM Hash'ine Dönüşüm**: Parola, NTLM algoritmasıyla şifrelenir ve bir hash değeri oluşturulur.
-	* Örnek: `password123` parolasının NTLM hash'ine dönüşmesi sonucu bir dizi sayı ve harf (hash değeri) oluşur, örneğin: `8846f7eaee8fb117ad06bdd830b7586c`.
-	* NTLM hash'i, TGT (Ticket Granting Ticket) biletini şifrelemek için kullanılır. Bu aşamada, sistem kaynaklarına erişim sağlamak amacıyla kullanıcı kimlik bilgileri şifrelenmiş olur.
-
-2. DC'deki KDC service'i kimlik doğrulama servisi talebini (AS-REQ) kontrol eder, kullanıcı bilgilerini doğrular ve kullanıcıya teslim edilen bir Ticket Granting Ticket (TGT) oluşturur.
-
-3. Kullanıcı TGT'yi DC'ye sunarak belirli bir sevice için Ticket Granting Service (TGS) ticket'ı talep eder. Bu TGS-REQ'dir. TGT başarıyla doğrulanırsa, verileri bir TGS bileti oluşturmak için kopyalanır.
-
-4. TGS, context'inde service  örneğinin çalıştığı servisin veya bilgisayar hesabının NTLM parola hash'i ile şifrelenir ve TGS_REP içinde kullanıcıya teslim edilir.
-
-	* **Kullanıcı parolası (password123)**, önce NTLM hash'ine dönüştürülüp, TGT şifrelenmesinde kullanılıyor.
-	- **TGS**, servisin NTLM hash'i ile şifreleniyor ve kullanıcıya teslim ediliyor. 
-
-5. Kullanıcı TGS'yi service'e sunar ve geçerli olması durumunda kullanıcının kaynağa bağlanmasına izin verilir (AP_REQ).
 
 
 ![Pasted image 20240927153822.png](/img/user/resimler/Pasted%20image%2020240927153822.png)
@@ -928,36 +1074,152 @@ Kerberos kimlik doğrulaması, kullanıcıların kimlik bilgilerini tüketilebil
     
 - Kullanıcı, **TGS**'yi servisi sunar ve geçerli ise, servis örneğine bağlanabilir               (**AP_REQ**).
 
-
 ---
-- **KRB_AS_REQ (Authentication Service Request)**:
-    
-    - **Açıklama**: Kullanıcı, kimlik doğrulama için **KDC'ye** (Key Distribution Center) bir istek gönderir. Bu istekte kullanıcının kimlik bilgileri yer alır.
-    - **Amaç**: Kullanıcı, kimlik doğrulama sürecine başlamak için **TGT** (Ticket Granting Ticket) almak amacıyla KDC'ye başvurur.
 
-- **KRB_AS_REP (Authentication Service Reply)**:
-    
-    - **Açıklama**: KDC, gelen **KRB_AS_REQ** isteğini doğrular ve eğer kimlik doğrulama başarılıysa, bir **TGT** ve bir **şifreli mesaj** ile kullanıcıya cevap verir.
-    - **Amaç**: KDC, kullanıcının kimliğini doğruladıktan sonra ona güvenli bir **TGT** verir, böylece kullanıcı diğer hizmetlere erişim için bu bileti kullanabilir.
+###  Kerberos Auhentication'da gerçekleşen adımlar :
 
-- **KRB_TGS_REQ (Ticket Granting Service Request)**:
-    
-    - **Açıklama**: Kullanıcı, sahip olduğu **TGT'yi** kullanarak belirli bir servis için **TGS** (Ticket Granting Service) talep eder.
-    - **Amaç**: Kullanıcı, belirli bir servise erişmek için gerekli olan **TGS** biletini almak için **TGT** ile başvurur.
 
-- **KRB_TGS_REP (Ticket Granting Service Reply)**:
-    
-    - **Açıklama**: KDC, kullanıcının **TGT'sini** doğrular ve başarılı bir doğrulama sonrası, **TGS** biletini kullanıcıya gönderir. Bu bilet, kullanıcıyı belirli bir servise bağlamak için kullanılacaktır.
-    - **Amaç**: Kullanıcıya, erişmek istediği servise bağlanabilmesi için gerekli olan **TGS** bileti verilir.
+**1.**  **Request TGT**
 
----
+Client KDC içerisinde yer alan Authentication Server'a bir ==AS-REQ== paketi gönderir . Bu paketin içerisinde iki farklı veri vardır. Bunlardan biri **==Client ID== değeridir**, bu değer kullanıcının ==username== bilgisidir. Diğer veri **==Time Stamp==** verisidir. Bu veri **==client secret key==** değeri ile şifrelenerek authentication servera gönderilir. Client secret key TGT isteğini yapan userın password'ünün NTLM hash'idir.
+
+Authentication Server Client id değeri ile isteği yapan user'ın kim olduğunu anlar. Daha sonra Active directory'deki ==NTDS.dit veritabanı== dosyasına giderek bu userın password hashini elde eder. Elde ettiği hash ile **client secret key**  ile şifrelenmiş paketi açar . Eğer her şey yolunda giderse Authentication server'ın elinde bir ==time stamp== değeri olur . Bu değeri Client'ın gönderdiği **AS-REQ** paketinin time stamp değeri ile karşılaştırır. Karşılaştırma sonucu yanlış ise iletişim kesilir. Karşılaştırma sonucu doğru ise bir sonraki adıma geçilir.
+
+**2.**      **TGT + Session Key**
+
+Authentication Server client'a bir **AS-REP** paketi gönderir. Bu paketin içerisinde iki tane mesaj değeri vardır . Bunlar ==**message A**== ve ==**message B**==. 
+
+Message A 'nın içerisinde ==client/TGS session key== değeri vardır ve message A, ==**client secret key**== değeri ile şifrelenir.
+
+Message B' nin TGT ticketıdır ve içerisinde ; ==client id bilgisi, client network adres bilgisi, TGT biletinin geçerlilik süresi ve client TGS Session key== değeri bulunur. Message B TGS secret key ile şifrelenir. TGS secret key değeri KDC içindeki Ticket Granting server'ın password hash'idir.
+
+Client authentication serverdan AS-REP paketini aldığı zaman message B'nin içindeki verilere ulaşamaz çünkü TGS secret key bilgisini bilmemektedir. Ancak message A yı açacak client secret key bilgisine sahiptir. Çünkü yukarıda da bahsettiğimiz gibi client secret key değeri  kendi password değerininin NTLM hashidir.
+
+Bu yüzden client message A 'yı açar ve client TGS session key değerini elde eder. Bu değer client'ın KDC'deki Ticket Granting Server ile iletişimi sırasında gönderdiği verileri şifrelemek için kullanacağı key değeridir.
+
+Sonuç olarak client aldığı AS-REP paketinden message B mesajını yani TGT biletini ve client TGS session key bilgisini elde etti. Client şimdi sıradaki işleme geçebilir.
+
+**3.**      **Request Ticket + Auth**
+
+Client artık TGT biletini almış ve domaine authentice olabilmiştir. Artık sıradaki amaç hedeflediği bir servis varsa eğer o servise erişebilmesi için gerekli olan TGS (Ticket Granting Service) biletine sahip olabilmesidir. Bu örneğimizde client bir SMTP Server'a ulaşmayı amaçlamaktadır.
+
+Bunun için client Ticket Granting Server'a TGS-REQ paketi içerisinde iki adet mesaj gönderir. Bu mesajlar message C ve message D'dir.
+
+Message C mesajının içerisinde Authentication serverdan alınan message B değeri yani TGT bileti, ve giriş yapmak istediği SMTP Server'ın Service Principal name bilgisi bulunmaktadır. Message C değeri şifrelenmez , zaten içindeki message B değeri TGS secret key değeri ile şifrelenmişti. SPN değeri ise açık metin olarak gönderilir. Bunu aşağıda wireshark ile incelediğimiz  TGS-REQ paketinde görebilirsiniz.
+
+·        **Service Principal Name (SPN),** bir servis ile ilişkilendirilmiş benzersiz bir adımdır. SPN, bir istemcinin belirli bir servise erişebilmesi için, o servisin kimliğini doğrulamak amacıyla kullanılan bir değeri ifade eder. SPN, genellikle bir servisin çalıştığı ana bilgisayar adı ve servisin türünü içeren bir yapıdadır. Bu bilgiler, Kerberos kimlik doğrulama protokolünde, istemci ile sunucu arasında güvenli bir iletişim kurulabilmesi için kullanılır.
+
+* Bir SMTP sunucusu için örnek bir SPN değeri şu şekilde olabilir: **`smtp/mailserver.example.com`**
+
+Message D mesajının içerisinde Authenticator değeri vardır. Authenticator değeri client ID ve Time Stamp verilerini içerir. Message D , message C 'nin aksine şifrelenir ve bu şifreleme işlemi client'ın message A'dan elde ettiği client TGS session key değeri ile yapılır.
+
+TGS-REQ paketini alan Ticket Granting Server TGS secret key'i yani kendi NTLM hash değerini kullanarak message C'nin içerisindeki TGT değerini yani bir diğer adı ile message B değerini açar. Çünkü message B TGS secret key ile şifrelenmişti. Ticket Granting Server Message B'yi açınca iki önemli bilgiyi elde etmiş olur bunlar message B'nin içindeki   client TGS Session Key değeri ve Client ID değeridir.
+
+Ticket Granting Server message Bden elde ettiği client TGS session Key değerini message D'yi açmak için kullanır.  Messsage D açılınca içindeki Authenticater değerinin içierisinde bulunan client ID değeri ile message B'nin içerisinde bulunan Client ID değeri karşılaştırılır. Ve karşılaştırma doğru ise message C'nin içinde bulunan SPN değerine bakılarak hedef servis için bir TGS (Ticket Granting Service) paketi oluşturulur . Ve client'a bir TGS-REP paketi gönderilir.
+
+**4.** **Ticket + Session Key**
+
+Client TGS-REP paketini alır. TGS-REP paketinin içerisinde iki tane mesaj vardır. Bunlar message E ve message F'dir.
+
+Message E TGS biletidir  ve Service Server Secret key değeri ile şifrelenmiştir. Service Server Secret key değeri hedef servicin NTLM hash değeridir. Message E'nin içerisinde şu bilgiler bulunur: Client ID, Client Network Address, Ticket geçerlilik süresi, client server session key.
+
+Message F'nin içerisinde client server session key vardır. ve message F client TGS session key kullanılarak şifrelenmiştir.
+
+Client Service Server Secret key değerine sahip olmadığı için message E'yi açamaz ancak client Tgs session key değerine sahiptir ve bu yüzden message F'yi açar ve içierisindeki client Server session key değerini elde eder. Bu client Server session key değeri hedef server ile iletiişim sırasında gönderilen mesajların şifrelenmesinde kullanılacaktır.
+
+**5.**      **Request Service + Auth**
+
+Client authentice olmak istediği SMTP Server'a bir AP-REQ paketi gönderir. Bu paketin içerisinde Ticket Granting Server'dan aldığı message E yani TGS bileti ve message G vardır. Message E şifrelenmez ,zaten Ticket Granting Server tarafından Service Server secret key ile şifrelenmişti .
+
+Message G'nin içerisinde bit Authenticator değeri vardır. Bu değerin içerisinde cilent id ve time stamp verileri bulunur. Message G , message F'nin içerisinden çıkarılan client server session key kullanılarak şifrelenir.
+
+**6.**      **Server Authentication**
+
+AP-REQ paketini alan SMTP Server message E'yi yani TGS'yi kendi password'ünün NTLM hashi olan Service Server secret key değeri ile açar. İçerisinden önemli iki adet veri elde eder. Bunlar Client ID ve  client server session key verisidir.
+
+Smtp Server bu elde ettiği verilerden client server session key'i kullanarak message G'yi açar .Message G'nin içerisindeki client id değeri ile message E'nin içerisinde elde ettiği client id değerlerini karşılaştırır. Karşılaştırma doğru ise SMTP Server Client'a kendisine authentice olduğunu belirtmek için bir AP-REP paketi gönderir.
+
+AP-REP paketinin içerisinde message H vardır. Message H client Server session key kullanılarak şifrelenmiştir ve içinde client'dan aldığı AP-REQ paketinin içindeki mesaage G mesajı vardır.
+
+Client elindeki client server session keyi kullanarak message H'yi açar ve mesajın içinde kendi gönderdiği message G'yi elde ettiğinde Hedef SMTP Server'a authentice olduğunu doğrulamış olur. Ve böylece client kerberos authentication kullanarak giriş yapmak istediği SMTP Server'a giriş yapabilmiş olur.
+
+**Yukarıda anlatılan aşamalar detaylı bir şekilde aşağıdaki görsellerde verilmiştir:**
+
+```
++-------------------+       +-------------------+
+|      Client       |       |   Authentication  |
+|  (password123)    |       |      Server       |
++-------------------+       +-------------------+
+          |                           |
+          | 1. AS-REQ                 |
+          |   - Client ID: user1      |
+          |   - Time Stamp: 2023-10-05T12:00:00Z
+          |   - Enc(hash123, {user1, 2023-10-05T12:00:00Z})
+          |-------------------------->|
+          |                           |
+          | 2. AS-REP                 |
+          |   - Message A: Enc(hash123, session_key_TGS)
+          |   - Message B: Enc(TGS_hash, {user1, 192.168.1.100,
+          |      2023-10-05T14:00:00Z, session_key_TGS})
+          |<--------------------------|
+          |                           |
++-------------------+       +-------------------+
+
+
++-------------------+       +-------------------+
+|      Client       |       |   Ticket Granting |
+|  (password123)    |       |      Server       |
++-------------------+       +-------------------+
+          |                           |
+          | 3. TGS-REQ                |
+          |   - Message C: Enc(TGS_hash, {user1, 192.168.1.100,
+          |      2023-10-05T14:00:00Z, session_key_TGS})
+          |   - SPN: smtp/mailserver.example.com
+          |   - Message D: Enc(session_key_TGS, {user1,
+          |      2023-10-05T12:05:00Z})
+          |-------------------------->|
+          |                           |
+          | 4. TGS-REP                |
+          |   - Message E: Enc(SMTP_hash, {user1, 192.168.1.100,
+          |      2023-10-05T14:05:00Z, session_key_SMTP})
+          |   - Message F: Enc(session_key_TGS, session_key_SMTP)
+          |<--------------------------|
+          |                           |
++-------------------+       +-------------------+
+
+
++-------------------+       +-------------------+
+|      Client       |       |   SMTP Server     |
+|  (password123)    |       |                   |
++-------------------+       +-------------------+
+          |                           |
+          | 5. AP-REQ                 |
+          |   - Message E: Enc(SMTP_hash, {user1, 192.168.1.100,
+          |      2023-10-05T14:05:00Z, session_key_SMTP})
+          |   - Message G: Enc(session_key_SMTP, {user1,
+          |      2023-10-05T12:10:00Z})
+          |-------------------------->|
+          |                           |
+          | 6. AP-REP                 |
+          |   - Message H: Enc(session_key_SMTP, {Authenticator})
+          |<--------------------------|
+          |                           |
++-------------------+       +-------------------+
+
+```
+
+
+
+
+
+----
 
 
 Kerberos protokolü 88 numaralı portu kullanır (hem TCP hem de UDP). Bir Active Directory ortamını numaralandırırken, ==Nmap gibi bir araç kullanarak açık port 88'i arayan port taramaları gerçekleştirerek Domain Controllers'ın yerini sıklıkla tespit edebiliriz.==
 
 
 ## DNS
-Active Directory Domain Services (AD DS), client'ların ( workstation'lar, server'lar ve domain ile iletişim kuran diğer sistemler) Domain Controllers'ı bulmalarını ve dizin hizmetini barındıran Domain Controllers'ın kendi aralarında iletişim kurmalarını sağlamak için DNS kullanır. DNS, host adlarını IP adreslerine çözümlemek için kullanılır ve iç ağlar ve internet genelinde yaygın olarak kullanılır. Private iç ağlar, serverlar, clientlar ve peerlar arasındaki iletişimi kolaylaştırmak için Active Directory DNS namespaces kullanır. AD, ağ üzerinde servis record'ları (SRV) şeklinde çalışan servislerin bir veritabanını tutar. Bu servis record'ları AD ortamındaki Client'ların dosya sunucusu, yazıcı veya Domain Controller gibi ihtiyaç duydukları servisleri bulmalarını sağlar. Dinamik DNS, bir sistemin IP adresinin değişmesi durumunda DNS veritabanında otomatik olarak değişiklik yapmak için kullanılır. Bu girişleri manuel olarak yapmak çok zaman alır ve hataya yer bırakır. DNS veritabanında bir host için doğru IP adresi yoksa, client'lar bu host'u ağ üzerinde bulamaz ve onunla iletişim kuramazlar. Bir client ağa katıldığında, DNS servisine bir sorgu göndererek, DNS veritabanından bir SRV record alarak ve Domain Controller'ın hostname'ini client'a ileterek Domain Controller'ı bulur. Client daha sonra Domain Controller'ın IP adresini almak için bu hostname'i kullanır. DNS, TCP ve UDP port 53'ü kullanır. UDP port 53 varsayılandır, ancak artık iletişim kurulamadığında ve DNS mesajları 512 bayttan büyük olduğunda TCP'ye geri döner.
+Active Directory Domain Services (AD DS), client'ların ( workstation'lar, server'lar ve domain ile iletişim kuran diğer sistemler) Domain Controllers'ı bulmalarını ve dizin servisini barındıran Domain Controllers'ın kendi aralarında iletişim kurmalarını sağlamak için DNS kullanır. DNS, host adlarını IP adreslerine çözümlemek için kullanılır ve iç ağlar ve internet genelinde yaygın olarak kullanılır. Private iç ağlar, serverlar, clientlar ve peerlar arasındaki iletişimi kolaylaştırmak için Active Directory DNS namespaces kullanır. AD, ağ üzerinde ==servis record'ları (SRV)== şeklinde çalışan servislerin bir veritabanını tutar. Bu servis record'ları AD ortamındaki Client'ların dosya sunucusu, yazıcı veya Domain Controller gibi ihtiyaç duydukları servisleri bulmalarını sağlar. Dinamik DNS, bir sistemin IP adresinin değişmesi durumunda DNS veritabanında otomatik olarak değişiklik yapmak için kullanılır. Bu girişleri manuel olarak yapmak çok zaman alır ve hataya yer bırakır. DNS veritabanında bir host için doğru IP adresi yoksa, client'lar bu host'u ağ üzerinde bulamaz ve onunla iletişim kuramazlar. Bir client ağa katıldığında, DNS servisine bir sorgu göndererek, DNS veritabanından bir ==SRV record== alarak ve Domain Controller'ın hostname'ini client'a ileterek Domain Controller'ı bulur. Client daha sonra Domain Controller'ın IP adresini almak için bu hostname'i kullanır. DNS, TCP ve UDP port 53'ü kullanır. UDP port 53 varsayılandır, ancak artık iletişim kurulamadığında ve DNS mesajları 512 bayttan büyük olduğunda TCP'ye geri döner.
 
 ##### Özet : 
 
