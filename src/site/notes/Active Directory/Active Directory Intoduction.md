@@ -1380,13 +1380,13 @@ LDAP'taki **BIND**, bir LDAP oturumunda kimlik doğrulama durumunu belirlemek i�
 
 
 ### MSRPC
-Yukarıda belirtildiği gibi MSRPC, Microsoft'un client-server modeli tabanlı uygulamalar için kullanılan bir prosesler arası iletişim tekniği olan Remote Procedure Call (RPC) uygulamasıdır. Windows sistemleri, dört temel RPC interface'ini kullanarak Active Directory'deki sistemlere erişmek için MSRPC'yi kullanır.
+Yukarıda belirtildiği gibi MSRPC, Microsoft'un client-server modeli tabanlı uygulamalar için kullanılan bir ==prosesler arası iletişim tekniği== olan Remote Procedure Call (RPC) uygulamasıdır. Windows sistemleri, dört temel RPC interface'ini kullanarak Active Directory'deki sistemlere erişmek için MSRPC'yi kullanır.
 
 ==lsarpc== : Bir bilgisayardaki lokal security politikasını yöneten, denetim politikasını kontrol eden ve etkileşimli kimlik doğrulama servisleri sağlayan [Local Security Authority](https://networkencyclopedia.com/local-security-authority-lsa/) (LSA) sistemine yönelik bir dizi RPC çağrısı. LSARPC, domain güvenlik politikaları üzerinde yönetim gerçekleştirmek için kullanılır. 
 
 * [[Bağlantılar/lsarpc hakkında daha fazla bilgi\|lsarpc hakkında daha fazla bilgi]]
 
-==netlogon== : Netlogon, domain ortamındaki kullanıcıların ve diğer servislerin kimliklerini doğrulamak için kullanılan bir Windows prosesidir. Arka planda sürekli çalışan bir servisdir.
+==netlogon== : Netlogon, domain ortamındaki kullanıcıların ve diğer ==servislerin kimliklerini doğrulamak için kullanılan bir Windows prosesidir==. Arka planda sürekli çalışan bir servisdir.
 
 * [[Bağlantılar/netlogon hakkında daha fazla bilgi\|netlogon hakkında daha fazla bilgi]]
 
@@ -1394,7 +1394,7 @@ Yukarıda belirtildiği gibi MSRPC, Microsoft'un client-server modeli tabanlı u
 
 * [[samr hakkında daha fazla bilgi \|samr hakkında daha fazla bilgi ]]
 
-==drsuapi== : drsuapi, multi-DC ortamında Domain Controller'lar arasında çoğaltma ile ilgili görevleri gerçekleştirmek için kullanılan Directory Replication Service (DRS) Remote Protocol'ü uygulayan Microsoft API'sidir. Saldırganlar drsuapi'yi kullanarak Active Directory domain veritabanı (NTDS.dit) [dosyasının bir kopyasını oluşturabilir](https://attack.mitre.org/techniques/T1003/003/) ve domain'deki tüm hesaplar için parola hash'lerini alabilir; bu hash'ler daha sonra daha fazla sisteme erişmek için Pass-the-Hash saldırıları gerçekleştirmek için kullanılabilir veya Remote Desktop (RDP) ve WinRM gibi remote  yönetim protokollerini kullanarak sistemlerde oturum açmak için açık metin parolasını elde etmek üzere Hashcat gibi bir araç kullanarak çevrimdışı olarak kırılabilir.
+==drsuapi== : drsuapi, multi-DC ortamında Domain Controller'lar arasında replikasyon ile ilgili görevleri gerçekleştirmek için kullanılan ==Directory Replication Service (DRS) Remote Protocol'ü uygulayan Microsoft API'sidir==. Saldırganlar drsuapi'yi kullanarak Active Directory domain veritabanı (NTDS.dit) [dosyasının bir kopyasını oluşturabilir](https://attack.mitre.org/techniques/T1003/003/) ve domain'deki tüm hesaplar için parola hash'lerini alabilir; bu hash'ler daha sonra daha fazla sisteme erişmek için Pass-the-Hash saldırıları gerçekleştirmek için kullanılabilir veya Remote Desktop (RDP) ve WinRM gibi remote  yönetim protokollerini kullanarak sistemlerde oturum açmak için açık metin parolasını elde etmek üzere Hashcat gibi bir araç kullanarak çevrimdışı olarak kırılabilir.
 
 * [[drsuapi hakkında daha fazla bilgi \|drsuapi hakkında daha fazla bilgi ]]
 
@@ -1405,12 +1405,21 @@ Soru : Adları IP adreslerine çevirmek için hangi protokol kullanılır? (kıs
 Soru : RFC 4511 hangi protokolü belirtir? (kısaltma)  (LDAP)
 
 
+
 ### NTLM Authentication
-Kerberos ve LDAP'ın yanı sıra Active Directory, AD'deki uygulamalar ve servisler tarafından kullanılabilen (ve kötüye kullanılabilen) birkaç başka kimlik doğrulama yöntemi kullanır. Bunlar LM, NTLM, NTLMv1 ve NTLMv2'yi içerir. Buradaki LM ve NTLM hash adlarıdır ve NTLMv1 ve NTLMv2, LM veya NT hash'ini kullanan kimlik doğrulama protokolleridir. Aşağıda bu hash'ler ve protokoller arasında hızlı bir karşılaştırma yer almaktadır; bu da bize hiçbir şekilde mükemmel olmasa da Kerberos'un mümkün olan her yerde tercih edilen kimlik doğrulama protokolü olduğunu göstermektedir. Hash türleri ve bunları kullanan protokoller arasındaki farkı anlamak çok önemlidir.
+Kerberos ve LDAP dışında, Active Directory, uygulamalar ve servisler tarafından kullanılabilecek (ve kötüye kullanılabilecek) birkaç farklı kimlik doğrulama yöntemi daha kullanır. Bunlar arasında LM, NTLM, NTLMv1 ve NTLMv2 bulunur. Burada LM ve NTLM, hash türlerinin adlarıdır; NTLMv1 ve NTLMv2 ise LM veya NT hash'ini kullanan kimlik doğrulama protokolleridir. Aşağıda, bu hash türleri ve protokoller arasında hızlı bir karşılaştırma bulunmaktadır. Bu karşılaştırma bize, her ne kadar mükemmel olmasa da, Kerberos'un mümkün olduğu her yerde tercih edilen kimlik doğrulama protokolü olduğunu göstermektedir. Hash türleri ile bunları kullanan protokoller arasındaki farkı anlamak büyük önem taşır.
 
 
 ### Hash Protokolü Karşılaştırması
-![Pasted image 20241001184942.png](/img/user/resimler/Pasted%20image%2020241001184942.png)
+
+
+| Hash/Protokol | Kriptografik Teknik                                    | Karşılıklı Kimlik Doğrulama | Mesaj Türü                            | Güvenilir Üçüncü Taraf                               |
+| ------------- | ------------------------------------------------------ | --------------------------- | ------------------------------------- | ---------------------------------------------------- |
+| NTLM          | Simetrik anahtar kriptografisi                         | Hayır                       | Rastgele sayı(challenge)              | Domain Denetleyicisi                                 |
+| NTLMv1        | Simetrik anahtar kriptografisi                         | Hayır                       | MD4 hash, rastgele sayı               | Domain Denetleyicisi                                 |
+| NTLMv2        | Simetrik anahtar kriptografisi                         | Hayır                       | MD4 hash, rastgele sayı               | Domain Denetleyicisi                                 |
+| Kerberos      | Simetrik anahtar kriptografisi & Asimetrik kriptografi | Evet                        | DES, MD5 kullanarak şifrelenmiş bilet | Domain Denetleyicisi / Anahtar Dağıtım Merkezi (KDC) |
+
 
 
 ### LM
@@ -1583,9 +1592,23 @@ Soru : Domain Cached Credentials mekanizması varsayılan olarak bir host'a kaç
 
 ### User and Machine Accounts
 
-User hesapları hem lokal sistemlerde (AD'ye bağlı olmayan) hem de Active Directory'de bir kişiye veya bir programa (sistem servisi gibi) bir bilgisayarda oturum açma ve haklarına göre kaynaklara erişme yeteneği vermek için oluşturulur. Bir kullanıcı oturum açtığında, sistem parolasını doğrular ve bir access token  oluşturur. Bu token bir prosesin veya thread'in güvenlik içeriğini tanımlar ve kullanıcının güvenlik kimliğini ve grup üyeliğini içerir. Bir kullanıcı bir prosesle etkileşime girdiğinde, bu token sunulur. User accounts (kullanıcı hesapları), çalışanların/işverenleri bir bilgisayarda oturum açmasına ve kaynaklara erişmesine, programları veya servisleri belirli bir güvenlik contextında çalıştırmasına (örneğin, bir ağ servisi hesabı yerine yüksek ayrıcalıklı bir kullanıcı olarak çalıştırma) ve ağ dosya paylaşımları, dosyalar, uygulamalar vb. gibi objectlere ve bunların özelliklerine erişimi yönetmesine izin vermek için kullanılır. Kullanıcılar, bir veya daha fazla üye içerebilen gruplara atanabilir. Bu gruplar kaynaklara erişimi kontrol etmek için de kullanılabilir. Bir admin için ayrıcalıkları her bir kullanıcıya birçok kez atamak yerine bir gruba (tüm grup üyelerinin devraldığı) bir kez atamak daha kolay olabilir. Bu, yönetimi basitleştirmeye yardımcı olur ve kullanıcı haklarının verilmesini ve iptal edilmesini kolaylaştırır.
+- Hem lokal sistemlerde (Active Directory'ye bağlı olmayan) hem de Active Directory'de bir kişinin ya da bir programın (örneğin bir sistem servisi) bilgisayarda oturum açabilmesi ve kaynaklara erişebilmesi için kullanıcı hesapları oluşturulurlar. Kullanıcılar, sisteme erişim sağlayan kişiler ya da uygulamalar olabilir.
+    
+- Bir kullanıcı oturum açtığında, sistem kullanıcının parolasını doğrular ve doğrulama başarılı olursa bir access token oluşturur. Bu token, kullanıcının güvenlik kimliğini (Security Identifier - SID) ve grup üyeliklerini içeren bilgileri barındırır.
+    
+- Access token, bir proses (işlem) ya da thread (iş parçacığı) için güvenlik içeriğini tanımlar. Token, kullanıcının kimlik bilgilerini ve hangi grup üyeliklerine sahip olduğunu içerir. Bu token, bir kullanıcı bir prosesle etkileşime girdiğinde, o prosesin güvenlik özelliklerini tanımlar.
+    
+- Kullanıcı, bir prosesle etkileşime girdiğinde, ilgili access token bu işlemi tanımlar ve kullanıcının kaynaklara (örneğin dosyalar, ağ paylaşım noktaları, uygulamalar) erişimine olanak verir. Bu kaynaklar, kullanıcının sahip olduğu haklarla sınırlıdır.
+    
+- Programlar ya da servisler, belirli bir güvenlik bağlamında (security context) çalıştırılabilirler. Örneğin, bir ağ servisi hesabı yerine yüksek ayrıcalıklara sahip bir kullanıcı olarak çalıştırılabilir. Bu tür sistem, servislerin çalıştırıldığı güvenlik ortamını da kontrol eder.
+    
+- Kullanıcı hesapları, bir veya daha fazla gruba atanabilirler. Gruplar, kaynaklara erişimi kontrol etmek ve yönetmek için kullanılır. Örneğin, bir grup üyeleri belirli kaynaklara aynı şekilde erişebilir.
+    
+- Admin hakları gibi özel ayrıcalıkları her bir kullanıcıya atamak yerine, bu haklar bir gruba verilebilir. Grubun tüm üyeleri, grup üyelikleri dolayısıyla bu hakları devralır. Bu, yönetimi kolaylaştırır ve kullanıcı haklarının verilmesini ya da iptal edilmesini basitleştirir.
+    
+- Kullanıcı haklarını grup bazında atamak, yönetimi basitleştirir. Örneğin, bir grup için yeni haklar verildiğinde, bu haklar otomatik olarak grubun tüm üyelerine uygulanır. Aynı şekilde, bir hak iptal edilirse, grup üyeleri de bu iptal işleminden etkilenir.
 
-* Kısaca : Kullanıcı hesapları, oturum açma ve kaynaklara erişimi sağlar; access token ile güvenlik contex'i tanımlanır, gruplar ise erişim ve hak yönetimini kolaylaştırır.
+* Kısaca : User hesapları, oturum açma ve kaynaklara erişimi sağlar; access token ile security contex'i tanımlanır, gruplar ise erişim ve hak yönetimini kolaylaştırır.
 
 Standart kullanıcı hesaplarının sağlanması ve yönetilmesi Active Directory'nin temel unsurlarından biridir. Tipik olarak, karşılaştığımız her şirkette kullanıcı başına en az bir AD kullanıcı hesabı sağlanır. Bazı kullanıcıların iş rollerine göre (örneğin, bir BT admin veya Help Desk üyesi) iki veya daha fazla hesabı olabilir. Belirli bir kullanıcıya bağlı standart kullanıcı ve admin hesaplarının yanı sıra, arka planda belirli bir uygulamayı veya servisi çalıştırmak veya domain ortamında diğer hayati fonksiyonları yerine getirmek için kullanılan birçok servis hesabı görürüz. 1.000 çalışanı olan bir kuruluşun 1.200 veya daha fazla aktif kullanıcı hesabı olabilir! Ayrıca eski çalışanlardan, geçici/mevsimlik çalışanlardan, stajyerlerden vb. yüzlerce devre dışı bırakılmış hesabı olan kuruluşlar da görebiliriz. Bazı şirketler denetim amacıyla bu hesapların kayıtlarını tutmak zorundadır, bu nedenle çalışan işten çıkarıldığında bu hesapları devre dışı bırakırlar (ve umarız tüm ayrıcalıkları kaldırırlar), ancak silmezler. FORMER EMPLOYEES gibi devre dışı bırakılmış birçok hesap içeren bir OU görmek yaygındır.
 
