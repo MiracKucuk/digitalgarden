@@ -10,11 +10,11 @@ Zorluk, Python mako kütüphanesindeki Server-Side Template Injection güvenlik 
 ### Uygulama Genel Bakışı  
 Uygulamanın ana sayfasını ziyaret ettiğimizde, adımızı göndermek için bir form görüntülenir.
 
-![Pasted image 20250129023608.png](/img/user/Pasted%20image%2020250129023608.png)
+![Pasted image 20250129023608.png](/img/user/resimler/Pasted%20image%2020250129023608.png)
 
 Herhangi bir metin gönderdiğimizde, metnin farklı yazı tipi stillerinde varyasyonları oluşturulur.
 
-![Pasted image 20250129023646.png](/img/user/Pasted%20image%2020250129023646.png)
+![Pasted image 20250129023646.png](/img/user/resimler/Pasted%20image%2020250129023646.png)
 
 Bu web uygulamasındaki hemen hemen tüm özellikler bunlar.
 
@@ -104,11 +104,11 @@ Mako template engine'in generate_render fonksiyonu, sonuç listesiyle birlikte b
 
 https://www.makotemplates.org/
 
-![Pasted image 20250129024620.png](/img/user/Pasted%20image%2020250129024620.png)
+![Pasted image 20250129024620.png](/img/user/resimler/Pasted%20image%2020250129024620.png)
 
 Kullanıcı tarafından sağlanan içerik sterilize edilmediğinden, template literals enjekte edebilir ve Server Side Template Injection (SSTI) elde edebiliriz. Aşağıdaki şablon ifadesini göndererek bunu doğrulayabiliriz `${7*7}` :
 
-![Pasted image 20250129024736.png](/img/user/Pasted%20image%2020250129024736.png)
+![Pasted image 20250129024736.png](/img/user/resimler/Pasted%20image%2020250129024736.png)
 
 Sonuç, değerlendirilen template expression değerini gösterir. PayloadAllTheThings deposunda SSTI aracılığıyla kod yürütme için çalışan bir proof-of concept payload'u bulabiliriz, bu da os modülüne TemplateNamespace'den erişebileceğimizi belirtir:
 
@@ -116,6 +116,6 @@ Sonuç, değerlendirilen template expression değerini gösterir. PayloadAllTheT
 ${self.module.cache.util.os.popen('whoami').read()}
 ```
 
-![Pasted image 20250129024829.png](/img/user/Pasted%20image%2020250129024829.png)
+![Pasted image 20250129024829.png](/img/user/resimler/Pasted%20image%2020250129024829.png)
 
 Şimdi /flag.txt dosyasından meydan okuma bayrağını okuyarak bu meydan okumanın görevini tamamlayabiliriz.

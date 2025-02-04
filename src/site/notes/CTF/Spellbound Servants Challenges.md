@@ -20,11 +20,11 @@ Güvenli olmayan pickle deserialization'dan yararlanma.
 
 Uygulama ana sayfasını ziyaret etmek bize aşağıdaki girişi verir:
 
-![Pasted image 20250129205245.png](/img/user/Pasted%20image%2020250129205245.png)
+![Pasted image 20250129205245.png](/img/user/resimler/Pasted%20image%2020250129205245.png)
 
 Kaydolduktan ve giriş yaptıktan sonra aşağıdaki ana sayfaya ulaşıyoruz:
 
-![Pasted image 20250129205327.png](/img/user/Pasted%20image%2020250129205327.png)
+![Pasted image 20250129205327.png](/img/user/resimler/Pasted%20image%2020250129205327.png)
 
 Uygulamanın sahip olduğu fonksiyonellik budur. Kaynak koduna bir göz atalım.
 
@@ -228,4 +228,4 @@ exploit()
 ```
 
 
-![Pasted image 20250129211608.png](/img/user/Pasted%20image%2020250129211608.png)
+![Pasted image 20250129211608.png](/img/user/resimler/Pasted%20image%2020250129211608.png)

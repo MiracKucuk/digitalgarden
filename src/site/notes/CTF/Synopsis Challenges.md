@@ -21,7 +21,7 @@ Bu zorluk, Golang ve Nim ile yazılmış bir kullanıcı girişi web uygulaması
 
 ### Uygulamaya Genel Bakış
 
-![Pasted image 20250130141100.png](/img/user/Pasted%20image%2020250130141100.png)
+![Pasted image 20250130141100.png](/img/user/resimler/Pasted%20image%2020250130141100.png)
 
 
 ### Nim'in httpclient CRLF Enjeksiyonu Güvenlik Açığı
@@ -256,7 +256,7 @@ Sunucu, gelen istekleri sürekli olarak dinler.
 Nims standart http kütüphanesi <=1.2.6 sürümünden itibaren CRLF enjeksiyonundan muzdariptir https://consensys.io/diligence/vulnerabilities/nim-httpclient-header-crlf-injection/ Dockerfile'a bakarak challenge'ın savunmasız olduğunu doğrulayabiliriz , satır 22'de nim 1.2.4 yüklüdür.
 
 
-![Pasted image 20250130144601.png](/img/user/Pasted%20image%2020250130144601.png)
+![Pasted image 20250130144601.png](/img/user/resimler/Pasted%20image%2020250130144601.png)
 
 ### **CRLF Injection Nedir?**
 

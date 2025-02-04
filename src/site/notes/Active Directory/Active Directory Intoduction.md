@@ -931,9 +931,16 @@ Birçok **trust** türü bulunmaktadır.
 
 **Trust**lar **transitive** veya **non-transitive** olabilir.
 
+**Trust** (Güven ilişkisi), özellikle Active Directory ortamlarında, iki domain arasında kullanıcı ve kaynak paylaşımını sağlayan bir bağlantıdır.
+
+- **Transitive (Geçişli):** Güven ilişkisi, birden fazla domain arasında otomatik olarak genişler. Örneğin, Domain A ile Domain B arasında, Domain B ile Domain C arasında bir transitive trust varsa, Domain A ve Domain C de birbirine güvenebilir.
+    
+- **Non-transitive (Geçişsiz):** Güven ilişkisi yalnızca tanımlandığı iki domain arasında geçerlidir ve diğer domainlere genişlemez.
+
+
 * ***Transitive trust**, **child domain**'in güvendiği **object**'lere de güvenin genişletildiği anlamına gelir.
 
-* ** Non-transitive trust**'ta yalnızca **child domain** kendisi güvenilendir.
+* **Non-transitive trust** 'ta yalnızca **child domain** kendisi güvenilendir.
 
 **Trust**lar **tek yönlü** veya **iki yönlü** (bidirectional) olarak ayarlanabilir.
 
@@ -1144,11 +1151,11 @@ AP-REP paketinin içerisinde message H vardır. Message H client Server session 
 Client elindeki client server session keyi kullanarak message H'yi açar ve mesajın içinde kendi gönderdiği message G'yi elde ettiğinde Hedef SMTP Server'a authentice olduğunu doğrulamış olur. Ve böylece client kerberos authentication kullanarak giriş yapmak istediği SMTP Server'a giriş yapabilmiş olur.
 
 **Yukarıda anlatılan aşamalar detaylı bir şekilde aşağıdaki görsellerde verilmiştir:**
-![Pasted image 20250130015639.png](/img/user/Pasted%20image%2020250130015639.png)
+![Pasted image 20250130015639.png](/img/user/resimler/Pasted%20image%2020250130015639.png)
 
-![Pasted image 20250130015650.png](/img/user/Pasted%20image%2020250130015650.png)
+![Pasted image 20250130015650.png](/img/user/resimler/Pasted%20image%2020250130015650.png)
 
-![Pasted image 20250130015701.png](/img/user/Pasted%20image%2020250130015701.png)
+![Pasted image 20250130015701.png](/img/user/resimler/Pasted%20image%2020250130015701.png)
 
 
 ```

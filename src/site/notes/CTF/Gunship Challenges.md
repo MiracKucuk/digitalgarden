@@ -19,11 +19,11 @@ Bu zorluk, RCE ile sonuçlanan prototype pollution yoluyla javascript template e
 
 Web sitesine girildiğinde bir İngiliz synthwave grubuna saygı sayfası görülüyor.
 
-![Pasted image 20250129191220.png](/img/user/Pasted%20image%2020250129191220.png)
+![Pasted image 20250129191220.png](/img/user/resimler/Pasted%20image%2020250129191220.png)
 
 Kullanıcı favori sanatçısının adını girebilir:
 
-![Pasted image 20250129191428.png](/img/user/Pasted%20image%2020250129191428.png)
+![Pasted image 20250129191428.png](/img/user/resimler/Pasted%20image%2020250129191428.png)
 
 Uygulamanın sahip olduğu tüm kullanıcı fonksiyonelliği budur.
 
@@ -224,13 +224,13 @@ Kodun kendisi iyi görünüyor, ancak flat kütüphanesinden unflatten kullanıy
 
 Uygulama, **unflatten** metodundaki bir zafiyete karşı savunmasız olan, belirli bir sürümdeki **flat** kütüphanesini kullanıyor ve bu durum **prototype pollution** (prototip kirliliği) saldırılarına açık hale getiriyor.
 
-Uygulama, **prototype pollution** saldırılarına karşı savunmasız ve yanıtları oluşturmak için **pug** template motorunu kullanıyor. Bu nedenle, **pug template injection** üzerinden [[AST Injection\|AST Injection]] gerçekleştirerek **RCE** (Remote Code Execution - Uzaktan Kod Çalıştırma) elde edebiliriz.
+Uygulama, **prototype pollution** saldırılarına karşı savunmasız ve yanıtları oluşturmak için **pug** template motorunu kullanıyor. Bu nedenle, **pug template injection** üzerinden [[Bağlantılar/AST Injection\|AST Injection]] gerçekleştirerek **RCE** (Remote Code Execution - Uzaktan Kod Çalıştırma) elde edebiliriz.
 
-![Pasted image 20250129202818.png](/img/user/Pasted%20image%2020250129202818.png)
+![Pasted image 20250129202818.png](/img/user/resimler/Pasted%20image%2020250129202818.png)
 
 JS uygulamasında Prototype pollution zafiyeti varsa, Parser veya Compiler işlemi sırasında fonksiyona herhangi bir AST eklenebilir. Burada, henüz lexer veya parser tarafından doğrulanmamış olan girdiyi düzgün bir şekilde filtrelemeden (düzgün bir şekilde filtrelenmemiş) AST ekleyebilirsiniz. Ardından, derleyiciye beklenmedik bir girdi verebiliriz.
 
-![Pasted image 20250129202906.png](/img/user/Pasted%20image%2020250129202906.png)
+![Pasted image 20250129202906.png](/img/user/resimler/Pasted%20image%2020250129202906.png)
 
 Pug yukarıdaki grafikte gösterildiği gibi çalışır. Handlebar'lardan farklı olarak, her proses ayrı bir modüle ayrılmıştır. pug-parser tarafından üretilen AST, pug-code-gen'e aktarılır ve bir fonksiyon haline getirilir. Ve son olarak, çalıştırılacaktır.
 
@@ -253,9 +253,9 @@ print(requests.get(TARGET_URL+'/static/pwned').text)
 
 ```
 
-![Pasted image 20250129204016.png](/img/user/Pasted%20image%2020250129204016.png)
+![Pasted image 20250129204016.png](/img/user/resimler/Pasted%20image%2020250129204016.png)
 
-![Pasted image 20250129203939.png](/img/user/Pasted%20image%2020250129203939.png)
+![Pasted image 20250129203939.png](/img/user/resimler/Pasted%20image%2020250129203939.png)
 
-![Pasted image 20250129203946.png](/img/user/Pasted%20image%2020250129203946.png)
+![Pasted image 20250129203946.png](/img/user/resimler/Pasted%20image%2020250129203946.png)
 

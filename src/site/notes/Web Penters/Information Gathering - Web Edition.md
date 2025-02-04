@@ -2,6 +2,51 @@
 {"dg-publish":true,"permalink":"/web-penters/information-gathering-web-edition/"}
 ---
 
+### Active Reconnaissance
+- Port Scanning
+- Vulnerability Scanning
+- Network Mapping
+- Banner Grabbing
+- OS Fingerprinting
+- Service Enumeration
+- Web Spidering
+
+
+### Passive Reconnaissance
+* Search Engine Queries
+* WHOIS Lookups
+* DNS
+* Web Archive Analysis
+* Social Media Analysis
+* Code Repositories
+
+# WHOIS
+
+```shell-session
+M1R4CKCK@htb[/htb]$ whois inlanefreight.com
+
+[...]
+Domain Name: inlanefreight.com
+Registry Domain ID: 2420436757_DOMAIN_COM-VRSN
+Registrar WHOIS Server: whois.registrar.amazon
+Registrar URL: https://registrar.amazon.com
+Updated Date: 2023-07-03T01:11:15Z
+Creation Date: 2019-08-05T22:43:09Z
+[...]
+```
+
+
+Her WHOIS kaydı tipik olarak aşağıdaki bilgileri içerir:
+
+==Domain Adı==: Domain adının kendisi (örneğin, example.com)
+==Registrar==: Domainin kaydedildiği şirket (örn. GoDaddy, Namecheap)
+==Registrant Contact==: Domain'i kaydettiren kişi veya kuruluş.
+==Administrative Contact==: Domainin yönetiminden sorumlu kişi.
+==Technical Contact (Teknik İlgili Kişi)==: Domain ile ilgili teknik sorunları ele alan kişi.
+==Creation and Expiration Dates==: Domainin ne zaman kaydedildiği ve ne zaman sona ereceği.
+==Name Servers== : Domain adını bir IP adresine çeviren sunucular.
+
+[WhoisFreaks](https://whoisfreaks.com/), alan adı bilgileri, WHOIS sorguları ve IP adresleriyle ilgili kapsamlı veriler sağlayan bir platformdur.
 
 # DNS
 
@@ -11,11 +56,11 @@ DNS, domain adlarını (örneğin [www.example.com](http://www.example.com)) IP 
 
 Check Cache -> IP Found ? --> (No) --> Sends DNS Query to Resolver --> Checks Cache --> (No) --> Recursive Lookup --> Root Name Server --> TLD Name Server --> Authoritative Name Server --> Returns Ip to Computer --> Connect Web site 
 
-* Bilgisayarınız Yönlendirme İstediğinde (DNS Sorgusu): Domain yazdığınızda, bilgisayarınız önce geçmişteki ziyaretlerden IP adresini hatırlayıp hatırlamadığını görmek için belleğini (cache) kontrol eder. Eğer hatırlamıyorsa, genellikle internet servis sağlayıcınız (ISP) tarafından sağlanan bir DNS resolver'a başvurur.
+* Bilgisayarınız Yönlendirme İstediğinde (DNS Sorgusu): Domain yazdığınızda, bilgisayarınız önce geçmişteki ziyaretlerden IP adresini hatırlayıp hatırlamadığını görmek için belleğini (==cache==) kontrol eder. Eğer hatırlamıyorsa, genellikle internet servis sağlayıcınız (ISP) tarafından sağlanan bir DNS resolver'a başvurur.
 
-* DNS Resolver Haritasını Kontrol Eder (Recursive Search): Resolver'ın de bir cache'i vardır ve IP adresini burada bulamazsa, DNS hiyerarşisi üzerinden bir yolculuğa çıkar. İlk olarak root adı sunucusuna sorar, bu sunucu internetin kütüphanecisi gibidir.
+* DNS Resolver Haritasını Kontrol Eder (Recursive Search): Resolver'ın de bir cache'i vardır ve IP adresini burada bulamazsa, DNS hiyerarşisi üzerinden bir yolculuğa çıkar. İlk olarak ==root name server=='a sorar, bu sunucu internetin kütüphanecisi gibidir.
 
-* Root Name Sunucusu Yolu Gösterir: Root sunucusu tam adresi bilmez, ancak kimin bildiğini bilir – domain'in sonuyla (örneğin, .com, .org) sorumlu olan top level domain (TLD) sunucusu. Çözümleyiciye doğru yönü gösterir.
+* Root Name Sunucusu Yolu Gösterir: Root sunucusu tam adresi bilmez, ancak kimin bildiğini bilir – domain'in sonuyla (örneğin, .com, .org) sorumlu olan top level domain (TLD) sunucusu. Resolver'a doğru yönü gösterir.
 
 * TLD Name Sunucusu Adresi Daraltır: TLD adı sunucusu, bir zone harita gibidir. İncelediğiniz belirli domain için sorumlu olan authorized name sunucusunun kim olduğunu bilir (örneğin, example.com) ve resolver'a oraya gönderir.
 
@@ -24,6 +69,7 @@ Check Cache -> IP Found ? --> (No) --> Sends DNS Query to Resolver --> Checks Ca
 * DNS Resolver Bilgiyi Geri Döner: Resolver IP adresini alır ve bilgisayarınıza iletir. Ayrıca, bir süreliğine (cache'de alarak) saklar, böylece yakında tekrar siteyi ziyaret etmek isterseniz.
 
 * Bilgisayarınız Bağlantıyı Kurar: Artık bilgisayarınız IP adresini bildiğine göre, doğrudan web sunucusuna bağlanabilir ve web sitesini ziyaret etmeye başlayabilirsiniz.
+
 
 ### Hosts Dosyası
 hosts dosyası, host adlarını IP adresleriyle eşlemek için kullanılan basit bir metin dosyasıdır ve DNS sürecini atlayan manuel bir domain adı resolver yöntemi sağlar. DNS domain adlarının IP adreslerine çevrilmesini otomatikleştirirken, hosts dosyası doğrudan, local geçersiz kılmalara izin verir. Bu özellikle geliştirme, sorun giderme veya web sitelerini engelleme için yararlı olabilir.
