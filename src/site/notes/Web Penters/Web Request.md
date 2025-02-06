@@ -2,7 +2,7 @@
 {"dg-publish":true,"permalink":"/web-penters/web-request/"}
 ---
 
- www.hackthebox.com gibi istenen web sitesine ulaşmak için bir Uniform Resource Locator (URL) olarak Fully Qualified Domain Name (FQDN) giriyoruz.
+ www.hackthebox.com gibi istenen web sitesine ulaşmak için bir ==Uniform Resource Locator (URL)== olarak ==Fully Qualified Domain Name (FQDN)== giriyoruz.
 
 
 ## URL
@@ -21,7 +21,7 @@
 | **Query String** | `?login=true`         | Sorgu stringi bir soru işareti `?` ile başlar ve bir parametre (ör. `login`) ile bir değer (ör. `true`) içerir. Birden fazla parametre, `&` işareti ile ayrılabilir.                    |
 | **Fragments**    | `#status`             | Fragments, client tarafında tarayıcılar tarafından işlenir ve birincil kaynağın içinde bir bölümün (ör. bir başlık veya sayfa bölümü) yerini bulmak için kullanılır.                    |
 
-Bir kaynağa erişmek için tüm bileşenler gerekli değildir. Ana zorunlu alanlar scheme ve host'tur, bunlar olmadan istekte bulunulacak kaynak olmaz.
+Bir kaynağa erişmek için tüm bileşenler gerekli değildir. Ana zorunlu alanlar ==scheme== ve ==host=='tur, bunlar olmadan istekte bulunulacak kaynak olmaz.
 
 
 ## HTTP Flow
@@ -74,7 +74,7 @@ Use "--help category" to get an overview of all categories.
 Use the user manual `man curl` or the "--help all" flag for all options.
 ```
 
-Yukarıdaki mesajda belirtildiği gibi, daha ayrıntılı bir yardım menüsü yazdırmak için --help all veya belirli bir bayrağın ayrıntılı yardımını yazdırmak için --help category (örneğin -h http) kullanabiliriz. Eğer daha detaylı dokümantasyon okumamız gerekirse, cURL kılavuz sayfasının tamamını görüntülemek için man curl kullanabiliriz.
+Detaylı yardım için `--help all`, belirli bir bayrak için `--help category` kullanın. Dokümantasyon için `man curl`.
 
 
 Soru : Bayrağı almak için yukarıdaki alıştırmayı başlatın, ardından yukarıda gösterilen sunucuda '/download.php' tarafından döndürülen dosyayı indirmek için cURL kullanın.
@@ -96,16 +96,15 @@ HTTPS uygulayan web siteleri, URL'lerindeki https:// (örneğin https://www.goog
 
 ![Pasted image 20241224202642.png](/img/user/resimler/Pasted%20image%2020241224202642.png)
 
-Not: HTTPS protokolü aracılığıyla aktarılan veriler şifrelenmiş olsa da, istek açık metinli bir DNS sunucusuyla iletişime geçerse ziyaret edilen URL'yi yine de açığa çıkarabilir. Bu nedenle, şifrelenmiş DNS sunucularının (örn. 8.8.8.8 veya 1.1.1.1) kullanılması veya tüm trafiğin düzgün bir şekilde şifrelendiğinden emin olmak için bir VPN hizmetinden yararlanılması önerilir.
-
+Not: HTTPS protokolü aracılığıyla aktarılan veriler şifrelenmiş olsa da, istek ==clear-text== bir DNS sunucusuyla iletişime geçerse ziyaret edilen URL'yi yine de açığa çıkarabilir. Bu nedenle, şifreli DNS sunucularının (örn. 8.8.8.8 veya 1.1.1.1) kullanılması veya tüm trafiğin düzgün bir şekilde şifrelendiğinden emin olmak için bir VPN hizmetinden yararlanılması önerilir.
 
 ## HTTPS Flow
 
 ![Pasted image 20241224202749.png](/img/user/resimler/Pasted%20image%2020241224202749.png)
 
-Eğer HTTPS yerine bir web sitesine **http://** ile erişmeye çalışırsak ve site HTTPS zorunluluğu uygularsa, tarayıcı önce domain'i çözümler ve hedef web sitesini barındıran web sunucusuna yönlendirme yapar. İlk olarak, şifrelenmemiş HTTP protokolü üzerinden port 80'e bir istek gönderilir. Sunucu bunu algılar ve client'i, 301 Moved Permanently yanıt kodu ile güvenli HTTPS portu 443'e yönlendirir. 
+Eğer HTTPS yerine bir web sitesine **http://** ile erişmeye çalışırsak ve site HTTPS zorunluluğu uygularsa, tarayıcı önce domain'i çözümler ve hedef web sitesini barındıran web sunucusuna yönlendirme yapar. İlk olarak, şifrelenmemiş HTTP protokolü üzerinden port 80'e bir istek gönderilir. Sunucu bunu algılar ve client'i, ==301 Moved Permanently== yanıt kodu ile güvenli ==HTTPS portu 443=='e yönlendirir. 
 
-Sonrasında, client (web tarayıcısı) kendisi hakkında bilgi veren bir "client hello" paketi gönderir. Buna karşılık, sunucu bir "server hello" ile yanıt verir ve SSL sertifikalarını değiştirmek için bir [anahtar değişimi](https://en.wikipedia.org/wiki/Key_exchange) başlatır. Client bu anahtarı/sertifikayı doğrular ve kendi sertifikasını gönderir. Ardından, şifrelenmiş bir [handshake](https://www.cloudflare.com/learning/ssl/what-happens-in-a-tls-handshake) gerçekleştirilir ve şifreleme ile veri aktarımının düzgün çalışıp çalışmadığı doğrulanır.
+Sonrasında, client (web tarayıcısı) kendisi hakkında bilgi veren bir "==client hello==" paketi gönderir. Buna karşılık, sunucu bir "==server hello==" ile yanıt verir ve SSL sertifikalarını değiştirmek için bir [anahtar değişimi (key exchange)](https://en.wikipedia.org/wiki/Key_exchange) başlatır. Client bu anahtarı/sertifikayı doğrular ve kendi sertifikasını gönderir. Ardından, şifrelenmiş bir [handshake](https://www.cloudflare.com/learning/ssl/what-happens-in-a-tls-handshake) gerçekleştirilir ve şifreleme ile veri aktarımının düzgün çalışıp çalışmadığı doğrulanır.
 
 **Not:** Belirli durumlarda, bir saldırgan **HTTP Downgrade** saldırısı gerçekleştirebilir. Bu saldırı, HTTPS iletişimini HTTP'ye indirger ve veri açık metin olarak aktarılır. Bu, kullanıcı farkında olmadan tüm trafiği saldırganın host'u üzerinden yönlendirmek için bir **Man-In-The-Middle (MITM)** proxy kurulumu ile yapılır. Ancak, modern tarayıcılar, sunucular ve web uygulamaları bu tür saldırılara karşı koruma sağlamaktadır.
 
@@ -146,25 +145,37 @@ Yukarıdaki görüntü URL'ye yapılan bir HTTP GET isteğini göstermektedir:
 
 Herhangi bir HTTP isteğinin ilk satırı 'boşluklarla ayrılmış' üç ana alan içerir:
 
-|**Alan**|**Örnek**|**Açıklama**|
-|---|---|---|
-|**Method**|`GET`|HTTP yöntemi veya fiili, gerçekleştirilecek işlem türünü belirtir.|
-|**Path**|`/users/login.html`|Erişilen kaynağın yolunu ifade eder. Bu alan, bir sorgu stringiyle de sonlandırılabilir (ör. `?username=user`).|
-|**Version**|`HTTP/1.1`|Üçüncü ve son alan, kullanılan HTTP sürümünü belirtir.|
+| **Alan**    | **Örnek**           | **Açıklama**                                                                                                    |
+| ----------- | ------------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Method**  | `GET`               | HTTP yöntemi veya fiili, gerçekleştirilecek işlem türünü belirtir.                                              |
+| **Path**    | `/users/login.html` | Erişilen kaynağın yolunu ifade eder. Bu alan, bir sorgu stringiyle de sonlandırılabilir (ör. `?username=user`). |
+| **Version** | `HTTP/1.1`          | Üçüncü ve son alan, kullanılan HTTP sürümünü belirtir.                                                          |
 
-Sonraki satır kümesi Host, User-Agent, Cookie ve diğer birçok olası başlık gibi HTTP header değer çiftlerini içerir. Bu başlıklar bir isteğin çeşitli niteliklerini belirtmek için kullanılır. Headerlar, sunucunun isteği doğrulaması için gerekli olan yeni bir satırla sonlandırılır. Son olarak, bir request, request body ve data ile bitebilir.
+Sonraki satır kümesi ==Host==, ==User-Agent==, ==Cookie== ve diğer birçok olası header gibi HTTP header değer çiftlerini içerir. Bu başlıklar bir isteğin çeşitli niteliklerini belirtmek için kullanılır. Headerlar, sunucunun isteği doğrulaması için gerekli olan yeni bir satırla sonlandırılır. Son olarak, bir request, request body ve data ile bitebilir.
 
-Not: HTTP sürüm 1.X istekleri açık metin olarak gönderir ve farklı alanları ve farklı istekleri ayırmak için yeni satır karakteri kullanır. HTTP sürüm 2.X ise istekleri sözlük biçiminde ikili veri olarak gönderir.
+Not: HTTP sürüm 1.X istekleri açık metin olarak gönderir ve farklı alanları ve farklı istekleri ayırmak için yeni satır karakteri kullanır. HTTP sürüm 2.X ise istekleri sözlük biçiminde binary data olarak gönderir.
+
+```
+GET /index.html HTTP/1.1
+Host: example.com
+User-Agent: Mozilla/5.0
+Accept: text/html
+```
+
+```
+0000 0001 1000 0010 1010 1100 0101 1110 ...
+```
+
 
 ## HTTP Response
 
 ![Pasted image 20241224205735.png](/img/user/resimler/Pasted%20image%2020241224205735.png)
 
-Bir HTTP yanıtının ilk satırı boşluklarla ayrılmış iki alan içerir. Bunlardan ilki HTTP sürümü (örn. HTTP/1.1), ikincisi ise HTTP yanıt kodudur (örn. 200 OK).
+Bir HTTP yanıtının ilk satırı boşluklarla ayrılmış iki alan içerir. Bunlardan ilki ==HTTP sürümü== (örn. HTTP/1.1), ikincisi ise ==HTTP response kodudur== (örn. 200 OK).
 
 Response kodları, daha sonraki bir bölümde tartışılacağı gibi, isteğin durumunu belirlemek için kullanılır. İlk satırdan sonra yanıt, HTTP isteğine benzer şekilde başlıklarını listeler. Hem request hem de response başlıkları bir sonraki bölümde ele alınacaktır.
 
-Son olarak, yanıt, başlıklardan sonra yeni bir satırla ayrılan bir response body ile bitebilir. Response body genellikle HTML kodu olarak tanımlanır. Ancak, JSON gibi diğer kod türleri, resimler, stil sayfaları veya komut dosyaları gibi web sitesi kaynakları veya hatta web sunucusunda barındırılan PDF belgesi gibi bir belge ile de yanıt verebilir.
+Son olarak, response, headerlarından sonra yeni bir satırla ayrılan bir response body ile bitebilir. Response body genellikle HTML kodu olarak tanımlanır. Ancak, JSON gibi diğer kod türleri, resimler, stil sayfaları veya komut dosyaları gibi web sitesi kaynakları veya hatta web sunucusunda barındırılan PDF belgesi gibi bir belge ile de yanıt verebilir.
 
 
 ## cURL
@@ -199,7 +210,7 @@ M1R4CKCK@htb[/htb]$ curl inlanefreight.com -v
 
 Request basitçe Host, User-Agent ve Accept başlıklarıyla birlikte GET / HTTP/1.1 gönderdi. Buna karşılık, HTTP yanıtı HTTP/1.1 401 Unauthorized'ı içeriyordu
 
-Request olduğu gibi, Response da Date, Content-Length ve Content-Type dahil olmak üzere sunucu tarafından gönderilen birkaç başlık içeriyordu.
+Request olduğu gibi, Response da Date, Content-Length ve Content-Type dahil olmak üzere sunucu tarafından gönderilen birkaç header içeriyordu.
 
 Not : -vvv bayrağı daha da ayrıntılı bir çıktı gösterir.
 
@@ -227,7 +238,7 @@ Cevap : 2.4.41
 
 # HTTP Headers
 
-Başlıklar, başlık adından sonra bir iki nokta üst üste (:) ile ayrılmış bir veya birden fazla değere sahip olabilir. Başlıklar şu kategorilere ayrılabilir:
+Headerlar, header adından sonra bir iki nokta üst üste (:) ile ayrılmış bir veya birden fazla değere sahip olabilir. Başlıklar şu kategorilere ayrılabilir:
 
 - **General Headers**
 - **Entity Headers**
