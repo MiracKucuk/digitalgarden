@@ -249,12 +249,12 @@ Headerlar, header adından sonra bir iki nokta üst üste (:) ile ayrılmış bi
 
 ## General Headers
 
-[General headers](https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html), hem HTTP isteklerinde hem de yanıtlarda kullanılır. Mesajın içeriğinden ziyade mesajın kendisini tanımlamak için kullanılırlar.
+[General headers](https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html), hem HTTP requestlerde hem de response'larda kullanılır. Mesajın içeriğinden ziyade mesajın kendisini tanımlamak için kullanılırlar.
 
 | **Header**     | **Örnek**                             | **Açıklama**                                                                                                                                                                                                                                                                                                                         |
 | -------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Date**       | `Date: Wed, 16 Feb 2022 10:38:44 GMT` | Mesajın oluşturulduğu tarih ve saati belirtir. Zamanın standart UTC saat dilimine dönüştürülmesi tercih edilir.                                                                                                                                                                                                                      |
-| **Connection** | `Connection: close`                   | İstek tamamlandıktan sonra mevcut ağ bağlantısının açık kalıp kalmayacağını belirtir. Bu başlık için yaygın iki değer `close` ve `keep-alive`'dır. `Close` değeri client veya sunucudan geldiğinde bağlantının sonlandırılmak istendiğini ifade ederken, `keep-alive` bağlantının açık kalmasını ve daha fazla veri almasını sağlar. |
+| **Connection** | `Connection: close`                   | İstek tamamlandıktan sonra mevcut ağ bağlantısının açık kalıp kalmayacağını belirtir. Bu header için yaygın iki değer `close` ve `keep-alive`'dır. `Close` değeri client veya sunucudan geldiğinde bağlantının sonlandırılmak istendiğini ifade ederken, `keep-alive` bağlantının açık kalmasını ve daha fazla veri almasını sağlar. |
 
 
 ## Entity Headers
@@ -263,9 +263,9 @@ General headerlara benzer şekilde, Entity Headers da hem request'de hem de resp
 | **Header**           | **Örnek**                     | **Açıklama**                                                                                                                                                                                                            |
 | -------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Content-Type**     | `Content-Type: text/html`     | İletilen kaynağın türünü tanımlar. Değer, tarayıcılar tarafından otomatik olarak client tarafında eklenir ve server response'unda döndürülür. `charset` alanı, kullanılan kodlama standardını belirtir (örneğin UTF-8). |
-| **Media-Type**       | `Media-Type: application/pdf` | Media-Type, Content-Type ile benzerdir ve iletilen veriyi tanımlar. Sunucunun girdiyi nasıl yorumlayacağına karar verirken bu başlık önemli bir rol oynar. `charset` alanı bu başlıkla da kullanılabilir.               |
-| **Boundary**         | `boundary="b4e4fbd93540"`     | Aynı mesajda birden fazla içerik olduğunda, içerikleri ayıran işaretçi olarak kullanılır. Örneğin, form verilerinde, bu boundary `--b4e4fbd93540` olarak kullanılır ve formun farklı bölümlerini ayırır.                |
-| **Content-Length**   | `Content-Length: 385`         | Geçirilen entity'nin boyutunu belirtir. Sunucu bu başlığı, mesaj body'sinden veri okumak için kullanır ve tarayıcılar ve cURL gibi araçlar tarafından otomatik olarak oluşturulur.                                      |
+| **Media-Type**       | `Media-Type: application/pdf` | Media-Type, Content-Type ile benzerdir ve iletilen veriyi tanımlar. Sunucunun girdiyi nasıl yorumlayacağına karar verirken bu başlık önemli bir rol oynar. `charset` alanı bu headerla da kullanılabilir.               |
+| **Boundary**         | `boundary="b4e4fbd93540"`     | Aynı mesajda birden fazla içerik olduğunda, içerikleri ayıran pointer olarak kullanılır. Örneğin, form verilerinde, bu boundary `--b4e4fbd93540` olarak kullanılır ve formun farklı bölümlerini ayırır.                 |
+| **Content-Length**   | `Content-Length: 385`         | Geçirilen entity'nin boyutunu belirtir. Sunucu bu headerı, mesaj body'sinden veri okumak için kullanır ve tarayıcılar ve cURL gibi araçlar tarafından otomatik olarak oluşturulur.                                      |
 | **Content-Encoding** | `Content-Encoding: gzip`      | Veriler, iletilmeden önce birden fazla dönüşümden geçebilir. Örneğin, büyük veri miktarları mesaj boyutunu küçültmek için sıkıştırılabilir. Kullanılan kodlama türü, Content-Encoding başlığı ile belirtilir.           |
 
 ## **Request Headers**  
@@ -275,7 +275,7 @@ Client, HTTP işleminde requesrt headerlarını gönderir. Bu başlıklar, HTTP 
 | ----------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Host**          | `Host: www.inlanefreight.com`            | Kaynağa sorgulama yapılan hostu belirtir. Bu bir domain veya IP adresi olabilir. HTTP sunucuları, farklı web sitelerini barındıracak şekilde yapılandırılabilir, bu da host header'ının önemli bir keşif hedefi olmasını sağlar.                 |
 | **User-Agent**    | `User-Agent: curl/7.77.0`                | Request yapan client'i tanımlar. Tarayıcı, sürüm ve işletim sistemi gibi client hakkında çok şey ortaya koyabilir.                                                                                                                               |
-| **Referer**       | `Referer: http://www.inlanefreight.com/` | Mevcut isteğin nereden geldiğini belirtir. Örneğin, Google arama sonuçlarından bir linke tıklamak, https://google.com'ı referer yapar. Bu başlığa güvenmek tehlikeli olabilir çünkü kolayca manipüle edilebilir.                                 |
+| **Referer**       | `Referer: http://www.inlanefreight.com/` | Mevcut isteğin nereden geldiğini belirtir. Örneğin, Google arama sonuçlarından bir linke tıklamak, https://google.com'ı referer yapar. Bu headera güvenmek tehlikeli olabilir çünkü kolayca manipüle edilebilir.                                 |
 | **Accept**        | `Accept: */*`                            | Client'in anlayabileceği medya türlerini belirtir. Birden fazla medya türü virgülle ayrılarak belirtilir. `*/ *` değeri, tüm medya türlerinin kabul edildiğini gösterir.                                                                         |
 | **Cookie**        | `Cookie: PHPSESSID=b4e4fbd93540`         | Ad-değer çiftlerinden oluşan cookie içerir. Cookie, client tarafında ve sunucuda depolanan, tanımlayıcı olarak kullanılan bir veri parçasıdır. Bu veriler her requestle sunucuya iletilir ve client'in erişimini sürdürür.                       |
 | **Authorization** | `Authorization: BASIC cGFzc3dvcmQK`      | Serverın client'i tanımlamasının başka bir yoludur. Başarılı kimlik doğrulamanın ardından, server client'e özel bir token döndürür. Cookies'ten farklı olarak, token'lar sadece client tarafında depolanır ve her requestle sunucuya gönderilir. |
@@ -286,7 +286,7 @@ Response headers, HTTP response'larında kullanılır ve içeriğiyle ilgili de�
 | **Header**           | **Örnek**                                   | **Açıklama**                                                                                                                                                                           |
 | -------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Server**           | `Server: Apache/2.2.14 (Win32)`             | İsteği işleyen HTTP sunucusuna dair bilgi içerir. Sunucu hakkında bilgi edinmek ve daha fazla keşif yapmak için kullanılabilir.                                                        |
-| **Set-Cookie**       | `Set-Cookie: PHPSESSID=b4e4fbd93540`        | Client tanımlaması için gereken cookie'leri içerir. Tarayıcılar, cookie'leri ayrıştırır ve sonraki istekler için depolar. Bu başlık, Cookie istek başlığı ile aynı formatı takip eder. |
+| **Set-Cookie**       | `Set-Cookie: PHPSESSID=b4e4fbd93540`        | Client tanımlaması için gereken cookie'leri içerir. Tarayıcılar, cookie'leri ayrıştırır ve sonraki istekler için depolar. Bu header, Cookie istek başlığı ile aynı formatı takip eder. |
 | **WWW-Authenticate** | `WWW-Authenticate: BASIC realm="localhost"` | Client'i, istenen kaynağa erişim için gerekli olan kimlik doğrulama türü hakkında bilgilendirir.                                                                                       |
 
 ## **Security Headers**  
@@ -303,7 +303,7 @@ Son olarak, **Security Headers**'a sahibiz. Tarayıcı çeşitliliği ve web tab
 
 ## cURL
 
-Önceki bölümde, cURL ile -v bayrağını kullanmanın bize HTTP request ve response'un tüm detaylarını nasıl gösterdiğini gördük. Eğer sadece response header'larını görmek istiyorsak, -I bayrağını kullanarak HEAD isteği gönderebilir ve sadece response header'larını görüntüleyebiliriz. Ayrıca, hem header'ları hem de response body'yi (örneğin HTML kodu) görüntülemek için -i bayrağını kullanabiliriz. İkisi arasındaki fark, -I bir HEAD isteği gönderirken (bir sonraki bölümde göreceğimiz gibi), -i belirttiğimiz herhangi bir request gönderir ve header'ları da yazdırır.
+Eğer sadece response header'larını görmek istiyorsak, ==-I== bayrağını kullanarak HEAD isteği gönderebilir ve sadece response header'larını görüntüleyebiliriz. Ayrıca, hem header'ları hem de response body'yi (örneğin HTML kodu) görüntülemek için -i bayrağını kullanabiliriz. İkisi arasındaki fark, -I bir HEAD isteği gönderirken (bir sonraki bölümde göreceğimiz gibi), -i belirttiğimiz herhangi bir request gönderir ve header'ları da yazdırır.
 
 ```shell-session
 M1R4CKCK@htb[/htb]$ curl -I https://www.inlanefreight.com
@@ -328,7 +328,7 @@ Strict-Transport-Security: max-age=31536000
 Referrer-Policy: origin
 ```
 
-Headerları görüntülemenin yanı sıra, cURL, daha sonraki bir bölümde göreceğimiz gibi, -H bayrağı ile request headerlarını ayarlamamıza da izin verir. User-Agent veya Cookie başlıkları gibi bazı başlıkların kendi bayrakları vardır. Örneğin, User-Agent'ımızı ayarlamak için -A'yı aşağıdaki gibi kullanabiliriz:
+Headerları görüntülemenin yanı sıra, cURL, daha sonraki bir bölümde göreceğimiz gibi, ==-H== bayrağı ile request headerlarını ayarlamamıza da izin verir. User-Agent veya Cookie başlıkları gibi bazı başlıkların kendi bayrakları vardır. Örneğin, User-Agent'ımızı ayarlamak için -A'yı aşağıdaki gibi kullanabiliriz:
 
 ```shell-session
 M1R4CKCK@htb[/htb]$ curl https://www.inlanefreight.com -A 'Mozilla/5.0'
@@ -345,7 +345,7 @@ Son olarak, tarayıcı devtools kullanarak HTTP header'larını nasıl önizleye
 
 ![Pasted image 20241224214532.png](/img/user/resimler/Pasted%20image%2020241224214532.png)
 
-İlk Headers sekmesinde hem HTTP request hem de HTTP response başlıklarını görüyoruz. Devtools başlıkları otomatik olarak bölümler halinde düzenler, ancak ayrıntılarını ham biçimlerinde görüntülemek için Raw düğmesine tıklayabiliriz. Ayrıca, gelecek bölümde tartışılacağı gibi, request tarafından kullanılan cookie'leri görmek için Cookies sekmesini kontrol edebiliriz.
+İlk Headers sekmesinde hem HTTP request hem de HTTP response başlıklarını görüyoruz. Devtools başlıkları otomatik olarak bölümler halinde düzenler, ancak ayrıntılarını raw biçimlerinde görüntülemek için ==Raw== düğmesine tıklayabiliriz. Ayrıca, gelecek bölümde tartışılacağı gibi, request tarafından kullanılan cookie'leri görmek için Cookies sekmesini kontrol edebiliriz.
 
 
 Soru : Yukarıdaki sunucu, sayfa yüklendikten sonra flag'ı yükler. Sayfa tarafından hangi requestlerin yapıldığını görmek ve bayrağa yapılan isteği bulmak için tarayıcı devtools'undaki Network sekmesini kullanın.
