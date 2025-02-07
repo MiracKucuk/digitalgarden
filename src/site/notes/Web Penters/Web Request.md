@@ -435,7 +435,7 @@ Content-Type: text/html; charset=UTF-8
 Access denied
 ```
 
-Gördüğümüz gibi, response body'de Access denied ve WWW-Authenticate header'ında Basic realm=“Access denied” değerlerini alıyoruz, bu da Headers bölümünde tartışıldığı gibi bu sayfanın gerçekten basic HTTP auth kullandığını doğruluyor. Kimlik bilgilerini cURL aracılığıyla sağlamak için aşağıdaki gibi -u bayrağını kullanabiliriz:
+Gördüğümüz gibi, response body'de ==Access denied== ve WWW-Authenticate header'ında Basic realm=“Access denied” değerlerini alıyoruz, bu da Headers bölümünde tartışıldığı gibi bu sayfanın gerçekten basic HTTP auth kullandığını doğruluyor. Kimlik bilgilerini cURL aracılığıyla sağlamak için aşağıdaki gibi -u bayrağını kullanabiliriz:
 
 ```shell-session
 M1R4CKCK@htb[/htb]$ curl -u admin:admin http://<SERVER_IP>:<PORT>/
@@ -447,7 +447,7 @@ M1R4CKCK@htb[/htb]$ curl -u admin:admin http://<SERVER_IP>:<PORT>/
 ...SNIP...
 ```
 
-Bu kez respınse olarak sayfayı alırız. Temel HTTP auth kimlik bilgilerini sağlayabileceğimiz başka bir yöntem daha vardır, bu da ilk bölümde tartıştığımız gibi doğrudan URL aracılığıyla (kullanıcı adı:şifre@URL) şeklindedir. Aynı şeyi cURL veya tarayıcımızla denersek, sayfaya da erişebiliriz:
+Bu kez response olarak sayfayı alırız. Temel HTTP auth kimlik bilgilerini sağlayabileceğimiz başka bir yöntem daha vardır, bu da ilk bölümde tartıştığımız gibi doğrudan URL aracılığıyla (kullanıcı adı:şifre@URL) şeklindedir. Aynı şeyi cURL veya tarayıcımızla denersek, sayfaya da erişebiliriz:
 
 ```shell-session
 M1R4CKCK@htb[/htb]$ curl http://admin:admin@<SERVER_IP>:<PORT>/
@@ -497,7 +497,7 @@ M1R4CKCK@htb[/htb]$ curl -v http://admin:admin@<SERVER_IP>:<PORT>/
 
 Basic HTTP auth kullandığımız için, HTTP isteğimizin Authorization headerını admin:admin'in base64 kodlu değeri olan Basic YWRtaW46YWRtaW4= olarak ayarladığını görüyoruz. Modern bir kimlik doğrulama yöntemi (örneğin JWT) kullanıyor olsaydık, Authorization Bearer tipinde olacak ve daha uzun şifrelenmiş bir token içerecekti.
 
-Sayfaya erişmemize izin verip vermediğini görmek için kimlik bilgilerini sağlamadan Authorization'ı manuel olarak ayarlamayı deneyelim. Headrı -H bayrağı ile ayarlayabiliriz ve yukarıdaki HTTP isteğindeki aynı değeri kullanacağız. Birden fazla başlık belirtmek için -H bayrağını birden fazla kez ekleyebiliriz:
+Sayfaya erişmemize izin verip vermediğini görmek için kimlik bilgilerini sağlamadan Authorization'ı manuel olarak ayarlamayı deneyelim. Header'ı -H bayrağı ile ayarlayabiliriz ve yukarıdaki HTTP isteğindeki aynı değeri kullanacağız. Birden fazla başlık belirtmek için -H bayrağını birden fazla kez ekleyebiliriz:
 
 ```shell-session
 M1R4CKCK@htb[/htb]$ curl -H 'Authorization: Basic YWRtaW46YWRtaW4=' http://<SERVER_IP>:<PORT>/
@@ -527,7 +527,7 @@ Requeste tıkladığımızda, URL'de kullanılan GET parametresi search=le ile s
 
 Şimdi, arama sonuçlarının tamamını almak için aynı isteği doğrudan search.php'ye gönderebiliriz, ancak muhtemelen yukarıdaki ekran görüntüsünde gösterilen HTML düzenine sahip olmadan bunları belirli bir biçimde (örneğin JSON) döndürecektir.
 
-cURL ile bir GET isteği göndermek için, GET istekleri parametrelerini URL'ye yerleştirdiğinden, yukarıdaki ekran görüntülerinde görülen URL'nin aynısını kullanabiliriz. Ancak, tarayıcı geliştirme araçları cURL komutunu elde etmek için daha uygun bir yöntem sağlar. İsteğe sağ tıklayabilir ve Copy>Copy as cURL seçeneğini seçebiliriz. Daha sonra, kopyalanan komutu terminalimize yapıştırabilir ve çalıştırabiliriz ve tam olarak aynı yanıtı almalıyız:
+cURL ile bir GET isteği göndermek için, GET istekleri parametrelerini URL'ye yerleştirdiğinden, yukarıdaki ekran görüntülerinde görülen URL'nin aynısını kullanabiliriz. Ancak, tarayıcı geliştirme araçları cURL komutunu elde etmek için daha uygun bir yöntem sağlar. İsteğe sağ tıklayabilir ve ==Copy>Copy as cURL== seçeneğini seçebiliriz. Daha sonra, kopyalanan komutu terminalimize yapıştırabilir ve çalıştırabiliriz ve tam olarak aynı yanıtı almalıyız:
 
 ```shell-session
 M1R4CKCK@htb[/htb]$ curl 'http://<SERVER_IP>:<PORT>/search.php?search=le' -H 'Authorization: Basic YWRtaW46YWRtaW4='
@@ -536,7 +536,7 @@ Leeds (UK)
 Leicester (UK)
 ```
 
-Not: Kopyalanan komut HTTP isteğinde kullanılan tüm başlıkları içerecektir. Ancak, bunların çoğunu kaldırabilir ve yalnızca Authorization başlığı gibi gerekli kimlik doğrulama başlıklarını tutabiliriz.
+Not: Kopyalanan komut HTTP isteğinde kullanılan tüm başlıkları içerecektir. Ancak, bunların çoğunu kaldırabilir ve yalnızca ==Authorization== başlığı gibi gerekli kimlik doğrulama başlıklarını tutabiliriz.
 
 Aynı isteği doğrudan tarayıcı devtools'u içinde Copy>Copy as Fetch'i seçerek de tekrarlayabiliriz. Bu, JavaScript `Fetch kütüphanesini` kullanarak aynı HTTP isteğini kopyalayacaktır. Ardından, [CTRL+SHIFT+K] tuşlarına tıklayarak JavaScript konsol sekmesine gidebilir, Fetch komutumuzu yapıştırabilir ve isteği göndermek için enter tuşuna basabiliriz:
 
@@ -556,7 +556,7 @@ Cevap :
 **POST** isteklerinin avantajları:
 
 1. **Loglama:** Büyük dosyalar aktarılırken sunucu, dosyaları URL gibi loglamak zorunda kalmaz.
-2. **Kodlama:** **POST**, veriyi gövdede taşıdığı için sadece ayırıcı karakterler kodlanır. İkili veriyi destekler.
+2. **Kodlama:** **POST**, veriyi body'de taşıdığı için sadece ayırıcı karakterler kodlanır. Binary veriyi destekler.
 3. **Daha Fazla Veri:** URL uzunluğu sınırları nedeniyle (genelde 2.000 karakter altı) fazla veri taşıyamayan **GET**'in aksine, **POST** büyük verilerle uyumludur.
 
 Şimdi **POST** isteklerini okumak ve göndermek için **cURL** ve tarayıcı **DevTools** kullanımı örneklerine bakalım.
@@ -581,7 +581,7 @@ username=admin&password=admin
 
 Elimizdeki istek verileriyle, benzer bir isteği cURL ile göndermeyi deneyebilir ve bunun da giriş yapmamıza izin verip vermeyeceğini görebiliriz. Ayrıca, önceki bölümde yaptığımız gibi, istek üzerine sağ tıklayıp Copy>Copy as cURL seçeneğini seçebiliriz. Bununla birlikte, POST isteklerini manuel olarak oluşturabilmek önemlidir, bu yüzden bunu yapmayı deneyelim.
 
-Bir POST isteği göndermek için -X POST bayrağını kullanacağız. Ardından, POST verilerimizi eklemek için -d bayrağını kullanabilir ve yukarıdaki verileri aşağıdaki gibi ekleyebiliriz:
+Bir POST isteği göndermek için ==-X POST== bayrağını kullanacağız. Ardından, POST verilerimizi eklemek için -d bayrağını kullanabilir ve yukarıdaki verileri aşağıdaki gibi ekleyebiliriz:
 
 ```shell-session
 M1R4CKCK@htb[/htb]$ curl -X POST -d 'username=admin&password=admin' http://<SERVER_IP>:<PORT>/
@@ -598,7 +598,7 @@ HTML kodunu incelersek, giriş formu kodunu görmeyeceğiz, ancak arama fonksiyo
 
 ## Authenticated Cookies
 
-Kimliğimiz başarıyla doğrulandıysa, tarayıcılarımızın kimlik doğrulamamızı sürdürebilmesi ve sayfayı her ziyaret ettiğimizde giriş yapmamız gerekmemesi için bir cookie almış olmamız gerekir. Kimliği doğrulanmış cookie'mizle birlikte Set-Cookie başlığını içermesi gereken response'u görüntülemek için -v veya -i bayraklarını kullanabiliriz:
+Kimliğimiz başarıyla doğrulandıysa, tarayıcılarımızın kimlik doğrulamamızı sürdürebilmesi ve sayfayı her ziyaret ettiğimizde giriş yapmamız gerekmemesi için bir cookie almış olmamız gerekir. Kimliği doğrulanmış cookie'mizle birlikte ==Set-Cookie== başlığını içermesi gereken response'u görüntülemek için -v veya -i bayraklarını kullanabiliriz:
 
 ```shell-session
 M1R4CKCK@htb[/htb]$ curl -X POST -d 'username=admin&password=admin' http://<SERVER_IP>:<PORT>/ -i
@@ -651,7 +651,7 @@ Gördüğümüz gibi, arama formu search.php'ye aşağıdaki verilerle birlikte 
 {"search":"london"}
 ```
 
-POST verileri JSON biçiminde görünmektedir, bu nedenle isteğimiz Content-Type başlığını application/json olarak belirtmiş olmalıdır. İsteğe sağ tıklayıp Copy>Copy Request Headers'ı seçerek bunu doğrulayabiliriz:
+POST verileri JSON biçiminde görünmektedir, bu nedenle isteğimiz ==Content-Type başlığını application/json== olarak belirtmiş olmalıdır. İsteğe sağ tıklayıp Copy>Copy Request Headers'ı seçerek bunu doğrulayabiliriz:
 
 ```bash
 POST /search.php HTTP/1.1
@@ -704,12 +704,12 @@ curl -X PUT http://<SERVER_IP>:<PORT>/api.php/city/london ...SNIP...
 ### CRUD
 Gördüğümüz gibi, bu tür API'ler aracılığıyla üzerinde işlem yapmak istediğimiz tabloyu ve satırı kolayca belirleyebiliyoruz. Daha sonra bu satır üzerinde farklı işlemler gerçekleştirmek için farklı HTTP yöntemleri kullanabiliriz. Genel olarak API'ler talep edilen veritabanı varlığı üzerinde 4 ana işlem gerçekleştirir:
 
-|İşlem|HTTP Yöntemi|Açıklama|
-|---|---|---|
-|Oluşturma|POST|Belirtilen veriyi veritabanı tablosuna ekler.|
-|Okuma|GET|Belirtilen varlığı veritabanı tablosundan okur.|
-|Güncelleme|PUT|Belirtilen veritabanı tablosundaki veriyi günceller.|
-|Silme|DELETE|Belirtilen satırı veritabanı tablosundan siler.|
+| İşlem      | HTTP Yöntemi | Açıklama                                             |
+| ---------- | ------------ | ---------------------------------------------------- |
+| Oluşturma  | POST         | Belirtilen veriyi veritabanı tablosuna ekler.        |
+| Okuma      | GET          | Belirtilen varlığı veritabanı tablosundan okur.      |
+| Güncelleme | PUT          | Belirtilen veritabanı tablosundaki veriyi günceller. |
+| Silme      | DELETE       | Belirtilen satırı veritabanı tablosundan siler.      |
 Bu dört işlem temel olarak yaygın olarak bilinen CRUD API'leriyle bağlantılıdır, ancak aynı ilke REST API'lerinde ve diğer bazı API türlerinde de kullanılır. Elbette, tüm API'ler aynı şekilde çalışmaz ve kullanıcı erişim kontrolü hangi eylemleri gerçekleştirebileceğimizi ve hangi sonuçları görebileceğimizi sınırlayacaktır.
 
 
