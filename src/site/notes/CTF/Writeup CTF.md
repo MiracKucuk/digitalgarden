@@ -40,7 +40,7 @@ Nmap done: 1 IP address (1 host up) scanned in 22.44 seconds
 nmap -p 22,80 -sCV 10.10.10.138
 ```
 
-![Pasted image 20250204180141.png](/img/user/Pasted%20image%2020250204180141.png)
+![Pasted image 20250204180141.png](/img/user/resimler/Pasted%20image%2020250204180141.png)
 
 `/robots.txt` dosyasında **/writeup/** dizini gizlenmiş. Bu genellikle önemli dosyalar içerdiğine dair bir ipucu olabilir . Dizine doğrudan erişerek ya da **gizli dizinleri keşfetmek için `ffuf` gibi araçlarla** fuzzing yapılabilir.
 
@@ -48,7 +48,7 @@ nmap -p 22,80 -sCV 10.10.10.138
 
 #### Site
 
-![Pasted image 20250204180727.png](/img/user/Pasted%20image%2020250204180727.png)
+![Pasted image 20250204180727.png](/img/user/resimler/Pasted%20image%2020250204180727.png)
 
 Site bir gün HTB writeups sitesi olacak. Ama şu anda henüz hazır değil:
 
@@ -59,11 +59,11 @@ Ayrıca DoS saldırısı altında olduğunu söylüyor, bu yüzden 400 döndüre
 
 nmap bir robots.txt dosyasının varlığını tespit etti. Kontrol etmek, araştırmak için bir yol gösterir:
 
-![Pasted image 20250204180901.png](/img/user/Pasted%20image%2020250204180901.png)
+![Pasted image 20250204180901.png](/img/user/resimler/Pasted%20image%2020250204180901.png)
 
 Bu, HTB writeuplarına ev sahipliği yapacak olan gelecekteki sayfadır:
 
-![Pasted image 20250204180933.png](/img/user/Pasted%20image%2020250204180933.png)
+![Pasted image 20250204180933.png](/img/user/resimler/Pasted%20image%2020250204180933.png)
 
 "Home
 
@@ -74,11 +74,11 @@ Hala havalı bir tema sunacak ya da yapacak birini arıyorum. Eğer ilgileniyors
 
 Bağlantıların her biri, eski kutuların (ypuffy ve blue) yanı sıra bu kutu için de yazılar içeriyor. Writingup için olan pek fazla ganimet vermiyor:
 
-![Pasted image 20250204181148.png](/img/user/Pasted%20image%2020250204181148.png)
+![Pasted image 20250204181148.png](/img/user/resimler/Pasted%20image%2020250204181148.png)
 
 Sayfa kaynağını kontrol edersem, bu sitenin CMS Made Simple ile oluşturulduğunu göreceğim:
 
-![Pasted image 20250204181225.png](/img/user/Pasted%20image%2020250204181225.png)
+![Pasted image 20250204181225.png](/img/user/resimler/Pasted%20image%2020250204181225.png)
 
 ## Shell as jkr
 
@@ -88,7 +88,7 @@ Sayfa kaynağını kontrol edersem, bu sitenin CMS Made Simple ile oluşturuldu�
 
 CMS Made Simple'ın 2.2.10'dan önceki sürümleri, kimliği doğrulanmamış bir SQL enjeksiyon saldırısına karşı savunmasızdır. Bu bir blind saldırısıdır, bu nedenle çeşitli alanlardaki bir sonraki karakteri belirlemek için bir sleep deyimi ve response zamanlaması kullanır.
 
-![Pasted image 20250204181339.png](/img/user/Pasted%20image%2020250204181339.png)
+![Pasted image 20250204181339.png](/img/user/resimler/Pasted%20image%2020250204181339.png)
 
 CMS Made Simple 2.2.8 sürümünde bir güvenlik açığı tespit edilmiştir. Bu açık, News modülü üzerinden, özel olarak hazırlanmış bir URL kullanılarak, `m1_idlist` parametresi aracılığıyla kimlik doğrulaması gerektirmeyen (unauthenticated) blind time-based SQL injection gerçekleştirilmesine olanak tanımaktadır.  [Kaynak](https://nvd.nist.gov/vuln/detail/CVE-2019-9053) .
 
@@ -96,7 +96,7 @@ CMS Made Simple 2.2.8 sürümünde bir güvenlik açığı tespit edilmiştir. B
 
 Packet Storm'da çok güzel bir POC (Proof of Concept) exploit bulunuyor. Zamanlamanın önemli olduğunu unutmamak gerekiyor, bu yüzden eğer sunucu yoğun bir şekilde kullanılıyorsa, bu durum işleri bozabilir. Script, çıktı konusunda bazı güzel numaralar yapmış. Bu GIF, exploitin tamamını gösteriyor (3 kat hızlandırılmış ve kırma adımından önce durdurulmuş, ancak çalışıyor):
 
-![writeup-sqli-fast.gif](/img/user/writeup-sqli-fast.gif)
+![writeup-sqli-fast.gif](/img/user/resimler/writeup-sqli-fast.gif)
 `./cmsms_sqli.py -u http://10.10.10.138/writeup --crack --wordlist /usr/share/wordlists/rockyou.txt` dosyasını çalıştırdığımda aşağıdaki sonuçları veriyor:
 
 ```
@@ -109,7 +109,7 @@ SyntaxError: Missing parentheses in call to 'print'. Did you mean print(...)?
 
 Script **Python 2** ile yazılmış onun için böyle bir hata alıyoruz .
 
-![Pasted image 20250204182450.png](/img/user/Pasted%20image%2020250204182450.png)
+![Pasted image 20250204182450.png](/img/user/resimler/Pasted%20image%2020250204182450.png)
 
 termcolor modülünü yüklersek başka bir hata alıyoruz . Kodu ChatGPT veya DeepSeek gibi yapay zeka ile python3'e uyumlu çalışacak şekilde tekrardan düzenlettirdim. Github sayfamda veya doğrudan buradan kopyalaya bilirsiniz.
 
@@ -151,12 +151,12 @@ url_vuln = options.url.rstrip('/') + '/moduleinterface.php?mact=News,m1_,default
 session = requests.Session()
 dictionary = '1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM@._-
 
-![Pasted image 20250204201727.png](/img/user/Pasted%20image%2020250204201727.png)
+![Pasted image 20250204201727.png](/img/user/resimler/Pasted%20image%2020250204201727.png)
 
 ### SSH as jkr
 Parola ve kullanıcı adı ile writeup'a ssh ile bağlanabiliyorum:
 
-![Pasted image 20250204201841.png](/img/user/Pasted%20image%2020250204201841.png)
+![Pasted image 20250204201841.png](/img/user/resimler/Pasted%20image%2020250204201841.png)
 
 
 ## Priv: jkr –> root
@@ -167,7 +167,7 @@ Parola ve kullanıcı adı ile writeup'a ssh ile bağlanabiliyorum:
 
 Tipik Linux numaralandırmam LinEnum (-t ile) ile başlar, ancak pek bir şey bulamadım. Geçerli kullanıcı için grupları fark ettim:
 
-![Pasted image 20250204202004.png](/img/user/Pasted%20image%2020250204202004.png)
+![Pasted image 20250204202004.png](/img/user/resimler/Pasted%20image%2020250204202004.png)
 
 Ne işe yaradıklarını bilmek için standart olmayan gruplara bakmakta her zaman fayda vardır. Bu host [Debian, bu yüzden SystemGroups'un Debian](https://wiki.debian.org/SystemGroups) açıklamasını bulacağım. Kutunun yazarı buraya fazladan bazı şeyler eklemiş ama bir tanesi göze çarpıyor:
 
@@ -191,7 +191,7 @@ Root ayrıcalıklarına ihtiyaç duymadan kullanıcıların sisteme (/usr/local,
 
 Staff olarak `/usr/local/bin` ve `/usr/local/sbin` dosyalarına yazabildiğimi görüyorum:
 
-![Pasted image 20250204203640.png](/img/user/Pasted%20image%2020250204203640.png)
+![Pasted image 20250204203640.png](/img/user/resimler/Pasted%20image%2020250204203640.png)
 
 Bu yollar root'un $PATH'inde olduğu için, root'un çalıştırdığı bir şey bulabilirsem, çalıştırmak istediğim bir şeyi bu aynı isimli bu dizinlerden birine bırakabilirim ve o da çalışır.
 
@@ -239,11 +239,11 @@ Hemen fark edeceğim ki `$PATH` değişkeninin öncelikli olarak iki adet yazma 
 
 Bunun üzerine, `/usr/local/bin/run-parts` konumuna bir script yazıp çalıştırılabilir (`executable`) hale getireceğim. Daha sonra SSH bağlantısını tekrar kurarak giriş yapacağım.
 
-![Pasted image 20250204204412.png](/img/user/Pasted%20image%2020250204204412.png)
+![Pasted image 20250204204412.png](/img/user/resimler/Pasted%20image%2020250204204412.png)
 
 Şimdi SSH ile tekrar giriş yapabilirim ve backdoored shell'im beni bekliyor.
 
-![Pasted image 20250204204627.png](/img/user/Pasted%20image%2020250204204627.png)
+![Pasted image 20250204204627.png](/img/user/resimler/Pasted%20image%2020250204204627.png)
 
 
 flag = True
@@ -400,12 +400,12 @@ if options.cracking:
 beautify_print()
 ```
 
-![Pasted image 20250204201727.png](/img/user/Pasted%20image%2020250204201727.png)
+![Pasted image 20250204201727.png](/img/user/resimler/Pasted%20image%2020250204201727.png)
 
 ### SSH as jkr
 Parola ve kullanıcı adı ile writeup'a ssh ile bağlanabiliyorum:
 
-![Pasted image 20250204201841.png](/img/user/Pasted%20image%2020250204201841.png)
+![Pasted image 20250204201841.png](/img/user/resimler/Pasted%20image%2020250204201841.png)
 
 
 ## Priv: jkr –> root
@@ -416,7 +416,7 @@ Parola ve kullanıcı adı ile writeup'a ssh ile bağlanabiliyorum:
 
 Tipik Linux numaralandırmam LinEnum (-t ile) ile başlar, ancak pek bir şey bulamadım. Geçerli kullanıcı için grupları fark ettim:
 
-![Pasted image 20250204202004.png](/img/user/Pasted%20image%2020250204202004.png)
+![Pasted image 20250204202004.png](/img/user/resimler/Pasted%20image%2020250204202004.png)
 
 Ne işe yaradıklarını bilmek için standart olmayan gruplara bakmakta her zaman fayda vardır. Bu host [Debian, bu yüzden SystemGroups'un Debian](https://wiki.debian.org/SystemGroups) açıklamasını bulacağım. Kutunun yazarı buraya fazladan bazı şeyler eklemiş ama bir tanesi göze çarpıyor:
 
@@ -432,7 +432,7 @@ Ubuntu için eşdeğer bir [grup listesine bakarsam](https://www.phy.ntnu.edu.tw
 
 Staff olarak `/usr/local/bin` ve `/usr/local/sbin` dosyalarına yazabildiğimi görüyorum:
 
-![Pasted image 20250204203640.png](/img/user/Pasted%20image%2020250204203640.png)
+![Pasted image 20250204203640.png](/img/user/resimler/Pasted%20image%2020250204203640.png)
 
 Bu yollar root'un $PATH'inde olduğu için, root'un çalıştırdığı bir şey bulabilirsem, çalıştırmak istediğim bir şeyi bu aynı isimli bu dizinlerden birine bırakabilirim ve o da çalışır.
 
@@ -457,9 +457,9 @@ Hemen fark edeceğim ki `$PATH` değişkeninin öncelikli olarak iki adet yazma 
 
 Bunun üzerine, `/usr/local/bin/run-parts` konumuna bir script yazıp çalıştırılabilir (`executable`) hale getireceğim. Daha sonra SSH bağlantısını tekrar kurarak giriş yapacağım.
 
-![Pasted image 20250204204412.png](/img/user/Pasted%20image%2020250204204412.png)
+![Pasted image 20250204204412.png](/img/user/resimler/Pasted%20image%2020250204204412.png)
 
 Şimdi SSH ile tekrar giriş yapabilirim ve backdoored shell'im beni bekliyor.
 
-![Pasted image 20250204204627.png](/img/user/Pasted%20image%2020250204204627.png)
+![Pasted image 20250204204627.png](/img/user/resimler/Pasted%20image%2020250204204627.png)
 

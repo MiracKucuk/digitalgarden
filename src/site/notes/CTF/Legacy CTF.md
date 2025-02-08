@@ -116,9 +116,9 @@ Bu scriptlerin bir listesini nmap scripts dizinindeki dosyalara bakarak görebil
 
 Scriptlerin tam listesini almak için script deposunu güncelleyelim . 
 
-![Pasted image 20250205232237.png](/img/user/Pasted%20image%2020250205232237.png)
+![Pasted image 20250205232237.png](/img/user/resimler/Pasted%20image%2020250205232237.png)
 
-![Pasted image 20250205232318.png](/img/user/Pasted%20image%2020250205232318.png)
+![Pasted image 20250205232318.png](/img/user/resimler/Pasted%20image%2020250205232318.png)
 
 O zaman şu şekilde çalıştırabilirim:
 
@@ -267,7 +267,7 @@ except Exception as e:
     print(f"Bağlantı hatası: {e}")
 ```
 
-![Pasted image 20250205234013.png](/img/user/Pasted%20image%2020250205234013.png)
+![Pasted image 20250205234013.png](/img/user/resimler/Pasted%20image%2020250205234013.png)
 
 Exploit, bazı küçük kod parçalarının bellekte nerede olacağını bilmenin avantajını kullanır ve shell'e giden yolda bu bitleri kullanır. Windows'un farklı sürümleri için bu araçların adresleri farklı olacaktır. Örneğin, kaynaktan:
 

@@ -551,6 +551,7 @@ wget 192.168.49.128:8000/filetotransfer.txt
 
 
 ### 3-SCP Upload
+
 ```shell-session
 scp /etc/passwd htb-student@10.129.86.90:/home/htb-student/
 ```

