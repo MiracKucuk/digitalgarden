@@ -24,10 +24,10 @@ Grandpa gerçekten ilk HTB makinelerinden biriydi. Bugün HTB'de görünmeyecek 
 ### nmap
 
 
-![Pasted image 20250208193947.png](/img/user/Pasted%20image%2020250208193947.png)
+![Pasted image 20250208193947.png](/img/user/resimler/Pasted%20image%2020250208193947.png)
 
 
-![Pasted image 20250208190959.png](/img/user/Pasted%20image%2020250208190959.png)
+![Pasted image 20250208190959.png](/img/user/resimler/Pasted%20image%2020250208190959.png)
 
 IIS sürümüne bağlı olarak, host muhtemelen Windows XP veya Server 2003 çalıştırmaktadır.
 
@@ -38,7 +38,7 @@ IIS sürümüne bağlı olarak, host muhtemelen Windows XP veya Server 2003 çal
 
 Siteyi ziyaret ettiğinizde, sadece “Yapım Aşamasında” mesajı var:
 
-![Pasted image 20250208194332.png](/img/user/Pasted%20image%2020250208194332.png)
+![Pasted image 20250208194332.png](/img/user/resimler/Pasted%20image%2020250208194332.png)
 
 #### Directory Brute Force
 
@@ -87,7 +87,7 @@ PUT     pl      FAIL
 
 IIS 6.0 çok eski olduğu için güvenlik açıklarını aramaya karar verdim ve bazılarını buldum:
 
-![Pasted image 20250208195913.png](/img/user/Pasted%20image%2020250208195913.png)
+![Pasted image 20250208195913.png](/img/user/resimler/Pasted%20image%2020250208195913.png)
 
 ## Shell as network service
 
@@ -106,11 +106,11 @@ Bu exploit, **HTTP isteği şeklinde bir payload oluşturuyor** ve içinde **cal
 Google’da araştırınca, bunun **CVE-2017-7269** olduğunu gördüm ve birçok **kamuya açık exploit scripti** mevcut.
 
 
-![Pasted image 20250208202040.png](/img/user/Pasted%20image%2020250208202040.png)
+![Pasted image 20250208202040.png](/img/user/resimler/Pasted%20image%2020250208202040.png)
 
-![Pasted image 20250208202022.png](/img/user/Pasted%20image%2020250208202022.png)
+![Pasted image 20250208202022.png](/img/user/resimler/Pasted%20image%2020250208202022.png)
 
 
 bu ada biraz karışık devamını sonra çöz şimdilik çözüm aşağıdaki gibi 
 
-![Pasted image 20250208202436.png](/img/user/Pasted%20image%2020250208202436.png)
+![Pasted image 20250208202436.png](/img/user/resimler/Pasted%20image%2020250208202436.png)

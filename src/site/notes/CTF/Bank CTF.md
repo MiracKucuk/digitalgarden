@@ -29,7 +29,7 @@ Bundan sonra, **filtreleri atlatıp** bir **PHP web shell** yükleyerek sistemde
 
 nmap, SSH (22), DNS (53) ve HTTP (80) olmak üzere üç açık TCP portu ve ayrıca UDP 53 üzerinde DNS buldu:
 
-![Pasted image 20250210015325.png](/img/user/Pasted%20image%2020250210015325.png)
+![Pasted image 20250210015325.png](/img/user/resimler/Pasted%20image%2020250210015325.png)
 
 ```
 nmap -p 22,53,80 -sCV 10.10.10.29 
@@ -76,7 +76,7 @@ OpenSSH ve Apache sürümlerine dayanarak, host muhtemelen Ubunutu 14.04 Trusty 
 
 TCP 53'ü gördüğümde ilk kontrol ettiğim şey bir zone transferi. Host/domain adına dair herhangi bir ipucu göremiyorum, bu yüzden bank.htb olabileceğini tahmin ediyorum ve bu işe yarıyor:
 
-![Pasted image 20250210020822.png](/img/user/Pasted%20image%2020250210020822.png)
+![Pasted image 20250210020822.png](/img/user/resimler/Pasted%20image%2020250210020822.png)
 Lokal /etc/hosts dosyama aşağıdakileri ekleyeceğim:
 
 ```
@@ -88,7 +88,7 @@ Lokal /etc/hosts dosyama aşağıdakileri ekleyeceğim:
 
 Site sadece Apache2 varsayılan sayfasıdır:
 
-![Pasted image 20250210021838.png](/img/user/Pasted%20image%2020250210021838.png)
+![Pasted image 20250210021838.png](/img/user/resimler/Pasted%20image%2020250210021838.png)
 
 Siteye karşı gobuster'ı çalıştıracağım, ancak hiçbir şey bulamıyorum.
 

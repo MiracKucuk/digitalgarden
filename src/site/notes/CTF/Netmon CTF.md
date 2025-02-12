@@ -25,7 +25,7 @@ Sunucu, anonim FTP üzerinden tüm dosya sistemini sunuyor, bu da kullanıcı ba
 
 ### nmap
 
-![Pasted image 20250208143525.png](/img/user/Pasted%20image%2020250208143525.png)
+![Pasted image 20250208143525.png](/img/user/resimler/Pasted%20image%2020250208143525.png)
 
 ```
 nmap -sV -sC -p 21,80,135,139,445,5985 10.10.10.152
@@ -79,7 +79,7 @@ Nmap done: 1 IP address (1 host up) scanned in 37.28 seconds
 
 Sayfa, PRTG Network Monitor'ün (NETMON) bir örneğidir:
 
-![Pasted image 20250208144033.png](/img/user/Pasted%20image%2020250208144033.png)
+![Pasted image 20250208144033.png](/img/user/resimler/Pasted%20image%2020250208144033.png)
 
 Bu aşamada kimlik bilgileri olmadan, [varsayılan](https://www.cleancss.com/router-default/PRTG/PRTG_Network_Monitor) kimlik bilgileri olan 'prtgadmin'/'prtgadmin' ile deneme yapacağım. Eğer bu bilgiler çalışmazsa, FTP'ye geçeceğim
 
@@ -89,14 +89,14 @@ Bu aşamada kimlik bilgileri olmadan, [varsayılan](https://www.cleancss.com/rou
 
 FTP anonim girişe izin verdiğinden, kontrol edip ne bulabileceğime bakacağım:
 
-![Pasted image 20250208144323.png](/img/user/Pasted%20image%2020250208144323.png)
+![Pasted image 20250208144323.png](/img/user/resimler/Pasted%20image%2020250208144323.png)
 
 
 #### user.txt
 
 FTP root'u C:\ gibi görünüyor. Buradan user.txt dosyasını alabilirim:
 
-![Pasted image 20250208144503.png](/img/user/Pasted%20image%2020250208144503.png)
+![Pasted image 20250208144503.png](/img/user/resimler/Pasted%20image%2020250208144503.png)
 
 
 #### PRTG Network Monitor
@@ -131,7 +131,7 @@ ftp> dir
 wget ftp://anonymous:anonymous@10.10.10.152/ProgramData/Paessler/PRTG\ Network\ Monitor/PRTG\ Configuration.old.bak
 ```
 
-![Pasted image 20250208150306.png](/img/user/Pasted%20image%2020250208150306.png)
+![Pasted image 20250208150306.png](/img/user/resimler/Pasted%20image%2020250208150306.png)
 
 
 ```
@@ -159,11 +159,11 @@ Ancak, PRTG Configuration.old.bak dosyasında şunu buldum:
 Artık kimlik bilgilerine sahibim, bu yüzden giriş yapmayı deneyebilirim. Ne yazık ki, **.bak** dosyasından alınan kimlik bilgilerini denediğimde şu sonuç dönüyor:
 
 
-![Pasted image 20250208144910.png](/img/user/Pasted%20image%2020250208144910.png)
+![Pasted image 20250208144910.png](/img/user/resimler/Pasted%20image%2020250208144910.png)
 
 Ancak biraz düşününce, kimlik bilgileri eski bir dosyanın yedeğinden alınmış ve **2018** ile bitiyor. **2019**'u deneyeceğim ve bu işe yarıyor, beni Sistem Yöneticisi için PRTG panosuna yönlendiriyor:
 
-![Pasted image 20250208145109.png](/img/user/Pasted%20image%2020250208145109.png)
+![Pasted image 20250208145109.png](/img/user/resimler/Pasted%20image%2020250208145109.png)
 
 ### Command Injection
 
@@ -177,24 +177,24 @@ En sağdaki **artı (+) butonuna** tıklayıp, ardından **'Yeni Bildirim Ekl
 test.txt;net user anon p3nT3st! /add;net localgroup administrators anon /add
 ```
 
-![Pasted image 20250208151528.png](/img/user/Pasted%20image%2020250208151528.png)
+![Pasted image 20250208151528.png](/img/user/resimler/Pasted%20image%2020250208151528.png)
 
 Kaydet'e tıkladığımda, bildirimler listesinin başına geri dönüyorum. Yeni bildirimimin yanındaki kutuya tıklayıp, ardından üstteki çan simgesine tıklayarak bildirimi test edeceğim.
 
-![Pasted image 20250208151547.png](/img/user/Pasted%20image%2020250208151547.png)
+![Pasted image 20250208151547.png](/img/user/resimler/Pasted%20image%2020250208151547.png)
 
 I get this:
 
-![Pasted image 20250208151643.png](/img/user/Pasted%20image%2020250208151643.png)
+![Pasted image 20250208151643.png](/img/user/resimler/Pasted%20image%2020250208151643.png)
 
 Birkaç saniye bekledikten sonra, yeni kullanıcımla smbmap'i çalıştıracağım ve tam erişimim olduğunu göreceğim:
 
-![Pasted image 20250208151902.png](/img/user/Pasted%20image%2020250208151902.png)
-![Pasted image 20250208151909.png](/img/user/Pasted%20image%2020250208151909.png)
+![Pasted image 20250208151902.png](/img/user/resimler/Pasted%20image%2020250208151902.png)
+![Pasted image 20250208151909.png](/img/user/resimler/Pasted%20image%2020250208151909.png)
 
 ### Shell
 
-![Pasted image 20250208152527.png](/img/user/Pasted%20image%2020250208152527.png)
+![Pasted image 20250208152527.png](/img/user/resimler/Pasted%20image%2020250208152527.png)
 
-![Pasted image 20250208152514.png](/img/user/Pasted%20image%2020250208152514.png)
+![Pasted image 20250208152514.png](/img/user/resimler/Pasted%20image%2020250208152514.png)
 

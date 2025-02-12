@@ -32,9 +32,9 @@ Bundan sonra, **MS10-059** exploit'ini kullanarak **root shell** alacağım.
 
 nmap üç açık TCP portu buldu, RPC (135, 49154) ve (8500) üzerinde bir şey:
 
-![Pasted image 20250209190616.png](/img/user/Pasted%20image%2020250209190616.png)
+![Pasted image 20250209190616.png](/img/user/resimler/Pasted%20image%2020250209190616.png)
 
-![Pasted image 20250209190904.png](/img/user/Pasted%20image%2020250209190904.png)
+![Pasted image 20250209190904.png](/img/user/resimler/Pasted%20image%2020250209190904.png)
 
 ### Website - TCP 8500
 
@@ -42,13 +42,13 @@ nmap üç açık TCP portu buldu, RPC (135, 49154) ve (8500) üzerinde bir şey:
 
 Porta bağlanmak için nc kullandım ve bana herhangi bir hata mesajı göndermesini sağlamaya çalıştım:
 
-![Pasted image 20250209191137.png](/img/user/Pasted%20image%2020250209191137.png)
+![Pasted image 20250209191137.png](/img/user/resimler/Pasted%20image%2020250209191137.png)
 
 #### Site
 
 Tıpkı nc'de olduğu gibi, bu sunucuya yapılan her isteğin çözülmesi yaklaşık 30 saniye sürüyor, bu da acı verici. Web root bir dizin listesi verir:
 
-![Pasted image 20250209191209.png](/img/user/Pasted%20image%2020250209191209.png)
+![Pasted image 20250209191209.png](/img/user/resimler/Pasted%20image%2020250209191209.png)
 
 
 **CFIDE** ve **cfdocs**, **ColdFusion** hipotezine uyuyor.
@@ -62,7 +62,7 @@ Her ikisini de yeni sekmelerde açacağım ve başka şeyleri de yeni sekmelerde
 
 Sekmeleri açmak ve sayfaların yüklenmesini beklemek için biraz zaman harcadıktan sonra, en ilginç şey ColdFusion versiyon 8 için bir giriş sayfası sunan /CFIDE/administrator oldu:
 
-![Pasted image 20250209191507.png](/img/user/Pasted%20image%2020250209191507.png)
+![Pasted image 20250209191507.png](/img/user/resimler/Pasted%20image%2020250209191507.png)
 
 Kullanıcı adını değiştirmeme izin vermiyor, ancak 'admin' ve 'arctic' gibi birkaç şifre tahmininde bulundum. İkisi de işe yaramadı ama POST isteğinde bir tuhaflık vardı. Örneğin, 'admin' şifresi için POST aşağıda verilmiştir:
 
@@ -103,8 +103,8 @@ Yani giriş formunu talep ettiğimde, sunucu bir salt oluşturuyor ve bunu sayfa
 
 searchsploit ColdFusion için bir sürü şey döndürür:
 
-![Pasted image 20250209192059.png](/img/user/Pasted%20image%2020250209192059.png)
-![Pasted image 20250209192113.png](/img/user/Pasted%20image%2020250209192113.png)
+![Pasted image 20250209192059.png](/img/user/resimler/Pasted%20image%2020250209192059.png)
+![Pasted image 20250209192113.png](/img/user/resimler/Pasted%20image%2020250209192113.png)
 
 Her bir sonuca bakmak için birkaç dakika ayırmaya değer. Birçoğunu sürüm uyuşmazlığı nedeniyle veya bu noktada XSS hatalarıyla gerçekten ilgilenmediğim için göz ardı edebilirim. Geriye bunlar kalıyor:
 
@@ -131,7 +131,7 @@ Geriye daha ayrıntılı incelemem gereken iki **vulnerability** kalıyor.
 
 **JSP payload'ları** genellikle **ColdFusion** üzerinde çalıştığı için, **msfvenom** ile bir tane oluşturacağım:
 
-![Pasted image 20250209192506.png](/img/user/Pasted%20image%2020250209192506.png)
+![Pasted image 20250209192506.png](/img/user/resimler/Pasted%20image%2020250209192506.png)
 
 
 ### Path 1: Unauthenticated RCE
@@ -201,15 +201,15 @@ Ardından, **payload'ı tetiklemek** için **/userfiles/file/** yoluna bir **GET
 
 Bu exploit'i curl ile yeniden oluşturabilirim:
 
-![Pasted image 20250209192803.png](/img/user/Pasted%20image%2020250209192803.png)
+![Pasted image 20250209192803.png](/img/user/resimler/Pasted%20image%2020250209192803.png)
 
 Bu işlem tamamlandığında, root'ta yeni bir klasör oluşur:
 
-![Pasted image 20250209192818.png](/img/user/Pasted%20image%2020250209192818.png)
+![Pasted image 20250209192818.png](/img/user/resimler/Pasted%20image%2020250209192818.png)
 
 Ancak, **/userfiles/file/** içinde herhangi bir dosya yok. Muhtemelen bir **filter** tarafından engellendim.
 
-![Pasted image 20250209193115.png](/img/user/Pasted%20image%2020250209193115.png)
+![Pasted image 20250209193115.png](/img/user/resimler/Pasted%20image%2020250209193115.png)
 
 
 Gönderdiğim **request** şu şekilde görünüyor:
@@ -250,16 +250,16 @@ curl -X POST -F "newfile=@shell.jsp;type=application/x-java-archive;filename=she
 
 Şimdi /userfiles/file/ adresini ziyaret ettiğinizde yüklenen shell'i görebilirsiniz:
 
-![Pasted image 20250209193410.png](/img/user/Pasted%20image%2020250209193410.png)
+![Pasted image 20250209193410.png](/img/user/resimler/Pasted%20image%2020250209193410.png)
 
 
 #### Execute Shell
 
 Bu url'yi curl ile ziyaret edebilirim:
 
-![Pasted image 20250209193550.png](/img/user/Pasted%20image%2020250209193550.png)
+![Pasted image 20250209193550.png](/img/user/resimler/Pasted%20image%2020250209193550.png)
 
-![Pasted image 20250209193613.png](/img/user/Pasted%20image%2020250209193613.png)
+![Pasted image 20250209193613.png](/img/user/resimler/Pasted%20image%2020250209193613.png)
 
 Oradan user.txt dosyasını alabilirim:
 
@@ -291,11 +291,11 @@ Muhtemelen site, **locale** parametresinin belirli bir string ile bitmesini zoru
 http://10.10.10.11:8500/CFIDE/administrator/enter.cfm?locale=../../../../../../../../../../ColdFusion8/lib/password.properties%00en
 ```
 
-![Pasted image 20250209194459.png](/img/user/Pasted%20image%2020250209194459.png)
+![Pasted image 20250209194459.png](/img/user/resimler/Pasted%20image%2020250209194459.png)
 
 Bu parola alanı bir hash gibi görünüyor ve uzunluğu göz önüne alındığında SHA1 gibi görünüyor: 2F635F6D20E3FDE0C53075A84B68FB07DCEC9B03.
 
-![Pasted image 20250209194539.png](/img/user/Pasted%20image%2020250209194539.png)
+![Pasted image 20250209194539.png](/img/user/resimler/Pasted%20image%2020250209194539.png)
 
 #### Log In
 
@@ -325,7 +325,7 @@ hex_hmac_sha1(document.loginform.salt.value, '2F635F6D20E3FDE0C53075A84B68FB07DC
 
 Bir sonuç verir:
 
-![Pasted image 20250209194708.png](/img/user/Pasted%20image%2020250209194708.png)
+![Pasted image 20250209194708.png](/img/user/resimler/Pasted%20image%2020250209194708.png)
 
 Formu göndereceğim ve hesaplamalara göre hash'i değiştireceğim:
 
@@ -358,11 +358,11 @@ Bunu **otomatikleştirmek** zor değil. **Python** veya **TamperMonkey script'i*
 
 Arctic'e bir shell yazmak için [burada](https://nets.ec/Coldfusion_hacking#Writing_Shell_to_File) özetlenen adımları takip edeceğim. İlk olarak Server Settings altında Mappings'e gidin ve CFIDE için C:\ColdFusion8\wwwroot\CFIDE yolunu bulun:
 
-![Pasted image 20250209195420.png](/img/user/Pasted%20image%2020250209195420.png)
+![Pasted image 20250209195420.png](/img/user/resimler/Pasted%20image%2020250209195420.png)
 
 Şimdi ana **admin sayfasına** geri dönüp, **Debugging & Logging** > **Scheduled Tasks** kısmına gideceğim:
 
-![Pasted image 20250209195438.png](/img/user/Pasted%20image%2020250209195438.png)
+![Pasted image 20250209195438.png](/img/user/resimler/Pasted%20image%2020250209195438.png)
 
 **Schedule New Task**'a tıklayacağım ve aşağıdaki bilgileri vereceğim:
 
@@ -371,11 +371,11 @@ Arctic'e bir shell yazmak için [burada](https://nets.ec/Coldfusion_hacking#Writ
 **Publish:** "Save output to a file" kutusunu işaretleyeceğim.  
 **File:** **Mappings** sekmesinden aldığım yolu, shell'in ismini ve `.cfm` uzantısını ekleyeceğim.
 
-![Pasted image 20250209195521.png](/img/user/Pasted%20image%2020250209195521.png)
+![Pasted image 20250209195521.png](/img/user/resimler/Pasted%20image%2020250209195521.png)
 
 **Submit**'e tıkladığımda, görev görünüyor ve ardından **yeşil daireli** belgeye tıklayarak **görevi şimdi çalıştırabiliyorum**.
 
-![Pasted image 20250209195541.png](/img/user/Pasted%20image%2020250209195541.png)
+![Pasted image 20250209195541.png](/img/user/resimler/Pasted%20image%2020250209195541.png)
 
 Web sunucumda bir bağlantı var:
 
@@ -387,7 +387,7 @@ Serving HTTP on 0.0.0.0 port 80 (http://0.0.0.0:80/) ...
 
 Şimdi http://10.10.10.11:8500/CFIDE/ adresini yenilediğimde shell'i görüyorum:
 
-![Pasted image 20250209195612.png](/img/user/Pasted%20image%2020250209195612.png)
+![Pasted image 20250209195612.png](/img/user/resimler/Pasted%20image%2020250209195612.png)
 
 #### Execute Shell
 
@@ -481,15 +481,15 @@ Ayrıca Python xlrd kütüphanesini python -m pip install xlrd ile yüklemem ger
 
 İlk olarak bir veritabanı oluşturacağım:
 
-![Pasted image 20250209200508.png](/img/user/Pasted%20image%2020250209200508.png)
+![Pasted image 20250209200508.png](/img/user/resimler/Pasted%20image%2020250209200508.png)
 
 Şimdi bunu sysinfo çıktısına karşı çalıştırabilirim:
 
 Kütüphane eksik 
 
-![Pasted image 20250209200652.png](/img/user/Pasted%20image%2020250209200652.png)
+![Pasted image 20250209200652.png](/img/user/resimler/Pasted%20image%2020250209200652.png)
 
-![Pasted image 20250209201636.png](/img/user/Pasted%20image%2020250209201636.png)
+![Pasted image 20250209201636.png](/img/user/resimler/Pasted%20image%2020250209201636.png)
 
 sysinfo dosyasını kopyalayıp python script'ine girdi olarak veriyoruz.
 
@@ -539,16 +539,16 @@ Exploit kodu için biraz araştırma yaparken, [egre55](https://github.com/egre5
 
 Sonra shell’imde, dosyayı Arctic’e kopyaladım:
 
-![Pasted image 20250209202212.png](/img/user/Pasted%20image%2020250209202212.png)
+![Pasted image 20250209202212.png](/img/user/resimler/Pasted%20image%2020250209202212.png)
 
-![Pasted image 20250209202310.png](/img/user/Pasted%20image%2020250209202310.png)
+![Pasted image 20250209202310.png](/img/user/resimler/Pasted%20image%2020250209202310.png)
 
-![Pasted image 20250209202735.png](/img/user/Pasted%20image%2020250209202735.png)
+![Pasted image 20250209202735.png](/img/user/resimler/Pasted%20image%2020250209202735.png)
 
 Şimdi bir nc listener başlatıyorum ve çalıştırıyorum:
 
-![Pasted image 20250209202823.png](/img/user/Pasted%20image%2020250209202823.png)
+![Pasted image 20250209202823.png](/img/user/resimler/Pasted%20image%2020250209202823.png)
 
-![Pasted image 20250209202836.png](/img/user/Pasted%20image%2020250209202836.png)
+![Pasted image 20250209202836.png](/img/user/resimler/Pasted%20image%2020250209202836.png)
 
-![Pasted image 20250209202906.png](/img/user/Pasted%20image%2020250209202906.png)
+![Pasted image 20250209202906.png](/img/user/resimler/Pasted%20image%2020250209202906.png)

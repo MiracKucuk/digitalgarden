@@ -22,7 +22,7 @@ Antique, HackTheBox'ın Printer track'inin bir parçası olarak rekabetçi olmay
 
 nmap yalnızca bir açık TCP portu bulur, telnet (23):
 
-![Pasted image 20250208165505.png](/img/user/Pasted%20image%2020250208165505.png)
+![Pasted image 20250208165505.png](/img/user/resimler/Pasted%20image%2020250208165505.png)
 
 ```
 nmap -p 23 -sCV 10.10.11.107   
@@ -78,18 +78,18 @@ Nmap done: 1 IP address (1 host up) scanned in 186.96 seconds
 
 Antique'e bağlanmak için telnet kullanacağım ve HP JetDirect için bir banner ve bir parola prompt döndürüyor:
 
-![Pasted image 20250208170204.png](/img/user/Pasted%20image%2020250208170204.png)
+![Pasted image 20250208170204.png](/img/user/resimler/Pasted%20image%2020250208170204.png)
 
 admin şifresinin tahmin edilmesi bağlantıyı kapatır:
 
-![Pasted image 20250208170223.png](/img/user/Pasted%20image%2020250208170223.png)
+![Pasted image 20250208170223.png](/img/user/resimler/Pasted%20image%2020250208170223.png)
 
 ### UDP nmap
 
 TCP'deki diğer yolların sonuncusu göz önüne alındığında, bir UDP taramasına geri döneceğim. UDP taraması hem yavaş hem de güvenilmez olabiliyor. Sonuçları daha güvenilir (ve muhtemelen daha yavaş) hale getirmek için -sV'yi buldum, ancak sadece ilk on porta bakmak bile Antique'de ilginç bir şey buluyor:
 
 
-![Pasted image 20250208170351.png](/img/user/Pasted%20image%2020250208170351.png)
+![Pasted image 20250208170351.png](/img/user/resimler/Pasted%20image%2020250208170351.png)
 
 SNMP (UDP 161) yanıt veriyor.
 
@@ -97,32 +97,32 @@ SNMP (UDP 161) yanıt veriyor.
 
 Antique üzerinde snmpwalk çalıştırıldığında yalnızca bir girdi döndürülür:
 
-![Pasted image 20250208170436.png](/img/user/Pasted%20image%2020250208170436.png)
+![Pasted image 20250208170436.png](/img/user/resimler/Pasted%20image%2020250208170436.png)
 
 Ancak, [Hacking Network Printers'daki](http://www.irongeek.com/i.php?page=security/networkprinterhacking) bu yazı, belirli bir değişken sorarsam şifreyi sızdırabileceğimi öne sürüyor:
 
-![Pasted image 20250208171427.png](/img/user/Pasted%20image%2020250208171427.png)
+![Pasted image 20250208171427.png](/img/user/resimler/Pasted%20image%2020250208171427.png)
 
 Blog yazısında bunların her bir baytın hex gösterimi olduğu belirtiliyor. Listenin başındaki sayıların hex ASCII aralığında (0x20 - 0x7e) olduğunu kabul edeceğim, sondakiler bu bağlamda bir anlam ifade etmese bile.
 
 Bir Python shell'ine gireceğim ve sayıları nums olarak kaydedeceğim:
 
-![Pasted image 20250208171557.png](/img/user/Pasted%20image%2020250208171557.png)
+![Pasted image 20250208171557.png](/img/user/resimler/Pasted%20image%2020250208171557.png)
 .split(), stringi boşluklardan ayırarak bir string dizisine böler:
 
-![Pasted image 20250208171635.png](/img/user/Pasted%20image%2020250208171635.png)
+![Pasted image 20250208171635.png](/img/user/resimler/Pasted%20image%2020250208171635.png)
 
 Her bir öğe üzerinde döngü yapmak ve int fonksiyonunu uygulamak için bir Python liste kavraması kullanacağım, her birini bir sayıya dönüştüreceğim, hex'ten dönüştürmek için 16 tabanını kullanacağım:
 
-![Pasted image 20250208171720.png](/img/user/Pasted%20image%2020250208171720.png)
+![Pasted image 20250208171720.png](/img/user/resimler/Pasted%20image%2020250208171720.png)
 
 Şimdi chr kullanarak her birinin bir ASCII karakterine dönüştürülmesini isteyeceğim:
 
-![Pasted image 20250208171749.png](/img/user/Pasted%20image%2020250208171749.png)
+![Pasted image 20250208171749.png](/img/user/resimler/Pasted%20image%2020250208171749.png)
 
 Karakter listesini tekrar daha okunabilir tek bir dizede birleştirmek için ''.join() kullanacağım. Belki de parola “P@ssw0rd@123!!123 ”tür.
 
-![Pasted image 20250208171819.png](/img/user/Pasted%20image%2020250208171819.png)
+![Pasted image 20250208171819.png](/img/user/resimler/Pasted%20image%2020250208171819.png)
 
 
 ## Shell as lp
@@ -131,7 +131,7 @@ Karakter listesini tekrar daha okunabilir tek bir dizede birleştirmek için ''.
 
 Telnet'i tekrar deneyeceğim, bu sefer potansiyel şifre ile:
 
-![Pasted image 20250208171904.png](/img/user/Pasted%20image%2020250208171904.png)
+![Pasted image 20250208171904.png](/img/user/resimler/Pasted%20image%2020250208171904.png)
 
 ### Execution
 
@@ -165,24 +165,24 @@ exit: quit from telnet session
 
 Çoğu yazıcının yapılandırılmasıyla ilgili, ancak sonuncusu, exec benim amaçlarım için çok ilginç. ID'yi çalıştırmayı deneyeceğim:
 
-![Pasted image 20250208172006.png](/img/user/Pasted%20image%2020250208172006.png)
+![Pasted image 20250208172006.png](/img/user/resimler/Pasted%20image%2020250208172006.png)
 
 
 ### Reverse Shell
 
 Benim reverse shell'im bash (nasıl çalıştığına dair videomu buradan izleyebilirsiniz). Bu bir yazıcı olduğundan, bash'in kutuda olup olmadığını kontrol edeceğim ve öyle:
 
-![Pasted image 20250208172051.png](/img/user/Pasted%20image%2020250208172051.png)
+![Pasted image 20250208172051.png](/img/user/resimler/Pasted%20image%2020250208172051.png)
 
 nc -lnvp 443 kullanarak nc'yi hostumda dinlemeye başlayacağım ve Antique üzerinde reverse shell'i çalıştıracağım:
 
-![Pasted image 20250208172142.png](/img/user/Pasted%20image%2020250208172142.png)
+![Pasted image 20250208172142.png](/img/user/resimler/Pasted%20image%2020250208172142.png)
 
-![Pasted image 20250208172148.png](/img/user/Pasted%20image%2020250208172148.png)
+![Pasted image 20250208172148.png](/img/user/resimler/Pasted%20image%2020250208172148.png)
 
 Sadece kilitleniyor, ama nc'de bir shell var:
 
-![Pasted image 20250208172209.png](/img/user/Pasted%20image%2020250208172209.png)
+![Pasted image 20250208172209.png](/img/user/resimler/Pasted%20image%2020250208172209.png)
 
 Script shell upgrade hilesi benim için işe yaramadı (sadece terminalimi karıştırdı), ancak Python olanı iyi çalıştı:
 
@@ -208,11 +208,11 @@ lp@antique:~$
 
 lp'nin home dizini standart olmayan bir konumdadır:
 
-![Pasted image 20250208172419.png](/img/user/Pasted%20image%2020250208172419.png)
+![Pasted image 20250208172419.png](/img/user/resimler/Pasted%20image%2020250208172419.png)
 
 Ne olursa olsun, oldukça boş:
 
-![Pasted image 20250208172456.png](/img/user/Pasted%20image%2020250208172456.png)
+![Pasted image 20250208172456.png](/img/user/resimler/Pasted%20image%2020250208172456.png)
 
 telnet.py, HP telnet servisi gibi davranan bir programdır. Proses listesi (ps auxww) bu scriptin lp olarak çalıştırıldığını gösteriyor, bu yüzden onu daha fazla exploit etmek için bakmanın pek bir değeri yok:
 
@@ -225,7 +225,7 @@ lp 1024 0.0 0.2 239656 10920 ? Sl 00:42 0:00 python3 /var/spool/lpd/telnet.py
 
 Antique'de telnet dışında dinlenen bir port daha var:
 
-![Pasted image 20250208172612.png](/img/user/Pasted%20image%2020250208172612.png)
+![Pasted image 20250208172612.png](/img/user/resimler/Pasted%20image%2020250208172612.png)
 
 Eğer bu porta girip bir şeyler yazıp enter tuşuna basarsam, HTTP 400 Bad Request döndürüyor:
 
@@ -280,15 +280,15 @@ lp@antique:~$ curl 127.0.0.1:631
 wget https://github.com/jpillora/chisel/releases/download/v1.7.7/chisel_1.7.7_linux_amd64.gz
 ```
 
-![Pasted image 20250208172926.png](/img/user/Pasted%20image%2020250208172926.png)
+![Pasted image 20250208172926.png](/img/user/resimler/Pasted%20image%2020250208172926.png)
 
 Antique'den binary'yi getireceğim:
 
-![Pasted image 20250208173003.png](/img/user/Pasted%20image%2020250208173003.png)
+![Pasted image 20250208173003.png](/img/user/resimler/Pasted%20image%2020250208173003.png)
 
 Hostumda, sunucu ile aynı binary'yi çalıştıracağım:
 
-![Pasted image 20250208173044.png](/img/user/Pasted%20image%2020250208173044.png)
+![Pasted image 20250208173044.png](/img/user/resimler/Pasted%20image%2020250208173044.png)
 
 -p 9000 bunu dinlenecek port olarak ayarlar (herhangi bir port iş görür, ancak varsayılan 8080'dir, Burp zaten hostumda kullanıyor) ve --reverse reverse tünellere izin verir, böylece bir client VM'mde bir dinleme portu açabilir.
 
@@ -298,9 +298,9 @@ Hostumda, sunucu ile aynı binary'yi çalıştıracağım:
 ./chisel_1.7.7_linux_amd64 client 10.10.16.9:9000 R:9631:localhost:631
 ```
 
-![Pasted image 20250208173301.png](/img/user/Pasted%20image%2020250208173301.png)
+![Pasted image 20250208173301.png](/img/user/resimler/Pasted%20image%2020250208173301.png)
 
-![Pasted image 20250208173309.png](/img/user/Pasted%20image%2020250208173309.png)
+![Pasted image 20250208173309.png](/img/user/resimler/Pasted%20image%2020250208173309.png)
 
 Bu, chisel'a 9000'de virtual makineme bağlanmasını ve 9631'de virtual makinemde bir listening oluşturmasını söyler (sunucuyu root olarak çalıştırmazsanız 1024'ün altındaki portları kullanamazsınız). Bu dinleme portuna gelen herhangi bir trafik chisel tarafından Antique'e yönlendirilecek ve daha sonra Antique'den Antique üzerindeki 631 numaralı porta gönderilecektir.
 
@@ -310,19 +310,19 @@ Sunucumda Firefox'u localhost:9631'e yönlendirdiğimde sayfa yükleniyor.
 
 Sayfa bir CUPS sayfasıdır:
 
-![Pasted image 20250208173516.png](/img/user/Pasted%20image%2020250208173516.png)
+![Pasted image 20250208173516.png](/img/user/resimler/Pasted%20image%2020250208173516.png)
 
 [CUPS](http://www.cups.org/) open-source bir printing sistemidir.
 
 “ Administration” sekmesi bağlı olan (olmayan) yazıcıların yanı sıra işleri, sınıfları ve diğer idari bilgileri gösterir.
 
-![Pasted image 20250208173558.png](/img/user/Pasted%20image%2020250208173558.png)
+![Pasted image 20250208173558.png](/img/user/resimler/Pasted%20image%2020250208173558.png)
 
 “ Server ” bölümünde çeşitli günlükleri gösteren bağlantılar var. Configuration dosyasını düzenlemeye ve kaydetmeye çalıştığımda, auth sorusu çıkıyor ki bende auth yok.
 
 Error log'da daha önce yaptığım isteği görebiliyorum:
 
-![Pasted image 20250208173857.png](/img/user/Pasted%20image%2020250208173857.png)
+![Pasted image 20250208173857.png](/img/user/resimler/Pasted%20image%2020250208173857.png)
 
 ### CVE-2012-5519
 
@@ -346,7 +346,7 @@ lp@antique:~$ cupsctl ErrorLog=/root/root.txt
 ```
 
 
-![Pasted image 20250208174535.png](/img/user/Pasted%20image%2020250208174535.png)
+![Pasted image 20250208174535.png](/img/user/resimler/Pasted%20image%2020250208174535.png)
 
 
 #### Shell Failures
@@ -491,7 +491,7 @@ Version: 0.105-26ubuntu1.1
 
 Datadog gönderisindeki bu tabloya göre, bu Ubuntu 20.04 focal'daki son savunmasız sürümdür:
 
-![Pasted image 20250208175104.png](/img/user/Pasted%20image%2020250208175104.png)
+![Pasted image 20250208175104.png](/img/user/resimler/Pasted%20image%2020250208175104.png)
 
 #### Exploit
 

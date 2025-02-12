@@ -55,19 +55,19 @@ Web uygulamaları, farklı altyapı kurulumlarına sahip olabilir. En yaygın mo
 
 **Client-Server**: Bir **server**, **web application**'ı **client**'a dağıtır. Kullanıcı, web adresini ziyaret ettiğinde, tarayıcı **server**'a HTTP isteği gönderir ve işlem tamamlandığında sonuçları geri alır.
 
-![Pasted image 20250211133756.png](/img/user/Pasted%20image%2020250211133756.png)
+![Pasted image 20250211133756.png](/img/user/resimler/Pasted%20image%2020250211133756.png)
 
 **One Server**: Tüm **web application** ve bileşenleri (database dahil) tek bir **server**'da barındırılır. Bu tasarım basittir ama güvenlik risklidir. **Server**'ın ihlali tüm verileri tehlikeye atar.
 
-![Pasted image 20250211133806.png](/img/user/Pasted%20image%2020250211133806.png)
+![Pasted image 20250211133806.png](/img/user/resimler/Pasted%20image%2020250211133806.png)
 
 **Many Servers - One Database**: **Database**, ayrı bir **server**'da barındırılır. **Web application**'lar, bu **database**'i kullanarak veri depolar ve alır. Bu tasarımda segmentasyon sağlanır; bir **webserver** ihlal edilirse diğerleri etkilenmez.
 
-![Pasted image 20250211133820.png](/img/user/Pasted%20image%2020250211133820.png)
+![Pasted image 20250211133820.png](/img/user/resimler/Pasted%20image%2020250211133820.png)
 
 **Many Servers - Many Databases**: Her **web application**'ın verisi, ayrı bir **database**'te barındırılır. Bu tasarım, yedeklilik sağlar ve kesinti süresini azaltır, ayrıca güvenlik açısından daha sağlamdır.
 
-![Pasted image 20250211133827.png](/img/user/Pasted%20image%2020250211133827.png)
+![Pasted image 20250211133827.png](/img/user/resimler/Pasted%20image%2020250211133827.png)
 
 Bu tasarım aynı zamanda yedekleme amacıyla da yaygın olarak kullanılır, böylece herhangi bir web sunucusu veya veritabanı çevrimdışı olursa, kesinti süresini mümkün olduğunca azaltmak için yerine bir yedekleme çalışır. Uygulanması daha zor olsa ve uygun şekilde çalışması için load balancer gibi araçlar gerektirse de, bu mimari uygun erişim kontrol önlemleri ve uygun asset segmentasyonu sayesinde güvenlik açısından en iyi seçeneklerden biridir.
 
@@ -104,7 +104,7 @@ Web uygulamasının bileşenleri üç farklı katmana (diğer adıyla Üç Katma
 
 Bir web uygulaması mimarisi örneği aşağıdaki gibi görünebilir:
 
-![Pasted image 20250211135633.png](/img/user/Pasted%20image%2020250211135633.png)
+![Pasted image 20250211135633.png](/img/user/resimler/Pasted%20image%2020250211135633.png)
 
 Ayrıca, bazı web sunucuları IIS ISAPI veya PHP-CGI gibi işletim sistemi çağrılarını ve programlarını çalıştırabilir.
 
@@ -153,7 +153,7 @@ Web uygulamalarının mimarisi ve tasarımını anlamak, penetrasyon testi için
 
 **Front end**, kullanıcının web tarayıcısı üzerinden gördüğü bileşenleri içerir ve genellikle HTML, CSS ve JavaScript'ten oluşur. Bu bileşenler, tarayıcılar tarafından gerçek zamanlı yorumlanır.
 
-![Pasted image 20250211141206.png](/img/user/Pasted%20image%2020250211141206.png)
+![Pasted image 20250211141206.png](/img/user/resimler/Pasted%20image%2020250211141206.png)
 
 **Front end** web geliştirme, kullanıcının etkileşimde bulunduğu tüm öğeleri içerir, bunlar HTML, CSS ve JavaScript ile oluşturulur ve tarayıcıda gerçek zamanlı yorumlanır. Modern web uygulamaları, **front end**'in her cihaz ve tarayıcıda uyumlu olmasını gerektirir. İyi optimize edilmemiş **front end**, web uygulamasını yavaşlatabilir. Ayrıca, **front end** geliştirme, görsel tasarım, **UI** ve **UX** tasarımı gibi görevleri de kapsar.
 
@@ -184,7 +184,7 @@ Web uygulamaları için dört ana back end bileşeni vardır:
 |**Veritabanları**|Veritabanları (DB'ler) web uygulaması verilerini depolar ve alır. **Relational Databases** (İlişkisel Veritabanları) örnekleri MySQL, MSSQL, Oracle, PostgreSQL iken, **Non-Relational Databases** (İlişkisel Olmayan Veritabanları) örnekleri NoSQL ve MongoDB'dir.|
 |**Development Frameworks**|**Development Frameworks**, web uygulamasının temelini geliştirmek için kullanılır. Bazı popüler **framework**'ler Laravel (PHP), ASP.NET (C#), Spring (Java), Django (Python) ve Express (NodeJS JavaScript) gibi **framework**'lerdir.|
 
-![Pasted image 20250211141620.png](/img/user/Pasted%20image%2020250211141620.png)
+![Pasted image 20250211141620.png](/img/user/resimler/Pasted%20image%2020250211141620.png)
 
 Her bir **back end** bileşeni, **Docker** gibi hizmetlerle izole edilmiş sunucularda veya konteynerlerde barındırılabilir. Bu, her bileşenin potansiyel zafiyetlerden izole edilmesini sağlar. Ayrıca, her bileşen ayrı sunucularda da barındırılabilir, ancak bu daha fazla kaynak ve zaman gerektirir.
 
@@ -261,7 +261,7 @@ Bu hatalar, diğer modüllerde ele alacağımız web uygulamaları için OWASP T
 
 Bu, aşağıdakileri görüntüleyecektir:
 
-![Pasted image 20250211143634.png](/img/user/Pasted%20image%2020250211143634.png)
+![Pasted image 20250211143634.png](/img/user/resimler/Pasted%20image%2020250211143634.png)
 
 Gördüğümüz gibi, HTML öğeleri XML ve diğer dillere benzer şekilde bir tree biçiminde görüntülenir:
 
@@ -281,7 +281,7 @@ Her bir element diğer HTML elementlerini içerebilirken, main HTML tag'i sayfa 
 
 Yukarıdaki kodun HTML öğeleri aşağıdaki gibi görüntülenebilir:
 
-![Pasted image 20250211143930.png](/img/user/Pasted%20image%2020250211143930.png)
+![Pasted image 20250211143930.png](/img/user/resimler/Pasted%20image%2020250211143930.png)
 
 Her HTML elementi, elementin türünü belirten bir tag ile açılır ve kapanır 'örneğin paragraflar için `<p>`', içerik bu taglar arasına yerleştirilir. Tag'ler aynı zamanda elementin id'sini veya sınıfını da tutabilir 'örneğin `<p id='para1'>` veya `<p id='red-paragraphs'>`', bu da CSS'in elementi düzgün bir şekilde biçimlendirmesi için gereklidir. Hem tag'ler hem de içerik elementin tamamını oluşturur.
 
@@ -435,7 +435,7 @@ Front end bileşenler client-side çalıştığı için saldırıya uğrasalar d
 
 [Sensitive Data Exposure](https://owasp.org/www-project-top-ten/2017/A3_2017-Sensitive_Data_Exposure), hassas verilerin açık metin olarak son kullanıcıya sunulmasıdır. Bu genellikle web sayfasının HTML kaynak kodunda bulunur ve sayfa kaynağı sağ tıklanarak veya ctrl + u tuşlarıyla görüntülenebilir. Örneğin, google.com sayfa kaynağını görüntüleyerek HTML, JavaScript ve harici bağlantılara ulaşılabilir.
 
-![Pasted image 20250211200924.png](/img/user/Pasted%20image%2020250211200924.png)
+![Pasted image 20250211200924.png](/img/user/resimler/Pasted%20image%2020250211200924.png)
 
 Bazen, bir web sayfasının kaynak kodunda veya dış JavaScript kodlarında giriş bilgileri, hash'ler veya diğer hassas veriler bulunabilir. Bunlar, web uygulamasına veya altyapısına erişim sağlamak için kullanılabilir. Bu yüzden, bir web uygulamasını değerlendirirken ilk olarak sayfa kaynak kodunu inceleyip kolayca erişilebilecek verileri aramak önemlidir.
 
@@ -443,7 +443,7 @@ Bazen, bir web sayfasının kaynak kodunda veya dış JavaScript kodlarında gir
 
 İlk bakışta, bu giriş formu sıra dışı bir şey gibi görünmüyor:
 
-![Pasted image 20250211201051.png](/img/user/Pasted%20image%2020250211201051.png)
+![Pasted image 20250211201051.png](/img/user/resimler/Pasted%20image%2020250211201051.png)
 
 Sayfa kaynağına bir göz atalım:
 
@@ -483,7 +483,7 @@ Soru : Açık şifreler için yukarıdaki giriş formunu kontrol edin. Şifreyi 
 
 Cevap : ==HiddenInPlainSight==
 
-![Pasted image 20250211201438.png](/img/user/Pasted%20image%2020250211201438.png)
+![Pasted image 20250211201438.png](/img/user/resimler/Pasted%20image%2020250211201438.png)
 
 
 # HTML Injection
@@ -494,7 +494,7 @@ Front end güvenliğinde, kullanıcı girdisinin doğrulanması ve temizlenmesi 
 
 Aşağıdaki örnek, tek bir “ Click to enter your name” (Adınızı girmek için tıklayın) düğmesi olan çok basit bir web sayfasıdır. Düğmeye tıkladığımızda, adımızı girmemizi ister ve ardından adımızı “Adınız ...” olarak görüntüler:
 
-![Pasted image 20250211201655.png](/img/user/Pasted%20image%2020250211201655.png)
+![Pasted image 20250211201655.png](/img/user/resimler/Pasted%20image%2020250211201655.png)
 
 Eğer input sanitization işlemi yapılmazsa, bu durum HTML Injection ve Cross-Site Scripting (XSS) saldırıları için kolay bir hedef olabilir. Sayfa kaynak koduna baktığımızda, hiçbir input sanitization işlemi yapılmadığını ve sayfanın kullanıcı inputunu alıp doğrudan görüntülediğini görüyoruz.
 
@@ -526,7 +526,7 @@ HTML Injection'ı test etmek için, adımız olarak küçük bir HTML kodu parç
 <style> body { background-image: url('https://academy.hackthebox.com/images/logo.svg'); } </style>
 ```
 
-![Pasted image 20250211201825.png](/img/user/Pasted%20image%2020250211201825.png)
+![Pasted image 20250211201825.png](/img/user/resimler/Pasted%20image%2020250211201825.png)
 
 Bu örnekte, her şey front end üzerinde yürütüldüğünden, web sayfasının yenilenmesi her şeyi normale döndürecektir.
 
@@ -554,7 +554,7 @@ HTML Injection örneğinde olduğu gibi, burada da hiçbir input sanitization ya
 
 Payload'umuzu girip tamam tuşuna bastığımızda, içinde cookie değerinin bulunduğu bir uyarı penceresinin açıldığını görüyoruz:
 
-![Pasted image 20250211202239.png](/img/user/Pasted%20image%2020250211202239.png)
+![Pasted image 20250211202239.png](/img/user/resimler/Pasted%20image%2020250211202239.png)
 
 Bu payload, HTML document tree'yi erişerek cookie object'inin değerini alır. Tarayıcı inputumuzu işlerken bunu yeni bir DOM olarak kabul edecek ve JavaScript kodumuz çalıştırılacak, cookie değerini bir popup içinde bize gösterecektir.
 
@@ -564,7 +564,7 @@ Soru : Yukarıdaki sayfada cookie değerini almak için XSS kullanmayı deneyin
 Cevap : `XSSisFun`
 
 
-![Pasted image 20250211202452.png](/img/user/Pasted%20image%2020250211202452.png)
+![Pasted image 20250211202452.png](/img/user/resimler/Pasted%20image%2020250211202452.png)
 
 
 # Cross-Site Request Forgery (CSRF)
@@ -606,7 +606,7 @@ Yüksek ayrıcalıklı erişim sağlamak için, saldırgan kurbanın şifresini 
 - **Database**
 - **Development Framework**
 
-![Pasted image 20250212004648.png](/img/user/Pasted%20image%2020250212004648.png)
+![Pasted image 20250212004648.png](/img/user/resimler/Pasted%20image%2020250212004648.png)
 
 
 Back end sunucusundaki diğer yazılım bileşenleri [hypervisors](https://en.wikipedia.org/wiki/Hypervisor), konteynerleri ve WAF'ları içerebilir.
@@ -644,7 +644,7 @@ Web sunucusu, back end sunucu üzerinde çalışan, client-side tarayıcıdan ge
 
 Tipik bir web sunucusu, client tarafından gelen HTTP isteklerini kabul eder ve başarılı bir istek için 200 OK kodu, mevcut olmayan sayfaları isterken 404 NOT FOUND kodu, kısıtlanmış sayfalara erişim isterken 403 FORBIDDEN kodu gibi farklı HTTP yanıtları ve kodlarıyla yanıt verir.
 
-![Pasted image 20250212010242.png](/img/user/Pasted%20image%2020250212010242.png)
+![Pasted image 20250212010242.png](/img/user/resimler/Pasted%20image%2020250212010242.png)
 
 
 |**Kod**|**Açıklama**|
@@ -693,7 +693,7 @@ Web applications için çeşitli **web server** türleri kullanılabilir. Çoğu
 ## Apache
 
 
-![Pasted image 20250212010641.png](/img/user/Pasted%20image%2020250212010641.png)
+![Pasted image 20250212010641.png](/img/user/resimler/Pasted%20image%2020250212010641.png)
 
 Apache (**httpd**) en yaygın **web server** olup, internet sitelerinin %40’ından fazlasını barındırır. Çoğu **Linux distro**'da ön yüklü gelir ve **Windows/macOS**'a da kurulabilir. **PHP** ile yaygın kullanılır ancak **.Net, Python, Perl, Bash** gibi dilleri de destekler. **Apache modülleri** ile işlevselliği genişletilebilir (**mod_php** gibi). **Açık kaynaklı** olup, düzenli **security patch** alır ve iyi belgelenmiştir. **Kolay geliştirme** imkanı sunduğundan küçük şirketler ve yeni başlayanlar için idealdir, ancak büyük şirketler de kullanmaktadır.
 
@@ -704,7 +704,7 @@ Apache (**httpd**) en yaygın **web server** olup, internet sitelerinin %40’ı
 
 ## NGINX
 
-![Pasted image 20250212010934.png](/img/user/Pasted%20image%2020250212010934.png)
+![Pasted image 20250212010934.png](/img/user/resimler/Pasted%20image%2020250212010934.png)
 NGINX, en yaygın ikinci **web server** olup, internet sitelerinin %30’unu barındırır. **Async mimarisi** sayesinde düşük **CPU/RAM** kullanarak çok sayıda eşzamanlı isteğe hizmet eder, bu da onu yüksek trafikli **web application**'lar için ideal kılar. **İlk 100.000** web sitesinin %60’ı NGINX kullanmaktadır. **Açık kaynaklı** ve güvenilirdir.
 
 |`Google`|`Facebook`|`Twitter`|`Cisco`|`Intel`|`Netflix`|`HackTheBox`|
@@ -713,7 +713,7 @@ NGINX, en yaygın ikinci **web server** olup, internet sitelerinin %30’unu bar
 
 ## IIS
 
-![Pasted image 20250212011237.png](/img/user/Pasted%20image%2020250212011237.png)
+![Pasted image 20250212011237.png](/img/user/resimler/Pasted%20image%2020250212011237.png)
 
 IIS, en yaygın üçüncü **web server** olup, internet sitelerinin %15’ini barındırır. **Microsoft** tarafından geliştirilir ve genellikle **Windows Server**'da çalışır. **.NET framework** için optimize edilmiştir ancak **PHP, FTP** gibi servisleri de destekler. **Active Directory** entegrasyonu ve **Windows Auth** ile kimlik doğrulamayı kolaylaştırır. Büyük şirketler, **Windows Server** ve **Active Directory** kullandıkları için IIS tercih eder.
 
@@ -736,7 +736,7 @@ Web applications, **back end database** kullanarak içerik, varlıklar ve kullan
 
 **Relational (SQL) databases**, verileri **tablolar**, **rows** ve **columns** şeklinde saklar. **Primary key** ile tablolar arasında ilişkiler oluşturulabilir. Örneğin, **users** tablosu **id, username** içerirken, **posts** tablosu **id, user_id, content** barındırabilir.
 
-![Pasted image 20250212015510.png](/img/user/Pasted%20image%2020250212015510.png)
+![Pasted image 20250212015510.png](/img/user/resimler/Pasted%20image%2020250212015510.png)
 
 **users** tablosundaki **id**, **posts** tablosundaki **user_id** ile ilişkilendirilerek her gönderiye ait kullanıcı bilgileri, her gönderiye tüm kullanıcı verilerini eklemeye gerek kalmadan kolayca alınabilir.
 
@@ -771,7 +771,7 @@ En yaygın **relational databases** şunlardır:
 
 Bu modeller, veriyi farklı şekillerde depolar; örneğin, Key-Value modeli JSON veya XML kullanarak veri depolar ve her veriyi bir anahtar-değer çifti olarak saklar.
 
-![Pasted image 20250212025443.png](/img/user/Pasted%20image%2020250212025443.png)
+![Pasted image 20250212025443.png](/img/user/resimler/Pasted%20image%2020250212025443.png)
 
 Yukarıdaki örnek JSON kullanılarak aşağıdaki gibi gösterilebilir:
 
@@ -886,7 +886,7 @@ item=apples
 
 API (Application Programming Interface - Uygulama Programlama Arayüzü), bir uygulamanın diğer uygulamalarla nasıl etkileşime girebileceğini belirten bir arayüzdür. Web uygulamaları için, back end fonksiyonlarına remote erişim sağlar. API'ler sadece web uygulamalarına özel değildir ve genellikle HTTP üzerinden web sunucuları aracılığıyla erişilir ve işlenir.
 
-![Pasted image 20250212030916.png](/img/user/Pasted%20image%2020250212030916.png)
+![Pasted image 20250212030916.png](/img/user/resimler/Pasted%20image%2020250212030916.png)
 
 Örneğin, bir hava durumu uygulaması, şehir için mevcut hava durumunu almak amacıyla bir API kullanabilir ve şehir adını ileterek JSON objesi döndürebilir. Benzer şekilde, Twitter'ın API'si, son Tweetleri almayı veya Tweet göndermeyi sağlar. Web uygulamalarında API kullanımı için geliştiricilerin SOAP veya REST gibi API standartlarını kullanarak back end işlevselliğini geliştirmeleri gerekir.
 
@@ -946,7 +946,7 @@ soru : ID numarası 1 olan kullanıcının adını aramak için '/index.php?id=0
 
 Cevap : superadmin
 
-![Pasted image 20250212031933.png](/img/user/Pasted%20image%2020250212031933.png)
+![Pasted image 20250212031933.png](/img/user/resimler/Pasted%20image%2020250212031933.png)
 
 
 # Common Web Vulnerabilities
@@ -997,7 +997,7 @@ Soru : 'CVE-2014-6271' kamu güvenlik açığı yukarıdaki kategorilerden hangi
 
 Cevap : Command Injection
 
-![Pasted image 20250212032747.png](/img/user/Pasted%20image%2020250212032747.png)
+![Pasted image 20250212032747.png](/img/user/resimler/Pasted%20image%2020250212032747.png)
 
 
 # Public Vulnerabilities
@@ -1008,7 +1008,7 @@ En kritik back end açıkları, dışarıdan saldırılabilir ve local erişim o
 
 Birçok web uygulaması, dünya çapında test edilerek birçok güvenlik açığı ortaya çıkarır. Bu açıklar genellikle yamanır ve CVE kaydı alır. Sızma testi uzmanları, bu açıkları test etmek için proof of concept exploit hazırlar ve bunları kamuya sunar. İlk adım, web uygulamasının sürümünü belirlemektir. Sürüm belirlendikten sonra, açık exploit'ler Google veya Exploit DB gibi veritabanlarında aranabilir.
 
-![Pasted image 20250212033023.png](/img/user/Pasted%20image%2020250212033023.png)
+![Pasted image 20250212033023.png](/img/user/resimler/Pasted%20image%2020250212033023.png)
 
 
 ## Common Vulnerability Scoring System (CVSS)
@@ -1027,7 +1027,7 @@ CVSS puanlama dereceleri, aşağıdaki tablolarda görülebileceği gibi V2 ve V
 
 NVD, Temporal ve Environmental metriklerini dikkate almaz çünkü Temporal metrikleri zamanla değişebilir ve Environmental metrikleri organizasyona özgüdür. NVD, bu ek riskleri hesaplamak için CVSS v2 ve v3 hesaplayıcıları sunar. Bu hesaplayıcılar, CVSS puanını çevremize göre ince ayar yapmamızı sağlar ve her bir metriğin nasıl uygulandığını öğrenmemizi sağlar.
 
-![Pasted image 20250212033354.png](/img/user/Pasted%20image%2020250212033354.png)
+![Pasted image 20250212033354.png](/img/user/resimler/Pasted%20image%2020250212033354.png)
 
 
 ## Back-end Server Vulnerabilities

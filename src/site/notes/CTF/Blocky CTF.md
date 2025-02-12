@@ -26,11 +26,11 @@ Blocky gerçekten kolay bir kutuydu, ancak numaralandırma yaparken biraz disipl
 
 nmap üç açık TCP portu buldu: FTP (21), SSH (22) ve HTTP (80):
 
-![Pasted image 20250208180009.png](/img/user/Pasted%20image%2020250208180009.png)
+![Pasted image 20250208180009.png](/img/user/resimler/Pasted%20image%2020250208180009.png)
 
 80 portu 10.10.10.37 --> blocky.htb yönlendirme yaptığı için /etc/hosts dosyasına ekleyip öyle tarama yapmak daaha doğru sonuçlar verir .
 
-![Pasted image 20250208180349.png](/img/user/Pasted%20image%2020250208180349.png)
+![Pasted image 20250208180349.png](/img/user/resimler/Pasted%20image%2020250208180349.png)
 
 ip olarak tarama yapmak wordpress 4.8 ve diğer bilgileri döndürmüyor. 
 
@@ -51,15 +51,15 @@ FTP biraz çıkmaza giriyor. Baktığım iki yol var:
 
 Site, “yapım aşamasında” olan bir MinCraft blog sayfasıdır.
 
-![Pasted image 20250208180537.png](/img/user/Pasted%20image%2020250208180537.png)
+![Pasted image 20250208180537.png](/img/user/resimler/Pasted%20image%2020250208180537.png)
 
 Teması ve hissiyatı sizi ele vermediyse, sayfanın altında WordPress olduğu yazıyor:
 
-![Pasted image 20250208180554.png](/img/user/Pasted%20image%2020250208180554.png)
+![Pasted image 20250208180554.png](/img/user/resimler/Pasted%20image%2020250208180554.png)
 
 "Tek gönderiye girdiğimde, gönderiyi paylaşan kullanıcının adının **notch** olduğunu görüyorum. Bunu daha sonra kullanmak üzere not alıyorum:"
 
-![Pasted image 20250208180628.png](/img/user/Pasted%20image%2020250208180628.png)
+![Pasted image 20250208180628.png](/img/user/resimler/Pasted%20image%2020250208180628.png)
 
 
 #### Directory Brute Force
@@ -106,14 +106,14 @@ Bu listeden /wiki, /plugins ve /phpmyadmin'i kontrol edeceğim. WordPress'e özg
 
 Bu sayfa sadece mevcut olmadığını ve main server plugin tamamlandığında geleceğini söyleyen bir metin ve ardından pluginin bir açıklaması:
 
-![Pasted image 20250208181439.png](/img/user/Pasted%20image%2020250208181439.png)
+![Pasted image 20250208181439.png](/img/user/resimler/Pasted%20image%2020250208181439.png)
 
 
 #### /phpmyadmin
 
 Bu normal görünümlü bir phpMyAdmin girişidir:
 
-![Pasted image 20250208181451.png](/img/user/Pasted%20image%2020250208181451.png)
+![Pasted image 20250208181451.png](/img/user/resimler/Pasted%20image%2020250208181451.png)
 
 Creds'i bulursam tekrar kontrol edeceğim.
 
@@ -305,7 +305,7 @@ Garip bir şekilde, hiçbir plugin bulunamadı. Sitede daha önce belirttiğim n
 
 Bunu bir WordPress dizini olarak atlamak kolay olurdu, ancak bu sayfayı ziyaret ettiğinizde "Cute file browser" başlığını görüyorsunuz ve aslında iki tane Java Jar dosyası barındırıyor.
 
-![Pasted image 20250208181647.png](/img/user/Pasted%20image%2020250208181647.png)
+![Pasted image 20250208181647.png](/img/user/resimler/Pasted%20image%2020250208181647.png)
 
 İkisini de indireceğim.
 
@@ -315,15 +315,15 @@ Bunu bir WordPress dizini olarak atlamak kolay olurdu, ancak bu sayfayı ziyaret
 
 Her bir Jar dosyasını jd-gui ile açacağım (apt install jd-gui ile yüklenebilir). İlk olarak BlockCore.jar dosyasına baktım. Çok basit, sadece birkaç boş fonksiyona sahip tek bir sınıf içeriyor. Ayrıca SQL için bazı kimlik bilgileri de var.
 
-![Pasted image 20250208181735.png](/img/user/Pasted%20image%2020250208181735.png)
+![Pasted image 20250208181735.png](/img/user/resimler/Pasted%20image%2020250208181735.png)
 
 Diğer Jar'a da bakabilirim ama çok fazla sınıf var:
 
-![Pasted image 20250208181748.png](/img/user/Pasted%20image%2020250208181748.png)
+![Pasted image 20250208181748.png](/img/user/resimler/Pasted%20image%2020250208181748.png)
 
 Bunun HTB için özel bir kod olup olmadığını ya da herkese açık bir şey olup olmadığını merak ediyordum. Jar'ın MD5'ini aldım ve Google'da arattım. Sadece bir sonuç var ([Googlewhack](https://en.wikipedia.org/wiki/Googlewhack)'e en yakın sonuç):
 
-![Pasted image 20250208181819.png](/img/user/Pasted%20image%2020250208181819.png)
+![Pasted image 20250208181819.png](/img/user/resimler/Pasted%20image%2020250208181819.png)
 
 Bu, disk üzerindeki adıyla eşleşen MinecraftForge için bir _plugin_ olan GriefPrevention'a ait. Şu an için bunun önemli olmadığını düşünüyorum. Bu _plugin_de güvenlik açıkları arayabilirim, ancak kolay bir kutu için bu muhtemelen doğru yol değil.
 
@@ -331,7 +331,7 @@ Bu, disk üzerindeki adıyla eşleşen MinecraftForge için bir _plugin_ olan Gr
 
 Artık iki kullanıcı adım (notch ve root) ve bir şifrem (8YsqfCTnvxAUeduzjNSXe22) var. Bunları şimdiye kadar belirlediğim tüm hizmetlerde deneyeceğim, ancak ilk denediğim SSH'de çalışıyorlar:
 
-![Pasted image 20250208182349.png](/img/user/Pasted%20image%2020250208182349.png)
+![Pasted image 20250208182349.png](/img/user/resimler/Pasted%20image%2020250208182349.png)
 
 Diğer servisler için denedim:
 
@@ -341,10 +341,10 @@ Diğer servisler için denedim:
 | /wp-admin  | Her ikisiyle de başarısız | Hiçbiri                           | Yok                                                                                                               |
 | phpMyAdmin | Başarılı: root            | Veritabanları, WordPress dahil    | Anahtarları değiştirebilir, WP admin erişimi alabilir ve webshell oluşturabilirim, bu da www-data erişimi sağlar. |
 
-![Pasted image 20250208182745.png](/img/user/Pasted%20image%2020250208182745.png)
+![Pasted image 20250208182745.png](/img/user/resimler/Pasted%20image%2020250208182745.png)
 
 sudo ile her şeyi notch olarak çalıştırabilirim. Bu yüzden bash'i seçeceğim ve root olacağım:
 
-![Pasted image 20250208182851.png](/img/user/Pasted%20image%2020250208182851.png)
+![Pasted image 20250208182851.png](/img/user/resimler/Pasted%20image%2020250208182851.png)
 
 Burada da kullanabileceğim kernel açıkları olduğundan şüpheleniyorum, ancak bunu okuyucuya bir egzersiz olarak bırakacağım. (Linpeas çalıştır.)
