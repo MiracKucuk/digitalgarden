@@ -5,71 +5,88 @@
 
 ### Active Directory Açıklaması
 
-Active Directory (AD), Windows kurumsal ortamları için 2000 yılında Windows Server 2000'in piyasaya sürülmesiyle resmi olarak uygulamaya konulan ve o zamandan bu yana her bir sonraki sunucu işletim sisteminin piyasaya sürülmesiyle aşamalı olarak geliştirilen bir dizin hizmetidir. AD, kendisinden önce gelen x.500 ve LDAP protokollerine dayanmaktadır ve bugün hala bu protokolleri bir şekilde kullanmaktadır. Kullanıcılar, bilgisayarlar, gruplar, ağ cihazları ve dosya paylaşımları, Grup politikaları, cihazlar ve güvenler dahil olmak üzere bir kuruluşun kaynaklarının merkezi olarak yönetilmesine olanak tanıyan dağıtılmış, hiyerarşik bir yapıdır. AD, bir Windows kurumsal ortamında kimlik doğrulama, muhasebe ve yetkilendirme işlevleri sağlar. 
+Active Directory (AD), Windows Server 2000 ile tanıtılan ve sonraki sürümlerle geliştirilen bir dizin servisidir. x.500 ve LDAP protokollerine dayanır ve merkezi kimlik doğrulama, yetkilendirme ve yönetim sağlar. Kullanıcılar, bilgisayarlar, gruplar, ağ cihazları, dosya paylaşımları, Grup Politikaları ve trustlar gibi kaynakları yönetmek için hiyerarşik bir yapı sunar.
 
 
 ### Reklamı Neden Önemsemeliyiz?
-Bu modülün yazıldığı sırada Microsoft Active Directory, Kimlik ve Erişim yönetimi çözümlerini kullanan kurumsal kuruluşlar için pazar payının yaklaşık %43'ünü elinde tutmaktadır. Bu, pazarın büyük bir kısmıdır ve Microsoft Azure AD ile uygulamaları geliştirip harmanladığı için yakın zamanda herhangi bir yere gitmesi muhtemel değildir. Dikkate alınması gereken bir başka ilginç istatistik de, sadece son iki yılda Microsoft'un bir CVE'ye bağlı 2000'den fazla güvenlik açığı bildirmiş olmasıdır. AD'nin birçok hizmeti ve temel amacı olan bilginin kolay bulunması ve erişilmesi, AD'yi yönetilmesi ve doğru şekilde sağlamlaştırılması gereken bir dev haline getirmektedir. Bu durum, işletmeleri hizmetlerin ve izinlerin basit yanlış yapılandırmalarından kaynaklanan güvenlik açıklarına ve istismara maruz bırakmaktadır. Bu yanlış yapılandırmaları ve erişim kolaylığını yaygın kullanıcı ve işletim sistemi açıklarıyla birleştirdiğinizde, bir saldırganın yararlanabileceği mükemmel bir fırtınaya sahip olursunuz. Tüm bunları akılda tutarak, bu modül bu yaygın sorunlardan bazılarını inceleyecek ve bize bunların nasıl tanımlanacağını, numaralandırılacağını ve varlıklarından nasıl yararlanılacağını gösterecektir. Sysinternals, WMI, DNS ve diğerleri gibi yerel araçları ve dilleri kullanarak AD'yi numaralandırma alıştırması yapacağız. Ayrıca uygulayacağımız bazı saldırılar arasında Password spraying, Kerberoasting, Responder, Kerbrute, Bloodhound gibi araçların kullanımı ve çok daha fazlası yer almaktadır.
+Bu modülün yazıldığı sırada Microsoft Active Directory,  ==Identity and Access management (Kimlik ve Erişim yönetimi)== çözümlerini kullanan kurumsal kuruluşlar için pazar payının yaklaşık %43'ünü elinde tutmaktadır. Bu, pazarın büyük bir kısmıdır ve Microsoft Azure AD ile uygulamaları geliştirip harmanladığı için yakın zamanda herhangi bir yere gitmesi muhtemel değildir. Dikkate alınması gereken bir başka ilginç istatistik de, sadece son iki yılda Microsoft'un bir [CVE](https://www.cvedetails.com/vendor/26/Microsoft.html)'ye bağlı ==2000=='den fazla güvenlik açığı bildirmiş olmasıdır. AD'nin birçok servisi ve temel amacı olan bilginin kolay bulunması ve erişilmesi, AD'yi yönetilmesi ve doğru şekilde sağlamlaştırılması gereken bir dev haline getirmektedir. Bu durum, işletmeleri servislerin ve izinlerin basit yanlış yapılandırmalarından kaynaklanan güvenlik açıklarına ve istismara maruz bırakmaktadır. Bu yanlış yapılandırmaları ve erişim kolaylığını yaygın kullanıcı ve işletim sistemi açıklarıyla birleştirdiğinizde, bir saldırganın yararlanabileceği mükemmel bir fırtınaya sahip olursunuz. Tüm bunları akılda tutarak, bu modül bu yaygın sorunlardan bazılarını inceleyecek ve bize bunların nasıl tanımlanacağını, numaralandırılacağını ve varlıklarından nasıl yararlanılacağını gösterecektir. ==Sysinternals, WMI, DNS== ve diğerleri gibi local araçları ve dilleri kullanarak AD'yi numaralandırma alıştırması yapacağız. Ayrıca uygulayacağımız bazı saldırılar arasında `Password spraying`, `Kerberoasting`, `Responder`, `Kerbrute`, `Bloodhound` gibi araçların kullanımı ve çok daha fazlası yer almaktadır.
 
-Kendimizi genellikle, savunmasız bir uygulama veya hizmet gibi bir remote exploit aracılığıyla bir dayanak noktasına giden net bir yolu olmayan bir ağda bulabiliriz. Yine de, birçok şekilde bir dayanak noktası oluşturabilecek bir Active Directory ortamındayız. Bir müşterinin AD ortamında bir yer edinmenin genel amacı, değerlendirmenin amacına ulaşana kadar ağ boyunca yanal veya dikey olarak hareket ederek ayrıcalıkları yükseltmektir. Amaç müşteriden müşteriye değişebilir. Belirli bir host'a, kullanıcının e-posta gelen kutusuna, veri tabanına erişmek ya da domain'i tamamen ele geçirmek ve test süresi içinde Domain Admin seviyesine erişmek için mümkün olan her yolu aramak olabilir. Active Directory'yi numaralandırmayı ve saldırmayı kolaylaştırmak için birçok açık kaynaklı araç mevcuttur. En etkili olmak için, bu numaralandırmanın mümkün olduğunca çoğunu manuel olarak nasıl gerçekleştireceğimizi anlamalıyız. Daha da önemlisi, belirli kusurların ve yanlış yapılandırmaların arkasındaki “nedeni” anlamamız gerekir. Bu bizi saldırganlar olarak daha etkili kılacak ve müşterilerimize ortamlarındaki önemli sorunlar hakkında sağlam tavsiyelerin yanı sıra net ve eyleme geçirilebilir düzeltme tavsiyeleri vermemizi sağlayacaktır.
+Kendimizi genellikle, savunmasız bir uygulama veya service gibi bir remote exploit aracılığıyla bir dayanak noktasına giden net bir yolu olmayan bir ağda bulabiliriz. Yine de, birçok şekilde bir dayanak noktası oluşturabilecek bir Active Directory ortamındayız. Bir müşterinin AD ortamında bir yer edinmenin genel amacı, değerlendirmenin amacına ulaşana kadar ağ boyunca lateral veya dikey olarak hareket ederek ayrıcalıkları yükseltmektir. Amaç müşteriden müşteriye değişebilir. Belirli bir host'a, kullanıcının e-posta gelen kutusuna, veri tabanına erişmek ya da domain'i tamamen ele geçirmek ve test süresi içinde Domain Admin seviyesine erişmek için mümkün olan her yolu aramak olabilir. Active Directory'yi numaralandırmayı ve saldırmayı kolaylaştırmak için birçok açık kaynaklı araç mevcuttur. En etkili olmak için, bu numaralandırmanın mümkün olduğunca çoğunu manuel olarak nasıl gerçekleştireceğimizi anlamalıyız. Daha da önemlisi, belirli kusurların ve yanlış yapılandırmaların arkasındaki “nedeni” anlamamız gerekir. Bu bizi saldırganlar olarak daha etkili kılacak ve müşterilerimize ortamlarındaki önemli sorunlar hakkında sağlam tavsiyelerin yanı sıra net ve eyleme geçirilebilir düzeltme tavsiyeleri vermemizi sağlayacaktır.
 
-“Arazide yaşamak” olarak da bilinen sınırlı bir araç seti veya yerleşik Windows araçlarıyla hem Windows hem de Linux'tan AD'yi numaralandırma ve saldırma konusunda rahat olmamız gerekir. Araçlarımızın başarısız olduğu, engellendiği veya müşterinin alıştığımız özelleştirilmiş Linux veya Windows saldırı hostu yerine yönetilen bir workstation veya VDI örneğinden çalışmamızı istediği bir değerlendirme yürüttüğümüz durumlarla karşılaşmak yaygındır. Tüm durumlarda etkili olabilmek için, anında hızlı bir şekilde adapte olabilmeli, AD'nin birçok farklılığını anlamalı ve seçeneklerimiz ciddi şekilde sınırlı olsa bile bunlara nasıl erişeceğimizi bilmeliyiz.
+“`living off the land`.” olarak da bilinen sınırlı bir araç seti veya built-in Windows araçlarıyla hem Windows hem de Linux'tan AD'yi numaralandırma ve saldırma konusunda rahat olmamız gerekir. Araçlarımızın başarısız olduğu, engellendiği veya müşterinin alıştığımız özelleştirilmiş Linux veya Windows saldırı hostu yerine yönetilen bir ==workstation== veya ==VDI== örneğinden çalışmamızı istediği bir değerlendirme yürüttüğümüz durumlarla karşılaşmak yaygındır. Tüm durumlarda etkili olabilmek için, anında hızlı bir şekilde adapte olabilmeli, AD'nin birçok farklılığını anlamalı ve seçeneklerimiz ciddi şekilde sınırlı olsa bile bunlara nasıl erişeceğimizi bilmeliyiz.
 
+"**VDI (Virtual Desktop Infrastructure)**, merkezi bir sunucuda çalışan sanal masaüstlerinin uzaktan erişilmesini sağlayan bir teknolojidir. Güvenliği artırmak ve merkezi yönetimi kolaylaştırmak için kurumsal ortamlarda sıkça kullanılır."
 
 ## Real-World Examples
 Gerçek dünyadaki AD merkezli bir etkileşimde nelerin mümkün olduğunu görmek için birkaç senaryoya bakalım:
 
-Senaryo 1 - Bir Yönetici Bekleniyor
+**Scenario 1 - Waiting On An Admin**
 
-Bu görev sırasında, tek bir hostun güvenliğini tehlikeye attım ve SYSTEM düzeyinde erişim elde ettim. Bu, domain'e bağlı bir host olduğu için, bu erişimi domain'i numaralandırmak için kullanabildim. Tüm standart numaralandırma işlemlerini yaptım ancak pek bir şey bulamadım. Ortamda Service Principal Names (SPN'ler) vardı ve Kerberoasting saldırısı gerçekleştirip birkaç hesap için TGS bileti alabildim. Bunları Hashcat ve bazı standart kelime listelerim ve kurallarımla kırmaya çalıştım, ancak ilk başta başarısız oldum. Sonunda, Hashcat ile birlikte gelen [d3ad0ne](https://github.com/hashcat/hashcat/blob/master/rules/d3ad0ne.rule) kuralı ile birlikte çok büyük bir kelime listesiyle gece boyunca çalışan bir kırma işi bıraktım. Ertesi sabah bir bilete ulaştım ve bir kullanıcı hesabının açık metin şifresini elde ettim. Bu hesap bana önemli bir erişim sağlamıyordu, ancak belirli dosya paylaşımlarına yazma erişimi sağlıyordu. Bu erişimi SCF dosyalarını paylaşımların etrafına bırakmak için kullandım ve Responder'ı çalışır durumda bıraktım. Bir süre sonra, bir kullanıcının NetNTLMv2 hash'i olan tek bir hit aldım. BloodHound çıktısını kontrol ettim ve bu kullanıcının aslında bir domain yöneticisi olduğunu fark ettim! Bundan sonrası kolaydı.
+Bu görev sırasında, tek bir hostun güvenliğini tehlikeye attım ve SYSTEM düzeyinde erişim elde ettim. Bu, domain'e bağlı bir host olduğu için, bu erişimi domain'i numaralandırmak için kullanabildim. Tüm standart numaralandırma işlemlerini yaptım ancak pek bir şey bulamadım. Ortamda ==Service Principal Names (SPN'ler)== vardı ve Kerberoasting saldırısı gerçekleştirip birkaç hesap için TGS bileti alabildim. Bunları Hashcat ve bazı standart kelime listelerim ve kurallarımla kırmaya çalıştım, ancak ilk başta başarısız oldum. Sonunda, Hashcat ile birlikte gelen [d3ad0ne](https://github.com/hashcat/hashcat/blob/master/rules/d3ad0ne.rule) kuralı ile birlikte çok büyük bir kelime listesiyle gece boyunca çalışan bir kırma işi bıraktım. Ertesi sabah bir bilete ulaştım ve bir kullanıcı hesabının açık metin şifresini elde ettim. Bu hesap bana önemli bir erişim sağlamıyordu, ancak belirli dosya paylaşımlarına yazma erişimi sağlıyordu. Bu erişimi SCF dosyalarını paylaşımların etrafına bırakmak için kullandım ve Responder'ı çalışır durumda bıraktım. Bir süre sonra, bir kullanıcının ==NetNTLMv2== hash'i olan tek bir hit aldım. BloodHound çıktısını kontrol ettim ve bu kullanıcının aslında bir domain controller olduğunu fark ettim! Bundan sonrası kolaydı.
 
-
-Senaryo 2 - Geceyi Püskürtmek
-
-Password spraying, bir domain'de yer edinmek için son derece etkili bir yol olabilir, ancak bu süreçte kullanıcı hesaplarını kilitlememek için büyük özen göstermeliyiz. Bir etkileşimde, [enum4linux](https://github.com/CiscoCXSecurity/enum4linux) aracını kullanarak bir SMB NULL oturumu buldum ve hem domain'deki tüm kullanıcıların bir listesini hem de domain parola politikasını aldım. Parola politikasını bilmek çok önemliydi çünkü herhangi bir hesabı kilitlememek için parametreler dahilinde kaldığımdan emin olabilirdim ve ayrıca politikanın en az sekiz karakterli bir parola olduğunu ve parola karmaşıklığının zorunlu olduğunu biliyordum (yani bir kullanıcının parolasının 3/4 özel karakter, sayı, büyük harf veya küçük harf sayısı, yani Welcome1 olması gerekiyordu). Welcome1, Password1, Password123, Spring2018, vb. gibi birkaç yaygın zayıf parola denedim ancak herhangi bir isabet alamadım. Sonunda, Spring@18 ile bir deneme yaptım ve isabet aldım! Bu hesabı kullanarak BloodHound'u çalıştırdım ve bu kullanıcının yerel yönetici erişimine sahip olduğu birkaç host buldum. Bu hostlardan birinde bir domain admin hesabının aktif bir oturumu olduğunu fark ettim. Rubeus aracını kullanarak bu domain kullanıcısı için Kerberos TGT biletini çıkartabildim. Oradan, bir pass-the-ticket saldırısı gerçekleştirebildim ve bu domain admin kullanıcısı olarak kimlik doğrulaması yapabildim. Bonus olarak, devraldığım domainin Domain Administrators grubu, iç içe grup üyeliği yoluyla güvenen domaindeki Administrators grubunun bir parçası olduğu için güvenen domaini de devralabildim, yani diğer domainde tam yönetim seviyesi erişimle kimlik doğrulaması yapmak için aynı kimlik bilgileri kümesini kullanabilirdim.
+"**SCF (Shell Command File)**, Windows'ta özel komutlar çalıştırmak için kullanılan bir dosya formatıdır. SMB paylaşımına bırakıldığında, client sistem otomatik olarak dosyanın içindeki URL'yi çağırarak NTLM hash sızıntısına yol açabilir."
 
 
-Senaryo 3 - Karanlıkta Savaşmak
+**Scenario 2 - Spraying The Night Away**
 
-Bu üçüncü etkileşimde bir yer edinmek için tüm standart yöntemlerimi denemiştim ama hiçbiri işe yaramamıştı. Geçerli kullanıcı adlarını listelemek için Kerbrute aracını kullanmaya ve ardından, eğer bulursam, parola politikasını bilmediğim ve herhangi bir hesabı kilitlemek istemediğim için hedefli bir parola püskürtme saldırısı yapmaya karar verdim. İlk olarak şirketin LinkedIn sayfasındaki potansiyel kullanıcı adlarını bir araya getirmek için linkedin2username aracını kullandım. Bu listeyi istatistiksel olarak olası kullanıcı adları GitHub deposundaki birkaç kullanıcı adı listesiyle birleştirdim ve Kerbrute'un userenum özelliğini kullandıktan sonra 516 geçerli kullanıcıya ulaştım. Parola püskürtme konusunda dikkatli davranmam gerektiğini biliyordum, bu yüzden Welcome2021 parolasıyla denedim ve tek bir isabet aldım! Bu hesabı kullanarak BloodHound'un Python sürümünü saldırı hostumdan çalıştırdım ve tüm domain kullanıcılarının tek bir kutuya RDP erişimi olduğunu gördüm. Bu hostta oturum açtım ve tekrar püskürtmek için PowerShell aracı DomainPasswordSpray'i kullandım. Bu sefer kendimden daha emindim çünkü a) parola ilkesini görüntüleyebiliyordum ve b) DomainPasswordSpray aracı kilitlenmeye yakın hesapları hedef listesinden kaldıracaktı. Domain içinde kimliğim doğrulandığı için artık tüm domain kullanıcılarına püskürtme yapabiliyordum, bu da bana çok daha fazla hedef veriyordu. Ortak parola Fall2021 ile tekrar denedim ve hepsi ilk kelime listemde olmayan kullanıcılar için birkaç isabet aldım. Bu hesapların her birinin haklarını kontrol ettim ve birinin Enterprise Key Admins grubu üzerinde GenericAll haklarına sahip olan Help Desk grubunda olduğunu gördüm. Enterprise Key Admins grubunun bir domain controller üzerinde GenericAll ayrıcalıkları vardı, bu yüzden kontrol ettiğim hesabı bu gruba ekledim, tekrar kimlik doğrulaması yaptım ve bu ayrıcalıkları devraldım. Bu hakları kullanarak Shadow Credentials saldırısını gerçekleştirdim ve domain controller makine hesabının NT hash'ini aldım. Bu NT hash'i ile daha sonra bir DCSync saldırısı gerçekleştirebildim ve domain'deki tüm kullanıcılar için NTLM parola hash'lerini alabildim çünkü bir domain controller DCSync için gerekli olan replikasyonu gerçekleştirebilir.
+Password spraying, bir domain'de yer edinmek için son derece etkili bir yol olabilir, ancak bu süreçte kullanıcı hesaplarını kilitlememek için büyük özen göstermeliyiz. Bir etkileşimde, [enum4linux](https://github.com/CiscoCXSecurity/enum4linux) aracını kullanarak bir SMB NULL oturumu buldum ve hem domain'deki ==tüm kullanıcıların== bir listesini hem de domain ==password politikasını== aldım. Password politikasını bilmek çok önemliydi çünkü herhangi bir hesabı kilitlememek için parametreler dahilinde kaldığımdan emin olabilirdim ve ayrıca politikanın en az sekiz karakterli bir parola olduğunu ve parola karmaşıklığının zorunlu olduğunu biliyordum (yani bir kullanıcının parolasının 3/4 özel karakter, sayı, büyük harf veya küçük harf sayısı, yani Welcome1 olması gerekiyordu). Welcome1, Password1, Password123, Spring2018, vb. gibi birkaç yaygın zayıf parola denedim ancak herhangi bir isabet alamadım. Sonunda, ==Spring@18== ile bir deneme yaptım ve isabet aldım! Bu hesabı kullanarak BloodHound'u çalıştırdım ve bu kullanıcının local admin erişimine sahip olduğu birkaç host buldum. Bu hostlardan birinde bir domain admin hesabının aktif bir oturumu olduğunu fark ettim. Rubeus aracını kullanarak bu domain kullanıcısı için Kerberos TGT biletini çıkartabildim. Oradan, bir ==pass-the-ticket== saldırısı gerçekleştirebildim ve bu domain admin kullanıcısı olarak kimlik doğrulaması yapabildim. Bonus olarak, devraldığım domainin Domain Administrators grubu, nested grup üyeliği yoluyla güvenen domaindeki Administrators grubunun bir parçası olduğu için güvenen domaini de devralabildim, yani diğer domainde tam yönetim seviyesi erişimle kimlik doğrulaması yapmak için aynı kimlik bilgileri kümesini kullanabilirdim.
 
 
-### İşte Bu Yol
-Bu senaryolar şu anda birçok yabancı kavramla dolu görünebilir, ancak bu modülü tamamladıktan sonra çoğuna aşina olacaksınız (bu senaryolarda açıklanan bazı kavramlar bu modülün kapsamı dışındadır). Bunlar, yinelemeli numaralandırmanın, hedefimizi anlamanın ve bir ortamda ilerlerken uyum sağlamanın ve kutunun dışında düşünmenin önemini göstermektedir. Bu modül bölümlerinde yukarıda açıklanan saldırı zincirlerinin birçok parçasını gerçekleştireceğiz ve ardından bu modülün sonunda iki farklı AD ortamına saldırarak ve kendi saldırı zincirlerinizi keşfederek becerilerinizi test edeceksiniz. Sıkı tutunun çünkü bu, Active Directory'yi numaralandırmak ve saldırmak olan vahşi dünyada eğlenceli ama inişli çıkışlı bir yolculuk olacak.
+**Scenario 3 - Fighting In The Dark**
 
-Pratik Örnekler
-Modül boyunca, eşlik eden komut çıktılarıyla birlikte örnekleri ele alacağız. Bunların çoğu, ilgili bölümlerde ortaya çıkarılabilecek hedef VM'lerde yeniden üretilebilir. Bir Windows hostundan (MS01) nasıl numaralandırma ve saldırı yapılacağını öğrenmek için bazı hedef VM'lerle etkileşim kurmanız için RDP kimlik bilgileri ve Linux'tan numaralandırma ve saldırı örnekleri gerçekleştirmek için önceden yapılandırılmış bir Parrot Linux hostuna (ATTACK01) SSH erişimi sağlanacaktır. Pwnbox'tan veya kendi sanal makinenizden (bir makine ortaya çıktığında bir VPN anahtarı indirdikten sonra) FreeRDP, Remmina veya uygun olduğunda seçtiğiniz RDP istemcisini veya Pwnbox'ta veya kendi sanal makinenizde yerleşik SSH istemcisini kullanarak RDP aracılığıyla bağlanabilirsiniz.
+Bu üçüncü etkileşimde bir yer edinmek için tüm standart yöntemlerimi denemiştim ama hiçbiri işe yaramamıştı. Geçerli kullanıcı adlarını listelemek için [Kerbrute](https://github.com/ropnop/kerbrute) aracını kullanmaya ve ardından, eğer bulursam, password politikasını bilmediğim ve herhangi bir hesabı kilitlemek istemediğim için hedefli bir password spyraying saldırısı yapmaya karar verdim. İlk olarak şirketin LinkedIn sayfasındaki potansiyel kullanıcı adlarını bir araya getirmek için [linkedin2username](https://github.com/initstring/linkedin2username) aracını kullandım. Bu listeyi [istatistiksel olarak olası kullanıcı adları](https://github.com/insidetrust/statistically-likely-usernames) GitHub deposundaki birkaç kullanıcı adı listesiyle birleştirdim ve Kerbrute'un `userenum` özelliğini kullandıktan sonra 516 geçerli kullanıcıya ulaştım. Password spraying konusunda dikkatli davranmam gerektiğini biliyordum, bu yüzden ==Welcome2021== parolasıyla denedim ve tek bir isabet aldım! Bu hesabı kullanarak BloodHound'un Python sürümünü saldırı hostumdan çalıştırdım ve tüm domain kullanıcılarının tek bir kutuya RDP erişimi olduğunu gördüm. Bu hostta oturum açtım ve tekrar spraying için PowerShell aracı [DomainPasswordSpray'i](https://github.com/dafthack/DomainPasswordSpray) kullandım. Bu sefer kendimden daha emindim çünkü a) password policy görüntüleyebiliyordum ve b) DomainPasswordSpray aracı kilitlenmeye yakın hesapları hedef listesinden kaldıracaktı. Domain içinde kimliğim doğrulandığı için artık tüm domain kullanıcılarına spray yapabiliyordum, bu da bana çok daha fazla hedef veriyordu. Ortak parola Fall2021 ile tekrar denedim ve hepsi ilk kelime listemde olmayan kullanıcılar için birkaç isabet aldım. Bu hesapların her birinin haklarını kontrol ettim ve birinin [Enterprise Key Admins](https://docs.microsoft.com/en-us/windows/security/identity-protection/access-control/active-directory-security-groups#enterprise-key-admins) grubu üzerinde [GenericAll](https://bloodhound.readthedocs.io/en/latest/data-analysis/edges.html#genericall) haklarına sahip olan Help Desk grubunda olduğunu gördüm. Enterprise Key Admins grubunun bir domain controller üzerinde GenericAll ayrıcalıkları vardı, bu yüzden kontrol ettiğim hesabı bu gruba ekledim, tekrar kimlik doğrulaması yaptım ve bu ayrıcalıkları devraldım. Bu hakları kullanarak [Shadow Credentials](https://posts.specterops.io/shadow-credentials-abusing-key-trust-account-mapping-for-takeover-8ee1a53566ab) saldırısını gerçekleştirdim ve domain controller makine hesabının NT hash'ini aldım. Bu NT hash'i ile daha sonra bir DCSync saldırısı gerçekleştirebildim ve domain'deki tüm kullanıcılar için NTLM parola hash'lerini alabildim çünkü bir domain controller DCSync için gerekli olan replikasyonu gerçekleştirebilir.
 
+
+## İşte Bu Yol
+Bu modülü tamamladığınızda, birçok yabancı kavrama aşina olacaksınız. Modülde, **recursive numaralandırma**, hedef analizi ve ortamda ilerlerken uyum sağlama konularını ele alacağız. Ayrıca, **saldırı zincirlerini uygulayacak** ve modül sonunda iki farklı AD ortamına saldırarak becerilerinizi test edeceksiniz. Active Directory'yi numaralandırma ve saldırma süreci **eğlenceli ama zorlu bir yolculuk olacak**.
+
+## Practical Examples
+Bu modülde, **Windows (MS01) ve Linux (ATTACK01) hostları üzerinden numaralandırma ve saldırı tekniklerini** öğreneceksiniz. **MS01'e RDP, ATTACK01'e ise SSH erişimi** sağlanacaktır. **Pwnbox veya kendi virtual makinenizden** **[FreeRDP](https://github.com/FreeRDP/FreeRDP/wiki/CommandLineInterface), [Remmina](https://remmina.org/) veya built-in SSH client** kullanarak bağlantı kurabilirsiniz.
 
 ### FreeRDP aracılığıyla bağlanma
 Komutu kullanarak komut satırı üzerinden bağlanabiliriz:
-![Pasted image 20241001231134.png](/img/user/resimler/Pasted%20image%2020241001231134.png)
+
+```shell-session
+C4RT3L@htb[/htb]$ xfreerdp /v:<MS01 target IP> /u:htb-student /p:Academy_student_AD!
+```
+
 
 ### SSH üzerinden bağlanma
+
 Komutunu kullanarak sağlanan Parrot Linux saldırı hostuna bağlanabiliriz, ardından istendiğinde sağlanan şifreyi girebiliriz.
-![Pasted image 20241001231222.png](/img/user/resimler/Pasted%20image%2020241001231222.png)
+
+```shell-session
+C4RT3L@htb[/htb]$ ssh htb-student@<ATTACK01 target IP>
+```
 
 
 ### Xfreerdp'den ATTACK01 Parrot Host'a
+
 Ayrıca Parrot saldırı hostuna GUI erişimi sağlamak için ATTACK01 hostuna bir XRDP sunucusu kurduk. Bu, bu bölümde daha sonra ele alacağımız BloodHound GUI aracıyla etkileşim kurmak için kullanılabilir. Bu hostun ortaya çıktığı bölümlerde (size SSH erişiminin verildiği yerlerde), yukarıdaki Windows saldırı hostu ile aynı komutu kullanarak xfreerdp kullanarak da bağlanabilirsiniz:
-![Pasted image 20241001231310.png](/img/user/resimler/Pasted%20image%2020241001231310.png)
+
+```shell-session
+C4RT3L@htb[/htb]$ xfreerdp /v:<ATTACK01 target IP> /u:htb-student /p:HTB_@cademy_stdnt!
+```
+
 Çoğu bölüm MS01 veya ATTACK01 üzerinde htb-student kullanıcısı için kimlik bilgileri sağlayacaktır. Materyale ve zorluklara bağlı olarak, bazı bölümlerde farklı bir kullanıcıyla bir hedefe kimlik doğrulaması yapmanız gerekecek ve alternatif kimlik bilgileri sağlanacaktır.
 
 
 ### Toolkit
-Bu modül için eşlik eden laboratuvarda bir Windows ve Parrot Linux saldırı hostu sağlamaktayız. Modül bölümleri boyunca tüm örnekleri gerçekleştirmek ve tüm soruları çözmek için gereken tüm araçlar hostlarda mevcuttur. Windows saldırı hostu MS01 için gerekli araçlar C:\Tools dizininde bulunmaktadır. Active Directory PowerShell modülü gibi diğerleri, bir PowerShell konsol penceresi açıldığında yüklenecektir. Linux saldırı hostu ATTACK01'deki araçlar ya yüklenir ve htb-student kullanıcılarının PATH'ine eklenir ya da /opt dizininde bulunur. Elbette, (gerektiğinde) kendi araçlarınızı ve komut dosyalarınızı derleyebilir ve bunu yapma alışkanlığı kazanmak için saldırı hostlarına yükleyebilir veya bu şekilde araçlarla çalışan Pwnbox'tan bir SMB paylaşımında barındırabilirsiniz (ve bu teşvik edilir). Bir müşterinin ağında gerçek bir sızma testi gerçekleştirirken, kodu önceden incelemek ve derlenmiş yürütülebilir dosyada kötü niyetli hiçbir şeyin saklanmadığından emin olmak için araçları kendinizin derlemesinin her zaman en iyisi olduğunu unutmayın. Virüslü araçları bir müşterinin ağına sokmak ve onları dışarıdan gelecek bir saldırıya maruz bırakmak istemeyiz.
+
+Bu modül için eşlik eden laboratuvarda bir Windows ve Parrot Linux saldırı hostu sağlamaktayız. Modül bölümleri boyunca tüm örnekleri gerçekleştirmek ve tüm soruları çözmek için gereken tüm araçlar hostlarda mevcuttur. Windows saldırı hostu MS01 için gerekli araçlar `C:\Tools` dizininde bulunmaktadır. Active Directory PowerShell modülü gibi diğerleri, bir PowerShell konsol penceresi açıldığında yüklenecektir. Linux saldırı hostu ATTACK01'deki araçlar ya yüklenir ve htb-student kullanıcılarının PATH'ine eklenir ya da /opt dizininde bulunur. Elbette, (gerektiğinde) kendi araçlarınızı ve komut dosyalarınızı derleyebilir ve bunu yapma alışkanlığı kazanmak için saldırı hostlarına yükleyebilir veya bu şekilde araçlarla çalışan Pwnbox'tan bir SMB paylaşımında barındırabilirsiniz (ve bu teşvik edilir). Bir müşterinin ağında gerçek bir sızma testi gerçekleştirirken, kodu önceden incelemek ve derlenmiş yürütülebilir dosyada kötü niyetli hiçbir şeyin saklanmadığından emin olmak için araçları kendinizin derlemesinin her zaman en iyisi olduğunu unutmayın. Virüslü araçları bir müşterinin ağına sokmak ve onları dışarıdan gelecek bir saldırıya maruz bırakmak istemeyiz.
 
 İyi eğlenceler ve kutunun dışında düşünmeyi unutmayın! AD muazzamdır. Bir gecede ustalaşmayacaksınız, ancak üzerinde çalışmaya devam edin ve yakında bu modüldeki içerik ikinci doğa olacak.
 
 
 ### Tools of the Trade
-Modül bölümlerinin çoğu açık kaynaklı komut dosyaları veya önceden derlenmiş binaryler gibi araçlar gerektirir. Bunlar, Windows'tan saldırmayı amaçlayan bölümlerde sağlanan Windows hostlarında C:\Tools dizininde bulunabilir. AD'ye Linux'tan saldırmaya odaklanan bölümlerde, iç ağda bir saldırı hostu olan anonim bir kullanıcıymışsınız gibi hedef ortam için özelleştirilmiş bir Parrot Linux hostu sağlıyoruz. Gerekli tüm araçlar ve komut dosyaları bu host'a önceden yüklenmiştir (ya yüklüdür ya da /opt dizinindedir). Bu modülde ele alacağımız araçların birçoğunun listesi aşağıda verilmiştir:
 
-[PowerView](https://github.com/dmchell/SharpView)/[SharpView](https://github.com/PowerShellMafia/PowerSploit/blob/master/Recon/PowerView.ps1) : AD'de durumsal farkındalık kazanmak için kullanılan bir PowerShell aracı ve aynı aracın .NET portu. Bu araçlar çeşitli Windows net* komutları ve daha fazlası için yedek olarak kullanılabilir. PowerView ve SharpView, BloodHound'un yaptığı verilerin çoğunu toplamamıza yardımcı olabilir, ancak tüm veri noktaları arasında anlamlı ilişkiler kurmak için daha fazla çalışma gerektirir. Bu araçlar, yeni bir kimlik bilgisi setiyle ne gibi ek erişimlere sahip olabileceğimizi kontrol etmek, belirli kullanıcıları veya bilgisayarları hedeflemek ya da Kerberoasting veya ASREPRoasting yoluyla saldırılabilecek kullanıcılar gibi bazı “hızlı kazançlar” bulmak için harikadır.
+Modül bölümlerinin çoğu açık kaynaklı komut dosyaları veya önceden derlenmiş binaryler gibi araçlar gerektirir. Bunlar, Windows'tan saldırmayı amaçlayan bölümlerde sağlanan Windows hostlarında `C:\Tools` dizininde bulunabilir. AD'ye Linux'tan saldırmaya odaklanan bölümlerde, iç ağda bir saldırı hostu olan anonim bir kullanıcıymışsınız gibi hedef ortam için özelleştirilmiş bir Parrot Linux hostu sağlıyoruz. Gerekli tüm araçlar ve komut dosyaları bu host'a önceden yüklenmiştir (ya yüklüdür ya da `/opt` dizinindedir). Bu modülde ele alacağımız araçların birçoğunun listesi aşağıda verilmiştir:
+
+[PowerView](https://github.com/dmchell/SharpView)/[SharpView](https://github.com/PowerShellMafia/PowerSploit/blob/master/Recon/PowerView.ps1) : AD'de durumsal farkındalık kazanmak için kullanılan bir PowerShell aracı ve aynı aracın .NET portu. Bu araçlar çeşitli Windows ==net*== komutları ve daha fazlası için yedek olarak kullanılabilir. PowerView ve SharpView, BloodHound'un yaptığı verilerin çoğunu toplamamıza yardımcı olabilir, ancak tüm veri noktaları arasında anlamlı ilişkiler kurmak için daha fazla çalışma gerektirir. Bu araçlar, yeni bir kimlik bilgisi setiyle ne gibi ek erişimlere sahip olabileceğimizi kontrol etmek, belirli kullanıcıları veya bilgisayarları hedeflemek ya da Kerberoasting veya ASREPRoasting yoluyla saldırılabilecek kullanıcılar gibi bazı “hızlı kazançlar” bulmak için harikadır.
 
 [BloodHound](https://github.com/BloodHoundAD/BloodHound) : AD ilişkilerini görsel olarak haritalamak ve aksi takdirde fark edilmeyebilecek saldırı yollarını planlamaya yardımcı olmak için kullanılır. Daha sonra AD ortamının grafiksel analizi için bir [Neo4j](https://neo4j.com/) veritabanı ile BloodHound JavaScript (Electron) uygulamasına aktarılacak verileri toplamak için [SharpHound](https://github.com/BloodHoundAD/BloodHound/tree/master/Collectors) PowerShell veya C# ingestor kullanır.
 
-[SharpHound](https://github.com/BloodHoundAD/BloodHound/tree/master/Collectors) : Active Directory'den kullanıcılar, gruplar, bilgisayarlar, ACL'ler, GPO'lar, kullanıcı ve bilgisayar öznitelikleri, kullanıcı oturumları ve daha fazlası gibi çeşitli AD nesneleri hakkında bilgi toplamak için C# veri toplayıcısı. Araç, daha sonra analiz için BloodHound GUI aracına alınabilen JSON dosyaları üretir.
+[SharpHound](https://github.com/BloodHoundAD/BloodHound/tree/master/Collectors) : Active Directory'den kullanıcılar, gruplar, bilgisayarlar, ACL'ler, GPO'lar, kullanıcı ve bilgisayar attributeları, kullanıcı oturumları ve daha fazlası gibi çeşitli AD objeleri hakkında bilgi toplamak için C# veri toplayıcısı. Araç, daha sonra analiz için BloodHound GUI aracına alınabilen JSON dosyaları üretir.
 
 [BloodHound.py](https://github.com/dirkjanm/BloodHound.py) : [Impacket](https://github.com/fortra/impacket) araç setine dayanan Python tabanlı bir BloodHound ingestor. Çoğu BloodHound toplama yöntemini destekler ve domain'e bağlı olmayan bir saldırı hostundan çalıştırılabilir. Çıktı, analiz için BloodHound GUI'ye alınabilir.
 
@@ -77,19 +94,19 @@ Modül bölümlerinin çoğu açık kaynaklı komut dosyaları veya önceden der
 
 [Impacket toolkit](https://github.com/fortra/impacket) : Ağ protokolleriyle etkileşim için Python'da yazılmış bir araç koleksiyonu. Araç paketi, Active Directory'yi numaralandırmak ve saldırmak için çeşitli komut dosyaları içerir.
 
-[Responder](https://github.com/lgandx/Responder) : Responder, LLMNR, NBT-NS ve MDNS'yi birçok farklı işlevle zehirlemek için özel olarak tasarlanmış bir araçtır.
+[Responder](https://github.com/lgandx/Responder) : Responder, LLMNR, NBT-NS ve MDNS'yi birçok farklı fonksiyonla poison için özel olarak tasarlanmış bir araçtır.
 
-[Inveigh.ps1](https://github.com/Kevin-Robertson/Inveigh/blob/master/Inveigh.ps1) : Responder'a benzer şekilde, çeşitli ağ sahtekarlığı ve zehirleme saldırıları gerçekleştirmek için bir PowerShell aracı.
+[Inveigh.ps1](https://github.com/Kevin-Robertson/Inveigh/blob/master/Inveigh.ps1) : Responder'a benzer şekilde, çeşitli ağ sahtekarlığı ve poison saldırıları gerçekleştirmek için bir PowerShell aracı.
 
 [C# Inveigh (InveighZero) ](https://github.com/Kevin-Robertson/Inveigh/tree/master/Inveigh): Inveigh'in kullanıcı adı ve parola hash'leri gibi yakalanan verilerle etkileşim için yarı etkileşimli bir konsola sahip C# sürümü.
 
-[rpcinfo](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/rpcinfo) : rpcinfo yardımcı programı, bir RPC programının durumunu sorgulamak veya uzak bir hosttaki mevcut RPC servislerinin listesini listelemek için kullanılır. “-p” seçeneği hedef hostu belirtmek için kullanılır. Örneğin “rpcinfo -p 10.0.0.1” komutu, uzak hostta bulunan tüm RPC servislerinin bir listesini, program numarası, sürüm numarası ve protokolü ile birlikte döndürür. Bu komutun yeterli ayrıcalıklarla çalıştırılması gerektiğini unutmayın.
+[rpcinfo](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/rpcinfo) : rpcinfo yardımcı programı, bir RPC programının durumunu sorgulamak veya remote bir hosttaki mevcut RPC servislerinin listesini listelemek için kullanılır. “-p” seçeneği hedef hostu belirtmek için kullanılır. Örneğin “`rpcinfo -p 10.0.0.1`” komutu, remote hostta bulunan tüm RPC servislerinin bir listesini, program numarası, sürüm numarası ve protokolü ile birlikte döndürür. Bu komutun yeterli ayrıcalıklarla çalıştırılması gerektiğini unutmayın.
 
 [rpcclient](https://www.samba.org/samba/docs/current/man-html/rpcclient.1.html) : Remote RPC servisi aracılığıyla çeşitli Active Directory numaralandırma görevlerini gerçekleştirmek için kullanılabilen Linux dağıtımlarında Samba paketinin bir parçası.
 
-[CrackMapExec (CME)](https://github.com/byt3bl33d3r/CrackMapExec) : CME, topladığımız verilerle numaralandırma ve saldırı gerçekleştirmede bize büyük ölçüde yardımcı olabilecek bir numaralandırma, saldırı ve sömürü sonrası araç setidir. CME, “arazide yaşamaya” ve SMB, WMI, WinRM ve MSSQL gibi yerleşik AD özelliklerini ve protokollerini kötüye kullanmaya çalışır.
+[CrackMapExec (CME)](https://github.com/byt3bl33d3r/CrackMapExec) : CME, topladığımız verilerle numaralandırma ve saldırı gerçekleştirmede bize büyük ölçüde yardımcı olabilecek bir numaralandırma, saldırı ve sömürü sonrası araç setidir. CME, “arazide yaşamaya” ve SMB, WMI, WinRM ve MSSQL gibi built-in AD özelliklerini ve protokollerini kötüye kullanmaya çalışır.
 
-[Rubeus](https://github.com/GhostPack/Rubeus) : Rubeus, Kerberos İstismarı için oluşturulmuş bir C # aracıdır.
+[Rubeus](https://github.com/GhostPack/Rubeus) : Rubeus, Kerberos Abuse için oluşturulmuş bir C# aracıdır.
 
 [GetUserSPNs.py](https://github.com/fortra/impacket/blob/master/examples/GetUserSPNs.py) : Normal kullanıcılara bağlı Service Principal adlarını bulmaya yönelik başka bir Impacket modülü.
 
@@ -99,13 +116,13 @@ Modül bölümlerinin çoğu açık kaynaklı komut dosyaları veya önceden der
 
 [enum4linux-ng ](https://github.com/cddmp/enum4linux-ng): Orijinal Enum4linux aracının biraz farklı çalışan bir yeniden çalışması.
 
-[ldapsearch](https://linux.die.net/man/1/ldapsearch) : LDAP protokolü ile etkileşim için yerleşik arayüz.
+[ldapsearch](https://linux.die.net/man/1/ldapsearch) : LDAP protokolü ile etkileşim için built-in interface.
 
-[windapsearch](https://github.com/ropnop/windapsearch) : LDAP sorgularını kullanarak AD kullanıcılarını, gruplarını ve bilgisayarlarını numaralandırmak için kullanılan bir Python betiği. Özel LDAP sorgularını otomatikleştirmek için kullanışlıdır.
+[windapsearch](https://github.com/ropnop/windapsearch) : LDAP sorgularını kullanarak AD kullanıcılarını, gruplarını ve bilgisayarlarını numaralandırmak için kullanılan bir Python scripti. Özel LDAP sorgularını otomatikleştirmek için kullanışlıdır.
 
-[DomainPasswordSpray.ps1](https://github.com/dafthack/DomainPasswordSpray) : DomainPasswordSpray, bir domainin kullanıcılarına karşı parola püskürtme saldırısı gerçekleştirmek için PowerShell'de yazılmış bir araçtır.
+[DomainPasswordSpray.ps1](https://github.com/dafthack/DomainPasswordSpray) : DomainPasswordSpray, bir domainin kullanıcılarına karşı password spraying saldırısı gerçekleştirmek için PowerShell'de yazılmış bir araçtır.
 
-[LAPSToolkit](https://github.com/leoloobeek/LAPSToolkit) : Araç seti, Microsoft'un Local Administrator Password Solution'ını (LAPS) dağıtan Active Directory ortamlarını denetlemek ve bunlara saldırmak için PowerView'den yararlanan PowerShell'de yazılmış işlevleri içerir.
+[LAPSToolkit](https://github.com/leoloobeek/LAPSToolkit) : Araç seti, Microsoft'un Local Administrator Password Solution'ını (LAPS) dağıtan Active Directory ortamlarını denetlemek ve bunlara saldırmak için PowerView'den yararlanan PowerShell'de yazılmış fonksiyonları içerir.
 
 [smbmap](https://github.com/ShawnDEvans/smbmap) : Bir domain boyunca SMB paylaşım numaralandırması.
 
@@ -121,7 +138,7 @@ Modül bölümlerinin çoğu açık kaynaklı komut dosyaları veya önceden der
 
 [Mimikatz](https://github.com/ParrotSec/mimikatz) : Birçok fonksiyonu yerine getirir. Özellikle, pass-the-hash saldırıları, düz metin şifreleri çıkarma ve bir host üzerindeki bellekten Kerberos bileti çıkarma.
 
-[secretsdump.py](https://github.com/fortra/impacket/blob/master/examples/secretsdump.py) : Bir hosttan SAM ve LSA gizli bilgilerini uzaktan dökme.
+[secretsdump.py](https://github.com/fortra/impacket/blob/master/examples/secretsdump.py) : Bir hosttan SAM ve LSA gizli bilgilerini remote dump.
 
 [evil-winrm ](https://github.com/Hackplayers/evil-winrm): WinRM protokolü üzerinden bir host üzerinde etkileşimli bir shell sağlar.
 
@@ -141,11 +158,11 @@ Modül bölümlerinin çoğu açık kaynaklı komut dosyaları veya önceden der
 
 [getnthash.py](https://github.com/dirkjanm/PKINITtools/blob/master/getnthash.py) : Bu araç, U2U kullanarak mevcut kullanıcı için bir PAC istemek için mevcut bir TGT kullanacaktır.
 
-[adidnsdump](https://github.com/dirkjanm/adidnsdump) : Bir domain'den DNS kayıtlarını numaralandırmak ve dökmek için bir araç. DNS Zone aktarımı yapmaya benzer.
+[adidnsdump](https://github.com/dirkjanm/adidnsdump) : Bir domain'den DNS kayıtlarını numaralandırmak ve dump için bir araç. DNS Zone aktarımı yapmaya benzer.
 
 [gpp-decrypt](https://github.com/t0thkr1s/gpp-decrypt) : Group Policy tercih dosyalarından kullanıcı adlarını ve parolaları çıkarır.
 
-[GetNPUsers.py](https://github.com/fortra/impacket/blob/master/examples/GetNPUsers.py) : Impacket araç setinin bir parçası. 'Kerberos ön kimlik doğrulaması gerektirme' ayarına sahip kullanıcılar için AS-REP hash'lerini listelemek ve elde etmek için ASREPRoasting saldırısını gerçekleştirmek için kullanılır. Bu hash'ler daha sonra çevrimdışı şifre kırma denemeleri için Hashcat gibi bir araca beslenir.
+[GetNPUsers.py](https://github.com/fortra/impacket/blob/master/examples/GetNPUsers.py) : Impacket araç setinin bir parçası. ''Do not require Kerberos preauthentication' ayarına sahip kullanıcılar için AS-REP hash'lerini listelemek ve elde etmek için ASREPRoasting saldırısını gerçekleştirmek için kullanılır. Bu hash'ler daha sonra çevrimdışı şifre kırma denemeleri için Hashcat gibi bir araca beslenir.
 
 [lookupsid.py](https://github.com/fortra/impacket/blob/master/examples/lookupsid.py) : SID bruteforcing aracı.
 
@@ -153,7 +170,7 @@ Modül bölümlerinin çoğu açık kaynaklı komut dosyaları veya önceden der
 
 [raiseChild.py](https://github.com/fortra/impacket/blob/master/examples/raiseChild.py) : Impacket araç setinin bir parçasıdır, otomatik child to parent domain ayrıcalık yükseltme aracıdır
 
-[Active Directory Explorer](https://docs.microsoft.com/en-us/sysinternals/downloads/adexplorer) : Active Directory Explorer (AD Explorer) bir AD görüntüleyicisi ve düzenleyicisidir. Bir AD veritabanında gezinmek ve nesne özelliklerini ve özniteliklerini görüntülemek için kullanılabilir. Çevrimdışı analiz için bir AD veritabanının anlık görüntüsünü kaydetmek için de kullanılabilir. Bir AD anlık görüntüsü yüklendiğinde, veritabanının canlı bir sürümü olarak keşfedilebilir. Nesneler, öznitelikler ve güvenlik izinlerindeki değişiklikleri görmek için iki AD veritabanı anlık görüntüsünü karşılaştırmak için de kullanılabilir.
+[Active Directory Explorer](https://docs.microsoft.com/en-us/sysinternals/downloads/adexplorer) : Active Directory Explorer (AD Explorer) bir AD görüntüleyicisi ve düzenleyicisidir. Bir AD veritabanında gezinmek ve object özelliklerini ve attributelerini görüntülemek için kullanılabilir. Çevrimdışı analiz için bir AD veritabanının anlık görüntüsünü kaydetmek için de kullanılabilir. Bir AD anlık görüntüsü yüklendiğinde, veritabanının canlı bir sürümü olarak keşfedilebilir. Objeler, attributelar ve güvenlik izinlerindeki değişiklikleri görmek için iki AD veritabanı anlık görüntüsünü karşılaştırmak için de kullanılabilir.
 
 [PingCastle](https://www.pingcastle.com/documentation/) : Bir risk değerlendirmesi ve olgunluk çerçevesine (AD güvenliğine uyarlanmış CMMI'ye dayalı) dayalı olarak bir AD ortamının güvenlik düzeyini denetlemek için kullanılır.
 
@@ -163,87 +180,279 @@ Modül bölümlerinin çoğu açık kaynaklı komut dosyaları veya önceden der
 
 
 ### Senaryo
-CAT-5 Security için çalışan Sızma Testçileriyiz. Ekipte birkaç başarılı görev aldıktan sonra, daha kıdemli üyeler kendi başımıza bir değerlendirme başlatarak ne kadar iyi yapabileceğimizi görmek istiyorlar. Ekip lideri bize başarmamız gerekenleri detaylandıran aşağıdaki e-postayı gönderdi.
+CAT-5 Security için çalışan Penetration Testçileriyiz. Ekipte birkaç başarılı görev aldıktan sonra, daha kıdemli üyeler kendi başımıza bir değerlendirme başlatarak ne kadar iyi yapabileceğimizi görmek istiyorlar. Ekip lideri bize başarmamız gerekenleri detaylandıran aşağıdaki e-postayı gönderdi.
 
 #### Tasking Email
 ![Pasted image 20241001234442.png](/img/user/resimler/Pasted%20image%2020241001234442.png)
 
-Bu modül, bu görevlerle becerilerimizi (hem önceki hem de yeni basılmış) uygulamamıza olanak tanıyacaktır. Bu modül için son değerlendirme, Inlanefreight şirketine karşı iki dahili sızma testinin yürütülmesidir. Bu değerlendirmeler sırasında, dışarıdan bir ihlal konumundan başlayarak simüle edilen bir iç sızma testi ve müşterilerin sıklıkla talep ettiği gibi dahili ağ içindeki bir saldırı kutusuyla başlayan ikinci bir test üzerinde çalışacağız. Beceri değerlendirmelerinin tamamlanması, kapsam belirleme belgesinde ve yukarıdaki görevlendirme e-postasında belirtilen görevlerin başarıyla tamamlanması anlamına gelmektedir. Bunu yaparken, birçok otomatik ve manuel AD saldırısı ve numaralandırma kavramını sağlam bir şekilde kavradığımızı, çok çeşitli araçlar hakkında bilgi ve deneyim sahibi olduğumuzu ve değerlendirmeyi ilerletmek için kritik kararlar almak üzere bir AD ortamından toplanan verileri yorumlama becerisine sahip olduğumuzu göstereceğiz. Bu modüldeki içerik, Active Directory ortamlarında dahili sızma testleri gerçekleştirmede başarılı olmak isteyen herkes için gerekli olan temel numaralandırma kavramlarını kapsamayı amaçlamaktadır. Ayrıca, daha gelişmiş modüllerde ele alınacak AD odaklı materyal için bir astar olarak bazı daha gelişmiş kavramlar üzerinde çalışırken en yaygın saldırı tekniklerinin çoğunu derinlemesine ele alacağız.
+Bu modülde, **Active Directory ortamlarında internal ve external penetration testler** gerçekleştireceksiniz. **İki test senaryosu** olacak: biri **external bir ihlal konumundan**, diğeri **internal ağdaki bir saldırı kutusundan** başlayacak. **AD numaralandırma, manuel ve otomatik saldırılar** ile **kritik karar alma** becerileri geliştirilecek. Bu modül, **temel AD numaralandırma ve saldırı tekniklerini** kapsarken, ileri seviye modüller için de bir temel oluşturacaktır.
 
 Aşağıda, müşteri tarafından sağlanan tüm ilgili bilgileri içeren görev için tamamlanmış bir kapsam belgesi bulacaksınız.
 
-### Değerlendirme Kapsamı
-Aşağıda tanımlanan IP'ler, ana bilgisayarlar ve domainler değerlendirmenin kapsamını oluşturmaktadır.
+## Assessment Scope
+Aşağıda tanımlanan IP'ler, hostlar ve domainler değerlendirmenin scope'unu oluşturmaktadır.
 
-### Değerlendirme Kapsamında
-![Pasted image 20241001234838.png](/img/user/resimler/Pasted%20image%2020241001234838.png)
+#### In Scope For Assessment
 
-### Kapsam Dışı
-* INLANEFREIGHT.LOCAL'ın diğer tüm alt domainleri
-* FREIGHTLOGISTICS.LOCAL'ın tüm alt domainleri
-* Kimlik avı veya sosyal mühendislik saldırıları
-* Açıkça belirtilmeyen diğer tüm IPS/alan/alt alan adları
+| **Aralık/Domain**                 | **Açıklama**                                                                                                        |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **INLANEFREIGHT.LOCAL**           | **Active Directory (AD)** ve **web servislerini** içeren müşteri **domaini**.                                       |
+| **LOGISTICS.INLANEFREIGHT.LOCAL** | Müşteri **subdomaini**.                                                                                             |
+| **FREIGHTLOGISTICS.LOCAL**        | **Inlanefreight** şirketine ait **bağlı kuruluş**. **INLANEFREIGHT.LOCAL** ile **external forest trust** bulunuyor. |
+| **172.16.5.0/23**                 | **Scope dahilindeki internal subnet**.                                                                              |
+
+#### Out Of Scope
+* INLANEFREIGHT.LOCAL'ın diğer tüm sub-domainleri
+* FREIGHTLOGISTICS.LOCAL'ın tüm sub-domainleri
+* phishing veya sosyal mühendislik saldırıları
+* Açıkça belirtilmeyen diğer tüm IPS/domains/subdomains
 * Bu modülde gösterilen pasif numaralandırma dışında gerçek dünyadaki inlanefreight.com web sitesine yönelik her türlü saldırı
 
-### Kullanılan Yöntemler
+## Kullanılan Yöntemler
 Inlanefreight ve sistemlerinin değerlendirilmesi için aşağıdaki yöntemler yetkilendirilmiştir:
 
 
 ### Dışarıdan Bilgi Toplama (Pasif Kontroller)
-Harici bilgi toplama, şirket hakkında internetten toplanabilecek bilgilerle ilişkili riskleri göstermek için yetkilendirilmiştir. Gerçek dünyadaki bir saldırıyı simüle etmek için CAT-5 ve değerlendiricileri, bu belgede sağlananlar dışında Inlanefreight hakkında önceden hiçbir bilgi verilmeden internette anonim bir bakış açısıyla harici bilgi toplama işlemi gerçekleştirecektir.
 
-Cat-5, iç testlere yardımcı olabilecek bilgileri ortaya çıkarmak için pasif numaralandırma gerçekleştirecektir. Test, Inlanefreight için risk oluşturabilecek ve iç sızma testine yardımcı olabilecek halka açık verileri belirlemek için açık kaynak kodlu kaynaklardan çeşitli derecelerde bilgi toplama yöntemini kullanacaktır. İnternete dönük “gerçek dünya” IP adreslerine veya https://www.inlanefreight.com adresinde bulunan web sitesine karşı hiçbir aktif numaralandırma, port taraması veya saldırı gerçekleştirilmeyecektir.
+**External bilgi toplama**, şirket hakkında internetten elde edilebilecek riskleri göstermek için yetkilendirilmiştir. **CAT-5**, **Inlanefreight** hakkında önceden bilgi olmadan, anonim olarak **pasif numaralandırma** yapacaktır.
+
+Test, **açık kaynaklardan** halka açık verileri toplayarak **internal penetration testine** yardımcı olabilecek bilgileri belirlemeyi amaçlamaktadır. **Aktif numaralandırma, port tarama veya saldırı** işlemleri, **Inlanefreight’in internete açık IP adreslerine** veya **web sitesine** karşı gerçekleştirilmeyecektir.
 
 
 ### İç Testler
-İç değerlendirme bölümü, Inlanefreight'ın faaliyet alanından saldırı vektörlerini taklit etmeye çalışarak dahili hostlar ve hizmetlerdeki (özellikle Active Directory) güvenlik açıklarıyla ilişkili riskleri göstermek için tasarlanmıştır. Sonuç, Inlanefreight'ın dahili güvenlik açıklarının risklerini ve başarılı bir şekilde istismar edilen bir güvenlik açığının potansiyel etkisini değerlendirmesine olanak tanıyacaktır.
 
-Gerçek bir saldırıyı simüle etmek için Cat-5, bu belgede sağlananlar ve dış testlerden keşfedilenler dışında hiçbir ön bilgi olmadan, güvenilmeyen bir içeriden bakış açısıyla değerlendirme yapacaktır. Test, domain kullanıcı kimlik bilgilerini elde etmek, dahili domain'i numaralandırmak, bir dayanak noktası kazanmak ve kapsam dahilindeki tüm dahili domain'leri ele geçirmek için yanal ve dikey olarak ilerlemek amacıyla dahili ağda anonim bir konumdan başlayacaktır. Test sırasında bilgisayar sistemleri ve ağ işlemleri kasıtlı olarak kesintiye uğratılmayacaktır.
-
+**Internal assessment**, **internal hosts** ve özellikle **Active Directory** üzerindeki **vulnerabilities** kaynaklı riskleri göstermek için tasarlanmıştır. **Cat-5**, **untrusted insider** olarak, yalnızca bu dokümandaki bilgiler ve **external testing** verileriyle hareket edecektir. Amaç, **domain user credentials** elde etmek, **internal domain enumeration**, **foothold**, **lateral** ve **vertical movement** ile kapsam dahilindeki **internal domain'leri compromise** etmektir. **Computer systems** ve **network operations** kesintiye uğratılmayacaktır.
 
 ### Password Testing
-Inlanefreight cihazlarından yakalanan veya kuruluş tarafından sağlanan şifre dosyaları, şifre çözme için çevrimdışı iş istasyonlarına yüklenebilir ve daha fazla erişim elde etmek ve değerlendirme hedeflerine ulaşmak için kullanılabilir. Yakalanan bir şifre dosyası veya şifresi çözülen şifreler hiçbir zaman değerlendirmeye resmi olarak katılmayan kişilere açıklanmayacaktır. Tüm veriler Cat-5'in sahip olduğu ve onayladığı sistemlerde güvenli bir şekilde saklanacak ve Cat-5 ile Inlanefreight arasındaki resmi sözleşmede tanımlanan süre boyunca muhafaza edilecektir.
+Inlanefreight cihazlarından ele geçirilen veya organizasyon tarafından sağlanan **password files**, **offline workstations** üzerinde **decryption** için kullanılabilir ve **assessment goals** doğrultusunda erişim genişletmek için değerlendirilebilir. **Captured password files** veya **decrypted passwords**, **assessment** dışında yetkisiz kişilere gösterilmeyecektir. Tüm veriler, **Cat-5** tarafından onaylanmış sistemlerde güvenli bir şekilde saklanacak ve resmi sözleşmede belirtilen süre boyunca korunacaktır.
 
-Bu tarz belgeleri görmeye alışmamız için yukarıdaki kapsam belirleme belgelerini sağladık. Infosec Kariyerlerimizde ilerledikçe, özellikle saldırı tarafında, bu tür bilgileri özetleyen kapsam belirleme belgeleri ve Angajman Kuralları (RoE) belgeleri almak yaygın olacaktır.
+Yukarıdaki **scoping documentation**, bu tür belgeleri görmeye alışmamız için sağlandı. **Infosec Careers** sürecinde özellikle **offensive** tarafta ilerledikçe, bu tür bilgileri içeren **scoping documents** ve **Rules of Engagement (RoE) documents** almanın yaygın olacağını göreceğiz.
 
 #### Sahne Hazır
-Artık bu modül için kapsamımızı net bir şekilde belirlediğimize göre, Active Directory numaralandırma ve saldırı vektörlerini keşfetmeye başlayabiliriz. Şimdi, Inlanefreight'a karşı pasif harici numaralandırma gerçekleştirmeye başlayalım.
+Artık bu modül için kapsamımızı net bir şekilde belirlediğimize göre, Active Directory numaralandırma ve saldırı vektörlerini keşfetmeye başlayabiliriz. Şimdi, Inlanefreight'a karşı pasif external numaralandırma gerçekleştirmeye başlayalım.
 
 
 
-### Dış Recon ve Numaralandırma Prensipleri
-Herhangi bir pentest başlatmadan önce, hedefinizin dış keşiflerini yapmak faydalı olabilir. Bu, aşağıdakiler gibi birçok farklı işleve hizmet edebilir:
-* Kapsam belirleme belgesinde müşteriden size sağlanan bilgilerin doğrulanması
-* Uzaktan çalışırken uygun kapsama yönelik eylemler gerçekleştirdiğinizden emin olmak
-* Sızdırılmış kimlik bilgileri gibi testinizin sonucunu etkileyebilecek kamuya açık her türlü bilgiyi aramak
-Şöyle düşünün; müşterilerimiz için mümkün olan en kapsamlı testi sunabilmek için arazinin yapısını öğrenmeye çalışıyoruz. Bu aynı zamanda dünyadaki olası bilgi sızıntılarını ve ihlal verilerini tespit etmek anlamına da geliyor. Bu, müşterinin ana web sitesinden veya sosyal medyasından bir kullanıcı adı formatı toplamak kadar basit olabilir. Ayrıca GitHub depolarını kod aktarımlarında bırakılan kimlik bilgileri için taramak, intranet veya uzaktan erişilebilir sitelere bağlantılar için belgelerde avlanmak ve kurumsal ortamın nasıl yapılandırıldığına dair bize anahtar olabilecek herhangi bir bilgi aramak kadar derinlere dalabiliriz.
+# External Recon and Enumeration Principles
 
+Pentest öncesi **external recon**, aşağıdaki gibi işlevlere hizmet edebilir:
 
-### Ne Arıyoruz?
-Dış keşiflerimizi gerçekleştirirken, aramamız gereken birkaç temel öğe vardır. Bu bilgiler her zaman kamuya açık olmayabilir, ancak dışarıda ne olduğunu görmek akıllıca olacaktır. Bir sızma testi sırasında takılırsak, pasif keşif yoluyla elde edilebileceklere bakmak, bir VPN'e veya başka bir dış hizmete erişmek için kullanılabilecek parola ihlali verileri gibi ilerlemek için gereken dürtüyü bize verebilir. Aşağıdaki tablo, görevimizin bu aşamasında arayacağımız “Ne ”yi vurgulamaktadır.
-![Pasted image 20241001235652.png](/img/user/resimler/Pasted%20image%2020241001235652.png)
-Dış keşiflerin neden ve niçinlerini ele aldık; şimdi de nerede ve nasıllarını inceleyelim.
+- Kapsam belirleme belgesindeki bilgilerin doğrulanması
+- Uzaktan çalışırken doğru kapsamda kaldığınızdan emin olmak
+- **Sızdırılmış kimlik bilgileri** gibi test sonucunu etkileyebilecek verileri bulmak
 
-### Nereye Bakıyoruz?
-Yukarıdaki veri noktaları listemiz birçok farklı şekilde toplanabilir. Değerlendirmemiz için hayati önem taşıyan bilgileri elde etmek için kullanabileceğimiz yukarıdaki bilgilerin bir kısmını veya tamamını bize sağlayabilecek birçok farklı web sitesi ve araç bulunmaktadır. Aşağıdaki tabloda kullanılabilecek birkaç potansiyel kaynak ve örnek listelenmektedir.
+Mümkün olan en kapsamlı testi sunabilmek için **hedef ortamın yapısını öğreniyoruz**. Bu, müşterinin web sitesi veya sosyal medyasından **kullanıcı adı formatı** belirlemek kadar basit ya da **GitHub, intranet ve belgeler** üzerinden kimlik bilgileri ve yapılandırma bilgileri aramak kadar kapsamlı olabilir.
 
-* ASN / IP registrars : [IANA](https://www.iana.org/), Amerika'da arama yapmak için [arin](https://www.arin.net/), Avrupa'da arama yapmak için [RIPE](https://www.ripe.net/), [BGP Toolkit](https://bgp.he.net/)
+## What Are We Looking For?
 
-* Domain Kayıt Şirketleri & DNS : [Domaintools](https://www.domaintools.com/), [PTRArchive](http://ptrarchive.com/), [ICANN](https://lookup.icann.org/lookup), söz konusu domain'e karşı manuel DNS kaydı talepleri veya 8 8 8 gibi iyi bilinen DNS sunucularına karşı manuel DNS kaydı talepleri.
+**External reconnaissance** sırasında, **public olarak erişilebilir** verileri incelemek faydalı olabilir. **Penetration test** sırasında takıldığımızda, **passive reconnaissance** ile elde edilen veriler (ör. **password breach** verileri) **VPN** veya **external-facing** servislere erişim sağlayabilir. Aşağıdaki tablo, bu aşamada aranacak bilgileri özetler.
 
-* Sosyal Medya : Linkedin, Twitter, Facebook, bölgenizin başlıca sosyal medya sitelerini, haber makalelerini ve kuruluş hakkında bulabileceğiniz tüm ilgili bilgileri araştırın.
+|**Data Point**|**Description**|
+|---|---|
+|**IP Space**|Hedefin **ASN**, kullanılan **netblock'ları**, **public-facing** altyapısı, **cloud presence**, hosting sağlayıcıları ve **DNS record** girişleri gibi veriler.|
+|**Domain Information**|**IP verileri**, **DNS** ve **site registration** bilgilerine dayalı olarak domain yöneticileri, **subdomain** bağlantıları, **public olarak erişilebilir domain servisleri** (**Mailserver, DNS, Website, VPN portalı, vb.**) belirlenebilir mi? Mevcut **defensive** çözümler (**SIEM, AV, IPS/IDS**) tespit edilebilir mi?|
+|**Schema Format**|Kurumun **email account** formatı, **Active Directory username** yapısı ve **password policy** gibi bilgileri tespit edebilir miyiz? **Username listesi** oluşturmak ve **password spraying, credential stuffing, brute-force** saldırıları için kullanılabilir mi?|
+|**Data Disclosures**|**Public olarak erişilebilir** dosyalar (**.pdf, .ppt, .docx, .xlsx, vb.**) içinde **intranet site listeleri, user metadata, shares** veya **kritik yazılım/donanım bilgileri** gibi veriler bulunabilir mi? (Örneğin, **public GitHub repo**'ya yanlışlıkla yüklenmiş **credentials**, bir **PDF metadata** içinde yer alan **internal AD username formatı** gibi.)|
+|**Breach Data**|**Public olarak sızdırılmış** **username, password** veya saldırganın **foothold** kazanmasını sağlayabilecek diğer kritik bilgiler.|
 
-* Halka Açık Şirket Web Siteleri : Genellikle, bir şirketin kamuya açık web sitesinde ilgili bilgiler gömülü olacaktır. Haber makaleleri, gömülü belgeler ve “Hakkımızda” ve “Bize Ulaşın” sayfaları da altın madeni olabilir.
+**External reconnaissance'in neden** ve **ne olduğunu** ele aldık; şimdi **nerede yapılacağına** ve **nasıl gerçekleştirileceğine** bakalım.
 
-* `Cloud & Dev Storage Spaces`: [GitHub](https://github.com/), [AWS S3 buckets & Azure Blog storage containers](https://grayhatwarfare.com/), [Google searches using "Dorks"](https://www.exploit-db.com/google-hacking-database)|
+## Where Are We Looking?
 
-* İhlal Veri Kaynakları : Herhangi bir kurumsal e-posta hesabının genel ihlal verilerinde görünüp görünmediğini belirlemek için [HaveIBeenPwned](https://haveibeenpwned.com/), çevrimdışı olarak kırmayı deneyebileceğimiz açık metin şifreleri veya karmaları olan kurumsal e-postaları aramak için [Dehashed](https://www.dehashed.com/). Daha sonra bu parolaları AD kimlik doğrulamasını kullanabilecek tüm açık oturum açma portallarında (Citrix, RDS, OWA, 0365, VPN, VMware Horizon, özel uygulamalar vb.
+Yukarıdaki **data point'ler** çeşitli yöntemlerle toplanabilir. Değerlendirme için kritik bilgileri elde etmek amacıyla kullanılabilecek birçok web sitesi ve araç bulunmaktadır. Aşağıdaki tablo, potansiyel kaynakları ve bazı örnekleri listelemektedir.
+
+| **Kaynak**                         | **Örnekler**                                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ASN / IP Registrars**            | [IANA](https://www.iana.org/), Amerika kıtası için [ARIN](https://www.arin.net/), Avrupa için [RIPE](https://www.ripe.net/), [BGP Toolkit](https://bgp.he.net/)                                                                                                                                                                                                                                       |
+| **Domain Registrars & DNS**        | [Domaintools](https://www.domaintools.com/), [PTRArchive](http://ptrarchive.com/), [ICANN](https://lookup.icann.org/lookup), hedeflenen domain veya 8.8.8.8 gibi bilinen **DNS server'lara** manuel sorgular                                                                                                                                                                                          |
+| **Social Media**                   | LinkedIn, Twitter, Facebook, bölgesel sosyal medya platformları, haber makaleleri ve organizasyon hakkında bulunabilecek diğer ilgili bilgiler                                                                                                                                                                                                                                                        |
+| **Public-Facing Company Websites** | Şirketin ana web sitesi, haber makaleleri, gömülü dokümanlar, "Hakkımızda" ve "İletişim" sayfaları gibi bölümler önemli bilgiler içerebilir                                                                                                                                                                                                                                                           |
+| **Cloud & Dev Storage Spaces**     | [GitHub](https://github.com/), [AWS **S3 buckets** & Azure **Blob storage containers**](https://grayhatwarfare.com/), [Google "Dorks" aramaları](https://www.exploit-db.com/google-hacking-database)                                                                                                                                                                                                  |
+| **Breach Data Sources**            | **[HaveIBeenPwned](https://haveibeenpwned.com/)** ile şirket e-posta adreslerinin sızdırılmış olup olmadığını kontrol etme, **[Dehashed](https://www.dehashed.com/)** ile cleartext veya hashlenmiş şifreleri tespit edip offline kırmaya çalışma. Bu şifreleri **Citrix, RDS, OWA, O365, VPN, VMware Horizon, custom applications** gibi AD authentication kullanan **login portal'larında** deneme. |
 
 
 ### Adres Alanlarını Bulma
+
 ![Pasted image 20241002020739.png](/img/user/resimler/Pasted%20image%2020241002020739.png)
 
+[**Hurricane Electric**](http://he.net/) tarafından barındırılan ==**BGP-Toolkit**==, bir organizasyona atanmış **IP address block'larını** ve hangi **ASN** içerisinde yer aldıklarını araştırmak için mükemmel bir kaynaktır. Bir **domain** veya **IP address** girerek, ilgili kayıtları aratabilirsiniz. Bu bilgilerden oldukça fazla veri çıkarılabilir.
 
+Büyük şirketler genellikle kendi altyapılarını **self-hosted** olarak yönetirler ve geniş bir **IP footprint'ine** sahip olduklarından kendi **ASN'leri** bulunur. Ancak, daha küçük organizasyonlar veya yeni kurulmuş şirketler için bu durum farklıdır. Küçük şirketler genellikle web sitelerini ve altyapılarını **Cloudflare, Google Cloud, AWS, Azure** gibi **3rd party** hizmet sağlayıcılarında barındırır.
+
+Altyapının nerede barındırıldığını anlamak, gerçekleştirdiğimiz testler açısından kritik öneme sahiptir. **Scope** dışında bir altyapıyla etkileşime girmediğimizden emin olmalıyız. Eğer **pentest** sırasında dikkatli olmazsak, küçük bir organizasyona saldırı simülasyonu yaparken aynı altyapıyı paylaşan başka bir organizasyona zarar verme riskimiz oluşabilir. **Müşteriyle** test yapma anlaşmanız vardır, ancak aynı sunucuyu paylaşan diğer şirketler veya hizmet sağlayıcılarıyla bir anlaşmanız yoktur.
+
+Bu nedenle, altyapının **self-hosted** mı yoksa **3rd party managed** mı olduğu konuları **scoping** sürecinde netleştirilmeli ve alınan **scoping document'larda** açıkça belirtilmelidir.
+
+Bazı durumlarda, müşterinizin **pentest** gerçekleştirmeden önce **3rd party hosting provider**'dan yazılı onay alması gerekebilir. **AWS** gibi bazı sağlayıcılar, [belirli](https://aws.amazon.com/tr/security/penetration-testing/) hizmetlerine yönelik **penetration test** gerçekleştirme konusunda belirlenmiş kurallara sahiptir ve önceden izin gerektirmez. Ancak **Oracle** gibi bazı sağlayıcılar, [**Cloud Security Testing Notification**](https://docs.oracle.com/en-us/iaas/Content/Security/Concepts/security_testing-policy_notification.htm) gönderilmesini talep edebilir.
+
+Bu tür prosedürler, şirketinizin **management, legal team, contracts team** gibi ilgili departmanları tarafından yürütülmelidir. Eğer test sırasında bir **external-facing service** hakkında şüpheniz varsa, doğrudan saldırıya geçmeden önce durumu üst mercilere bildirmelisiniz. **Internal ve external host'lara** saldırmadan önce açık ve yazılı bir izin aldığımızdan emin olmak bizim sorumluluğumuzdur. **Scope** konusunda durup netleştirme yapmak her zaman en güvenli yaklaşımdır.
+
+
+### DNS
+
+DNS, **scope**'umuzu doğrulamak ve müşterinin **scope** belgesinde belirtmediği erişilebilir **host**'ları bulmak için harika bir yoldur. **[DomainTools](https://whois.domaintools.com/)** ve [**ViewDNS.info**](https://viewdns.info/) gibi siteler başlamak için iyi noktalardır. **DNS resolution**'dan **DNSSEC** testine ve sitenin daha kısıtlı ülkelerde erişilebilir olup olmadığına kadar birçok kayıt ve veri elde edebiliriz. Bazen **scope** dışında ek **host**'lar bulabiliriz, ancak ilginç görünebilirler. Bu durumda, bu listeyi müşterimize götürerek herhangi birinin **scope**'a dahil edilmesi gerekip gerekmediğini sorabiliriz. Ayrıca, **scope** belgelerinde listelenmemiş ancak **scope** içindeki **IP address**'lerde bulunan ilginç **subdomain**'ler de bulabiliriz ve bu nedenle bunlar hedefimiz içinde değerlendirilir.
+
+
+#### Viewdns.info
+
+![Pasted image 20250215013430.png](/img/user/resimler/Pasted%20image%2020250215013430.png)
+
+Bu aynı zamanda IP/ASN aramalarımızdan elde edilen bazı verileri doğrulamak için de harika bir yoldur. Bulunan domain hakkındaki tüm bilgiler güncel olmayacaktır ve gördüklerimizi doğrulayabilecek kontroller yapmak her zaman iyi bir uygulamadır.
+
+
+### Public Data
+
+Sosyal medya, organizasyonun nasıl yapılandığı, ne tür ekipmanlar kullandıkları, olası yazılım ve güvenlik uygulamaları, **schema**'ları ve daha fazlası hakkında ipuçları verebilecek ilginç veriler açısından gerçek bir hazine olabilir. Bu listenin başında **LinkedIn**, **Indeed.com** ve **Glassdoor** gibi iş ile ilgili siteler yer alır. Basit iş ilanları bile bir şirket hakkında birçok şeyi açığa çıkarabilir. Örneğin, aşağıdaki iş ilanına bir göz atın. Bu, bir `SharePoint Administrator` pozisyonu için verilmiş bir ilan ve bize birçok konuda ipucu sağlayabilir. İlandan, şirketin uzun süredir **SharePoint** kullandığını ve güvenlik programları, **backup & disaster recovery** ve benzeri konulardan bahsettiklerine göre olgun bir programa sahip olduğunu anlayabiliyoruz. Bu ilanda bizim için ilginç olan nokta, şirketin büyük ihtimalle **SharePoint 2013** ve **SharePoint 2016** kullandığını görmemizdir. Bu, yerinde bir yükseltme yaptıkları ve daha yeni sürümlerde bulunmayan potansiyel güvenlik açıklarını bırakmış olabilecekleri anlamına gelebilir. Aynı zamanda, **engagement** sırasında farklı **SharePoint** sürümleriyle karşılaşabileceğimiz anlamına da gelir.
+
+
+### Sharepoint Admin Job Listing
+
+![Pasted image 20250215014201.png](/img/user/resimler/Pasted%20image%2020250215014201.png)
+
+
+İş ilanları veya sosyal medya gibi kamuya açık bilgileri göz ardı etmeyin. Bir organizasyonun sadece paylaştıklarından bile çok şey öğrenebilirsiniz ve iyi niyetle yapılmış bir paylaşım, **penetration tester** olarak bizim için önemli olabilecek verileri açığa çıkarabilir.
+
+Organizasyon tarafından barındırılan **websites** de bilgi toplamak için harika yerlerdir. **Contact email**, telefon numaraları, organizasyon şemaları, yayınlanmış **document**'ler vb. toplayabiliriz. Özellikle **embedded document**'ler, aksi takdirde haberimizin olmayacağı iç altyapı veya **intranet** sitelerine bağlantılar içerebilir. Bu tür ayrıntılar için herkese açık bilgileri kontrol etmek, **domain structure**'ın resmini oluşturmaya çalışırken hızlı kazançlar sağlayabilir.
+
+**GitHub**, **AWS cloud storage** ve diğer **web-hosted platform**'ların artan kullanımıyla birlikte, veriler istemeden de olsa sızdırılabilir. Örneğin, bir **developer**, bir projede çalışırken bazı **credential** veya notları yanlışlıkla bir kod sürümüne **hardcoded** olarak bırakabilir. Eğer bu verileri nerede arayacağınızı biliyorsanız, bu size kolay bir kazanım sağlayabilir. Bu, saatlerce veya günlerce **password spraying** ve **brute-force** yapmak yerine, **developer credential**'larını hızlıca ele geçirerek, hatta belki **elevated permission**'lara sahip bir **foothold** elde etmek arasındaki fark olabilir. **[Trufflehog](https://github.com/trufflesecurity/truffleHog)** gibi araçlar ve [**Greyhat Warfare**](https://buckets.grayhatwarfare.com/) gibi siteler, bu tür izleri bulmak için harika kaynaklardır.
+
+Şimdiye kadar organizasyonun dış **enumeration** ve **recon** süreçlerini tartıştık, ancak bu yalnızca bulmacanın bir parçası. **OSINT** ve dış **enumeration** hakkında daha detaylı bir giriş için **[Footprinting](https://academy.hackthebox.com/course/preview/footprinting) and [OSINT: Corporate Recon**](https://academy.hackthebox.com/course/preview/osint-corporate-recon) modüllerine göz atabilirsiniz.
+
+Buraya kadar çoğunlukla **passive** yöntemlerden bahsettik. **Pentest** sürecinde ilerledikçe, bulduğunuz bilgileri doğrulamak ve **domain**'i daha fazla veri için sorgulamak adına daha **hands-on** bir yaklaşım benimseyeceksiniz. Şimdi bir dakika ayırıp **enumeration** prensiplerini ve bu işlemleri gerçekleştirmek için nasıl bir süreç oluşturabileceğimizi tartışalım.
+
+### Overarching Enumeration Principles
+
+Hedefimizi daha iyi anlamayı amaçladığımızı göz önünde bulundurarak, içeriye potansiyel bir giriş yolu sağlayabilecek her olasılığı araştırıyoruz. **Enumeration**, bir **penetration test** süresince birkaç kez tekrar edeceğimiz **iterative** (yinelemeli) bir süreçtir. **Customer scope document** dışında, bu bizim birincil bilgi kaynağımızdır, bu yüzden hiçbir detayı atlamadığımızdan emin olmak isteriz.
+
+**Enumeration**'a başlarken önce `passive` kaynakları kullanacağız, geniş bir **scope** ile başlayıp giderek daraltacağız. **Passive enumeration** aşamasını tamamladıktan sonra elde ettiğimiz sonuçları inceleyerek **active enumeration** aşamasına geçmemiz gerekecek.
+
+
+## Example Enumeration Process
+
+Enumeration ile ilgili birçok konsepti zaten ele aldık. Şimdi tüm bunları bir araya getirmeye başlayalım. `inlanefreight.com` **domain**'i üzerinde **enumeration** taktiklerimizi uygulayacağız, ancak **Nmap** veya **vulnerability scan** gibi **scope** dışı ağır taramalar gerçekleştirmeyeceğiz. İlk olarak **Netblocks** verimizi kontrol ederek neler bulabileceğimize bakacağız.
+
+#### Check for ASN/IP & Domain Data
+
+![Pasted image 20250215015340.png](/img/user/resimler/Pasted%20image%2020250215015340.png)
+
+
+İlk bakışta bazı ilginç bilgiler elde ettik. **BGP.he** şu verileri raporluyor:
+
+- **IP Address:** 134.209.24.248
+- **Mail Server:** mail1.inlanefreight.com
+- **Nameservers:** NS1.inlanefreight.com & NS2.inlanefreight.com
+
+Şimdilik, çıktısından bizim için önemli olan kısım bu. **Inlanefreight** büyük bir **corporation** değil, bu yüzden kendi **ASN**'ine sahip olmasını beklemiyorduk. Şimdi, bu bilgilerin doğruluğunu kontrol edelim.
+
+
+#### Viewdns Results
+
+![Pasted image 20250215015418.png](/img/user/resimler/Pasted%20image%2020250215015418.png)
+
+Yukarıdaki istekte, hedefimizin **IP address**'ini doğrulamak için **viewdns.info**'yu kullandık. Her iki sonuç da eşleşiyor, bu da olumlu bir işaret. Şimdi, sonuçlarımızdaki iki **nameserver**'ı doğrulamak için başka bir yöntem deneyelim.
+
+```shell-session
+C4RT3L@htb[/htb]$ nslookup ns1.inlanefreight.com
+
+Server:		192.168.186.1
+Address:	192.168.186.1#53
+
+Non-authoritative answer:
+Name:	ns1.inlanefreight.com
+Address: 178.128.39.165
+
+nslookup ns2.inlanefreight.com
+Server:		192.168.86.1
+Address:	192.168.86.1#53
+
+Non-authoritative answer:
+Name:	ns2.inlanefreight.com
+Address: 206.189.119.186 
+```
+
+
+Şimdi doğrulama ve test için listemize ekleyebileceğimiz iki yeni **IP address** var. Bunlarla ilgili herhangi bir işlem yapmadan önce, **scope** dahilinde olduklarından emin olun. Bizim senaryomuzda, gerçek **IP address**'ler **scanning** için **scope** dahilinde olmayacaktır, ancak **passive** olarak web sitelerini gezerek ilginç veriler arayabiliriz. Şimdilik, **DNS** üzerinden **domain** bilgilerini **enumeration** işlemi burada tamamlanıyor. Şimdi, **publicly available information**'a bir göz atalım.
+
+**Inlanefreight**, bu modül için oluşturulmuş kurgusal bir şirkettir, dolayısıyla gerçek bir **social media presence**'ı yoktur. Ancak, eğer gerçek bir şirket olsaydı, **LinkedIn, Twitter, Instagram ve Facebook** gibi sitelerde yararlı bilgiler arardık. Bunun yerine, şimdi **inlanefreight.com** web sitesini incelemeye geçeceğiz.
+
+İlk olarak, herhangi bir **document** olup olmadığını kontrol ettik. **Google dork** kullanarak **filetype:pdf inurl:inlanefreight.com** sorgusuyla **PDF** dosyalarını arıyoruz.
+
+
+#### Hunting For Files
+
+![Pasted image 20250215015813.png](/img/user/resimler/Pasted%20image%2020250215015813.png)
+
+Bir **document** bulundu, bu yüzden **document**'in konumunu not aldığımızdan ve local olarak bir kopyasını indirerek incelemeye başladığımızdan emin olmalıyız. Karşımıza çıkan veya ürettiğimiz **files, screenshots, scan output, tool output** gibi verileri mümkün olan en kısa sürede kaydetmek en iyi yöntemdir. Bu, elimizde olabildiğince kapsamlı bir kayıt tutmamıza yardımcı olur ve önemli verileri kaybetme veya nerede gördüğümüzü unutma riskini azaltır.
+
+Şimdi, bulabileceğimiz herhangi bir **email address** olup olmadığına bakalım.
+
+#### Hunting E-mail Addresses
+
+![Pasted image 20250215015907.png](/img/user/resimler/Pasted%20image%2020250215015907.png)
+
+
+`intext:"@inlanefreight.com" inurl:inlanefreight.com` dork'unu kullanarak, web sitesinde bir **email address**'in sonuna benzeyen herhangi bir durumu arıyoruz. Umut verici bir sonuç olarak bir **contact page** çıktı. Sayfayı incelediğimizde (aşağıda görseli var) birçok çalışan ve onların iletişim bilgilerini içeren büyük bir liste görüyoruz. Bu bilgi faydalı olabilir çünkü bu kişilerin en azından büyük ihtimalle aktif olduklarını ve hâlâ şirketle çalıştıklarını belirleyebiliriz.
+
+
+#### E-mail Dork Results
+
+[**Contact page**](https://www.inlanefreight.com/index.php/contact/)'i incelediğimizde, dünya genelindeki farklı ofislerdeki personel için birkaç **email address** gördük. Şimdi, **email naming convention**'larını (first.last) ve bazı kişilerin organizasyondaki hangi birimlerde çalıştıklarını öğrenmiş olduk. Bu, ilerideki **password spraying** saldırılarında veya **social engineering/phishing** bizim **engagement scope**'umuzun parçası olursa faydalı olabilir.
+
+
+![Pasted image 20250215020043.png](/img/user/resimler/Pasted%20image%2020250215020043.png)
+
+
+#### Username Harvesting
+
+**[linkedin2username](https://github.com/initstring/linkedin2username)** gibi bir araç kullanarak, bir şirketin **LinkedIn** sayfasından veri çekebilir ve kullanıcı adlarının çeşitli kombinasyonlarını (flast, first.last, f.last, vb.) oluşturabiliriz. Bu kombinasyonlar, potansiyel **password spraying** hedeflerimiz listesine eklenebilir.
+
+
+#### Credential Hunting
+
+**[Dehashed](http://dehashed.com/)**, ihlal verilerinde açık metin kimlik bilgileri ve **password hashes** aramak için mükemmel bir araçtır. Hem site üzerinde hem de API aracılığıyla sorgu yapan bir **script** kullanarak arama yapabiliriz. Genellikle, **AD auth** (veya dahili) kullanan dışa açık portallarda çalışmayan eski **password**'lar buluruz, ancak şansımız yaver gidebilir! Bu, dışa açık veya dahili **password spraying** için bir kullanıcı listesi oluşturmakta faydalı olabilecek bir diğer araçtır.
+
+Not: Bizim amacımız için aşağıdaki örnek veriler kurgusaldır.
+
+```shell-session
+C4RT3L@htb[/htb]$ sudo python3 dehashed.py -q inlanefreight.local -p
+
+id : 5996447501
+email : roger.grimes@inlanefreight.local
+username : rgrimes
+password : Ilovefishing!
+hashed_password : 
+name : Roger Grimes
+vin : 
+address : 
+phone : 
+database_name : ModBSolutions
+
+id : 7344467234
+email : jane.yu@inlanefreight.local
+username : jyu
+password : Starlight1982_!
+hashed_password : 
+name : Jane Yu
+vin : 
+address : 
+phone : 
+database_name : MyFitnessPal
+
+<SNIP>
+```
+
+
+Şimdi, bu konuda bir fikrimiz olduğuna göre, **inlanefreight.com** domainine ilişkin diğer sonuçları aramaya çalışın. Ne bulabilirsiniz? Sitede başka hangi **files**, **pages** veya gömülü **information**'lar var? Bu bölüm, hedefimizi detaylı bir şekilde analiz etmenin önemini gösterdi, tabii ki **scope**'umuz içinde kaldığımız ve yetkilendirilmediğimiz herhangi bir şeyi test etmediğimiz sürece, **engagement**'ın zaman kısıtlamalarına da dikkat ederek. Birkaç değerlendirmede, anonim bir bakış açısıyla **internal network** üzerinde bir ayak izini bulmakta zorlandım ve çeşitli dış kaynaklar (Google, LinkedIn scraping, Dehashed, vb.) kullanarak bir **wordlist** oluşturmaya başvurdum ve ardından hedeflenmiş **internal password spraying** yaparak standart bir **domain user** hesabı için geçerli kimlik bilgileri elde ettim. Sonraki bölümlerde göreceğimiz gibi, sadece düşük yetkili bir **domain user** kimlik bilgileriyle **internal AD enumeration**'ın büyük bir kısmını ve birçok saldırıyı gerçekleştirebiliriz. Eğlence, bir set **credentials**'a sahip olduktan sonra başlar. Şimdi **internal enumeration**'a geçelim ve **INLANEFREIGHT.LOCAL** domain'ini **passively** ve **actively** analiz etmeye başlayalım, **assessment**'ımızın **scope**'u ve **rules of engagement** doğrultusunda.
+
+Soru : **inlanefreight**'in kamusal kayıtlarına bakarken bir **flag** görülebilir. **Flag**'i bulun ve gönderin. (format == HTB{******})
+
+Cevap : `HTB{5Fz6UPNUFFzqjdg0AzXyxCjMZ}`
+
+![Pasted image 20250215021034.png](/img/user/resimler/Pasted%20image%2020250215021034.png)
+
+
+
+---
 
 #### Domain'in İlk Numaralandırılması
 Inlanefreight'a karşı AD odaklı sızma testimizin en başındayız. Bazı temel bilgileri topladık ve kapsam belirleme belgeleri aracılığıyla müşteriden ne bekleyeceğimize dair bir resim elde ettik.

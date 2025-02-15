@@ -2,160 +2,690 @@
 {"dg-publish":true,"permalink":"/active-directory-expert/using-crack-map-exec/"}
 ---
 
+
+### What is CrackMapExec?
+
 CrackMapExec (diğer adıyla CME), Windows workstation ve sunucularından oluşan büyük ağların güvenliğini değerlendirmeye yardımcı olan bir araçtır.
 
-CME, ağ protokolleriyle çalışmak ve çeşitli istismar sonrası teknikleri gerçekleştirmek için yoğun olarak Impacket kütüphanesini kullanır. CME'nin gücünü anlamak için basit senaryolar hayal etmemiz gerekir:
+![Pasted image 20250215115520.png](/img/user/Pasted%20image%2020250215115520.png)
 
-1. 1.000'den fazla Windows workstation ve sunucunun dahili güvenlik değerlendirmesi üzerinde çalışıyoruz. Sahip olduğumuz tek bir kimlik bilgisi setinin bir veya daha fazla makinede lokal bir yönetici için çalışıp çalışmadığını nasıl test edebiliriz? 
-2. Elimizde yalnızca bir hedef ve birkaç kimlik bilgisi seti var, ancak bunların hala geçerli olup olmadığını bilmemiz gerekiyor. Bunları hızlı bir şekilde nasıl test edebiliriz? 
-3. Lokal yönetici kimlik bilgilerini elde ettik ve ele geçirilen her workstation'daki SAM dosyasını hızlıca dump etmek istiyoruz. Başka bir araç mı kullanacağız yoksa her bir workstation'ı manuel olarak mı inceleyeceğiz?
+CME, ağ protokolleriyle çalışmak ve çeşitli exploit sonrası teknikleri gerçekleştirmek için yoğun olarak Impacket kütüphanesini kullanır. CME'nin gücünü anlamak için basit senaryolar hayal etmemiz gerekir:
 
-CME ayrıca güvenlik değerlendirmesi sırasında bulduğumuz kimlik bilgilerini bir veritabanında topluyor, böylece daha sonra gerektiğinde bunlara geri dönebiliyoruz. Çıktı sezgisel ve anlaşılırdır ve araç Linux ve Windows üzerinde çalışır ve socks proxy ve çoklu protokolleri destekler.
-
-[CrackMapExec](https://github.com/byt3bl33d3r/CrackMapExec), Haziran 2021'den bu yana halka açık depoda değil, yalnızca Porchetta platformunda güncellenmektedir. Porchetta'daki tüm araçlara altı (6) aylık erişim için sponsorluk ücreti 60 ABD dolarıdır. Özel depo her altı (6) ayda bir genel depo ile birleştirilir. Ancak, topluluk katkıları herkes tarafından hemen kullanılabilir. CrackMapExec @byt3bl33d3r ve @mpgn tarafından geliştirilmiştir. Resmi belgeler CrackMapExec Wiki'de bulunabilir.
-
-Haziran 2023'te, CrackMapExec'in baş geliştiricisi mpgn, CrackMapExec'in en son sürümü olan CrackMapExec sürüm 6'yı içeren yeni bir depo oluşturdu, ancak daha sonra kaldırıldı.
-
-Araca katkıda bulunan geliştiricilerden bazıları projeye devam etmek için bir fork oluşturmaya karar verdi. Projenin adı NetExec olarak değiştirildi ve https://github.com/Pennyw0rth/NetExec adresinde yer alıyor.
-
-Not: Bu modülde CrackMapExec sürüm 5.4'ü kullanmamıza rağmen, en son güncellemelerle çalışmak için bu yeni depodan yararlanabiliriz https://github.com/Pennyw0rth/NetExec.
+1. 1.000'den fazla **Windows workstation** ve **server** üzerinde bir **internal security assessment** yürütüyoruz. Sahip olduğumuz **single set of credentials** ile herhangi bir makinede **local administrator** erişimimiz olup olmadığını nasıl test ederiz?
+2. Elimizde yalnızca bir **target** ve birden fazla **set of credentials** var, ancak bunların hâlâ geçerli olup olmadığını öğrenmemiz gerekiyor. Bunları hızlıca nasıl test edebiliriz?
+3. **Local administrator credentials** elde ettik ve her ele geçirilmiş **workstation** üzerindeki **SAM file**'ı hızlıca **dump** etmek istiyoruz. Bunun için başka bir **tool** mü kullanmalıyız, yoksa her **workstation** üzerinde manuel olarak mı işlem yapmalıyız?
 
 
-### Installation & Binaries
-CrackMapExec Linux, Windows ve macOS ile uyumludur ve Docker kullanılarak da kurulabilir. Kurulum gerektirmeyen bağımsız binary'ler de vardır. CrackMapExec'i nasıl yükleyebileceğimizi görelim.
+Bu sorular birçok **tool** ve teknik kullanılarak cevaplanabilir, ancak farklı yazarlar tarafından geliştirilen birden fazla **tool** ile çalışmak faydalı olabilir. İşte burada [**CrackMapExec (CME)**](https://github.com/Porchetta-Industries/CrackMapExec) devreye girer ve **internal penetration test** sırasında ihtiyacımız olan küçük işlemleri **automate** etmemize yardımcı olur. **CME**, ayrıca **security assessment** sırasında bulduğumuz **credentials**'ları bir **database** içinde toplar, böylece gerektiğinde bunlara geri dönebiliriz. **Output**, **intuitive** ve **straightforward** olup **tool**, **Linux** ve **Windows** üzerinde çalışır, ayrıca **socks proxy** ve birden fazla **protocol** desteğine sahiptir.
+
+Asıl olarak **offensive purposes** (örn. **internal pentesting**) için kullanılmak üzere tasarlanmış olsa da, **CME**; **blue team** tarafından **account privileges**'ı değerlendirmek, olası **misconfigurations**'ları bulmak ve **attack scenarios**'larını simüle etmek için de kullanılabilir.
+
+Haziran 2021'den beri **CrackMapExec**, yalnızca **[Porchetta](https://porchetta.industries/) platformu** üzerinde güncellenmekte ve **public repository** üzerinde güncellenmemektedir. **Sponsorship**, **[Porchetta](https://porchetta.industries/)** üzerindeki tüm araçlara **altı (6) ay** boyunca erişim sağlamak için **$60** tutarındadır. **Private repository**, her **altı (6) ayda bir** **public repository** ile birleştirilir. Ancak, **community contributions**, herkese anında sunulmaktadır. **CrackMapExec**, [**@byt3bl33d3r**](https://twitter.com/byt3bl33d3r) ve [**@mpgn**](https://twitter.com/mpgn_x64) tarafından geliştirilmektedir. **Official documentation**, [**CrackMapExec Wiki**](https://wiki.porchetta.industries/) üzerinde bulunabilir.
+
+Haziran 2023'te, **mpgn**, **CrackMapExec**'in **lead developer**'ı olarak, **CrackMapExec**'in en son sürümü olan **versiyon 6**'yı içeren yeni bir **repository** oluşturdu, ancak daha sonra bu **repository** kaldırıldı.
+
+Bu araca katkıda bulunan bazı geliştiriciler, projeyi devam ettirmek için bir **fork** oluşturmaya karar verdi. Proje, **NetExec** olarak yeniden adlandırıldı ve şu adreste bulunmaktadır:  
+🔗 **[https://github.com/Pennyw0rth/NetExec](https://github.com/Pennyw0rth/NetExec)**
+
+**Not:** Bu modülde **CrackMapExec 5.4** sürümünü kullanıyor olsak da, en son güncellemelerle çalışmak için bu yeni **repository**'yi kullanabiliriz:  
+🔗 **[https://github.com/Pennyw0rth/NetExec](https://github.com/Pennyw0rth/NetExec)**
+
+Şimdi, **CME** aracına genel bir bakış sunduğumuza göre, detaylara girmeden önce onu tercih ettiğimiz **penetration testing system** üzerinde nasıl kuracağımızı ele alalım.
+
+
+
+## Installation & Binaries
+
+**CrackMapExec**, **Linux**, **Windows** ve **macOS** ile uyumludur ve ayrıca **Docker** kullanılarak da kurulabilir. Kurulum gerektirmeyen bağımsız **binary** dosyaları da mevcuttur.
+
+Şimdi, **CrackMapExec**'i nasıl kurabileceğimizi inceleyelim.
+
 
 
 ### Linux Installation
 
-CrackMapExec geliştiricileri, bağımlılık ve paket yönetimi için [Poetry](https://python-poetry.org/docs/) kullanmanızı önerir. Poetry, Python'da bağımlılık yönetimi ve paketleme için bir araçtır. Projenizin bağlı olduğu kütüphaneleri bildirmenize izin verir ve bunları sizin için yönetir ([yükler / günceller](https://python-poetry.org/docs/#installing-with-the-official-installer)). Kurulum kılavuzunu izleyerek Poetry'yi kuralım:
+**CrackMapExec** geliştiricileri, bağımlılık ve paket yönetimi için **[Poetry](https://python-poetry.org/docs/)** kullanmayı önermektedir. **Poetry**, **Python** projelerinde bağımlılık yönetimi ve paketleme için kullanılan bir araçtır. Projenizin ihtiyaç duyduğu **kütüphaneleri** tanımlamanıza olanak tanır ve bunları **yükleyip/güncelleyerek** yönetir.
+
+Şimdi, **Poetry**'yi kurmak için [resmi kurulum kılavuzunu](https://python-poetry.org/docs/#installing-with-the-official-installer) takip edelim:
 
 
-### Installing Poetry
-![Pasted image 20241130172942.png](/img/user/resimler/Pasted%20image%2020241130172942.png)
-![Pasted image 20241130172954.png](/img/user/resimler/Pasted%20image%2020241130172954.png)
+#### Installing Poetry
 
-Daha sonra, gerekli kütüphaneleri yüklemeli ve CrackMapExec deposunu klonlamalıyız. Ayrıca RDP protokolünü desteklemek için gerekli olan Rust'ı da yüklememiz gerekecek.
+```
+curl -SSL https://install.python-poetry.org | python3 -
 
+Retrieving Poetry metadata
+# Welcome to Poetry!
+This will download and install the latest version of Poetry,
+a dependency and package manager for Python.
+It will add the `poetry` command to Poetry's bin directory, located at:
+/home/htb-ac35990/.local/bin
+You can uninstall at any time by executing this script with the --
+uninstall option, and these changes will be reverted.
+Installing Poetry (1.2.2): Done
+Poetry (1.2.2) is installed now. Great!
+You can test that everything is set up by executing the following:
+`poetry --version`
 
-### CrackMapExec Gerekli Kütüphaneleri Yükleme
+```
 
-
-![Pasted image 20241130173038.png](/img/user/resimler/Pasted%20image%2020241130173038.png)
-
-sudo apt-get install -y python3-dev
-sudo apt-get install -y python2-dev
-sudo apt-get install -y python-dev-is-python3
-sudo apt-get update && sudo apt-get upgrade -y
-
-CrackMapExec, RDP protokolü için Rust kullanan bir kütüphane gerektirir. Rust'ı yüklemek için aşağıdaki komutu kullanacağız. Bir komut istemi alırsak, y yazmamız ve seçenek 1'i seçmemiz gerekir:
-
-![Pasted image 20241130181035.png](/img/user/resimler/Pasted%20image%2020241130181035.png)
-
-![Pasted image 20241130181048.png](/img/user/resimler/Pasted%20image%2020241130181048.png)
-
-Daha sonra, terminali kapatmalıyız; aksi takdirde, RDP kütüphanesi aardwolf'u yüklerken bir hata alacağız. Terminal kapatıldıktan sonra yeni bir terminal açıyoruz ve kuruluma devam ediyoruz
+Sonraki adımda, gerekli **kütüphaneleri** yüklememiz ve **CrackMapExec** deposunu **klonlamamız** gerekiyor. Ayrıca, **RDP protokolü** desteği için artık gerekli olan **Rust**'ı da yüklememiz gerekecek.
 
 
-### CrackMapExec'i Poetry ile Yükleme
-![Pasted image 20241130181244.png](/img/user/resimler/Pasted%20image%2020241130181244.png)
+#### Installing CrackMapExec Required Libraries
+
+```
+sudo apt-get update
+
+sudo apt-get install -y libssl-dev libkrb5-dev libffi-dev python-dev build-essential
+
+<SNIP>
+
+```
+
+CrackMapExec, RDP protokolü için Rust kullanan bir kütüphaneye ihtiyaç duyar. Rust'ı kurmak için şu komutu kullanacağız. Eğer bir uyarı alırsak, `y` yazmamız ve `1.` seçeneği seçmemiz gerekir:
 
 
-Şimdi poetry run crackmapexec kullanarak yeni yüklenen CrackMapExec aracını çalıştırmayı test edebiliriz
+#### Installing Rust
+
+```
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs/ | sh
+
+info: downloading installer
+warning: it looks like you have an existing installation of Rust at:
+warning: /usr/bin
+warning: rustup should not be installed alongside Rust. Please uninstall
+your existing Rust first.
+warning: Otherwise you may have confusion unless you are careful with your
+PATH
+warning: If you are sure that you want both rustup and your already
+installed Rust
+warning: then please reply `y' or `yes' or set RUSTUP_INIT_SKIP_PATH_CHECK
+to yes
+warning: or pass `-y' to ignore all ignorable checks.
+error: cannot install while Rust is installed
+
+Continue? (y/N) y
+
+<SNIP>
+Current installation options:
+ default host triple: x86_64-unknown-linux-gnu
+ default toolchain: stable (default)
+ profile: default
+ modify PATH variable: yes
+1) Proceed with installation (default)
+2) Customize installation
+3) Cancel installation
+>1
+<SNIP>
+
+```
+
+Sonraki adımda, terminali kapatmalıyız; aksi takdirde RDP kütüphanesi aardwolf'u kurarken bir hata alırız. Terminali kapattıktan sonra, yeni bir terminal açıp kuruluma devam etmeliyiz.
 
 
-### CrackMapExec'i Poetry ile Çalıştırma
+#### Installing CrackMapExec with Poetry
 
-----
+```
+git clone https://github.com/Porchetta-Industries/CrackMapExec
+cd CrackMapExec
+poetry install
+
+poetry install
+
+Installing dependencies from lock file
+Package operations: 94 installs, 0 updates, 0 removals
+ • Installing asn1crypto (1.5.1)
+ • Installing asysocks (0.2.1)
+ • Installing oscrypto (1.3.0)
+<SNIP>
+
+```
 
 
-### Targets and Protocols
+Şimdi, yeni kurduğumuz CrackMapExec aracını aşağıdaki komutla test edebiliriz:
 
-##### Targets Format
-![Pasted image 20241130235022.png](/img/user/resimler/Pasted%20image%2020241130235022.png)
+```
+poetry run crackmapexec .
+```
 
 
-##### Supported Protocols
-CrackMapExec, dahili bir güvenlik değerlendirmesi sırasında bize yardımcı olmak için tasarlanmıştır. Bu nedenle, Windows'a bağlı birden fazla protokolü desteklemesi gerekir. Yazım sırasında, CrackMapExec yedi protokolü desteklemektedir:
+#### Running CrackMapExec with Poetry
 
-![Pasted image 20241130235110.png](/img/user/resimler/Pasted%20image%2020241130235110.png)
+```
+poetry run crackmapexec
+poetry run crackmapexec
+usage: crackmapexec [-h] [-t THREADS] [--timeout TIMEOUT] [--jitter
+INTERVAL] [--darrell] [--verbose] {ftp,ssh,winrm,mssql,rdp,ldap,smb} ...
+ ______ .______ ___ ______ __ ___ .___ ___.
+___ .______ _______ ___ ___ _______ ______
+ / || _ \ / \ / || |/ / | \/ | /
+\ | _ \ | ____|\ \ / / | ____| / |
+ | ,----'| |_) | / ^ \ | ,----'| ' / | \ / | /
+^ \ | |_) | | |__ \ V / | |__ | ,----'
+ | | | / / /_\ \ | | | < | |\/| | /
+/_\ \ | ___/ | __| > < | __| | |
+ | `----.| |\ \----. / _____ \ | `----.| . \ | | | | /
+_____ \ | | | |____ / . \ | |____ | `----.
+ \______|| _| `._____|/__/ \__\ \______||__|\__\ |__| |__| /__/
+\__\ | _| |_______|/__/ \__\ |_______| \______|
+ A swiss army knife for
+pentesting networks
+ Forged by @byt3bl33d3r and @mpgn_x64
+using the powah of dank memes
+ Exclusive release for Porchetta
+Industries users
 
-Mevcut protokolleri onaylamak için, ve protokolleri çalıştırabiliriz. crackmapexec --help mevcut seçenekleri listelemek için
+https://porchetta.industries/
+ Version : 5.4.0
+ Codename:
+Indestructible G0thm0g
+optional arguments:
+ -h, --help show this help message and exit
+ -t THREADS set how many concurrent threads to use (default:
+100)
+ --timeout TIMEOUT max timeout in seconds of each thread (default:
+None)
+ --jitter INTERVAL sets a random delay between each connection
+(default: None)
+ --Darrell give Darrell a hand
+ --verbose enable verbose output
+protocols:
+ available protocols
+ {ftp,ssh,winrm,mssql,rdp,LDAP,smb}
+ ftp own stuff using FTP
+ ssh own stuff using SSH
+ winrm own stuff using WINRM
+ mssql own stuff using MSSQL
+ rdp own stuff using RDP
+ ldap own stuff using LDAP
+ smb own stuff using SMB
+```
 
-Belirtilen bir protokolün desteklediği seçenekleri görüntülemek için crackmapexec protocol --help komutunu çalıştırabiliriz. Örnek olarak LDAP'ı görelim:
+
+Not: CrackMapExec repository'si güncellenirse ve indirdiğimiz kopyayı Git clone ile güncellemek istersek, CrackMapExec dizinine gidip online repository'den en son değişiklikleri indirmek için `git pull` komutunu kullanabiliriz. Eğer `poetry run` komutunu kullanmadan önce crackmapexec'i çalıştırmak istiyorsak, Poetry virtual environment'ını etkinleştirmek için kurulum dizininde `poetry shell` komutunu çalıştırabiliriz.
+
+
+### Using Poetry Shell
+
+```
+cd CrackMapExec
+poetry shell
+
+Spawning shell within /home/htbXXXXXXX/.cache/pypoetry/virtualenvs/crackmapexec-4YDbTJlJ-py3.9
+
+(crackmapexec-py3.9) crackmapexec --help
+usage: crackmapexec [-h] [-t THREADS] [--timeout TIMEOUT] [--jitter
+INTERVAL] [--darrell] [--verbose] {ftp,ldap,mssql,rdp,smb,ssh,winrm} ...
+<SNIP>
+
+```
+
+Not: Poetry shell'de olduğumuzu, terminalimizin başında (`crackmapexec-py3.X`) gördüğümüzde anlayabiliriz. Virtual environment'ı devre dışı bırakmak ve bu yeni shell'den çıkmak için `exit` yazabiliriz. Virtual environment'ı shell'den çıkmadan devre dışı bırakmak için ise `deactivate` komutunu kullanabiliriz.
+
+
+## Installation for Docker
+
+CrackMapExec, Docker uyumlu bir araçtır. GitHub repository'sindeki Dockerfile'ı kullanarak kaynaktan derleyebiliriz.
+
+
+### Installing Docker using the GitHub repository
+
+```
+sudo apt install docker.io
+git clone https://github.com/Porchetta-Industries/CrackMapExec -q
+cd CrackMapExec
+sudo docker build -t crackmapexec .
+sudo docker build -t crackmapexec .
+
+Sending build context to Docker daemon 10.38MB
+<SNIP>
+```
+
+
+```
+sudo docker run -it --entrypoint=/bin/bash --name crackmapexec -v ~/.cme:/root/.cme crackmapexec
+root@d46e1e7925dc:/usr/src/crackmapexec/cme# crackmapexec
+
+[*] Creating default workspace
+[*] Initializing LDAP protocol database
+[*] Initializing MSSQL protocol database
+[*] Initializing RDP protocol database
+[*] Initializing SMB protocol database
+[*] Initializing SSH protocol database
+[*] Initializing WINRM protocol database
+[*] Copying default configuration file
+[*] Generating SSL certificate
+usage: crackmapexec [-h] [-t THREADS] [--timeout TIMEOUT] [--jitter
+INTERVAL] [--darrell] [--verbose] {ftp,ssh,winrm,mssql,rdp,LDAP,smb} ...
+ ______ .______ ___ ______ __ ___ .___ ___.
+___ .______ _______ ___ ___ _______ ______
+ / || _ \ / \ / || |/ / | \/ | /
+\ | _ \ | ____|\ \ / / | ____| / |
+ | ,----'| |_) | / ^ \ | ,----'| ' / | \ / | /
+^ \ | |_) | | |__ \ V / | |__ | ,----'
+ | | | / / /_\ \ | | | < | |\/| | /
+/_\ \ | ___/ | __| > < | __| | |
+ | `----.| |\ \----. / _____ \ | `----.| . \ | | | | /
+_____ \ | | | |____ / . \ | |____ | `----.
+ \______|| _| `._____|/__/ \__\ \______||__|\__\ |__| |__| /__/
+\__\ | _| |_______|/__/ \__\ |_______| \______|
+ A swiss army knife for
+pentesting networks
+ Forged by @byt3bl33d3r and @mpgn_x64
+using the powah of dank memes
+ Exclusive release for Porchetta
+Industries users
+
+https://porchetta.industries/
+ Version : 5.4.0
+ Codename:
+Indestructible G0thm0g
+<SNIP>
+
+```
+
+
+Container'dan çıktıktan sonra, aşağıdaki komutla yeniden başlatabiliriz:
+
+### Restart Container
+
+```
+sudo docker start crackmapexec
+sudo docker exec -it crackmapexec bash
+root@dbbda0e6bf72:/usr/src/crackmapexec#
+```
+
+Not: Docker repository'si ve yayınlanan binary'ler güncel olmayabilir. Kaynaktan derleme yapmak, en son mevcut sürümü kullandığımızı garanti eder.
+
+
+### Using Binaries
+
+CrackMapExec'i, önceden derlenmiş ve CrackMapExec GitHub repository'sinde [releases](https://github.com/byt3bl33d3r/CrackMapExec/releases) altında mevcut olan binary'lerle de kullanabiliriz. 
+
+Repository'de iki ana dosya bulacağız: biri cme ile başlayanlar, diğeri ise cmedb ile başlayanlar. cme, CrackMapExec uygulamasına karşılık gelirken, cmedb, CrackMapExec veritabanıyla etkileşimde bulunmamızı sağlayan binary'ye karşılık gelir.  
+Bir binary kullanmak istiyorsak, bunu releases bölümünden indirmemiz ve Python'un yüklü olması gerekir. Eğer Windows üzerinde çalışıyorsak ve Python yüklü değilse, [burada](https://www.python.org/downloads/windows/) mevcut olan Python Windows embeddable paketini indirebiliriz, ardından aşağıdaki komutu çalıştırabiliriz:
+
+
+### Compiled Binaries Windows
+
+```
+C:\htb> python.exe cme
+<SNIP>
+```
+
+
+Not: Binary'ler Windows, Linux ve MacOS üzerinde de kullanılabilir.  
+
+Windows'ta, yol uzunluğu ile ilgili hatalardan kaçınmak için aşağıdaki Registry key'ini ekleyin:
+
+
+### Setting Long Path Registry Key
+
+```
+C:\> reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f
+```
+
+Not: CrackMapExec loglarını ve database'ini `~/.cme` dizinine kaydeder.
+
+Aşağıdaki bölümlerde, CrackMapExec işlevlerini kullanarak Windows ortamlarını enumere edecek ve saldırıya geçeceğiz.
+
+
+## Targets and Protocols
+
+### Targets Format
+
+Scope'a bağlı olarak, bir engagement sırasında belirli bir aralıktaki bir veya daha fazla hedefi veya önceden tanımlanmış host adlarını tarayabiliriz. CrackMapExec bunu mükemmel bir şekilde yönetebilir. Hedef, bir [CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing), bir IP, bir host adı veya IP adreslerini/host adlarını içeren bir dosya adı olabilir.
+
+```
+crackmapexec [protocol] 10.10.10.1
+crackmapexec [protocol] 10.10.10.1 10.10.10.2 10.10.10.3
+crackmapexec [protocol] 10.10.10.1/24
+crackmapexec [protocol] internal.local
+crackmapexec [protocol] targets.txt
+```
+
+
+### Supported Protocols
+
+CrackMapExec, bir internal security değerlendirmesi sırasında bize yardımcı olmak için tasarlanmıştır. Bu nedenle, Windows ile bağlantılı birden fazla protokolü desteklemesi gerekir. Bu modül yazıldığı sırada, CrackMapExec yedi protokolü desteklemektedir:
+
+| Protocol | Default Port |
+| -------- | ------------ |
+| SMB      | 445          |
+| WINRM    | 5985/5986    |
+| MSSQL    | 1433         |
+| LDAP     | 389          |
+| SSH      | 22           |
+| RDP      | 3389         |
+| FTP      | 21           |
+
+Mevcut protokolleri doğrulamak için, mevcut seçenekleri ve protokolleri listelemek için `crackmapexec --help` komutunu çalıştırabiliriz.
+
+
+### Genel Seçenekleri ve Protokolleri Listele
+
+```
+crackmapexec --help
+
+usage: crackmapexec [-h] [-t THREADS] [--timeout TIMEOUT] [--jitter
+INTERVAL] [--darrell] [--verbose] {ftp,ssh,winrm,mssql,rdp,ldap,smb} ...
+ ______ .______ ___ ______ __ ___ .___ ___.
+___ .______ _______ ___ ___ _______ ______
+ / || _ \ / \ / || |/ / | \/ | /
+\ | _ \ | ____|\ \ / / | ____| / |
+ | ,----'| |_) | / ^ \ | ,----'| ' / | \ / | /
+^ \ | |_) | | |__ \ V / | |__ | ,----'
+ | | | / / /_\ \ | | | < | |\/| | /
+/_\ \ | ___/ | __| > < | __| | |
+ | `----.| |\ \----. / _____ \ | `----.| . \ | | | | /
+_____ \ | | | |____ / . \ | |____ | `----.
+ \______|| _| `._____|/__/ \__\ \______||__|\__\ |__| |__| /__/
+\__\ | _| |_______|/__/ \__\ |_______| \______|
+ A swiss army knife for
+pentesting networks
+ Forged by @byt3bl33d3r and @mpgn_x64
+using the powah of dank memes
+ Exclusive release for Porchetta
+Industries users
+
+https://porchetta.industries/
+ Version : 5.4.0
+ Codename:
+Indestructible G0thm0g
+optional arguments:
+ -h, --help show this help message and exit
+ -t THREADS set how many concurrent threads to use (default:
+100)
+ --timeout TIMEOUT max timeout in seconds of each thread (default:
+None)
+ --jitter INTERVAL sets a random delay between each connection
+(default: None)
+ --darrell give Darrell a hand
+ --verbose enable verbose output
+protocols:
+ available protocols
+ {ftp,ssh,winrm,mssql,rdp,ldap,smb}
+ ftp own stuff using FTP
+ ssh own stuff using SSH
+ winrm own stuff using WINRM
+ mssql own stuff using MSSQL
+ rdp own stuff using RDP
+ ldap own stuff using LDAP
+ smb own stuff using SMB
+
+```
+
+
+Belirli bir protokolün desteklediği seçenekleri görmek için `crackmapexec <protocol> --help` komutunu çalıştırabiliriz. LDAP'ı örnek olarak görelim:
+
 
 ### LDAP Protokolü ile Kullanılabilen Seçenekleri Görüntülem
 
-![Pasted image 20241130235306.png](/img/user/resimler/Pasted%20image%2020241130235306.png)
+```
+crackmapexec ldap --help
+
+usage: crackmapexec ldap [-h] [-id CRED_ID [CRED_ID ...]]
+ [-u USERNAME [USERNAME ...]]
+ [-p PASSWORD [PASSWORD ...]] [-k]
+ [--export EXPORT [EXPORT ...]]
+ [--aesKey AESKEY [AESKEY ...]] [--kdcHost
+KDCHOST]
+ [--gfail-limit LIMIT | --ufail-limit LIMIT | --
+fail-limit LIMIT]
+ [-M MODULE] [-o MODULE_OPTION [MODULE_OPTION
+...]]
+ [-L] [--options] [--server {http,https}]
+ [--server-host HOST] [--server-port PORT]
+ [--connectback-host CHOST] [-H HASH [HASH ...]]
+ [--no-bruteforce] [--continue-on-success]
+ [--port {636,389}] [--no-smb]
+ [-d DOMAIN | --local-auth] [--asreproast
+ASREPROAST]
+ [--kerberoasting KERBEROASTING]
+[--trusted-for-delegation] [--password-notrequired]
+ [--admin-count] [--users] [--groups]
+ [target ...]
+positional arguments:
+ target the target IP(s), range(s), CIDR(s), hostname(s),
+ FQDN(s), file(s) containing a list of targets,
+NMap
+ XML or .Nessus file(s)
+optional arguments:
+ -h, --help show this help message and exit
+ -id CRED_ID [CRED_ID ...]
+ database credential ID(s) to use for
+authentication
+ -u USERNAME [USERNAME ...]
+ username(s) or file(s) containing usernames
+ -p PASSWORD [PASSWORD ...]
+ password(s) or file(s) containing passwords
+ -k, --kerberos Use Kerberos authentication from ccache file
+ (KRB5CCNAME)
+ --export EXPORT [EXPORT ...]
+ Export result into a file, probably buggy
+ --aesKey AESKEY [AESKEY ...]
+ AES key to use for Kerberos Authentication (128 or
+256
+ bits)
+ --kdcHost KDCHOST FQDN of the domain controller. If omitted it will
+use
+ the domain part (FQDN) specified in the target
+ parameter
+ --gfail-limit LIMIT max number of global failed login attempts
+ --ufail-limit LIMIT max number of failed login attempts per username
+ --fail-limit LIMIT max number of failed login attempts per host
+ -M MODULE, --module MODULE
+ module to use
+ -o MODULE_OPTION [MODULE_OPTION ...]
+ module options
+ -L, --list-modules list available modules
+ --options display module options
+ --server {http,https}
+ use the selected server (default: https)
+ --server-host HOST IP to bind the server to (default: 0.0.0.0)
+ --server-port PORT start the server on the specified port
+ --connectback-host CHOST
+ IP for the remote system to connect back to (default:
+ same as server-host)
+ -H HASH [HASH ...], --hash HASH [HASH ...]
+ NTLM hash(es) or file(s) containing NTLM hashes
+ --no-bruteforce No spray when using file for username and password
+ (user1 => password1, user2 => password2
+ --continue-on-success
+ continues authentication attempts even after
+successes
+ --port {636,389} LDAP port (default: 389)
+ --no-smb No smb connection
+ -d DOMAIN domain to authenticate to
+ --local-auth authenticate locally to each target
+Retrevie hash on the remote DC:
+ Options to get hashes from Kerberos
+ --asreproast ASREPROAST
+ Get AS_REP response ready to crack with hashcat
+ --kerberoasting KERBEROASTING
+ Get TGS ticket ready to crack with hashcat
+Retrieve useful information on the domain:
+ Options to to play with Kerberos
+ --trusted-for-delegation
+ Get the list of users and computers with flag
+TRUSTED_FOR_DELEGATION
+ --password-not-required
+ Get the list of users with flag PASSWD_NOTREQD
+ --admin-count Get objets that had the value adminCount=1
+ --users Enumerate enabled domain users
+ --groups Enumerate domain groups
+
+```
 
 
 
 ### Hedef Seçme ve Protokol Kullanma
-Desteklenen birkaç protokol ve her biri için çeşitli seçeneklerle, CrackMapExec'te ustalaşmanın zor olacağını düşünebiliriz. Neyse ki, bir protokol için nasıl çalıştığını anladığımızda, aynı mantık diğer protokoller için de geçerlidir. Örneğin, password spreyleme tüm protokoller için aynıdır:
+
+Desteklenen birkaç protokol ve her biri için çeşitli seçeneklerle, CrackMapExec'te ustalaşmanın zor olacağını düşünebiliriz. Neyse ki, bir protokol için nasıl çalıştığını anladığımızda, aynı mantık diğer protokoller için de geçerlidir. Örneğin, password spraying tüm protokoller için aynıdır:
 
 
 ### Password Spray Example with WinRm
 
-![Pasted image 20241130235856.png](/img/user/resimler/Pasted%20image%2020241130235856.png)
+```
+crackmapexec winrm 10.10.10.1 -u users.txt -p password.txt --no-bruteforce --continue-on-success
+```
 
-Başka bir protokole karşı parola püskürtme saldırısı gerçekleştirmek istiyorsak, protokolü değiştirmemiz gerekir:
+Başka bir protokole karşı password spraying saldırısı gerçekleştirmek istiyorsak, protokolü değiştirmemiz gerekir:
 
 - **`--no-bruteforce`**
     
-    - Bu parametre, **bruteforce (kaba kuvvet) denemelerini** devre dışı bırakır. Eğer bu parametre kullanılırsa, sadece kullanıcı adı ve şifrenin doğru eşleştiği durumlar kontrol edilir. Yani, şifre denemeleri yapmadan doğrudan kullanıcının geçerli olup olmadığı kontrol edilir. Eğer bu parametre kullanılmasaydı, her kullanıcı ve şifre kombinasyonu denenecekti.
+    - Bu parametre, **bruteforce denemelerini** devre dışı bırakır. Eğer bu parametre kullanılırsa, sadece kullanıcı adı ve şifrenin doğru eşleştiği durumlar kontrol edilir. Yani, şifre denemeleri yapmadan doğrudan kullanıcının geçerli olup olmadığı kontrol edilir. Eğer bu parametre kullanılmasaydı, her kullanıcı ve şifre kombinasyonu denenecekti.
+
 - **`--continue-on-success`**
     
     - Bu parametre, **başarı durumunda işlemi durdurmamayı** sağlar. Eğer doğru bir kullanıcı adı ve şifre kombinasyonu bulunursa, işlem durmaz ve diğer kullanıcılar ve şifreler için de denemelere devam edilir. Bu, hedefte daha fazla kullanıcı hesabı veya farklı şifreler denemek için kullanılır.
 
 ### Target Protocols
-![Pasted image 20241201000004.png](/img/user/resimler/Pasted%20image%2020241201000004.png)
+
+```
+crackmapexec smb 10.10.10.1 [protocol options]
+crackmapexec mssql 10.10.10.1 [protocol options]
+crackmapexec ldap 10.10.10.1 [protocol options]
+crackmapexec ssh 10.10.10.1 [protocol options]
+crackmapexec rdp 10.10.10.1 [protocol options]
+crackmapexec ftp 10.10.10.1 [protocol options]
+```
+
+Bu basit kuralı anladığımızda, CrackMapExec'in gücünün, sunulan tüm seçeneklerle ilgili kullanım kolaylığından kaynaklandığını göreceğiz.
 
 
 ### Export Function
+
 CrackMapExec bir export fonksiyonu ile birlikte gelir, ancak yardım menüsünde gösterildiği gibi hatalıdır. Dışa aktarılacak dosyanın tam yolunu gerektirir:
 
+#### Exporting result CME
+ 
+```
+crackmapexec smb 10.10.10.1 [protocol options] --export $(pwd)/export.txt
+```
 
- ### Exporting result CME
- ![Pasted image 20241201000144.png](/img/user/resimler/Pasted%20image%2020241201000144.png)
+Bir sonraki bölümde, bazı export örneklerini tartışacağız.
+
 
 ### Protocol Modules
-CrackMapExec, daha sonra kullanacağımız ve tartışacağımız modülleri destekler. Her protokolün farklı modülleri vardır. Belirtilen protokol için mevcut modülleri görüntülemek için ==crackmapexec protocol -L== komutunu çalıştırabiliriz.
+
+CrackMapExec, daha sonra kullanacağımız ve tartışacağımız modülleri destekler. Her protokolün farklı modülleri vardır. Belirtilen protokol için mevcut modülleri görüntülemek için `crackmapexec protocol -L` komutunu çalıştırabiliriz.
 
 **Protokol Tabanlı Listeleme:** Hangi servislerin açık olduğuna dair bilgi verir.
 
 
+#### LDAP için Mevcut Modülleri Görüntüle
 
- ### Temel SMB Keşfi
- SMB protokolü bir Windows hedefine karşı rekon için avantajlıdır. Herhangi bir kimlik doğrulaması olmadan, aşağıdakiler de dahil olmak üzere her türlü bilgiyi alabiliriz:
-![Pasted image 20241201000755.png](/img/user/resimler/Pasted%20image%2020241201000755.png)
+```
+crackmapexec ldap -L
 
+[*] MAQ Retrieves the MachineAccountQuota domainlevel attribute
+[*] adcs Find PKI Enrollment Services in Active
+Directory and Certificate Templates Names
+[*] daclread Read and backup the Discretionary Access
+Control List of objects. Based on the work of @_nwodtuhs and @BlWasp_. Be
+carefull, this module cannot read the DACLS recursively, more explains in
+the options.
+[*] get-desc-users Get description of the users. May contained
+password
+[*] get-network
+[*] laps Retrieves the LAPS passwords
+[*] ldap-checker Checks whether LDAP signing and binding are
+required and / or enforced
+[*] ldap-signing Check whether LDAP signing is required
+[*] subnets Retrieves the different Sites and Subnets of
+an Active Directory
+[*] user-desc Get user descriptions stored in Active
+Directory
+[*] whoami Get details of provided user
+
+```
+
+
+
+## Basic SMB Reconnaissance
+
+SMB protokolü, bir Windows hedefi üzerinde keşif yapmak için avantajlıdır. Herhangi bir kimlik doğrulaması olmadan, aşağıdaki gibi her türlü bilgiyi alabiliriz:
+
+| IP address                  | Target local name      |
+| --------------------------- | ---------------------- |
+| Windows version             | Architecture (x86/x64) |
+| Fully qualified domain name | SMB signing enabled    |
+| SMB version                 |                        |
 
 ### SMB Enumeration
-![Pasted image 20241201000824.png](/img/user/resimler/Pasted%20image%2020241201000824.png)
 
-Bu basit komutu kullanarak, tarama anında laboratuvardaki tüm canlı hedefleri, domain adı, işletim sistemi sürümü vb. ile birlikte alabiliriz. Çıktıda görebileceğimiz gibi, 192.168.133.157 hedefinin domain parametresi, hedef adı parametresinin anlamı ile aynıdır, WIN7 domain'e katılmamıştır: inlanefreight.htb . WIN-TOE6NQTR989 hedefinin aksine, bu hedef inlanefreight.htb domainine katılmıştır.
+```
+crackmapexec smb 192.168.133.0/24
 
-Ayrıca bir Windows 10, bir Windows Server ve bir Windows 7 ana bilgisayarı da görebiliyoruz. Windows sunucuları genellikle ilginç verilerle dolu zengin hedeflerdir (paylaşımlar, parolalar, web sitesi ve veritabanı yedekleri, vb.) Hepsi Windows'un 64 bit sürümleridir, bu da bunlardan birinde özel bir binary çalıştırmamız gerektiğinde yardımcı olabilir.
+SMB 192.168.133.1 445 DESKTOP-DKCQVG2 [*] Windows 10.0 Build
+19041 x64 (name:DESKTOP-DKCQVG2) (domain:DESKTOP-DKCQVG2) (signing:False)
+(SMBv1:False)
+
+SMB 192.168.133.158 445 WIN-TOE6NQTR989 [*] Windows Server
+2016 Datacenter 14393 x64 (name:WIN-TOE6NQTR989)
+(domain:inlanefreight.htb) (signing:True) (SMBv1:True)
+
+SMB 192.168.133.157 445 WIN7 [*] Windows 7 Ultimate
+7601 Service Pack 1 x64 (name:WIN7) (domain:WIN7) (signing:False)
+(SMBv1:True)
+```
+
+Bu basit komutla, tarama anında laboratuvarımızdaki tüm canlı hedefleri, domain adı, işletim sistemi sürümü vb. ile birlikte alabiliriz. Çıktıda gördüğümüz gibi, hedef `192.168.133.157`'nin `domain parametresi`, name parametresiyle aynı, yani hedef WIN7, `inlanefreight.htb` domain'ine katılmamış. Buna karşın, `WIN-TOE6NQTR989` hedefi `inlanefreight.htb` domain'ine katılmış.
 
 
-### SMB İmzalama Devre Dışı Olan Tüm Hostları Alma
-"CrackMapExec, SMB imzalamanın devre dışı olduğu tüm hostları çıkartma seçeneğine sahiptir. Bu seçenek, SMBRelay saldırısı gerçekleştirmek için Impacket'ten ntlmrelayx.py ile Responder'ı kullanmak istediğimizde faydalıdır."
+Ayrıca bir Windows 10, bir Windows Server ve bir Windows 7 host'u da görebiliyoruz. Windows sunucuları genellikle ilginç verilerle dolu zengin hedeflerdir (paylaşımlar, parolalar, web sitesi ve veritabanı yedekleri, vb.) Hepsi Windows'un 64 bit sürümleridir, bu da bunlardan birinde özel bir binary çalıştırmamız gerektiğinde yardımcı olabilir.
 
- ![Pasted image 20241201001753.png](/img/user/resimler/Pasted%20image%2020241201001753.png)
- ![Pasted image 20241201001759.png](/img/user/resimler/Pasted%20image%2020241201001759.png)
+
+### SMB Signing Devre Dışı Olan Tüm Hostları Alma
+
+CrackMapExec, SMB signing'in devre dışı olduğu tüm host'ları çıkartma seçeneğine sahiptir. Bu seçenek, SMBRelay saldırısı gerçekleştirmek için Impacket'ten [ntlmrelayx.py](https://github.com/SecureAuthCorp/impacket/blob/master/examples/ntlmrelayx.py) ile [Responder](https://github.com/lgandx/Responder) kullanmak istediğimizde oldukça kullanışlıdır.
+
+```
+crackmapexec smb 192.168.1.0/24 --gen-relay-list
+
+relaylistOutputFilename.txt
+
+SMB 192.168.1.101 445 DC2012A [*] Windows Server
+2012 R2 Standard 9600 x64 (name:DC2012A) (domain:OCEAN) (signing:True)
+(SMBv1:True)
+
+SMB 192.168.1.102 445 DC2012B [*] Windows Server
+2012 R2 Standard 9600 x64 (name:DC2012B) (domain:EARTH) (signing:True)
+(SMBv1:True)
+
+SMB 192.168.1.111 445 SERVER1 [*] Windows Server
+2016 Standard Evaluation 14393 x64 (name:SERVER1) (domain:PACIFIC)
+(signing:False) (SMBv1:True)
+
+SMB 192.168.1.117 445 WIN10DESK1 [*] WIN10DESK1 x64
+(name:WIN10DESK1) (domain:OCEAN) (signing:False) (SMBv1:True)
+<SNIP>
+
+```
+
+```
+cat relaylistOutputFilename.txt
+192.168.1.111
+192.168.1.117
+```
+
+#### Signing Disabled - Host Enumeration
+
 Bu komut, ağınızdaki tüm SMB sunucularını tarar ve SMB imzalama (SMB signing) özelliğini devre dışı bırakmış olan sistemleri belirleyerek bunları bir listeye kaydeder. Yani, sadece SMB imzalama devre dışı bırakılmış olan sunucular bu listeye dahil edilir.
 
-**`--gen-relay-list`** parametresi, SMB imzalama kapalı olan makinelerin IP adreslerini çıkaran bir "relay listesi" oluşturur. Bu liste daha sonra **SMBRelay** saldırılarında kullanılabilir. Yani, bu listeyi kullanarak, SMB imzalamayı devre dışı bırakmış makinelerde SMB relay saldırısı yapabilirsiniz.
+**`--gen-relay-list`** parametresi, SMB Signing kapalı olan makinelerin IP adreslerini çıkaran bir "relay listesi" oluşturur. Bu liste daha sonra **SMBRelay** saldırılarında kullanılabilir. Yani, bu listeyi kullanarak, SMB imzalamayı devre dışı bırakmış makinelerde SMB relay saldırısı yapabilirsiniz.
 
-Bu sayede, "imzasız" (SMB signing devre dışı bırakılmış) makineleri hedef alırsınız, çünkü bu makinelerde SMB iletişiminde imza doğrulaması yapılmaz ve dolayısıyla relay saldırılarına daha açıktırlar.
-
-![Pasted image 20241201001936.png](/img/user/resimler/Pasted%20image%2020241201001936.png)
-
-[blog ](For more information about Responder and ntlmrelayx.py, we can also check out the section Attacking SMB in the Attacking Common Services module. Additionally, this blog post: Practical guide to NTLM Relaying in 2017 is worth a read through.)
-
-Bir sonraki bölümde, pratik örneklerle başlayacağız ve anonim kimlik doğrulama etkinleştirildiğinde nasıl bilgi toplayacağımızı öğreneceğiz.
+Bu sayede, "Signing" (SMB signing devre dışı bırakılmış) makineleri hedef alırsınız, çünkü bu makinelerde SMB iletişiminde Signing doğrulaması yapılmaz ve dolayısıyla relay saldırılarına daha açıktırlar.
 
 
-### Exploiting NULL/Anonymous Sessions
+Bu modülün "Stealing Hashes" bölümünde relaying konusunu ele alacağız.
+
+Ayrıca, bu blog yazısı: [_Practical guide to NTLM Relaying in 2017_](https://byt3bl33d3r.github.io/practical-guide-to-ntlm-relaying-in-2017-aka-getting-a-foothold-in-under-5-minutes.html) da okunmaya değer.
+
+
+## Exploiting NULL/Anonymous Sessions
 
 NULL Session, Windows tabanlı bilgisayarlarda işlemler arası iletişim ağ hizmetine yapılan anonim bir bağlantıdır. Hizmet, named pipe bağlantılarına izin verecek şekilde tasarlanmıştır ancak saldırganlar tarafından sistem hakkında uzaktan bilgi toplamak için kullanılabilir.
 
@@ -403,9 +933,9 @@ MSSQL iki kimlik doğrulama modunu destekler, bu da kullanıcıların Windows ve
 ![Pasted image 20241201202156.png](/img/user/resimler/Pasted%20image%2020241201202156.png)
 
 Bu, MSSQL'de kimlik doğrulaması yapmak için üç tür kullanıcıya sahip olabileceğimiz anlamına gelir:
-1. Active Directory Account. 
-2. Local Windows Account. 
-3. SQL Account.
+4. Active Directory Account. 
+5. Local Windows Account. 
+6. SQL Account.
 
 Bir Active Directory hesabı için domain adını belirtmemiz gerekir:
 
@@ -781,20 +1311,20 @@ DC01'e ve bu ağdaki (172.16.1.0/24) herhangi bir makineye saldırmak için, sal
 ### Set Up the Tunnel
 Tünelimizi kurmak için Chisel kullanacağız. Release'e gidelim ve tehlikeye atılmış makinemiz için en son Windows binary'sini ve saldırı hostumuzda kullanmak için en yeni Linux binary'sini indirelim ve aşağıdaki adımları gerçekleştirelim:
 
-1. Chisel'ı Saldırı Hostumuza indirin ve Çalıştırın:
+7. Chisel'ı Saldırı Hostumuza indirin ve Çalıştırın:
 
 
 ### Chisel - Reverse Tunnel
 ![Pasted image 20241202142208.png](/img/user/resimler/Pasted%20image%2020241202142208.png)
 
-1. Chisel for Windows'u İndirin ve Hedef Host'a Yükleyin:
+8. Chisel for Windows'u İndirin ve Hedef Host'a Yükleyin:
 
 
 ### Upload Chisel
 ![Pasted image 20241202142243.png](/img/user/resimler/Pasted%20image%2020241202142243.png)
 ![Pasted image 20241202142251.png](/img/user/resimler/Pasted%20image%2020241202142251.png)
 
-1. CrackMapExec komut yürütme seçeneği -x'i kullanarak Chisel sunucumuza bağlanmak için chisel.exe dosyasını çalıştırın (Bu seçeneği Komut Yürütme bölümünde daha fazla tartışacağız)
+9. CrackMapExec komut yürütme seçeneği -x'i kullanarak Chisel sunucumuza bağlanmak için chisel.exe dosyasını çalıştırın (Bu seçeneği Komut Yürütme bölümünde daha fazla tartışacağız)
 
 
 ### Chisel Sunucusuna Bağlanın
@@ -813,13 +1343,13 @@ TCP 1080 portunun dinlenip dinlenmediğini kontrol ederek de tünelin çalışt�
 ### Check Listening Port
 ![Pasted image 20241202142654.png](/img/user/resimler/Pasted%20image%2020241202142654.png)
 
-1. Proxyychains'i Chisel varsayılan portu TCP 1080'i kullanacak şekilde yapılandırmamız gerekir. Yapılandırma dosyasının ProxyList bölümüne socks5 127.0.0.1 1080'i aşağıdaki gibi eklediğimizden emin olmamız gerekiyor:
+10. Proxyychains'i Chisel varsayılan portu TCP 1080'i kullanacak şekilde yapılandırmamız gerekir. Yapılandırma dosyasının ProxyList bölümüne socks5 127.0.0.1 1080'i aşağıdaki gibi eklediğimizden emin olmamız gerekiyor:
 
 
 ### Configure Proxychains
 ![Pasted image 20241202142722.png](/img/user/resimler/Pasted%20image%2020241202142722.png)
 
-1. Artık 172.16.1.10 IP'sine ulaşmak için Proxychains aracılığıyla CrackMapExec'i kullanabiliriz:
+11. Artık 172.16.1.10 IP'sine ulaşmak için Proxychains aracılığıyla CrackMapExec'i kullanabiliriz:
 
 ### CrackMapExec'in Proxychains ile Test Edilmesi
 ![Pasted image 20241202142758.png](/img/user/resimler/Pasted%20image%2020241202142758.png)
@@ -1351,15 +1881,15 @@ Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalış
 
 PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
 
-1. AMSI baypas
-2. Payload'u gizleyin
-3. Payload'u çalıştırın
+12. AMSI baypas
+13. Payload'u gizleyin
+14. Payload'u çalıştırın
 
 ### Özel AMSI Bypass Çalıştırma
 
 Bu teknikler PowerShell çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, --amsi-bypass seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
 
-1. “Değiştirilmiş Amsi ScanBuffer Yaması” içeren dosyayı indirin
+15. “Değiştirilmiş Amsi ScanBuffer Yaması” içeren dosyayı indirin
 
 
 ### “Değiştirilmiş Amsi ScanBuffer Yaması” ile Bir Dosya Oluşturun
@@ -1370,7 +1900,7 @@ Payload'u olduğu gibi çalıştırmaya çalışırsak, komut maksimum uzunluk o
 ![Pasted image 20241203102011.png](/img/user/resimler/Pasted%20image%2020241203102011.png)
 ![Pasted image 20241203102018.png](/img/user/resimler/Pasted%20image%2020241203102018.png)
 
-1. Bu sorunu çözmek için, shantanukhande-amsi.ps1 dosyasını indiren ve çalıştıran bir PowerShell scripti oluşturalım. Ayrıca scriptimizi barındırmak için bir Python web sunucusu oluşturmamız gerekecek.
+16. Bu sorunu çözmek için, shantanukhande-amsi.ps1 dosyasını indiren ve çalıştıran bir PowerShell scripti oluşturalım. Ayrıca scriptimizi barındırmak için bir Python web sunucusu oluşturmamız gerekecek.
 
 ### PowerShell Komut Dosyasını Oluşturma ve Barındırma
 ![Pasted image 20241203102127.png](/img/user/resimler/Pasted%20image%2020241203102127.png)
@@ -1520,21 +2050,21 @@ LSASS prosesinin belleği, Windows parolalarını açık metin olarak veya NTLM 
 
 CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli modüller içerir. Bunlardan bazılarını görelim:
 
-1. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
+17. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
 
 
 ### Lsassy Module
 
 ![Pasted image 20241203113833.png](/img/user/resimler/Pasted%20image%2020241203113833.png)
 
-1. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
+18. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
 
 
 ### Procdump Module
 ![Pasted image 20241203114045.png](/img/user/resimler/Pasted%20image%2020241203114045.png)
 ![Pasted image 20241203114101.png](/img/user/resimler/Pasted%20image%2020241203114101.png)
 
-1. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
+19. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
 
 
 ### Handlekatz Module
@@ -1544,7 +2074,7 @@ CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli m
 ![Pasted image 20241203114156.png](/img/user/resimler/Pasted%20image%2020241203114156.png)
 
 
-1. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
+20. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
 
 
 ### Nanodump Module
@@ -1865,8 +2395,8 @@ Eğer ana parolaya sahip değilsek bir alternatif de Lee Christensen ( @tifkin_)
 
 Bunu kullanmak için beş (5) adıma ihtiyacımız var:
 
-1. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
-2. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
+21. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
+22. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
 
 ### KeePass Yapılandırma Dosyasına Trigger Ekleme
 ![Pasted image 20241203142642.png](/img/user/resimler/Pasted%20image%2020241203142642.png)
@@ -2065,13 +2595,13 @@ Daha sonra açmak için kod yazabiliriz
 
 ### Yeni Modülümüzü Oluşturun
 Modülümüzü oluşturalım. Yeni bir yönetici hesabı oluşturacak basit bir script oluşturacağız.
-1. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
-2. Aşağıdaki kod örneğini dosyaya kopyalayın:
+23. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
+24. Aşağıdaki kod örneğini dosyaya kopyalayın:
 
 ![Pasted image 20241203150546.png](/img/user/resimler/Pasted%20image%2020241203150546.png)
 ![Pasted image 20241203150551.png](/img/user/resimler/Pasted%20image%2020241203150551.png)
 
-1. Şimdi modülümüzü özelleştirelim.
+25. Şimdi modülümüzü özelleştirelim.
 
 Bazı değişkenleri tanımlamamız gerekiyor:
 * name, modül adını nasıl çağıracağımızı belirtir. Bu durumda, createadmin dosya adını kullanacağız.
@@ -2085,7 +2615,7 @@ Ayrıca, modül için değişkenleri tanımlamak için kullanılan options() yö
 ![Pasted image 20241203150803.png](/img/user/resimler/Pasted%20image%2020241203150803.png)
 ![Pasted image 20241203150814.png](/img/user/resimler/Pasted%20image%2020241203150814.png)
 
-1. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
+26. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
 
 Bu yürütme için, yöntemin connection.execute(command, True) komutunu kullanarak bir cmd.exe komutu çalıştıracağız. Komutumuz, yeni bir kullanıcı eklemek için net user username password /add /Y değeriyle ve kullanıcıyı administrators grubuna eklemek için net localgroup administrators username /add değeriyle command değişkenine kaydedilecektir.
 
@@ -2197,8 +2727,8 @@ Aşağıdaki bölümde, Kerberos kimlik doğrulamasını ve CrackMapExec'in bu k
 
 Yazma sırasında CrackMapEec, SMB, LDAP ve MSSQL protokolleri için Kerberos Kimlik Doğrulamasını desteklemektedir. Kerberos Kimlik Doğrulamasını kullanmanın iki (2) yolu vardır:
 
-1. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
-2. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
+27. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
+28. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
 
 Linux'ta Kerberos kimlik doğrulamasını kullanırken göz önünde bulundurulması gereken önemli bir unsur, saldırdığımız bilgisayarın domain ve hedef makinenin FQDN'sini çözümlemesi gerektiğidir. Dahili bir ağdaysak, bilgisayarımızı şirketin DNS'sine domain adı çözümlemeleri yapacak şekilde yapılandırabiliriz, ancak durum böyle değildir. DNS'i yapılandıramayız ve /etc/hosts dosyasına domain controller ve hedef makinemiz için FQDN'i manuel olarak eklememiz gerekecektir.
 
