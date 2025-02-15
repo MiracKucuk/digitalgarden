@@ -1064,3 +1064,38 @@ $HEX[042a0337c2a156616d6f732103]
 
 ### Kerberos Delegations
 
+**Kerberos** protokolü, bir kullanıcının bir servise kimlik doğrulaması yaparak onu kullanmasına izin verir ve **Kerberos delegation** bu servisin, orijinal kullanıcı olarak başka bir servise kimlik doğrulaması yapmasını sağlar. İşte bu prensibi açıklayan küçük bir diyagram.
+
+![Pasted image 20250215211547.png](/img/user/Pasted%20image%2020250215211547.png)
+
+Bu örnekte, bir kullanıcı **WEBSRV**'ye kimlik doğrulaması yaparak web sitesine erişir. Web sitesine kimlik doğrulaması yapıldıktan sonra, kullanıcı veritabanında depolanan bilgilere erişmesi gerekir, ancak veritabanındaki tüm bilgilere erişim izni verilmemelidir. **Service** hesabı, kullanıcının yalnızca erişim hakkı olduğu kaynaklara erişmesi için, kullanıcının haklarıyla veritabanıyla iletişim kurmalıdır. İşte burada **delegation** devreye girer. **Service** hesabı, burada **WEBSRV$**, veritabanına erişirken kullanıcı gibi davranacaktır. Buna **delegation** denir.
+
+**Kerberos delegation** üç türde mevcuttur: **`unconstrained`**, **`constrained`** ve **`resource-based` constrained**. Tüm bu üç delegasyon türünü inceleyeceğiz ve her birini ayrıntılı bir şekilde anlayacağız.
+
+
+### Unconstrained Delegation
+
+**Unconstrained delegation**, bir **service**'in, burada **WEBSRV**, başka bir **service**'e erişirken bir kullanıcıyı taklit etmesine olanak tanır. Bu, çok geniş bir izin olan ve tehlikeli bir ayrıcalıktır, bu nedenle her kullanıcı buna izin veremez.
+
+![Pasted image 20250215212431.png](/img/user/Pasted%20image%2020250215212431.png)
+
+Bir hesabın **unconstrained delegation** yetkisine sahip olabilmesi için, hesabın **Delegation** sekmesinde **Trust this computer for delegation to any service (Kerberos only)** seçeneği işaretlenmiş olmalıdır.
+
+![Pasted image 20250215212530.png](/img/user/Pasted%20image%2020250215212530.png)
+
+Bu seçeneği diğer hesaplara atayabilmek için yalnızca bir **`administrator`** veya bu ayrıcalıklara açıkça sahip olan yetkili bir kullanıcı işlem yapabilir. Daha spesifik olarak, bu işlemi gerçekleştirebilmek için **`SeEnableDelegationPrivilege`** ayrıcalığına sahip olmak gereklidir. Bir **`service account`**, kendisini değiştiremez ve bu seçeneği ekleyemez. Bu noktayı, sonraki bölümler için unutmamak önemlidir.
+
+Özellikle, bu seçenek etkinleştirildiğinde, **`User Account Control (UAC)`** bayraklarında **TRUSTED_FOR_DELEGATION** bayrağı hesap üzerine ayarlanır.
+
+Bu bayrak bir **service account** üzerinde ayarlandığında ve bir kullanıcı bu **service**'e erişmek için **TGS request** yaptığında, **Domain Controller**, kullanıcının **TGT**'sinin bir kopyasını **TGS ticket** içerisine ekler. Böylece, **service account** bu **TGT**'yi çıkarabilir ve `kullanıcının TGT kopyasını kullanarak Domain Controller'a TGS request yapabilir`. Sonuç olarak, **service** geçerli bir **TGS ticket** veya **Service Ticket (ST)**'ye sahip olur ve kullanıcı gibi davranarak herhangi bir **service**'e erişebilir.
+
+
+### Constrained Delegation
+
+**Unconstrained delegation** çok kısıtlayıcı olmadığı için, **constrained delegation** daha "kısıtlı" bir **delegation** türüdür. Bu yöntemde, bir **service**, kullanıcının kimliğine bürünme hakkına sahiptir ancak yalnızca önceden belirlenmiş bir **service** listesi için bunu yapabilir.
+
+Bu örnekte, **WEBSRV** yalnızca **SQL/DBSRV service**'ine kimlik doğrulamasını iletebilir, ancak diğer **service**'lere iletemez.
+
+![Pasted image 20250215213301.png](/img/user/Pasted%20image%2020250215213301.png)
+
+**Constrained delegation**, **unconstrained delegation** ile aynı yerde, **service account**'ın **Delegation** sekmesinde yapılandırılabilir. **"Trust this computer for delegation to specified services only"** seçeneği seçilmelidir. **Kerberos Only** ve **Use any authentication protocol** arasındaki seçim konusunu daha sonra açıklayacağız.
