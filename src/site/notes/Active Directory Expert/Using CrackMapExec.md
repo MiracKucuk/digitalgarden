@@ -875,24 +875,120 @@ Bir domainin kullanıcılarını belirlemek için --rid-brute seçeneği kullan�
 
 
 ### Enumerating Users with --rid-brute
-![Pasted image 20241201155133.png](/img/user/resimler/Pasted%20image%2020241201155133.png)
-![Pasted image 20241201155138.png](/img/user/resimler/Pasted%20image%2020241201155138.png)
 
-Varsayılan olarak, --rid-brute 400'e kadar RID'leri zorlayarak nesneleri numaralandırır. Bu davranışı -- rid-brute [MAX_RID] kullanarak değiştirebiliriz. 
+```
+crackmapexec smb 10.129.204.172 -u '' -p '' --rid-brute
 
-Not: Null kimlik doğrulaması ile brute force rids yapabileceğimiz senaryolar olacaktır.
+SMB 10.129.204.172 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:INLANEFREIGHT.LOCAL) (signing:True)
+(SMBv1:False)
+SMB 10.129.204.172 445 DC01 [+] Brute forcing RIDs
+SMB 10.129.204.172 445 DC01 498:
+INLANEFREIGHT\Enterprise Read-only Domain Controllers (SidTypeGroup)
+SMB 10.129.204.172 445 DC01 500:
+INLANEFREIGHT\Administrator (SidTypeUser)
+SMB 10.129.204.172 445 DC01 501:
+INLANEFREIGHT\Guest (SidTypeUser)
+SMB 10.129.204.172 445 DC01 502:
+INLANEFREIGHT\krbtgt (SidTypeUser)
+SMB 10.129.204.172 445 DC01 512:
+INLANEFREIGHT\Domain Admins (SidTypeGroup)
+SMB 10.129.204.172 445 DC01 513:
+INLANEFREIGHT\Domain Users (SidTypeGroup)
+...SNIP...
+SMB 10.129.204.172 445 DC01 1853:
+INLANEFREIGHT\abinateps (SidTypeUser)
+SMB 10.129.204.172 445 DC01 1854:
+INLANEFREIGHT\bustoges (SidTypeUser)
+SMB 10.129.204.172 445 DC01 1855:
+INLANEFREIGHT\nobseellace (SidTypeUser)
+SMB 10.129.204.172 445 DC01 1856:
+INLANEFREIGHT\wormithe (SidTypeUser)
+SMB 10.129.204.172 445 DC01 1857:
+INLANEFREIGHT\therbanstook (SidTypeUser)
+SMB 10.129.204.172 445 DC01 1858:
+INLANEFREIGHT\sweend (SidTypeUser)
+SMB 10.129.204.172 445 DC01 1859:
+INLANEFREIGHT\voge1993 (SidTypeUser)
+SMB 10.129.204.172 445 DC01 1860:
+INLANEFREIGHT\lach1973 (SidTypeUser)
+SMB 10.129.204.172 445 DC01 1861:
+INLANEFREIGHT\coulart77 (SidTypeUser)
+SMB 10.129.204.172 445 DC01 1862:
+INLANEFREIGHT\whirds (SidTypeUser)
+SMB 10.129.204.172 445 DC01 1863:
+INLANEFREIGHT\sturhe (SidTypeUser)
+SMB 10.129.204.172 445 DC01 1864:
+INLANEFREIGHT\turittly (SidTypeUser)
+...SNIP...
+```
+
+
+Varsayılan olarak, `--rid-brute`, RIDs değerlerini brute force ile 4000'e kadar enumerate eder. Davranışını değiştirmek için `--rid-brute [MAX_RID]` kullanabiliriz.
+
+**Not:** Bazı senaryolarda, NULL authentication ile RIDs brute force yapılabilir.
 
 
 ### Enumerating Shares
 
-Paylaşılan klasörlerle ilgili olarak, sunucu yapılandırmasına bağlı olarak, herhangi bir hesap olmadan sadece --shares seçeneğini yazarak paylaşımlara erişebiliriz. Hata alırsak, paylaşılan klasörleri listelemek için rastgele bir ad (mevcut olmayan hesap) veya parolasız guest/anonymous kullanmayı deneyebiliriz.
+Paylaşılan klasörler ile ilgili olarak, server konfigürasyonuna bağlı olarak, herhangi bir hesap kullanmadan sadece `--shares` seçeneğini yazarak paylaşımlara erişebiliriz. Eğer hata alırsak, paylaşılan klasörleri listelemek için var olmayan rastgele bir isim veya guest/anonymous hesaplarını şifresiz olarak deneyebiliriz.
 
-![Pasted image 20241201155442.png](/img/user/resimler/Pasted%20image%2020241201155442.png)
-![Pasted image 20241201155451.png](/img/user/resimler/Pasted%20image%2020241201155451.png)
-![Pasted image 20241201155500.png](/img/user/resimler/Pasted%20image%2020241201155500.png)
+#### Enumerating Shares
 
-Topladığımız bilgiler domain'de bir yer edinmede yardımcı olabilir. Parola ilkesindeki bilgileri kullanarak bir Password Spraying saldırısı düzenleyebilir, ASREPRoasting gibi saldırılar gerçekleştirebilir veya açık bir paylaşım klasörü aracılığıyla gizli bilgilere erişim sağlayabiliriz.
+```
+crackmapexec smb 10.129.203.121 -u '' -p '' --shares
 
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\:
+SMB 10.129.203.121 445 DC01 [-] Error enumerating
+shares: STATUS_ACCESS_DENIED
+```
+
+
+```
+crackmapexec smb 10.129.203.121 -u guest -p '' --shares
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\guest:
+SMB 10.129.203.121 445 DC01 [+] Enumerated shares
+SMB 10.129.203.121 445 DC01 Share
+Permissions Remark
+SMB 10.129.203.121 445 DC01 ----- ------
+----- ------
+SMB 10.129.203.121 445 DC01 ADMIN$
+Remote Admin
+SMB 10.129.203.121 445 DC01 C$
+Default share
+SMB 10.129.203.121 445 DC01 carlos
+SMB 10.129.203.121 445 DC01 D$
+Default share
+SMB 10.129.203.121 445 DC01 david
+SMB 10.129.203.121 445 DC01 IPC$ READ
+Remote IPC
+SMB 10.129.203.121 445 DC01 IT
+SMB 10.129.203.121 445 DC01 john
+SMB 10.129.203.121 445 DC01 julio
+SMB 10.129.203.121 445 DC01 linux01
+READ,WRITE
+SMB 10.129.203.121 445 DC01 NETLOGON
+Logon server share
+SMB 10.129.203.121 445 DC01 svc_workstations
+SMB 10.129.203.121 445 DC01 SYSVOL
+Logon server share
+SMB 10.129.203.121 445 DC01 Users READ
+```
+
+
+Topladığımız bilgiler, domain içinde foothold elde etmek için faydalı olabilir. Password policy'deki bilgileri kullanarak bir Password Spraying saldırısı düzenleyebilir, ASREPRoasting gibi saldırılar gerçekleştirebilir veya açık bir share folder üzerinden gizli bilgilere erişim sağlayabiliriz.
+
+Burada kaldım 
+
+----
 
 ### Understanding Password Policy
 Password Policy için Microsoft belgeleri, Windows için [password ilkelerine](https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/password-policy) genel bir bakış ve her ilke ayarı için bilgi bağlantıları sağlar.

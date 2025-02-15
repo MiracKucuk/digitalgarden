@@ -2,86 +2,197 @@
 {"dg-publish":true,"permalink":"/active-directory-expert/kerberos-attacks/"}
 ---
 
-Kerberos, kullanıcıların ağ üzerinde kimlik doğrulamasına ve kimlik doğrulaması yapıldıktan sonra hizmetlere erişmesine olanak tanıyan bir protokoldür. Kerberos varsayılan olarak 88 numaralı portu kullanır ve Windows 2000'den beri domain hesapları için varsayılan kimlik doğrulama protokolüdür. Bir kullanıcı bilgisayarında oturum açtığında, Kerberos onun kimliğini doğrulamak için kullanılır. Bir kullanıcı ağ üzerindeki bir servise erişmek istediğinde kullanılır. Kerberos sayesinde, bir kullanıcının sürekli olarak parolasını yazması gerekmez ve sunucunun her kullanıcının parolasını bilmesi gerekmez. Bu bir merkezi kimlik doğrulama örneğidir
+## Kerberos Overview
 
-Kerberos, biletlere dayalı stateless  bir kimlik doğrulama protokolüdür. Bir kullanıcının kimlik bilgilerini kullanılabilir kaynaklara yönelik taleplerinden etkili bir şekilde ayırır ve şifrelerinin ağ üzerinden iletilmemesini sağlar.[ Zero-knowledge](https://en.wikipedia.org/wiki/Zero-knowledge_proof) kanıtlı bir protokoldür. [Kerberos Key ](https://docs.microsoft.com/en-us/windows/win32/secauthn/key-distribution-center)Distribution Center (KDC) önceki işlemleri kaydetmez; bunun yerine Kerberos Ticket Granting Service (TGS) geçerli bir Ticket Granting Ticket'a (TGT) dayanır. Bir kullanıcı geçerli bir TGT'ye sahipse, kimliğini kanıtlamış olması gerektiğini varsayar.
+[Kerberos](https://docs.microsoft.com/en-us/windows/win32/secauthn/microsoft-kerberos), kullanıcıların ağ üzerinde **authenticate** olmasına ve bir kez **authenticate** olduktan sonra servislere erişmesine olanak tanıyan bir protokoldür. Kerberos varsayılan olarak port 88’i kullanır ve Windows 2000’den beri **domain** hesapları için varsayılan **authentication** protokolü olmuştur. Bir kullanıcı bilgisayarına giriş yaptığında, Kerberos onu **authenticate** etmek için kullanılır. Kullanıcı ağ üzerindeki bir servise erişmek istediğinde de Kerberos devreye girer. Kerberos sayesinde, bir kullanıcının sürekli olarak şifresini girmesine gerek kalmaz ve sunucunun her kullanıcının şifresini bilmesine gerek olmaz. Bu, **centralized authentication** örneğidir.
+
+Kerberos, **stateless authentication** sağlayan ve **ticket** tabanlı bir protokoldür. Kullanıcının kimlik bilgilerini, erişmeye çalıştığı kaynaklardan etkili bir şekilde ayırarak şifresinin ağ üzerinden iletilmesini önler. Bu, bir [**Zero-knowledge proof**](https://en.wikipedia.org/wiki/Zero-knowledge_proof) protokolüdür. [Kerberos **Key Distribution Center (KDC)**](https://docs.microsoft.com/en-us/windows/win32/secauthn/key-distribution-center) önceki işlemleri kaydetmez; bunun yerine, **Kerberos Ticket Granting Service (TGS)** geçerli bir **Ticket Granting Ticket (TGT)** üzerine çalışır. Eğer bir kullanıcının geçerli bir **TGT**'si varsa, kimliğini kanıtlamış olduğu varsayılır.
+
+"**Zero-knowledge proof**, bir tarafın (kanıtlayan) belirli bir bilgiyi karşı tarafa (doğrulayan) ifşa etmeden bildiğini kanıtlamasına olanak tanıyan bir kriptografik yöntemdir. Bu sayede doğrulayıcı, bilginin doğru olduğuna emin olur ancak bilginin kendisini öğrenmez."
 
 
 ### Basic Understanding
 
-Çok yüksek bir seviyede, bir kullanıcı ağ üzerindeki mevcut kaynaklarla etkileşime geçmek istediğinde, aşağıdakiler gerçekleşir:
-* İlk olarak merkezi bir sunucudan bir “identity card” isteyeceklerdir.
-* Kullanıcı daha sonra kim olduğunu kanıtlamak zorunda kalacak ve karşılığında “kimlik kartını” veya [Ticket Granting Ticket'ı (TGT](https://docs.microsoft.com/en-us/windows/win32/secauthn/ticket-granting-tickets)) alacaktır.
-* Bir servise erişmek istediklerinde bu TGT sunulacaktır. Böylece, bir hizmete her erişmek istediklerinde, bu kimliği sunacaklar ve eğer geçerliyse, merkezi sunucu istenen kaynağa sunmak için geçici bir bilet sağlayacaktır.
-* Bu geçici bilet, kullanıcının adı, grup üyeliği vb. gibi tüm bilgilerini içerir.
-* Kaynak daha sonra bu bileti alacak ve kullanıcının bunu yapmaya hakkı varsa hizmetlerine erişim izni verebilecektir.
+Çok üst düzeyde bakıldığında, bir kullanıcı ağdaki mevcut kaynaklarla etkileşime geçmek istediğinde aşağıdaki işlemler gerçekleşir:
 
-Bu proses iki aşamada gerçekleşir. İlk olarak, bir kullanıcının TGT'sini tanımlamak için bir bilet talebi ve ardından bir Ticket Granting Service ( TGS ) bileti veya Service Ticket ( ST ) kullanarak hizmetlere erişim talebi yoluyla.
+- Öncelikle, merkezi bir sunucudan bir **"identity card"** talep eder.
+- Kullanıcı, kim olduğunu kanıtlamak zorundadır ve bunun karşılığında **"identity card"**, yani [**Ticket Granting Ticket (TGT)**](https://docs.microsoft.com/en-us/windows/win32/secauthn/ticket-granting-tickets) alır.
+- Kullanıcı bir servise erişmek istediğinde bu **TGT**'yi sunar. Bu nedenle, her servis erişim isteğinde bu kimliği gösterir ve eğer geçerliyse, merkezi sunucu, istenen kaynağa sunulacak geçici bir **ticket** sağlar.
+- Bu geçici **ticket**, kullanıcının adı, grup üyelikleri vb. gibi tüm bilgilerini içerir.
+- Kaynak, bu **ticket**'i alır ve eğer kullanıcı yetkiliyse, servislerine erişim izni verir.
 
-Not: Ticket Granting Service (TGS), hizmet biletlerinin düzenlenmesinden sorumlu olan Key Distribution Center'ın (KDC) bir bileşenidir.
+Bu süreç iki aşamada gerçekleşir. İlk olarak, kullanıcının **TGT**'sini belirlemek için bir **ticket** talebi yapılır, ardından **Ticket Granting Service (TGS) ticket** veya **Service Ticket (ST)** kullanılarak servislere erişim isteğinde bulunulur.
 
-Not: Modül boyunca, TGS bileti terimini kullandığımızda, sanki bir Service Ticket  (ST) atıfta bulunuyormuşuz gibi olacaktır.
+Not: **Ticket Granting Service (TGS)**, **Key Distribution Center (KDC)**'nin bir bileşenidir ve servis **ticket**'larını dağıtmaktan sorumludur.
+
+Not: Bu konu boyunca **TGS ticket** terimini kullandığımızda, aslında **Service Ticket (ST)**'den bahsediyormuşuz gibi düşünebilirsiniz.
 
 
 ### Kerberos Avantajları
-Kerberos saldırılarından ve Golden Ticket saldırısının tehlikelerinden bahsedilirken, Kerberos'un zayıf bir kimlik doğrulama protokolü olduğunu düşünmek kolaydır. Kerberos'tan önce kimlik doğrulama SMB/NTLM üzerinden gerçekleşiyordu ve kullanıcının hash'i, kimlik doğrulama sırasında bellekte saklanıyordu. Hedef bir makine ele geçirildiğinde ve NTLM hash'i çalındığında, saldırgan Pass-The-Hash saldırısı ile kullanıcı hesabının erişim yetkisine sahip olduğu her şeye ulaşabiliyordu. Daha önce belirtildiği gibi, Kerberos ticket'ları kullanıcının şifresini içermez ve ticket'ın erişim sağladığı makineyi belirtir.
 
-Bu nedenle, WinRM üzerinden makineler uzaktan erişilirken [Double Hop](https://posts.specterops.io/offensive-lateral-movement-1744ae62b14f?gi=f925425e7a42) Problemi ortaya çıkar. Bir makineye uzaktan erişmek için Kerberos dışı bir protokol kullanıldığında, NTLM şifre hash'i o oturuma bağlı olduğundan, kullanıcıdan tekrar kimlik doğrulama istenmeden bu bağlantıyı kullanarak diğer makinelere o kullanıcı olarak erişmek mümkündür. Kerberos kimlik doğrulaması ile her erişilmek istenen makine için kimlik bilgileri özel olmalıdır çünkü bir şifre bulunmamaktadır. Bu konu hakkında daha fazla bilgi için Active Directory Enumeration & Attacks modülündeki Kerberos ["Double Hop](https://academy.hackthebox.com/module/143/section/1573)" Problemi bölümüne bakabilirsiniz.
+Kerberos saldırıları ve **Golden Ticket attack** gibi tehditler hakkında konuşulduğunda, Kerberos'un zayıf bir **authentication** protokolü olduğu düşünülebilir. Ancak, Kerberos'tan önce **authentication**, `SMB / NTLM` üzerinden gerçekleşiyordu ve kullanıcının **hash** değeri, **authenticate** olduktan sonra bellekte saklanıyordu. Hedef makine ele geçirilip **NTLM hash** çalındığında, saldırgan `Pass-The-Hash attack` ile kullanıcının yetkili olduğu her şeye erişebilirdi. Daha önce belirtildiği gibi, **Kerberos ticket**'ları kullanıcının şifresini içermez ve **ticket**'ın erişim verdiği makineyi belirtir.
 
-Diyelim ki aktif oturumları olan bir makine Kerberos ile kimlik doğrulandı ve ele geçirildi. Bu durumda, Pass-The-Ticket saldırısı gerçekleştirmek mümkündür ve bu, bu modülün ilerleyen bölümlerinde açıklanıp gösterilecektir. Ancak, Pass-The-Hash saldırısının aksine, saldırgan yalnızca mağdur kullanıcının kimlik doğrulaması yaptığı kaynaklarla sınırlı olacaktır. Ayrıca, bu ticket'ların bir ömrü vardır, yani saldırganın kaynaklara erişmek ve kalıcılık sağlamaya çalışmak için sınırlı bir zaman aralığı bulunur.
+Bu nedenle, **WinRM** üzerinden makineler uzaktan erişildiğinde **Double Hop Problem** ortaya çıkar. **Non-Kerberos** bir protokol kullanılarak bir makineye uzaktan erişildiğinde, **NTLM password hash** oturuma bağlı olduğundan, aynı bağlantı kullanılarak yeniden **authenticate** olmadan başka makinelere erişmek mümkündür. Ancak, **Kerberos authentication** ile her erişilmek istenen makine için kimlik bilgileri özel olmalıdır, çünkü herhangi bir şifre bulunmaz. Bu konu hakkında daha fazla bilgi için **Active Directory Enumeration & Attacks** modülündeki **Kerberos "Double Hop" Problem** bölümüne bakabilirsiniz.
 
-Aşağıdaki bölüm, Kerberos kimlik doğrulama sürecini ayrıntılı bir şekilde açıklayarak ticket'ların nasıl korunduğunu ve ne içerdiğini ele almaktadır. Bu süreci anlamak, Kerberos ile ilgili saldırılara geçmeden önce çok önemlidir. Kerberos, Active Directory ortamında lateral hareket, ayrıcalık yükseltme ve kalıcılık sağlama amacıyla kötüye kullanılabilecek birçok yönteme sahiptir. Bu tekniklerin birçoğuyla penetrasyon testleri ve red team değerlendirmelerimiz sırasında karşılaşacağız. Güvenlik uzmanları olarak, Kerberos'un nasıl çalıştığını ve nasıl kötüye kullanılabileceğini derinlemesine anlamamız gerekmektedir. Ayrıca, Kerberos saldırılarının nasıl çalıştığını, müşterilerin bu saldırılara karşı nasıl korunabileceğini ve Kerberos suistimalini tespit etmek için doğru izleme yapılandırmalarının nasıl yapılacağını açıklamak da kritik öneme sahiptir.
+Bu nedenle, **`WinRM`** üzerinden makineler **remote** erişildiğinde [**Double Hop Problem**](https://posts.specterops.io/offensive-lateral-movement-1744ae62b14f?gi=f925425e7a42) ortaya çıkar. **Non-Kerberos** bir protokol kullanılarak bir makineye **remote** erişildiğinde, **NTLM password hash** oturuma bağlı olduğundan, aynı bağlantı kullanılarak yeniden **authenticate** olmadan başka makinelere erişmek mümkündür. Ancak, **Kerberos authentication** ile her erişilmek istenen makine için kimlik bilgileri özel olmalıdır, çünkü herhangi bir şifre bulunmaz. 
+
+Diyelim ki, aktif oturumlara sahip bir makine **Kerberos** ile **authenticate** edilmiştir. Bu durumda, **`Pass-The-Ticket attack`** gerçekleştirmek mümkündür. Ancak, **`Pass-The-Hash`**'ten farklı olarak, saldırgan sadece hedef kullanıcının **authenticate** olduğu kaynaklara erişimle sınırlıdır. Ayrıca, bu **ticket**'ların bir ömrü vardır, yani saldırganın kaynağa erişmek ve süreklilik sağlamak için sınırlı bir zaman penceresi vardır.
+
+Aşağıdaki bölüm, **Kerberos authentication** sürecini ayrıntılı olarak açıklar, **ticket**'ların nasıl korunduğu ve içerdiği bilgiler hakkında bilgi verir. Bu süreci anlamak, **Kerberos** ile ilgili saldırılara geçmeden önce çok önemlidir. **Kerberos**'un bir **Active Directory** ortamında **lateral movement**, **privilege escalation** ve **persistence** sağlama için kötüye kullanılabileceği birçok yol vardır. Bu tekniklerin çoğuyla, **penetration test** ve **red team** değerlendirmelerimiz sırasında karşılaşacağız. **Security practitioners** olarak, **Kerberos**'un nasıl çalıştığını ve nasıl faydamıza kötüye kullanılabileceğini derinlemesine anlamalıyız. Ayrıca, **Kerberos** saldırılarının nasıl çalıştığını ve müşterilerin bunlardan nasıl korunabileceklerini, ayrıca **Kerberos abuse**'u tespit etmek için doğru **monitoring**'i nasıl kuracaklarını açıklamak da çok önemlidir.
 
 
 ### Kerberos Authentication Process
 
-Kerberos context'inde, bir kullanıcı bir servise erişmek istediğinde üç varlık vardır: user (kullanıcı), service (servis) ve Key Distribution Center (Anahtar Dağıtım Merkezi) veya KDC olarak da bilinen kimlik doğrulama sunucusu.
+**Kerberos context**'inde, bir kullanıcı bir servise erişmek istediğinde üç varlık vardır: `user`, `servis` ve **`authentication server`** olarak da bilinen **Key Distribution Center (KDC)**.
 
-KDC, tüm hesapların kimlik bilgilerini bilen varlıktır.
+**KDC**, tüm hesapların kimlik bilgilerini bilen varlıktır.
 
-![Pasted image 20241205212511.png](/img/user/resimler/Pasted%20image%2020241205212511.png)
+![Pasted image 20250215171009.png](/img/user/Pasted%20image%2020250215171009.png)
 
-Kerberos protokolünü tam olarak anlamak için nasıl çalıştığını ve ne için kullanıldığını yakınlaştıracağız.
+**Kerberos protocol**'ünün nasıl çalıştığını tam olarak anlamak ve ne için kullanıldığını görmek üzere detaylara ineceğiz.
 
 
 ### Why Kerberos?
 
-Kendimize sorabileceğimiz ilk soru, bu protokolün ne için kullanıldığıdır.
+Kendimize sorabileceğimiz ilk soru, bu protokol ne için kullanılır?
 
-Bir yandan, kimlik doğrulamanın merkezileştirilmesi için kullanılır, böylece tüm hizmetlerin her kullanıcının kimlik bilgilerini bilmesi gerekmez. Bu, şifre değişikliği, yeni bir kullanıcının eklenmesi veya bir kullanıcının devre dışı bırakılması ya da silinmesi gibi durumlarda kullanıcıların düzenli olarak güncellendiği bir bağlamda son derece pratiktir. Eğer tüm hizmetlerin tüm kullanıcıların durumunu bilmesi gerekseydi, bu büyük bir karmaşıklık yaratırdı. Bunun yerine, yalnızca bir varlık olan KDC'nin mevcut kullanıcıların güncel bir listesine sahip olması gerekir.
+Bir yandan, **authentication**'ı merkezi hale getirerek, tüm servislerin her kullanıcının kimlik bilgilerini bilmesini engellemeye yarar. Bu, kullanıcıların düzenli olarak güncellenmesi gereken bir contex'de son derece pratik bir çözümdür; örneğin, şifre değişikliği, yeni bir kullanıcının eklenmesi veya bir kullanıcının devre dışı bırakılması ya da silinmesi gibi durumlar. Eğer tüm servislerin tüm kullanıcıların durumunu bilmesi gerekseydi, bu büyük bir karmaşıklık yaratırdı. Bunun yerine, yalnızca bir varlık, **KDC**, mevcut kullanıcıların güncel bir listesini tutmalıdır.
 
-Öte yandan, bu protokol kullanıcıların ağ üzerinden bir şifre göndermeden hizmetlere karşı kimlik doğrulaması yapmasına olanak tanır. Bu, ortadaki adam (on-path olarak da bilinir) saldırılarına karşı koruma sağlamak için mükemmel bir güvenlik önlemidir.
+Diğer yandan, bu protokol, kullanıcıların **password** göndermeden servislere **authenticate** olmalarını sağlar. Bu, **man-in-the-middle** (diğer adıyla **on-path**) saldırılarına karşı mükemmel bir güvenlik önlemidir.
 
 
-### Üst düzey genel bakış
+## High-level Genel Bakış 
 
 ### Tickets
 
-Her iki ihtiyacı karşılamak için Kerberos, private key'ler ve bir ticket (bilet) mekanizması kullanır. Private key'ler, pratikte, bir Active Directory ortamında, farklı hesapların şifreleri (ya da en azından bu şifrelerin bir hash'leri) olarak kullanılır.
+Her iki ihtiyacı karşılamak için **Kerberos**, private key'ler ve bir **ticket** mekanizması kullanır. private key'ler, pratikte **Active Directory** ortamında, farklı hesapların şifreleri (ya da en azından bu şifrelerin **hash**) olarak kullanılır.
 
-Üst düzey bir bakış açısıyla, bir kullanıcının bir hizmete nasıl erişebileceği aşağıda açıklanmıştır.
+Yüksek seviyede bir perspektiften, bir kullanıcının bir servise nasıl erişebileceği şu şekildedir:
 
-1. Başlamak için, kullanıcı ilk ticket'ı anahtar sunucusundan (KDC) talep eder ve bununla kim olduğunu kanıtlar. Bu, kullanıcının KDC'ye kimlik doğrulaması yaptığı andır. Bu ticket, TGT (Ticket Granting Ticket) olarak adlandırılır ve kullanıcının kimlik kartıdır. Kullanıcı hakkında ad, hesap oluşturulma tarihi, güvenlik bilgileri, kullanıcının ait olduğu gruplar vb. tüm bilgileri içerir. Bu kimlik kartı, TGT, varsayılan olarak birkaç saatle sınırlıdır. Bu ticket, KDC'ye yapılacak diğer tüm talepler için sunulur.
+1. İlk olarak, kullanıcı, kim olduğunu kanıtlamak için **key server**'dan (yani **KDC**) ilk **ticket**'ı talep eder. Bu, **client**'ın **KDC**'ye **`authenticate`** olduğu andır. Bu **ticket**, **TGT** (Ticket Granting Ticket), kullanıcının kimlik kartıdır. Kullanıcı hakkında, isim, hesap oluşturulma tarihi, güvenlik bilgileri, kullanıcının ait olduğu gruplar gibi tüm bilgileri içerir. Bu kimlik kartı, yani **TGT**, varsayılan olarak birkaç saat ile sınırlıdır. Bu **ticket**, **KDC**'ye yapılan tüm diğer isteklerde sunulur.
+    
+2. **TGT** alındıktan sonra, kullanıcı, her seferinde bir servise erişmesi gerektiğinde bunu **KDC**'ye sunar. **KDC**, sunulan **TGT**'nin geçerliliğini ve kullanıcının bunu sahte olarak oluşturmadığını doğrular ve eğer doğruysa, kullanıcıya bir **Ticket Granting Service (TGS)** **ticket**'ı ya da **Service Ticket (ST)** verir. Kullanıcının **TGT**'deki bilgileri, **TGS** **ticket**'ında yer alır.
+    
+3. Artık kullanıcı, belirli bir servis için bir **TGS ticket**'ına sahip olduğunda, bu **TGS ticket**'ını servise sunar. Servis, bu **ticket**'ın geçerliliğini kontrol eder ve her şey yolundaysa, kullanıcının bilgilerini okuyarak, kullanıcının talep edilen servisi kullanma yetkisi olup olmadığını belirler. Dolayısıyla, `service, kullanıcının erişim haklarını kontrol eder`.
 
-2. Bu TGT alındıktan sonra, kullanıcı her hizmete erişmesi gerektiğinde bunu KDC'ye sunar. KDC, gönderilen TGT'nin geçerli olduğunu ve kullanıcının bunu sahtekarca oluşturmadığını doğrular, eğer geçerliyse, kullanıcıya Ticket Granting Service (TGS) ticket'ı veya Service Ticket (ST) döner. Kullanıcının TGT'deki bilgileri, TGS ticket'ına dahil edilir.
-    
-3. Şimdi kullanıcı, belirli bir hizmet için bir TGS ticket'ına sahip olduğuna göre, bu TGS ticket'ını hizmete sunar ve hizmet, bu ticket'ın geçerliliğini kontrol eder. Her şey yolunda ise, hizmet, kullanıcının bilgilerini okuyarak, kullanıcının talep edilen hizmeti kullanmaya yetkili olup olmadığını belirler. Bu nedenle, hizmet, kullanıcının erişim haklarını kontrol eden taraftır.
+![Pasted image 20250215171650.png](/img/user/Pasted%20image%2020250215171650.png)
 
-1. **Kullanıcı Kimlik Doğrulama Talebi:**
-    
-    - **Kullanıcı**: KDC (Key Distribution Center) sunucusundan ilk ticket'ı talep eder.
-    - **KDC**: Kullanıcının kimliğini doğrulamak için şifre veya private key ile oturum açma işlemini gerçekleştirir.
-2. **TGT (Ticket Granting Ticket) Alınması:**
-    
-    - **KDC**: Kullanıcının kimliğini doğruladıktan sonra, TGT verir. Bu ticket, kullanıcının kimlik bilgilerini ve erişim bilgilerini içerir.
-    - **Kullanıcı**: TGT'yi alır ve hizmetlere erişim için kullanmaya hazır hale gelir.
-3. **Hizmet Erişimi Talebi:**
-    
-    - **Kullanıcı**: TGT'yi, erişmek istediği hizmete sunar.
-    - **KDC**: Gönderilen TGT'yi doğrular ve geçerli olduğunu onaylar. Ardından, kullanıcıya bir **TGS (Ticket Granting Service)** veya **Service Ticket (ST)** gönderir.
-4. **Hizmet Erişimi:**
-    
-    - **Kullanıcı**: TGS veya ST'yi ilgili hizmete sunar.
-    - **Hizmet**: Ticket'ı doğrular ve kullanıcının yetkilerini kontrol eder. Eğer geçerli ise, kullanıcıya erişim sağlanır.
 
-![Pasted image 20241205213257.png](/img/user/resimler/Pasted%20image%2020241205213257.png)
+### Ticket Protection
+
+Bu diyagram sayesinde, farklı değişimlerin nasıl gerçekleştiğini iyi bir şekilde anlıyoruz. Ancak, yukarıda açıklandığı gibi, **TGT** ve **TGS ticket**'ı, kullanıcıya ait tüm bilgileri içerir. **Service**, bu bilgiyi kullanarak kullanıcının erişim haklarını doğrular.
+
+KDC tarafından sağlanan bu bilgilerin korunması gerekir. Kullanıcı, bu bilgiyi sahte olarak oluşturamamalıdır. İşte burada **encryption keys** devreye girer.
+
+Her hesabın bir şifresi veya gizlisi vardır, bu da bir **encryption** ve **decryption key** olarak işlev görür. **KDC**, tüm kullanıcıların **keys**'ini bilir. **Tickets**'ları korumak için bu **keys**'ler şu şekilde kullanılır:
+
+1. **KDC**'nin kullanıcıya gönderdiği **`TGT`**, sadece `**KDC**'nin bildiği private key` ile şifrelenir. Böylece kullanıcı, kendi hakkında olan bilgileri okuyamaz veya değiştiremez. **KDC** kendisi bu bilgiyi korur.
+    
+2. **KDC**'nin kullanıcıya gönderdiği **`TGS ticket`**, `service'in private key'`iyle şifrelenir. Aynı şekilde, kullanıcı **service key**'ini bilmediği için, **`TGS ticket`**'ındaki bilgileri değiştiremez. Diğer taraftan, bu **TGS ticket**'ını servise gönderdiğinde, servis, **ticket**'ın içeriğini şifre çözerek kullanıcının bilgilerini okuyabilir.
+
+![Pasted image 20250215172532.png](/img/user/Pasted%20image%2020250215172532.png)
+
+
+### Teknik Detaylar
+
+Şimdi, kimlik doğrulama sürecinin nasıl bir araya geldiğini ve karşılaştığı çeşitli saldırılara karşı kullanılan koruma mekanizmalarını anlamak için detaylara ineceğiz. Bir servise erişimin üç aşamada gerçekleştirildiğini gördük. Bu aşamalar şu şekilde adlandırılır:
+
+1. **TGT** isteği: **Authentication Service (AS)**
+2. **TGS** isteği: **Ticket-Granting Service (TGS)**
+3. **Service** isteği: **Application Request (AP)**
+
+**Client** her aşamada bir istek gönderir ve sunucu yanıt verir. Bu üç değişimin nasıl çalıştığını, **tickets**'ların nasıl korunduğunu ve hangi **key** ile korunduğunu açıklayacağız.
+
+
+
+### Authentication Service (AS)
+
+#### Request (AS-REQ)
+
+İlk olarak, kullanıcı bir **TGT** (ya da kimlik kartı) isteği yapar. Bu isteğe **`AS-REQ`** denir. Ancak **TGT** almak için, kimliklerini kanıtlamaları gerekmektedir. Bu istek, **KDC**'ye yapılır (bu, **Active Directory** ortamında **Domain Controller**'dır). **KDC**, tüm kullanıcı anahtarlarını tutar.
+
+Kimliklerini kanıtlamak için kullanıcı, bir **`authenticator`** gönderir. Bu, kullanıcının kendi **private key**'iyle şifreleyeceği mevcut **time stamp**'tir. Kullanıcı adı da açık metin olarak gönderilir, böylece **KDC** kiminle işlem yapıldığını anlayabilir.
+
+![Pasted image 20250215173404.png](/img/user/Pasted%20image%2020250215173404.png)
+
+Bu isteği aldıktan sonra, **KDC** kullanıcı adını alacak, ilişkili anahtarı dizininde arayacak ve **authenticator**'ı şifre çözüp çözmediğini kontrol edecektir. Eğer başarılı olursa, bu, kullanıcının kendi **private key**'ini veritabanında kayıtlı olanla aynı şekilde kullandığı anlamına gelir ve kimlik doğrulaması yapılmış olur. Aksi takdirde, kimlik doğrulaması başarısız olur.
+
+Bu adım,  `pre-authentication` (**önceden kimlik doğrulama**) olarak adlandırılır, zorunlu değildir ancak tüm hesaplar `varsayılan olarak` bunu yapmak zorundadır. Ancak, bir **administrator**'ın önceden kimlik doğrulamayı devre dışı bırakabileceğini belirtmek gerekir. Bu durumda, **client** artık bir **authenticator** göndermek zorunda değildir. **KDC** her durumda **TGT**'yi gönderecektir. Bunu başka bir bölümde ele alacağız.
+
+
+### Response (AS-REP)
+
+**KDC**, dolayısıyla **client**'ın **TGT** talebini almıştır. Eğer **KDC** **authenticator**'ı başarıyla çözebiliyorsa (veya eğer **client** için önceden kimlik doğrulama devre dışı bırakılmışsa), kullanıcıya **AS-REP** adlı bir yanıt gönderir.
+
+Kalan tüm değiş tokuşları korumak için, **KDC** kullanıcıya yanıt vermeden önce `geçici bir session key` oluşturur. **Client**, bu anahtarı sonraki değiş tokuşlar için kullanacaktır. **KDC**, tüm bilgileri kullanıcının anahtarı ile şifrelemekten kaçınır. Daha önce belirttiğimiz gibi, **Kerberos** stateless bir protokoldür, bu yüzden **KDC** bu **session key**'i herhangi bir yerde saklamaz.
+
+**AS-REP** yanıtında bulacağımız iki öğe vardır:
+
+1. İlk olarak, kullanıcının talep ettiği **TGT**'yi bekliyoruz. Bu, tüm kullanıcının bilgilerini içerir ve **KDC**'nin anahtarı ile korunur, böylece kullanıcı bunu değiştiremez. Ayrıca, `oluşturulan` **`session key`**'in bir `kopyasını` da içerir.
+    
+2. İkinci olarak, **`session key`** vardır, ancak bu sefer `kullanıcının anahtarı` ile korunmuş bir şekilde.
+
+![Pasted image 20250215173834.png](/img/user/Pasted%20image%2020250215173834.png)
+
+Bu nedenle, bu **session key** yanıt içinde iki kez yer alır—bir versiyonu **KDC**'nin anahtarı ile korunur, diğeri ise kullanıcının anahtarı ile korunur.
+
+
+### Ticket-Granting Service (TGS)
+
+**Ticket-Granting Service (TGS)**, **Key Distribution Center (KDC)**'nin bir bileşenidir ve **service** **tickets**'lerini vermekten sorumludur.
+
+Genellikle, **Active Directory** alanındaki bir **domain controller** üzerinde barındırılır. Bir **client** veya bilgisayar bir **service ticket** talep ettiğinde, istek **KDC**'nin **TGS** bileşenine gönderilir. **TGS**, kullanıcının veya bilgisayarın kimliğini doğrular ve istenilen kaynağa erişim iznini kontrol eder. Ardından, kaynağa erişim sağlamak için kullanılabilecek bir **service ticket** verir.
+
+
+### Request (TGS-REQ)
+
+**Client**, artık **TGT** talebine karşılık olarak **server**'dan bir yanıt almıştır. Bu yanıt, **KDC**'nin anahtarıyla korunmuş olan **TGT** ve **client**'ın/kullanıcının anahtarıyla korunmuş bir **session key** içerir. **Client**, bu bilgiyi çözebilir ve geçici **session key**'i çıkarabilir.
+
+Kullanıcının bir sonraki adımı, bir **Service Ticket (ST)** veya **TGS ticket** talep etmek için **TGS-REQ** mesajı göndermektir. Bunu yapmak için **KDC**'ye üç şey iletecektir:
+
+1. Erişmek istedikleri **service**'in adı (**SERVICE/HOST**, bu **Service Principal Name (SPN)** temsilidir)
+2. Önceden aldıkları **TGT**, içinde kullanıcı bilgileri ve **session key**'in bir kopyası bulunan
+3. Bu noktada **session key** kullanılarak şifrelenmiş bir **authenticator**
+
+![Pasted image 20250215175149.png](/img/user/Pasted%20image%2020250215175149.png)
+
+
+### Response (TGS-REP)
+
+**KDC**, bu **TGS** talebini aldığında, **Kerberos** bir **stateless** protokol olduğu için, daha önce hangi bilgilerin değiş tokuş edildiği hakkında hiçbir fikri yoktur. Yine de, **TGS** talebinin geçerliliğini doğrulamalıdır. Bunu yapmak için **authenticator**'ın doğru **session key** ile şifrelendiğini doğrulamalıdır. Peki, **KDC** kullanılan **session key**'in doğru olduğunu nasıl bilecek? Hatırlayın ki, **TGT** içinde bir **session key** kopyası vardı. **KDC**, **TGT**'yi çözerek (bu sırada **TGT**'nin doğruluğunu kontrol ederek) **session key**'i çıkaracak. Bu **session key** ile **authenticator**'ın geçerliliğini doğrulayabilecektir.
+
+Eğer bu işlemler doğru şekilde yapılırsa, **KDC** sadece talep edilen **service**'i okumalı ve **TGS-REP** mesajı ile kullanıcıya yanıt vermelidir. Daha önce **user** ile **KDC** arasındaki değiş tokuşlar için bir **session key** üretildiğini görmüştük. İşte burada da aynı şey geçerlidir. Kullanıcı ile **service** arasındaki gelecekteki değiş tokuşlar için yeni bir **session key** oluşturulur. Ve daha önce olduğu gibi, bu **session key** **KDC**'nin kullanıcıya gönderdiği yanıtta iki yerde bulunacaktır. İşte **KDC** tarafından gönderilen tüm öğeler:
+
+Bir **service ticket** veya **TGS ticket** içeren üç öğe:
+
+1. Talep edilen **service**'in adı (SPN'si)
+2. **TGT**'de bulunan kullanıcının bilgileri kopyası. **Service**, bu bilgileri okuyarak kullanıcının bu **service**'i kullanmaya yetkili olup olmadığını belirleyecektir.
+3. **Session key** kopyası
+
+Tüm bu bilgiler, **user/KDC session key** ile şifrelenmiştir. Bu şifreli yanıt içinde, kullanıcının bilgileri ve **user/service session key** kopyası, **service key** ile şifrelenmiştir. Bu durumu daha iyi anlamak için bir diyagram yardımcı olacaktır.
+
+
+## Application Request (AP)
+
+### Request (AP-REQ)
+
+Kullanıcı, şimdi bu yanıtı çözerek **user/service session key**'i ve **TGS ticket**'ı çıkarabilir, ancak **TGS ticket**'ı **service key** ile korunmaktadır. Kullanıcı bu **TGS ticket**'ı değiştiremez, bu yüzden haklarını değiştiremez, tıpkı **TGT**'de olduğu gibi.
+
+Kullanıcı sadece bu **TGS ticket**'ı **service**'e iletecek ve tıpkı **TGS request**'te olduğu gibi bir **authenticator** ekleyecektir. Kullanıcı bu **authenticator**'ı neyle şifreleyecek? Tahmin ettiğiniz gibi, yeni çıkardığı **user/service session key** ile. Bu süreç, önceki **TGS request**'iyle oldukça benzerdir.
+
+![Pasted image 20250215175652.png](/img/user/Pasted%20image%2020250215175652.png)
+
+
+
+### Response (AP-REP)
+
+Service nihayet **TGS ticket**'ını ve **user/service session key** ile şifrelenmiş bir **authenticator**'ı alır. Bu **TGS ticket**'ı **service key** ile korunmaktadır, böylece service bunu çözebilir. Unutmayın ki **user/service session key**'in bir kopyası **TGS ticket**'ına gömülü olduğu için, bu anahtarı çıkarabilir ve **authenticator**'ın geçerliliğini bu oturum anahtarıyla kontrol edebilir.
+
+Her şey düzgün giderse, service nihayet kullanıcının bilgilerini okuyabilir, hangi gruplara ait olduğunu öğrenebilir ve erişim kurallarına göre kullanıcıya service'e erişim izni verebilir veya reddedebilir. Kimlik doğrulama başarılı olursa, service, **AP-REP** mesajıyla client'e yanıt verir ve **timestamp**'i çıkarılan oturum anahtarıyla şifreler. Client, bu mesajın service'ten geldiğini doğrulayabilir ve service isteklerini göndermeye başlayabilir.
+
+
+Gördüğünüz gibi, tüm süreç paylaşılan anahtarlara dayanır ve üçlü bir iş birliğine dayanır. Bu, kullanıcıları ve servisleri **ticket** çalınması ve yeniden oynatılmasına karşı korur, çünkü saldırganlar geçerli **authenticator**'lar oluşturmak için anahtarları bilmeyeceklerdir. Ancak, yine de Kerberos'u saldırmak için kullanabileceğimiz bazı zayıflıklar ve yanlış yapılandırmalar vardır, bunları sonraki bölümlerde ele alacağız.  
+
+Kerberos protokolü, işleyişi ve bileşenleri hakkında daha fazla açıklama yapmak isterseniz, [ATTL4S](https://twitter.com/DaniLJ94)'in [blogundaki](https://attl4s.github.io/) ve YouTube kanalındaki videolarını gözden geçirebilirsiniz: 
+
+[You Do (Not) Understand Kerberos.](https://www.youtube.com/watch?v=4LDpb1R3Ghg&list=PLwb6et4T42wyb8dx-LQAA0PzLjw6ZlrXh)
