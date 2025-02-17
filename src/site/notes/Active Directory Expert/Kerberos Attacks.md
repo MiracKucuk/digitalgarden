@@ -1099,3 +1099,68 @@ Bu örnekte, **WEBSRV** yalnızca **SQL/DBSRV service**'ine kimlik doğrulaması
 ![Pasted image 20250215213301.png](/img/user/Pasted%20image%2020250215213301.png)
 
 **Constrained delegation**, **unconstrained delegation** ile aynı yerde, **service account**'ın **Delegation** sekmesinde yapılandırılabilir. **"Trust this computer for delegation to specified services only"** seçeneği seçilmelidir. **Kerberos Only** ve **Use any authentication protocol** arasındaki seçim konusunu daha sonra açıklayacağız.
+
+![Pasted image 20250215213347.png](/img/user/Pasted%20image%2020250215213347.png)
+
+Unconstrained delegation'da olduğu gibi, bu seçenek varsayılan olarak bir **service account** tarafından değiştirilemez. Bu seçenek etkinleştirildiğinde, **yetkilendirilen servislerin listesi**, delegasyondan sorumlu **service account**'un **`msDS-AllowedToDelegateTo`** özelliğinde saklanır.
+
+![Pasted image 20250215214213.png](/img/user/Pasted%20image%2020250215214213.png)
+
+Unconstrained delegation'da kullanıcının **TGT**'sinin bir kopyası **service account**'a gönderilirken, **constrained delegation**'da bu durum geçerli değildir. Eğer **service account** (bu örnekte **WEBSRV**) bir kullanıcı adına bir kaynağa (**SQL/DBSRV**) kimlik doğrulaması yapmak isterse, **domain controller**'a özel bir **TGS request** göndermesi gerekir. Klasik bir **TGS request**'e kıyasla iki alan değiştirilir:
+
+- **`Additional tickets`** alanı, kullanıcının **service**'e gönderdiği **TGS ticket** veya **Service Ticket**'ın bir kopyasını içerecektir.
+- **`cname-in-addl-tkt`** bayrağı, **Domain Controller**'a **server** bilgisini değil, **`additional tickets`** içindeki **ticket** bilgisini kullanması gerektiğini belirtmek için ayarlanacaktır. Yani, sunucunun kimliğini değil, **impersonate** edilmek istenen kullanıcının kimliğini kullanmasını sağlar.
+
+**Domain Controller**, ardından **service**'in istenen kaynağa kimlik doğrulamasını devretme yetkisine sahip olup olmadığını ve **TGS ticket** veya **Service Ticket**'ın **forwardable** olup olmadığını doğrular (varsayılan olarak etkindir ancak, kullanıcının **UAC flags** ayarlarında **`Account is sensitive and cannot be delegated`** bayrağı etkinleştirilirse devre dışı bırakılabilir). Eğer her şey yolunda giderse, **Domain Controller**, son kaynağa erişim sağlamak için **service**'e **kullanıcının bilgilerini içeren bir TGS ticket veya Service Ticket** döndürür.
+
+
+### Resource-Based Constrained Delegation
+
+Şu ana kadar, **delegation** yönetimi, bir **resource**'a erişmek için bir kullanıcıyı **impersonate** etmek isteyen **service** seviyesinde gerçekleştiriliyordu. **Resource-based constrained delegation**, bu sorumlulukları tersine çevirir ve **delegation** yönetimini doğrudan **final resource**'a kaydırır. Artık **service** seviyesinde hangi **resource**'lara **delegation** yapılabileceği listelenmez. Bunun yerine, **resource** seviyesinde bir **trust list** oluşturulur. Bu listeye eklenen herhangi bir hesap, ilgili **resource**'a erişmek için kimlik doğrulamasını **delegate** etme hakkına sahip olur.
+
+Bu örnekte, **`DBSRV$`** hesabının **trusted list**'inde yalnızca **`WEBSRV$`** hesabı bulunmaktadır. Dolayısıyla, **`WEBSRV$`**, bir kullanıcıyı **impersonate** ederek **`DBSRV`** tarafından sunulan bir **service**'e erişmeye çalışırsa, bu işlem yetkilendirilir. Öte yandan, diğer hesapların **`DBSRV`** tarafından sağlanan herhangi bir **service**'e kimlik doğrulamasını **delegate** etmelerine izin verilmez.
+
+![Pasted image 20250215214642.png](/img/user/Pasted%20image%2020250215214642.png)
+
+Diğer iki **delegation** türünden farklı olarak, **resource**, kendi **trusted list**'ini değiştirme hakkına sahiptir. Bu nedenle, herhangi bir **service account**, kendi **trusted list**'ine bir veya daha fazla hesap ekleyerek, bu hesapların kendisine kimlik doğrulamasını **delegate** etmesine izin verebilir.
+
+Bir **service account**, **trusted list**'ine bir veya daha fazla hesap eklediğinde, dizindeki **`msDSAllowedToActOnBehalfOfOtherIdentity`** **attribute**'unu günceller.
+
+Aşağıdaki **PowerShell** komutunda, **`WEBSRV$`** hesabını **DBSRV**'nin **trusted list**'ine ekliyoruz.
+
+
+### DBSRV'nin **Trusted List**'ine WEBSRV'yi Ekle
+
+```
+PS C:\Tools> Import-Module ActiveDirectory
+PS C:\Tools> Set-ADComputer DBSRV -PrincipalsAllowedToDelegateToAccount (Get-ADComputer WEBSRV) 
+```
+
+![Pasted image 20250215214918.png](/img/user/Pasted%20image%2020250215214918.png)
+
+Attribute, beklendiği gibi dizinde güncellenir.
+
+**Delegation** isteği, **constrained delegation** ile aynıdır. **Service account**, belirli bir kaynağa erişmek için bir **TGS request** yapar. Kullanıcının **TGS ticket**'ının bir kopyası bu isteğe eklenir. **Domain Controller**, bu **service**'in istenen kaynağın **trusted list**'inde olup olmadığını kontrol eder. Eğer öyleyse, **service**'e bu kaynağa kullanıcı olarak erişmesi için bir **TGS ticket** sağlar.
+
+
+## S4U2Proxy & S4U2Self
+
+**S4U2Proxy ([Service for User to Proxy](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-sfu/bde93b0e-f3c9-4ddf-9f44-e1453be7af5a))** ve **S4U2Self ([Service for User to Self](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-sfu/02636893-7a1f-4357-af9a-b672e3e3de13))** garip isimler gibi gelebilir, ancak bunlardan birini zaten açıkladık. Bunlar, **delegation** işlemini mümkün kılan iki [**Active Directory extension**](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-sfu/8ee85a47-7526-4184-a7c5-25a5e4155d7d)'dır.
+
+
+### S4U2Proxy
+
+Zaten **`S4U2Proxy`**'nin nasıl çalıştığını açıklamıştık. Bu extension, bir service hesabının bir kullanıcıyı taklit etmek için yaptığı **TGS** isteğine karşılık gelir. Service hesabı, belirli bir kaynağa erişim sağlamak için bu **TGS** isteğini yapar ve kullanıcının **TGS ticket**'ının bir kopyası bu isteğe dahil edilir. **Domain Controller** daha sonra, servisin istenen kaynağa kimlik doğrulama delegasyonu yapma yetkisine sahip olup olmadığını kontrol eder. Eğer durum böyleyse, servise bu kaynağa kullanıcı olarak erişmesi için bir **TGS ticket** sağlar.
+
+
+### S4U2Self
+
+Peki ya bir kullanıcı, Kerberos kullanmadan ve dolayısıyla bir **TGS ticket** sağlamadan servise kimlik doğrulaması yaparsa ne olur? Bu, kimlik doğrulama mekanizmasının **NTLM** protokolünü kullandığı durumlarda olabilir. İşte bu soruya **`S4U2Self`** extension'ı bir çözüm sunar.
+
+Bu adım, **`S4U2Proxy`**'den önce yapılır çünkü service hesabının isteğine dahil etmek için bir kullanıcının **TGS ticket**'ı yoktur. **S4U2Self** extension'ı, bir service'in, belirli bir kullanıcı adına, kendisi için taşınabilir bir **TGS ticket** almasını sağlar. Böylece, örneğin bir kullanıcı **NTLM** üzerinden servise kimlik doğrulaması yaparsa, service önce kendisi için, kullanıcı adına taşınabilir bir **TGS ticket** talep eder ve bu sayede kullanıcının **Kerberos** üzerinden kimlik doğrulaması yapmış gibi davranabilir. Ardından, service bu özel **TGS ticket**'ına sahip olduğunda, **S4U2Proxy**'yi kullanarak istenen kaynağa erişim sağlamak için **TGS request**'ini yapabilir ve yeni talep ettiği taşınabilir **TGS ticket**'ı isteğe dahil eder.
+
+Bu extension, kimlik doğrulama protokollerinin her zaman kullanıcı ile service'ler arasında aynı olmaması durumunda bile delegasyonu sağlar. Buna **protokol geçişi** (protocol transition) denir.
+
+İşte bu özellik, sınırlı delegasyonda etkinleştirilebilir veya devre dışı bırakılabilir. Eğer **Use Kerberos only** seçeneği seçilirse, service hesabı protokol geçişi yapamaz, dolayısıyla **S4U2Self** extension'ını kullanamaz. Öte yandan, **Use any authentication protocol** seçeneği ayarlandığında, service hesabı **S4U2Self** extension'ını kullanabilir ve dolayısıyla rastgele bir kullanıcı için bir **TGS ticket** oluşturabilir.
+
+![Pasted image 20250215224041.png](/img/user/Pasted%20image%2020250215224041.png)

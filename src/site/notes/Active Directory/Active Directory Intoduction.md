@@ -4,72 +4,73 @@
 
 
 ### Neden Active Directory?
-Active Directory (AD), Windows ağ ortamları için bir ==dizin== servisidir. Kullanıcılar, bilgisayarlar, gruplar, ağ aygıtları, dosya paylaşımları, group  policy, aygıtlar ve trustlar dahil olmak üzere bir kuruluşun kaynaklarının ==merkezi== olarak yönetilmesini sağlayan dağıtılmış, ==hiyerarşik== bir yapıdır. AD, bir Windows domain ortamında ==kimlik doğrulama ve yetkilendirme== işlevleri sağlar. 
 
-Geriye dönük uyumlu olacak şekilde tasarlanmıştır ve birçok özelliği tartışmalı bir şekilde ==“varsayılan olarak güvenli” değildir== ve kolayca yanlış yapılandırılabilir. Bu zayıflık, bir ağ içinde lateral ve dikey olarak hareket etmek ve yetkisiz erişim elde etmek için kullanılabilir. AD esasen, ayrıcalık düzeylerine bakılmaksızın domain içindeki tüm kullanıcıların erişebildiği büyük bir ==salt okunur veritabanıdır==. Ek ayrıcalıkları olmayan temel bir AD kullanıcı hesabı, AD içindeki çoğu object'i numaralandırabilir.
+Active Directory (AD), Windows ağ ortamları için bir `dizin` servisidir. Kullanıcılar, bilgisayarlar, gruplar, ağ aygıtları, dosya paylaşımları, group  policy, aygıtlar ve trustlar dahil olmak üzere bir kuruluşun kaynaklarının `merkezi` olarak yönetilmesini sağlayan dağıtılmış, `hiyerarşik` bir yapıdır. AD, bir Windows domain ortamında `kimlik doğrulama ve yetkilendirme` işlevleri sağlar. 
 
-"==Geriye dönük uyumlu olacak şekilde tasarlanmıştır==" ifadesi, Active Directory (AD) gibi sistemlerin, eski sürümleriyle veya eski sistemlerle sorunsuz çalışabilmesi için tasarlandığını belirtir. Yani, AD'nin daha eski Windows sürümleriyle, eski protokollerle veya eski altyapılarla uyumlu çalışması sağlanmıştır. Bu tür tasarımlar, eski sistemlerde çalışan yazılımların ve yapılandırmaların yeni sürümlerde de çalışmaya devam etmesini amaçlar"
+Geriye dönük uyumlu olacak şekilde tasarlanmıştır ve birçok özelliği tartışmalı bir şekilde `“varsayılan olarak güvenli”` değildir ve kolayca yanlış yapılandırılabilir. Bu zayıflık, bir ağ içinde lateral ve dikey olarak hareket etmek ve yetkisiz erişim elde etmek için kullanılabilir. AD esasen, ayrıcalık düzeylerine bakılmaksızın domain içindeki tüm kullanıcıların erişebildiği büyük bir `salt okunur veritabanıdır.` Ek ayrıcalıkları olmayan temel bir AD kullanıcı hesabı, AD içindeki çoğu object'i numaralandırabilir.
+
+"`Geriye dönük uyumlu olacak şekilde tasarlanmıştır`" ifadesi, Active Directory (AD) gibi sistemlerin, eski sürümleriyle veya eski sistemlerle sorunsuz çalışabilmesi için tasarlandığını belirtir. Yani, AD'nin daha eski Windows sürümleriyle, eski protokollerle veya eski altyapılarla uyumlu çalışması sağlanmıştır. Bu tür tasarımlar, eski sistemlerde çalışan yazılımların ve yapılandırmaların yeni sürümlerde de çalışmaya devam etmesini amaçlar"
 
 ![Pasted image 20240927121557.png](/img/user/resimler/Pasted%20image%2020240927121557.png)
 
 
-Saldırganın AD ortamına standart bir domain kullanıcısı olarak girmesini sağlayan **==phishing==** gibi başarılı bir saldırı, domainin haritasını çıkarmaya ve saldırı yollarını aramaya başlamak için yeterli erişim sağlayacaktır.
+Saldırganın AD ortamına standart bir domain kullanıcısı olarak girmesini sağlayan **`phishing`** gibi başarılı bir saldırı, domainin haritasını çıkarmaya ve saldırı yollarını aramaya başlamak için yeterli erişim sağlayacaktır.
 
 
 ### **Active Directory Tarihçesi ve Evrimi**
 
 - **LDAP ve X.500**: AD, LDAP protokolü üzerine kuruludur ve ilk kez 1971'de RFC'lerde tanıtılmıştır. X.500 ise ilk dizin sistemlerinin temeli olmuştur.
-- **Windows NT ve AD**: Windows NT, 1990'larda AD'nin temellerini atarak LDAP ve Kerberos gibi protokolleri entegre etmiştir.
-- **Windows Server 2003**: AD'deki işlevsellik geliştirilmiş ve "Forest" özelliği eklenmiştir. Bu özellik, ayrı domain'leri aynı yapıda yönetmeyi sağlar.
-- **Azure AD Connect**: 2016 yılında Microsoft, bulut tabanlı kimlik doğrulama için Azure AD Connect'i tanıttı.
+- **Windows NT ve AD**: Windows NT, 1990'larda AD'nin temellerini atarak `LDAP` ve `Kerberos` gibi protokolleri entegre etmiştir.
+- **Windows Server 2003**: AD'deki işlevsellik geliştirilmiş ve "`Forest`" özelliği eklenmiştir. Bu özellik, ayrı domain'leri aynı yapıda yönetmeyi sağlar.
+- **Azure AD Connect**: 2016 yılında Microsoft, cloud tabanlı kimlik doğrulama için `Azure AD Connect`'i tanıttı.
 
 Active Directory (AD) güvenliği, son on yılda güvenlik araştırmacılarının büyük bir odak noktası olmuştur. 2014 yılından itibaren, AD'yi hedef alan birçok saldırı tekniği ve araç geliştirilmiş ve günümüzde hala yaygın olarak kullanılmaktadır. Aşağıda, bu alandaki en önemli keşifler ve araçların kronolojik bir özeti bulunmaktadır:
 
 
 ### 2021
 
-- **PrintNightmare**: Windows ==Print Spooler'ındaki== remote kod çalıştırma açığı.
+- **PrintNightmare**: Windows `Print Spooler'ındaki` remote kod çalıştırma açığı.
 - **Shadow Credentials**: Düşük ayrıcalıklı kullanıcıların başka hesapları taklit etmesine ve ayrıcalık yükseltmesine olanak tanır.
-- **noPac Attack**: Aralık 2021'de keşfedilen bu saldırı, standart bir domain kullanıcısından tüm domain kontrolünü ele geçirme imkânı sağlar.
+- **`noPac Attack`**: Aralık 2021'de keşfedilen bu saldırı, standart bir domain kullanıcısından tüm domain kontrolünü ele geçirme imkânı sağlar.
 
 ### 2020
 
-- **ZeroLogon**: Domain controller'ları taklit etme açığı, kritik bir güvenlik açığıdır.
+- **`ZeroLogon`**: Domain controller'ları taklit etme açığı, kritik bir güvenlik açığıdır.
 
 ### 2019
 
-- **Kerberoasting Revisited**: harmj0y'nin DerbyCon'da sunduğu sunum, Kerberoasting için yeni teknikler sundu.
+- **`Kerberoasting Revisited`**: harmj0y'nin DerbyCon'da sunduğu sunum, Kerberoasting için yeni teknikler sundu.
 - **RBCD Abuse**: Elad Shamir, kaynak tabanlı sınırlı delegasyonu (RBCD) kötüye kullanma yöntemlerini sundu.
 
 ### 2018
 
-- **Printer Bug**: Lee Christensen tarafından keşfedilen baskı hatası, Windows'un başka makinelerle kimlik doğrulaması yapmasına neden olabilir.
+- **`Printer Bug`**: Lee Christensen tarafından keşfedilen baskı hatası, Windows'un başka makinelerle kimlik doğrulaması yapmasına neden olabilir.
 - **Rubeus Toolkit**: harmj0y tarafından Kerberos saldırıları için geliştirilen araç.
 - **DCShadow**: Vincent LE TOUX ve Benjamin Delpy tarafından tanıtıldı; bu teknik, domain controller'ların taklit edilmesiyle ilgili bir saldırıdır.
 
 ### 2017
 
-- **ASREPRoast**: Kerberos ön doğrulama gerektirmeyen kullanıcı hesaplarına yönelik saldırı tekniği.
+- **`ASREPRoast`**: Kerberos `ön doğrulama` gerektirmeyen kullanıcı hesaplarına yönelik saldırı tekniği.
 - **ACE Up the Sleeve**: harmj0y ve _wald0 tarafından Black Hat ve DEF CON'da yapılan sunum, AD ACL saldırılarını ele almıştır.
 
 ### 2016
 
-- **BloodHound**: AD'deki saldırı yollarını görselleştiren önemli bir araç.
+- **`BloodHound`**: AD'deki saldırı yollarını görselleştiren önemli bir araç.
 
 ### 2015
 
-- **PowerShell Empire**: Güçlü bir PowerShell tabanlı remote yönetim aracıdır.
-- **PowerView 2.0**: Active Directory keşfi için önemli bir araç.
-- **DCSync**: Domain controller'ların parola verilerini çekmek için kullanılan bir teknik, mimikatz aracında yer alır.
+- **`PowerShell Empire`**: Güçlü bir PowerShell tabanlı remote yönetim aracıdır.
+- **`PowerView 2.0`**: Active Directory keşfi için önemli bir araç.
+- **`DCSync`**: Domain controller'ların parola verilerini çekmek için kullanılan bir teknik, mimikatz aracında yer alır.
 
 ### 2014
 
-- **Veil-PowerView**: AD keşfi için kullanılan bir araç, PowerSploit framework'üne dahil edilmiştir.
-- **Kerberoasting**: Tim Medin tarafından tanıtılan, Kerberos servis biletlerinin ele geçirilmesi saldırısı.
+- **`Veil-PowerView`**: AD keşfi için kullanılan bir araç, PowerSploit framework'üne dahil edilmiştir.
+- **`Kerberoasting`**: Tim Medin tarafından tanıtılan, Kerberos servis ticketlarının ele geçirilmesi saldırısı.
 
 ### 2013
 
-- **Responder**: LLMNR, NBT-NS ve MDNS protokollerini posing'leyerek parola hash'lerini elde etmek için kullanılan bir araçtır.
+- **`Responder`**: `LLMNR`, `NBT-NS` ve `MDNS` protokollerini posing'leyerek parola hash'lerini elde etmek için kullanılan bir araçtır.
 
 Bu araştırmalar ve araçlar, AD ortamlarını güvence altına alabilmek için önemlidir. Yeni saldırı teknikleri ve araçlar sürekli gelişmekte ve AD'nin güvenliğini sağlamak her geçen gün daha zor hale gelmektedir.
 
@@ -77,9 +78,10 @@ Bu araştırmalar ve araçlar, AD ortamlarını güvence altına alabilmek için
 
 
 # Active Directory Structure
-[Active Directory (AD)](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview), Windows ağ ortamları için bir ==dizin== servisidir. Kullanıcılar, bilgisayarlar, gruplar, ağ aygıtları ve dosya paylaşımları, grup policy'ler, sunucular ve workstationlar ve trustlar dahil olmak üzere bir kuruluşun kaynaklarının ==merkezi== olarak yönetilmesini sağlayan dağıtılmış, hiyerarşik bir yapıdır. AD, bir Windows domain ortamında ==kimlik doğrulama== ve ==yetkilendirme== fonksiyonları sağlar. Active Directory Domain Services (AD DS) gibi bir dizin hizmeti, bir kuruluşa dizin verilerini depolama ve aynı ağdaki hem standart kullanıcılar hem de yöneticiler için kullanılabilir hale getirme yolları sunar. [AD DS (Active Directory Domain Services)](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview), kullanıcı adları ve parolalar gibi bilgileri depolar ve yetkili kullanıcıların bu bilgilere erişmesi için gereken hakları yönetir. İlk olarak Windows Server 2000 ile birlikte gönderilmiştir; son yıllarda artan saldırılara maruz kalmıştır. Geriye dönük olarak uyumlu olacak şekilde tasarlanmıştır ve birçok özelliği tartışmalı bir şekilde “varsayılan olarak güvenli” değildir. Özellikle kolayca yanlış yapılandırılabileceği büyük ortamlarda düzgün bir şekilde yönetilmesi zordur.
 
-Active Directory kusurları ve yanlış yapılandırmaları genellikle bir dayanak noktası (==“internal access”==) elde etmek, bir ağ içinde yanal ve dikey olarak hareket etmek ve veritabanları, dosya paylaşımları, kaynak kodu ve daha fazlası gibi korunan kaynaklara yetkisiz erişim elde etmek için kullanılabilir. AD esasen, ayrıcalık düzeylerine bakılmaksızın domain içindeki tüm kullanıcıların erişebildiği büyük bir veritabanıdır. Ek ayrıcalıkları olmayan temel bir AD kullanıcı hesabı, bunlarla sınırlı olmamak üzere AD'de bulunan objectlerin çoğunu numaralandırmak için kullanılabilir:
+[Active Directory (AD)](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview), Windows ağ ortamları için bir `dizin` servisidir. Kullanıcılar, bilgisayarlar, gruplar, ağ aygıtları ve dosya paylaşımları, grup policy'ler, sunucular ve workstationlar ve trustlar dahil olmak üzere bir kuruluşun kaynaklarının `merkezi` olarak yönetilmesini sağlayan dağıtılmış, hiyerarşik bir yapıdır. AD, bir Windows domain ortamında `authentication` ve `authorization` fonksiyonları sağlar. Active Directory Domain Services (AD DS) gibi bir dizin hizmeti, bir kuruluşa dizin verilerini depolama ve aynı ağdaki hem standart kullanıcılar hem de yöneticiler için kullanılabilir hale getirme yolları sunar. [AD DS (Active Directory Domain Services)](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview), kullanıcı adları ve parolalar gibi bilgileri depolar ve yetkili kullanıcıların bu bilgilere erişmesi için gereken hakları yönetir. İlk olarak Windows Server 2000 ile birlikte gönderilmiştir; son yıllarda artan saldırılara maruz kalmıştır. Geriye dönük olarak uyumlu olacak şekilde tasarlanmıştır ve birçok özelliği tartışmalı bir şekilde “`varsayılan olarak güvenli`” değildir. Özellikle kolayca yanlış yapılandırılabileceği büyük ortamlarda düzgün bir şekilde yönetilmesi zordur.
+
+Active Directory kusurları ve yanlış yapılandırmaları genellikle bir dayanak noktası                   (“`internal access`”) elde etmek, bir ağ içinde `yanal` ve `dikey` olarak hareket etmek ve veritabanları, dosya paylaşımları, kaynak kodu ve daha fazlası gibi korunan kaynaklara yetkisiz erişim elde etmek için kullanılabilir. AD esasen, ayrıcalık düzeylerine bakılmaksızın domain içindeki tüm kullanıcıların erişebildiği büyük bir veritabanıdır. Ek ayrıcalıkları olmayan temel bir AD kullanıcı hesabı, bunlarla sınırlı olmamak üzere AD'de bulunan objectlerin çoğunu numaralandırmak için kullanılabilir:
 
 |                          |                             |
 | ------------------------ | --------------------------- |
@@ -89,9 +91,10 @@ Active Directory kusurları ve yanlış yapılandırmaları genellikle bir dayan
 | Password Policy          | Group Policy Objects (GPOs) |
 | Domain Trusts            | Access Control Lists (ACLs) |
 
-Active Directory hiyerarşik bir tree yapısında düzenlenmiştir; en üstte bir veya daha fazla domain içeren bir ==forest== bulunur ve bu domainler kendi içlerinde subdomain'lere sahip olabilirler. Forest, tüm objectlerin yönetim kontrolü altında olduğu güvenlik sınırıdır. Bir forest birden fazla domain içerebilir ve bir domain başka subdomainler  içerebilir. Domain, içerdiği objectlerin (kullanıcılar, bilgisayarlar ve gruplar) erişilebilir olduğu bir yapıdır. ==Domain Controllers, Users, Computers== gibi birçok built-in Organizasyonel Unit'e (OU) sahiptir ve gerektiğinde yeni OU'lar oluşturulabilir. OU'lar, farklı group policy'nin atanmasına olanak tanıyan objectler ve alt OU'lar içerebilir.
+Active Directory hiyerarşik bir tree yapısında düzenlenmiştir; en üstte bir veya daha fazla domain içeren bir `forest` bulunur ve bu domainler kendi içlerinde subdomain'lere sahip olabilirler. Forest, tüm objectlerin yönetim kontrolü altında olduğu güvenlik sınırıdır. Bir forest birden fazla domain içerebilir ve bir domain başka subdomainler  içerebilir. Domain, içerdiği objectlerin (kullanıcılar, bilgisayarlar ve gruplar) erişilebilir olduğu bir yapıdır. `Domain Controllers`, `Users`, `Computers` gibi birçok built-in Organizasyonel Unit'e (OU) sahiptir ve gerektiğinde yeni OU'lar oluşturulabilir. OU'lar, farklı group policy'nin atanmasına olanak tanıyan objectler ve alt OU'lar içerebilir.
 
 Çok (basit) bir üst düzeyde, bir AD yapısı aşağıdaki gibi görünebilir:
+
   ```shell-session
 INLANEFREIGHT.LOCAL/
 ├── ADMIN.INLANEFREIGHT.LOCAL
@@ -107,39 +110,42 @@ INLANEFREIGHT.LOCAL/
 ├── CORP.INLANEFREIGHT.LOCAL
 └── DEV.INLANEFREIGHT.LOCAL
 ```
-Burada ==INLANEFREIGHT.LOCAL=='in root domain olduğunu ve subdomainleri (alt veya tree root domainleri) ==ADMIN.INLANEFREIGHT.LOCAL, CORP.INLANEFREIGHT.LOCAL== ve ==DEV.INLANEFREIGHT.LOCAL=='in yanı sıra aşağıda ayrıntılı olarak göreceğimiz gibi kullanıcılar, gruplar, bilgisayarlar ve daha fazlası gibi bir domain oluşturan diğer objectleri içerdiğini söyleyebiliriz. Çok sayıda satın alma işlemi gerçekleştiren kuruluşlarda trust ilişkileri yoluyla birbirine bağlanmış birden fazla domain (veya forest) görmek yaygındır. Mevcut domain'deki tüm yeni kullanıcıları yeniden oluşturmaktansa başka bir domain/forest ile trust ilişkisi oluşturmak genellikle daha hızlı ve kolaydır. Daha sonraki konularda göreceğimiz gibi, domain trusları uygun şekilde yönetilmediği takdirde bir dizi güvenlik sorununa yol açabilir.
+
+Burada `INLANEFREIGHT.LOCAL`'in root domain olduğunu ve subdomainleri  `ADMIN.INLANEFREIGHT.LOCAL`, `CORP.INLANEFREIGHT.LOCAL` ve `DEV.INLANEFREIGHT.LOCAL`'in yanı sıra aşağıda ayrıntılı olarak göreceğimiz gibi users, gruplar, computers ve daha fazlası gibi bir domain oluşturan diğer objectleri içerdiğini söyleyebiliriz. Çok sayıda satın alma işlemi gerçekleştiren kuruluşlarda `trust` ilişkileri yoluyla birbirine bağlanmış birden fazla domain (veya forest) görmek yaygındır. Mevcut domain'deki tüm yeni kullanıcıları yeniden oluşturmaktansa başka bir domain/forest ile trust ilişkisi oluşturmak genellikle daha hızlı ve kolaydır. Daha sonraki konularda göreceğimiz gibi, domain trusları uygun şekilde yönetilmediği takdirde bir dizi güvenlik sorununa yol açabilir.
 
 ![Pasted image 20240927123304.png](/img/user/resimler/Pasted%20image%2020240927123304.png)
 
-Aşağıdaki grafik ==INLANEFREIGHT.LOCAL== ve ==FREIGHTLOGISTICS.LOCAL== olmak üzere iki forest göstermektedir. İki yönlü ok, iki forest arasında ==çift yönlü bir güveni== temsil eder, yani INLANEFREIGHT.LOCAL'daki kullanıcılar FREIGHTLOGISTICS.LOCAL'daki kaynaklara erişebilir ve bunun tersi de geçerlidir. Ayrıca her root domain altında birden fazla subdomain görebiliriz. Bu örnekte, root domain'in subdomain'lerin her birine güvendiğini görebiliriz, ancak A forest'teki subdomain'lerin B forest'teki subdomain'lerle kurulmuş güvenleri olması gerekmez. Bu, ==admin.dev.freightlogistics.local'in== bir parçası olan bir kullanıcının, üst düzey inlanefreight.local ve freightlogistics.local domain'leri arasında çift yönlü bir güven olmasına rağmen varsayılan olarak ==wh.corp.inlanefreight.local== domain'indeki makinelere kimlik doğrulaması YAPAMAYACAĞI anlamına gelir. admin.dev.freightlogistics.local ve wh.corp.inlanefreight.local adreslerinden doğrudan iletişime izin vermek için başka bir trust oluşturulması gerekir.
+Aşağıdaki grafik `INLANEFREIGHT.LOCAL` ve `FREIGHTLOGISTICS.LOCAL` olmak üzere iki forest göstermektedir. İki yönlü ok, iki forest arasında `çift yönlü bir güveni temsil eder`, yani `INLANEFREIGHT.LOCAL`'daki kullanıcılar `FREIGHTLOGISTICS.LOCAL`'daki kaynaklara erişebilir ve bunun tersi de geçerlidir. Ayrıca her root domain altında birden fazla subdomain görebiliriz. Bu örnekte, root domain'in subdomain'lerin her birine güvendiğini görebiliriz, ancak A forest'teki subdomain'lerin B forest'teki subdomain'lerle kurulmuş güvenleri olması gerekmez. Bu, `admin.dev.freightlogistics.local`'in bir parçası olan bir kullanıcının, üst düzey inlanefreight.local ve freightlogistics.local domain'leri arasında çift yönlü bir trust olmasına rağmen varsayılan olarak `wh.corp.inlanefreight.local` domain'indeki makinelere kimlik doğrulaması YAPAMAYACAĞI anlamına gelir. `admin.dev.freightlogistics.local` ve `wh.corp.inlanefreight.local` adreslerinden doğrudan iletişime izin vermek için başka bir trust oluşturulması gerekir.
 
 ![Pasted image 20240927123430.png](/img/user/resimler/Pasted%20image%2020240927123430.png)
 
-Hangi Active Directory yapısı bir veya daha fazla domain içerebilir? (==Forest==)
+Soru-1 : Hangi Active Directory yapısı bir veya daha fazla domain içerebilir? (`Forest`)
 
-Doğru veya Yanlış; Trust ilişkileri ile birbirine bağlanmış birden fazla domain görmek yaygın olabilir mi?  (==Yes==)
+Soru-2 : Doğru veya Yanlış; Trust ilişkileri ile birbirine bağlanmış birden fazla domain görmek yaygın olabilir mi?  (`Yes`)
 
-Active Directory, bir Windows domain ortamında kimlik doğrulama ve `<____>` sağlar. (==authorization (yetkilendirme)==)
+Soru-3 : Active Directory, bir Windows domain ortamında kimlik doğrulama ve `<____>` sağlar. (`authorization (yetkilendirme)`)
 
 
 ### Active Directory Terminolojisi
 
 #### Object (object)
-Bir obje, Active Directory ortamında bulunan OU'lar, yazıcılar, kullanıcılar, domain controllerlar vb. gibi HERHANGİ bir kaynak olarak tanımlanabilir.
 
-#### Attributes (Nitelikler)
+Bir obje, Active Directory ortamında bulunan OU'lar, printers, users, domain controllerlar vb. gibi `HERHANGİ` bir kaynak olarak tanımlanabilir.
+
+#### Attributes 
+
 **Active Directory (AD)**, ağdaki tüm **object**'leri (örneğin kullanıcılar, gruplar, bilgisayarlar, vb.) saklayan ve yöneten bir servisdir. Her **object** (örneğin bir bilgisayar veya kullanıcı), o **object**'in özelliklerini tanımlayan bir dizi **[attribute](https://learn.microsoft.com/en-us/windows/win32/adschema/attributes-all)** ile tanımlanır.
 
 Örneğin:
 
-- Bir **computer object** (bilgisayar object'i) Active Directory'de, bilgisayarın adı (hostname) veya DNS adı gibi **attribute**'lara sahip olabilir.
+- Bir **computer object** (bilgisayar object'i) Active Directory'de, bilgisayarın adı (`hostname`) veya `DNS` adı gibi **attribute**'lara sahip olabilir.
 - Bir **user object** (kullanıcı object'i) ise, o kullanıcının adı, soyadı, e-posta adresi gibi bilgilerle tanımlanır.
 
 Bu **attributes** (özellikler), **object**'in tanımlanmasını ve yönetilmesini sağlar.
 
 #### LDAP ve AD Attributes:
 
-**LDAP** (Lightweight Directory Access Protocol), Active Directory ile ==iletişim kurmak== için kullanılan bir protokoldür. **LDAP sorguları** kullanılarak AD'deki **object**'lere ve bu **object**'lerin **attribute**'lerine erişilebilir.
+**LDAP** (Lightweight Directory Access Protocol), Active Directory ile `iletişim kurmak` için kullanılan bir protokoldür. `LDAP sorguları kullanılarak AD'deki object'lere ve bu **object**'lerin attribute'lerine erişilebilir.`
 
 Her **attribute** (özellik), bir **LDAP adı** ile ilişkilidir. LDAP adı, o **attribute**'in tanımını yapar. Yani, **Active Directory**'deki her özellik, **LDAP sorgularında** kullanılabilen bir **LDAP adı** ile eşleşir.
 
@@ -156,7 +162,8 @@ Her **object**, özelliklerini tanımlayan **attributes**'lere sahiptir ve bu **
 
 
 ### Schema
-**Active Directory Schema**, **Active Directory**'deki **object**'lerin nasıl yapılandırıldığını ve birbirleriyle nasıl ilişkilendirildiklerini tanımlayan bir **plan** (blueprint) gibidir. Bu **Schema**, ağdaki tüm **object**'lerin türlerini, bu **object**'lerin hangi özelliklere sahip olduklarını (attributes) ve her bir **object**'in nasıl düzenleneceğini belirler.
+
+**Active Directory Schema**, **Active Directory**'deki **object**'lerin nasıl yapılandırıldığını ve birbirleriyle nasıl ilişkilendirildiklerini tanımlayan bir **`plan`** (`blueprint`) gibidir. Bu **Schema**, ağdaki tüm **object**'lerin türlerini, bu **object**'lerin hangi özelliklere sahip olduklarını (attributes) ve her bir **object**'in nasıl düzenleneceğini belirler.
 
 #### Schema Ne İşe Yarar?
 
@@ -171,9 +178,10 @@ Her **object**, özelliklerini tanımlayan **attributes**'lere sahiptir ve bu **
 Her **object**'in belirli **attributes** (özellikleri) vardır. Bu **attributes**, o **object**'in çeşitli bilgilerini içerir. Örneğin:
 
 - **User** object'leri için, **first name** (ilk isim), **last name** (soy isim), **email address** (e-posta adresi) gibi **attributes** vardır.
-- **Computer** object'leri için, **hostname** (ana bilgisayar adı), **IP address** (IP adresi), **operating system** (işletim sistemi) gibi **attributes** bulunur.
+- **Computer** object'leri için, **hostname** , **IP address** , **operating system**  gibi **attributes** bulunur.
 
-#### Sınıflar ve Object Örneklemesi (Instantiation)
+
+#### Classes ve Object Örneklemesi (Instantiation)
 
 **Schema**, sadece **object**'lerin türlerini (sınıflarını) değil, aynı zamanda her **object**'in nasıl oluşturulacağını ve hangi özelliklere sahip olması gerektiğini de tanımlar.
 
@@ -197,25 +205,28 @@ Bu şekilde **Schema**, Active Directory'deki tüm **object**'lerin nasıl oluş
 
 
 ### Domain
+
 Domain, bilgisayarlar, kullanıcılar, OU'lar, gruplar vb. gibi objectlerden oluşan mantıksal bir gruptur. Her bir domain'i bir eyalet veya ülke içindeki farklı bir şehir olarak düşünebiliriz. Domain'ler birbirlerinden tamamen bağımsız olarak çalışabilir veya trust ilişkileri yoluyla birbirlerine bağlanabilir.
 
 
 ### Forest
+
 Forest, Active Directory domain'lerinden oluşan bir koleksiyondur. En üst konteyner'dır ve domainler, kullanıcılar, gruplar, bilgisayarlar ve Group Policy objectleri dahil ancak bunlarla sınırlı olmamak üzere aşağıda tanıtılan tüm AD objectlerini içerir. Bir forest bir veya birden fazla domain içerebilir ve ABD'deki bir eyalet veya AB'deki bir ülke gibi düşünülebilir. Her forest bağımsız olarak çalışır ancak diğer forest'larla çeşitli trust ilişkilerine sahip olabilir.
 
 
 ### Tree
+
 **Active Directory Tree**, tek bir **root domain**'den başlayan ve birbiriyle ilişkili olan **domain**'lerin oluşturduğu bir koleksiyondur. Başka bir deyişle, **domain**'ler bir araya gelerek bir **tree**'yi (ağaç yapısını) oluşturur.
 
 Bir **Forest** ise, birden fazla **tree**'nin bir araya gelerek oluşturduğu daha büyük bir yapıdır. Yani, **forest** birden fazla **tree**'yi barındıran bir koleksiyondur.
 
 #### Domain'ler Arasındaki İlişki:
 
-Bir **tree**'deki her **domain**, diğer **domain**'lerle bir sınır paylaşır. Bu, domain'lerin birbirine bağlanmasını sağlar. Eğer bir **domain**, başka bir **domain**'in altına eklenirse, bu iki **domain** arasında bir **parent-child** (ebeveyn-çocuk) trust ilişkisi oluşur. Yani, bir **parent domain**'i, **child domain**'in üzerinde denetim sağlar.
+Bir **tree**'deki her **domain**, diğer **domain**'lerle bir sınır paylaşır. Bu, domain'lerin birbirine bağlanmasını sağlar. Eğer bir **domain**, başka bir **domain**'in altına eklenirse, bu iki **domain** arasında bir **`parent-child`**  trust ilişkisi oluşur. Yani, bir **parent domain**'i, **child domain**'in üzerinde denetim sağlar.
 
 #### Farklı **Tree**'ler ve **Subdomain**'ler:
 
-Bir **forest**'ın içinde birden fazla **tree** olabilir. Fakat, aynı **forest** içindeki iki **tree**, aynı **ad** alanını paylaşamaz. Yani her **tree** kendine ait benzersiz bir **ad alanı** (domain adı) kullanır.
+Bir **forest**'ın içinde birden fazla **tree** olabilir. Fakat, aynı **forest** içindeki iki **tree**, aynı **ad** alanını paylaşamaz. Yani her **tree** kendine ait benzersiz bir `domain adı` kullanır.
 
 Örneğin, bir **forest**'ta iki **tree** olduğunu varsayalım:
 
@@ -227,13 +238,13 @@ Bu durumda:
 - **inlanefreight.local** tree'inin **subdomain**'i **corp.inlanefreight.local** olabilir.
 - **ilfreight.local** tree'inin **subdomain**'i ise **corp.ilfreight.local** olabilir.
 
-Yani, her **tree** farklı bir **ad alanı**na sahip olsa da, her **tree**'de kendi içindeki **subdomain**'ler **parent-child** ilişkisini takip eder.
+Yani, her **tree** farklı bir `domain adı`'na sahip olsa da, her **tree**'de kendi içindeki **subdomain**'ler **parent-child** ilişkisini takip eder.
 
 #### Global Katalog:
 
-**Global Katalog (GC)**, Active Directory'deki ==tüm domain'lere ait objectlerin== temel bilgilerini depolayan ve hızlı sorgulama için kullanılan bir veri deposudur.
+**Global Katalog (GC)**, Active Directory'deki tüm domain'lere ait objectlerin temel bilgilerini depolayan ve hızlı sorgulama için kullanılan bir veri deposudur.
 
-Bir **tree**'deki tüm **domain**'ler, o **tree**'ye ait **object**'ler hakkında tüm bilgileri içeren ortak bir **Global Katalog** paylaşır. Bu katalog, **tree** içindeki tüm **domain**'lerdeki ==**object**== bilgilerini merkezi bir şekilde saklar ve bu bilgilere kolayca erişilmesini sağlar.
+Bir **tree**'deki tüm **domain**'ler, o **tree**'ye ait **object**'ler hakkında tüm bilgileri içeren ortak bir **Global Katalog** paylaşır. Bu katalog, **tree** içindeki tüm **domain**'lerdeki **`object`** bilgilerini merkezi bir şekilde saklar ve bu bilgilere kolayca erişilmesini sağlar.
 
 #### Özet:
 
@@ -243,29 +254,18 @@ Bir **tree**'deki tüm **domain**'ler, o **tree**'ye ait **object**'ler hakkınd
 - Bir **Global Katalog**, bir **tree** içindeki tüm **domain**'ler ve **object** bilgilerini merkezi olarak depolar.
 
 ### Container
-**Container** (Konteyner) **object**'leri, **Active Directory**'de **diğer object**'leri tutan, yani içinde başka **object**'lerin barındığı bir yapıdır. **Container object**'leri, **dizin** (directory) yapısındaki **alt tree** hiyerarşisinde belirli bir konumda yer alır. Kısaca Active Directory'de (AD), bir **konteyner**, kullanıcılar, gruplar, bilgisayarlar veya diğer nesneleri düzenlemek ve yönetmek için kullanılan bir mantıksal birimdir.
 
-#### Container Nedir?
+**Container** (Konteyner) **object**'leri, **Active Directory**'de **`diğer object`**'leri tutan, yani içinde başka **object**'lerin barındığı bir yapıdır. **Container object**'leri, **dizin** (directory) yapısındaki   **`sub-tree`** hiyerarşisinde belirli bir konumda yer alır. Kısaca Active Directory'de (AD), bir **konteyner**, kullanıcılar, gruplar, bilgisayarlar veya diğer objeleri düzenlemek ve yönetmek için kullanılan bir mantıksal birimdir.
 
-Active Directory'deki konteynar, **organizasyon birimlerini (OU) veya objecleri düzenlemek ve yönetmek için kullanılan bir yapılandırma birimidir** ve diğer objeleri içinde barındırabilir.
-
-**Container object**'leri, adından da anlaşılacağı gibi, bir tür "kutudur" ve başka **object**'leri bu kutunun içinde saklar. Bu **object**'ler genellikle kullanıcılar, bilgisayarlar, gruplar ve diğer kaynaklar olabilir.
-
-Örnek:
-
-- **Organizational Unit (OU)**: Bu, **container object**'lerinin en yaygın örneklerinden biridir. Bir **OU**, kullanıcılar, gruplar, bilgisayarlar gibi **object**'leri organize etmek ve yönetmek için kullanılır. Yani bir **OU**, içinde farklı türdeki **object**'leri barındıran bir **container**'dır.
-    
-- **Domain**: Bir **domain** de bir **container**'dır, çünkü bir **domain** içinde birçok farklı **object** (kullanıcılar, bilgisayarlar, gruplar, vb.) bulunur.
-    
 
 #### Container ile Diğer Object'ler Arasındaki Fark:
 
-- **Container**: Diğer **object**'leri tutar ve hiyerarşik yapıda yer alır.
-- **Object**: Kendine ait özellikleri ve bilgileri olan gerçek bir objedir. Örneğin, bir **user object** veya **computer object**.
+**Container objects**, diğer **objects**'leri içerebilen yapılardır ve dizin hiyerarşisinde bir üst seviye öğe olarak görev yaparlar. **Normal objects** ise genellikle kendisi bir şey içermez ve bir **container object** içinde bulunur.
 
-#### Container'ın Hiyerarşideki Yeri:
+Örneğin, **Active Directory**'de:
 
-**Container object**'leri, **Active Directory**'nin hiyerarşisinde belirli bir konumda bulunur ve altında başka **object**'ler yer alır. Bu yapılar, **Active Directory**'deki **tree** veya **forest** yapılarının düzenli ve mantıklı bir şekilde organize edilmesini sağlar.
+- **Container object** → OU (Organizational Unit), Domain, veya bir Container
+- **Normal object** → User, Group, Computer gibi varlıklar
 
 #### Örnek:
 
@@ -274,11 +274,12 @@ Active Directory'deki konteynar, **organizasyon birimlerini (OU) veya objecleri 
 
 #### Özet:
 
-**Container** object'leri, **Active Directory**'de diğer **object**'leri ==içinde barındıran== ve ==hiyerarşinin== bir parçası olan yapılardır. Bir **container**, diğer **object**'lerin düzenli bir şekilde gruplandırılmasını sağlar ve bu şekilde yönetilebilir hale gelir.
+**Container** object'leri, **Active Directory**'de diğer **object**'leri `içinde barındıran` ve `hiyerarşinin` bir parçası olan yapılardır. Bir **container**, diğer **object**'lerin düzenli bir şekilde gruplandırılmasını sağlar ve bu şekilde yönetilebilir hale gelir.
 
 
 ### Leaf
-**Leaf** **object**'leri, **Active Directory**'de başka **object**'leri **içermeyen**, yani kendi başlarına tek başına var olan **object**'lerdir. Bu **object**'ler, **Active Directory**'deki hiyerarşinin **son** noktasında yer alır, yani altlarında başka bir **object** barındırmazlar.
+
+**Leaf** **object**'leri, **Active Directory**'de başka **object**'leri **`içermeyen`**, yani kendi başlarına tek başına var olan **object**'lerdir. Bu **object**'ler, **Active Directory**'deki hiyerarşinin **son** noktasında yer alır, yani altlarında başka bir **object** barındırmazlar.
 
 
 
@@ -288,19 +289,19 @@ Active Directory'deki konteynar, **organizasyon birimlerini (OU) veya objecleri 
 #### 1. **GUID Nedir?**
 
 - **[GUID](https://docs.microsoft.com/en-us/windows/win32/adschema/a-objectguid)**, "Globally Unique Identifier" (Küresel Benzersiz Tanımlayıcı) anlamına gelir.
-- Bu, **Active Directory**'de her bir ==**object**'e== (kullanıcı, grup, bilgisayar, domain, vb.) atanan ==**128 bitlik== benzersiz bir değerdir**.
+- Bu, **Active Directory**'de her bir **`object`**'e (kullanıcı, grup, bilgisayar, domain, vb.) atanan `128 bitlik` `benzersiz` bir değerdir.
 - **GUID**, tıpkı **MAC adresi** gibi kuruluş genelinde **benzersizdir**, yani her **object** için farklı ve bir daha tekrarlanmayan bir değerdir.
 
 #### 2. **GUID Nerelerde Kullanılır?**
 
 - Her **Active Directory object**'i (kullanıcı, grup, bilgisayar, domain, vb.) oluşturulduğunda bir **GUID** atanır.
-- Bu **GUID**, **ObjectGUID** adı verilen bir **attribute** 'te saklanır.
+- Bu **GUID**, **ObjectGUID** adı verilen bir **`attribute`** 'te saklanır.
 - **GUID**, **Active Directory** tarafından **object**'leri tanımlamak için kullanılır ve her **object**'in **eşsiz** olarak tanımlanmasını sağlar.
 
 #### 3. **GUID ve Diğer Özellikler:**
 
-- **ObjectGUID**, **Active Directory**'deki **object**'in kimliğini belirleyen **değişmez** bir özelliktir.
-- Bir **object**, **Active Directory**'de var olduğu sürece, her zaman aynı **==GUID==**'yi taşır. Bu değer ==**asla değişmez**==.
+- **ObjectGUID**, **Active Directory**'deki **object**'in kimliğini belirleyen **`değişmez`** bir özelliktir.
+- Bir **object**, **Active Directory**'de var olduğu sürece, her zaman aynı **`GUID`**'yi taşır. Bu değer **`asla değişmez`**.
 
 #### 4. **GUID'nin Kullanım Amacı:**
 
@@ -310,59 +311,23 @@ Active Directory'deki konteynar, **organizasyon birimlerini (OU) veya objecleri 
 
 #### 5. **PowerShell ile GUID Arama:**
 
-- PowerShell kullanarak **Active Directory**'de bir **object**'i sorgularken, **ObjectGUID** değerini sorgulayabilirsiniz.
-- **ObjectGUID**'yi sorgulamak, **object**'i tam olarak bulmak için ==**en güvenilir**== yöntemlerden biridir.
+- PowerShell kullanarak **Active Directory**'de bir **object**'i sorgularken, **`ObjectGUID`** değerini sorgulayabilirsiniz.
+- **ObjectGUID**'yi sorgulamak, **object**'i tam olarak bulmak için **`en güvenilir`** yöntemlerden biridir.
 - **PowerShell** ile sorgularken, **objectGUID**, **SID** (Security Identifier), **SAM hesap adı** gibi farklı özellikler kullanarak **Active Directory object**'ini arayabilirsiniz.
 
-#### 6. **GUID'nin Değişmezliği:**
-
-- Bir **object**'e atanan **GUID**, o **object**'in ==**ömrü boyunca değişmez**==. Yani bir kez oluşturulmuş bir **GUID**, **Active Directory**'deki **object**'le sürekli ilişkilendirilir.
-- Bu özellik, **object**'in tanımlanmasını ve takip edilmesini kolaylaştırır.
-
-#### 7. **Active Directory'de Arama Yaparken GUID'nin Önemi:**
-
-- **GUID** kullanarak arama yapmak, özellikle **Global Katalog**'da **benzer isimler** varsa, **object**'i bulmada en doğru yol olabilir.
-- **GUID**, **object**'i **kesin bir şekilde tanımladığı** için, adının benzer olduğu başka **object**'lerle karışma riskini ortadan kaldırır.
 
 #### Özet:
 
-- **GUID**, her **Active Directory object**'ine atanan **benzersiz** ve **değişmeyen** bir değerdir.
+- **GUID**, her **Active Directory object**'ine atanan **`benzersiz`** ve **`değişmeyen`** bir değerdir.
 - **ObjectGUID**, **object**'in kimliğini belirler ve **Active Directory**'deki tüm **object**'ler için bu değer kesindir.
 - **PowerShell** gibi araçlar ile **GUID** değeri kullanılarak **object**'lere en doğru şekilde ulaşılabilir ve arama yapılabilir.
 
 
 ### Security principals
-#### 1. **Security Principals (Güvenlik İlkeleri) Nedir?**
 
-- **Security principals**, **Active Directory** ve ==işletim sistemi içindeki **kimlik doğrulaması**== yapılabilen her şeydir.
-- Bu **principals**, genellikle **user accounts**, **computer accounst** ve hatta **servis accounts** gibi özel hesaplar olabilir.
-- Örneğin, bir **domain içindeki** bir **servis hesabı** (örneğin **Tomcat** gibi bir uygulamanın çalıştığı hesap) da bir **security principal**'dır.
+[**Security principals**](https://docs.microsoft.com/en-us/windows/security/identity-protection/access-control/security-principals), **operating system** tarafından kimlik doğrulaması yapılabilen her şeyi ifade eder. Buna **users, computer accounts** ve hatta bir **user** veya **computer account** bağlamında çalışan **threads/processes** de dahildir (örneğin, **domain** içinde bir **service account** bağlamında çalışan **Tomcat** gibi bir uygulama).
 
-#### 2. **Security Principals'ın Tanımladığı Kimlikler:**
-
-- **User Accounts (Kullanıcı Hesapları)**: İnsan kullanıcıları temsil eder. Bu hesaplar, kullanıcıların sisteme giriş yapmalarını ve kaynaklara erişimlerini sağlar.
-- **Computer Accounts (Bilgisayar Hesapları)**: **Domain**'e katılan bilgisayarların hesaplarıdır. Bu hesaplar, bilgisayarların **Active Directory**'de tanımlanmasını sağlar.
-- **Thread'ler ve Process'ler**: Bir **kullanıcı** veya **bilgisayar hesabı** çerçevesinde çalışan threadler veya processes de **security principal** olarak kabul edilir.
-    - Örneğin, **Tomcat** gibi bir uygulamanın **domain içindeki** çalıştığı **servis hesabı** bir **security principal**'dir.
-
-#### 3. **Active Directory'deki Security Principles:**
-
-- **AD'deki Security Principles, domain içindeki kaynaklara** erişimi yönetmek için kullanılan **object'ler**'dir.
-- Bu **security principal**'ler, **Active Directory**'de tanımlanan **kullanıcılar** ve **gruplar** gibi objeler olabilir.
-- **Active Directory**, bu **security principal**'lerin kimlik doğrulamasını yaparak, hangi **domain kaynaklarına** erişebileceğine karar verir.
-
-#### 4. **Local Kullanıcı Hesapları ve Security Grupları:**
-
-- **Local kullanıcı hesapları** ve **security grupları**, sadece belirli bir **bilgisayar** üzerindeki kaynaklara erişim kontrolünü yönetir.
-- Bu hesaplar ve gruplar, **Active Directory** tarafından değil, ==**Security Accounts Manager (SAM==)** tarafından yönetilir.
-    - **SAM**, Windows işletim sisteminin bir parçasıdır ve ==local security== bilgilerini depolar.
-    - **SAM**, sadece bilgisayarın kendi kaynaklarına erişim için kullanılan hesapları yönetir, **Active Directory**'nin dışında çalışır.
-
-#### 5. **Security Accounts Manager (SAM):**
-
-- **SAM**, Windows işletim sistemi içindeki bir bileşendir.
-- **SAM**, **Active Directory**'nin dışında kalan ve **local** olarak yönetilen kullanıcı hesapları ve securtiy gruplarının yönetiminden sorumludur.
-- **SAM**'deki hesaplar, sadece o bilgisayar üzerindeki local kaynaklara erişim sağlar.
+**Active Directory**'de **security principals**, **domain** içindeki diğer kaynaklara erişimi yönetebilen **domain objects**'lerdir. Ayrıca, yalnızca belirli bir **computer** üzerindeki kaynaklara erişimi kontrol etmek için kullanılan **local user accounts** ve **security groups** de olabilir. Ancak bunlar **Active Directory** tarafından yönetilmez; bunun yerine [**Security Accounts Manager (SAM)**](https://en.wikipedia.org/wiki/Security_Account_Manager) tarafından kontrol edilir.
 
 #### Özet:
 
@@ -372,89 +337,42 @@ Active Directory'deki konteynar, **organizasyon birimlerini (OU) veya objecleri 
 
 
 ### Security Identifier (Güvenlik Tanımlayıcısı) (SID)
-#### 1. **SID Nedir?**
 
-- **Security Identifier (SID)**, bir ==security principal== veya ==**security grubu**== için **benzersiz** bir tanımlayıcıdır.
-- Her **hesap**, **grup** veya **process** için, **Active Directory** ortamında, **domain controller** tarafından verilen ve **güvenli bir veritabanında** saklanan **kendine özgü** bir SID bulunur.
+**Security identifier (SID)**, bir **security principal** veya **security group** için kullanılan `benzersiz bir tanımlayıcıdır`. Her **account, group** veya **process**, kendine özgü bir **SID**'e sahiptir. **Active Directory** ortamında, **SID**'ler **domain controller** tarafından atanır ve güvenli bir **`database`** içinde saklanır.
 
-#### 2. **SID'in Benzersizliği:**
+Bir **SID** yalnızca bir kez kullanılabilir. İlgili **security principal** silinse bile, aynı ortamda başka bir **user** veya **group** için tekrar kullanılamaz. Bir **user** oturum açtığında, sistem onun için bir **`access token`** oluşturur. Bu **token**, **user**'ın **SID**'ini, sahip olduğu yetkileri ve üyesi olduğu **groups**'lerin **SID**'lerini içerir. **User**, **computer** üzerinde bir işlem gerçekleştirdiğinde, sistem bu **token**'ı kullanarak yetkileri doğrular.
 
-- Bir SID **bir kez kullanılır** ve bir daha **tekrar kullanılmaz**. Yani her SID, sadece bir security policy veya **grup** ile ilişkilidir.
-- Security policy silinse bile, o SID **asla başka bir kullanıcı veya grup için kullanılmaz**. Bu, SID'in her zaman **benzersiz** olduğunu ve her bir SID'nin belirli bir security policy'e ait olduğunu garanti eder.
+Ayrıca, belirli **users** ve **groups**'leri tanımlamak için kullanılan **`well-known SIDs`** de vardır. Bunlar tüm **operating systems** üzerinde aynıdır. Örneğin, **Everyone** group'u bu tür **SIDs**'lere bir örnektir.
 
-#### 3. **SID ve Erişim Token'ları:**
+#### SID'in Güvenlikteki Önemi:
 
-- Bir **kullanıcı** **oturum açtığında**, sistem, kullanıcının **SID**'sini içeren bir **access token'ı** oluşturur.
-- Bu token, kullanıcının **haklarını** (permissions) ve kullanıcının **üyesi olduğu tüm grupların SID'lerini** içerir.
-- Bu **access token'ı**, kullanıcının bilgisayarda gerçekleştirdiği **eylemler sırasında** haklarını kontrol etmek için kullanılır.
-
-#### 4. **SID'in Rolü ve Kullanımı:**
-
-- **SID**, kullanıcı veya grup **kimliğini tanımlamak** için kullanılır.
-- **Erişim kontrolü** sağlamak için, sistem **SID**'yi kullanarak hangi kullanıcının veya grubun hangi kaynaklara erişebileceğini belirler.
-- Bu, özellikle **security politikaları** ve **kimlik doğrulama** süreçlerinde çok önemlidir.
-
-#### 5. **İyi Bilinen SID'ler:**
-
-- **İyi bilinen SID'ler**, **genel** kullanıcıları ve **grupları** tanımlamak için kullanılır.
-- Bu SID'ler, tüm **işletim sistemlerinde** aynıdır ve **standart** SID'lerdir.
-    - Örnek: **Everyone** grubu.
-- **Everyone** grubu, **Windows işletim sistemlerinde** varsayılan olarak bulunan ve tüm kullanıcılar tarafından erişilebilen bir grup olduğundan, **her ortamda aynı SID'yi** kullanır.
-
-#### 6. **SID'in Güvenlikteki Önemi:**
-
-- SID'ler, **sistem yönetimi** ve **erişim kontrolü** açısından kritik öneme sahiptir.
+- SID'ler, **sistem yönetimi** ve **access kontrolü** açısından kritik öneme sahiptir.
 - **Access Control listeleri (ACL)** gibi yapılar, **SID'leri** kullanarak hangi kullanıcıların veya grupların belirli bir kaynağa erişebileceğini belirler.
 - **SID**'ler, sistemdeki **herhangi bir değişikliği** izlemek ve güvenlik ihlallerini tespit etmek için de kullanılır.
 
 #### Özet:
 
-- **SID**, her **hesap**, **grup** veya **process** için benzersiz bir tanımlayıcıdır ve sadece bir kez kullanılır.
-- **Access token'ları**, kullanıcının SID'sini ve haklarını içererek, kullanıcının bilgisayarda gerçekleştirdiği işlemlerde **hak kontrolü** yapar.
+- **SID**, her **hesap**, **grup** veya **process** için `benzersiz bir tanımlayıcıdır` ve sadece bir kez kullanılır.
+- **Access token'ları**, kullanıcının SID'sini ve haklarını içererek, kullanıcının bilgisayarda gerçekleştirdiği işlemlerde **`privilege kontrolü`** yapar.
 - **İyi bilinen SID'ler**, genel grupları tanımlar ve tüm işletim sistemlerinde aynıdır (örneğin, **Everyone** grubu).
-- SID'ler, **erişim kontrolü** ve **güvenlik yönetimi** açısından çok önemlidir.
+- SID'ler, **access control** ve **güvenlik yönetimi** açısından çok önemlidir.
 
 
 ### Distinguished Name (Ayırt Edici Ad) (DN)
-#### 1. **Distinguished Name (DN) Nedir?**
 
-- [**Distinguished Name](https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ldap/distinguished-names) (DN)**, **Active Directory**'deki bir **object**'in **tam yolunu** tanımlar.
-- Bu yol, object'in bulunduğu **yerin tam adresi** gibi düşünülebilir ve AD içerisindeki hiyerarşiyi takip eder.
-- Örneğin, **cn=bjones, ou=IT, ou=Employees, dc=inlanefreight, dc=local** şeklinde bir DN örneği, **bjones** kullanıcısının yerini tanımlar.
+**[Distinguished Name](https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ldap/distinguished-names) (DN)**, **Active Directory** içinde bir **object**'in tam yolunu tanımlar (örneğin, `cn=bjones, ou=IT, ou=Employees, dc=inlanefreight, dc=local`).
 
-#### 2. **DN İçindeki Bileşenler:**
+Bu örnekte, **bjones** adlı **user**, **Inlanefreight** şirketinin **IT department**'ında çalışmaktadır ve hesabı, şirket çalışanlarının hesaplarını tutan bir **Organizational Unit (OU)** içinde oluşturulmuştur. **Common Name (CN)** olan **bjones**, bu **user object**'ine **domain** içinde erişmek veya aramak için kullanılabilecek yöntemlerden sadece biridir.
 
-- **CN (Common Name):** Bu, object'in **adı** veya **ortak adı** olarak bilinir. Örneğin, `cn=bjones` kısmı, **bjones** kullanıcısını tanımlar.
-- **OU (Organizational Unit):** Bu, object'in **bulunduğu birim** veya **organizasyonel birim**'i belirtir. `ou=IT` ve `ou=Employees` gibi bölümler, kullanıcının hangi organizasyonel birimde yer aldığını gösterir.
-- **DC (Domain Component):** Bu, **domain**'in bileşenlerini tanımlar. `dc=inlanefreight, dc=local`, Inlanefreight şirketinin **domain**'ine ait bilgileri belirtir.
 
-#### 3. **DN'nin Kullanımı:**
-
-- **Distinguished Name**, **object'in** AD içinde aranabilmesi veya erişilebilmesi için **tam yol** sağlar.
-- Bu yol, **Active Directory**'deki her object'e özgüdür ve bir object’in **kesin kimliğini** tanımlar.
-
-#### 4. **Örnek:**
-
-- **cn=bjones, ou=IT, ou=Employees, dc=inlanefreight, dc=local**:
-    - **bjones**: Kullanıcı adı (Common Name).
-    - **IT**: Kullanıcının **IT departmanı** içinde olduğu belirtiliyor.
-    - **Employees**: Kullanıcıların bulunduğu **organizasyonel birim** (OU).
-    - **inlanefreight.local**: Domain adı, Inlanefreight şirketine ait.
-
-#### 5. **Distinguished Name ve Erişim:**
+#### **Distinguished Name ve Erişim:**
 
 - DN, object'in **tam ve benzersiz** bir şekilde bulunmasını sağlar. AD içinde aynı isme sahip birden fazla object olabilir, ancak her object'in **DN**'i benzersizdir.
-- ==Bu, **LDAP sorguları** veya **Active Directory yönetimi** sırasında doğru object'e erişim sağlamak için kullanılır.==
-
-#### Özet:
-
-- **Distinguished Name (DN)**, **Active Directory**'deki bir object'in **tam yolunu** tanımlar ve **benzersiz** bir kimlik sağlar.
-- **DN**'deki bileşenler (CN, OU, DC) object'in **bulunduğu yer** hakkında bilgi verir.
-- **DN**, object'lerin **kesin bir şekilde tanımlanmasını** ve **erişilmesini** sağlar
+- `Bu, LDAP sorguları veya Active Directory yönetimi sırasında doğru object'e erişim sağlamak için kullanılır`.
 
 
 ### Relative Distinguished Name (RDN)
-[Relative Distinguished Name](https://docs.microsoft.com/en-us/windows/win32/ad/object-names-and-identities) (RDN), objectyi adlandırma hiyerarşisinde geçerli düzeydeki ==diğer objectlerden benzersiz olarak tanımlayan== Distinguished Name'in tek bir bileşenidir. Örneğimizde, bjones objectnin Relative Distinguished Name (Göreli Ayırt Edici Ad) öğesidir. AD, aynı üst konteynar altında aynı ada sahip iki objectye izin vermez, ancak farklı DN'lere sahip oldukları için domainde yine de benzersiz olan aynı RDN'lere sahip iki object olabilir. Örneğin, `cn=bjones,dc=dev,dc=inlanefreight,dc=local` objectsi `cn=bjones,dc=inlanefreight,dc=local` objectsinden farklı olarak tanınır.
+[Relative Distinguished Name](https://docs.microsoft.com/en-us/windows/win32/ad/object-names-and-identities) (RDN), objectyi adlandırma hiyerarşisinde geçerli düzeydeki diğer objectlerden benzersiz olarak tanımlayan Distinguished Name'in tek bir bileşenidir. Örneğimizde, bjones objectnin Relative Distinguished Name (Göreli Ayırt Edici Ad) öğesidir. AD, aynı üst konteynar altında aynı ada sahip iki objectye izin vermez, ancak farklı DN'lere sahip oldukları için domainde yine de benzersiz olan aynı RDN'lere sahip iki object olabilir. Örneğin, `cn=bjones,dc=dev,dc=inlanefreight,dc=local` objectsi `cn=bjones,dc=inlanefreight,dc=local` objectsinden farklı olarak tanınır.
 
 * **Relative Distinguished Name (RDN)**, **Distinguished Name (DN)** içindeki her bir bileşeni temsil eder.
 * Bir **RDN**, o objenin bulunduğu düzeyde benzersiz olmasını sağlar. Yani, RDN sadece bulunduğu konteyner içinde diğer objelerden benzersizdir.
@@ -462,25 +380,39 @@ Active Directory'deki konteynar, **organizasyon birimlerini (OU) veya objecleri 
 - **RDN**: `cn=bjones` — Bu, objesinin adına karşılık gelir ve yalnızca objenin bulunduğu düzeyde benzersizdir. Yani, aynı düzeyde başka bir obje de `cn=bjones` adıyla var olabilir.
 - **DN**: `cn=bjones,ou=users,dc=dev,dc=inlanefreight,dc=local` — Bu, objeyi tamamen tanımlar ve her **DN** benzersizdir.
 
+#### Özetle:
+
+- **DN, AD içindeki tam konumu gösterir ve tamamen benzersizdir.**
+- RDN, DN'nin içindeki tek bir bileşendir ve aynı parent içinde benzersiz olmak zorundadır ama AD içinde farklı konteynerlerde tekrarlanabilir.
+
 
 ![Pasted image 20240927132125.png](/img/user/resimler/Pasted%20image%2020240927132125.png)
 
+* DN dizinde benzersiz olmalıdır
+* RDN bir OU içinde benzersiz olmalıdır
+
+
 ### sAMAccountName
-[sAMAccountName](https://learn.microsoft.com/en-us/windows/win32/ad/naming-properties#samaccountname) kullanıcının oturum açma adıdır. Burada sadece bjones olacaktır. Benzersiz bir değer ve 20 veya daha az karakter olmalıdır.
+
+**[sAMAccountName](https://docs.microsoft.com/en-us/windows/win32/ad/naming-properties#samaccountname)**, **user**'ın **logon name** değeridir. Bu örnekte sadece **bjones** olur. **sAMAccountName** değeri **benzersiz olmalıdır** ve **20 karakter veya daha kısa** olmalıdır.
 
 ### userPrincipalName
-[userPrincipalName](https://social.technet.microsoft.com/wiki/contents/articles/52250.active-directory-user-principal-name.aspx) attribute'u, AD'deki kullanıcıları tanımlamanın başka bir yoludur. Bu attribute, bjones@inlanefreight.local biçiminde bir önek (kullanıcı hesabı adı) ve bir sonekten ( domain adı) oluşur. Bu attribute zorunlu değildir.
+
+**[userPrincipalName](https://social.technet.microsoft.com/wiki/contents/articles/52250.active-directory-user-principal-name.aspx)** özelliği, **AD**'de **users**'ı tanımlamanın bir diğer yoludur. Bu özellik, bir **prefix** (kullanıcı hesap adı) ve bir **suffix** (domain adı) içerir ve bjones@inlanefreight.local formatında olur. Bu özellik **zorunlu değildir**.
 
 
 ### FSMO Rolleri (Flexible Single Master Operation)
 
-Active Directory (AD) ortamında, özellikle çoklu Domain Controller (DC) olduğunda, birden fazla DC'nin aynı anda değişiklik yapmaya çalışması sorunlara yol açabiliyor. İlk başlarda, bu tür bir ortamda hangi DC’nin değişiklik yapacağı konusunda bir karışıklık oluyordu ve bazen değişiklikler düzgün şekilde uygulanamıyordu. Bunun sonucunda, ortamda uyumsuzluklar ve hatalar oluşabiliyordu.
+**AD**'nin ilk zamanlarında, bir ortamda birden fazla **DC** (Domain Controller) varsa, değişiklik yapma hakkı için birbirleriyle rekabet ederlerdi ve bazen değişiklikler düzgün bir şekilde yapılmazdı. Microsoft, bu durumu çözmek için "`son yazan kazanır`" modelini uyguladı, ancak bu, son yapılan değişiklik sorunlara yol açarsa kendi problemlerini yaratabiliyordu. Ardından, Microsoft, tek bir "`master`" **DC**'nin domain üzerindeki değişiklikleri uygulayabileceği, diğerlerinin ise yalnızca kimlik doğrulama isteklerini yerine getireceği bir model geliştirdi. Bu tasarım, **master DC**'nin arızalanması durumunda ortamda değişiklik yapılmasının imkansız olmasından dolayı hatalıydı. Bu tek nokta hatası modelini çözmek için Microsoft, bir **DC**'nin sahip olabileceği çeşitli sorumlulukları **`Flexible Single Master Operation (FSMO)`** rollerine ayırdı. Bu roller, **Domain Controllers (DC)**'ın kesintisiz bir şekilde kullanıcıları `kimlik doğrulama` ve `authorization` işlemlerini gerçekleştirmesine olanak tanır .
 
-Microsoft bu problemi çözmek amacıyla, "==son yazan kazanır==" modelini geliştirdi. Ancak bu modelin de kendi sorunları vardı. Örneğin, son değişiklikler işlerse bile bazen işler karmaşık hale gelebiliyordu ve bu da ortama zarar verebiliyordu. Bu yüzden Microsoft, daha iyi bir model oluşturdu ve şu şekilde bir düzen getirdi:
+Beş FSMO rolü vardır:
 
-**“Bir DC yalnızca belirli değişiklikleri yapabilir ve diğer DC'ler sadece kimlik doğrulama ve yetkilendirme işlemlerini yapabilir.”**
+- **`Schema Master`** ve **`Domain Naming Master`** (her forest'da bir tane)
+- **`Relative ID (RID) Master`** (her domain için bir tane)
+- **`Primary Domain Controller (PDC) Emulator`** (her domain için bir tane)
+- **`Infrastructure Master`** (her domain için bir tane)
 
-Bununla birlikte, Microsoft, bu çözümü daha güvenilir hale getirebilmek için Active Directory (AD) ortamındaki rollerin sorumluluklarını daha spesifik hale getirdi ve =="Flexible Single Master Operation" (FSMO==) adlı bir kavramı devreye soktu. FSMO, AD ortamındaki önemli sorumlulukları belirli bir DC’ye vererek, ortamın düzgün çalışmasını sağlıyor.
+Bu beş rol, yeni bir **AD** forest'ı oluşturulurken forest root domainindeki ilk **DC**'ye atanır. Her yeni domain forest'a eklendiğinde, yalnızca **`RID Master`**, **`PDC Emulator`** ve **`Infrastructure Master`** rollerine yeni domain atanır. FSMO rolleri genellikle **domain controllers** oluşturulduğunda belirlenir, ancak **`sysadmins`** gerekirse bu rolleri transfer edebilirler. Bu roller, **AD**'de replikasyonun düzgün bir şekilde çalışmasına yardımcı olur ve kritik servislerin doğru şekilde çalıştığını sağlar. Bu bölümde, her bir rolü detaylı bir şekilde inceleyeceğiz.
 
 #### FSMO Rolleri
 
@@ -488,15 +420,15 @@ AD ortamındaki her Domain Controller (DC), bazı temel sorumlulukları yerine g
 
 FSMO rollerinin 5 ana türü vardır:
 
-1. **Schema Master**: Bu rol, AD şemasındaki tüm yapısal değişikliklerden sorumludur. Bir AD Forest'ında ==yalnızca bir tane Schema Master== bulunur.
+1. **`Schema Master`**: Bu rol, AD şemasındaki tüm yapısal değişikliklerden sorumludur. Bir AD Forest'ında `yalnızca bir tane Schema Master` bulunur. (Örnek: Yeni bir kullanıcı türü eklemek için **Schema Master** rolüne sahip **DC** üzerinde schema güncellenir.)
     
-2. **Domain Naming Master**: Yeni domainler oluşturulduğunda veya mevcut domainler arasında değişiklikler yapıldığında, bu rol devreye girer. Bir AD Forest'ında yalnızca bir tane Domain Naming Master bulunur.
+2. **`Domain Naming Master`**: Yeni domainler oluşturulduğunda veya mevcut domainler arasında değişiklikler yapıldığında, bu rol devreye girer. Bir AD Forest'ında yalnızca bir tane Domain Naming Master bulunur. (Örnek: Yeni bir domain eklemek için **Domain Naming Master** rolüne sahip **DC** üzerinde, örneğin **sales.inlanefreight.local** domaini oluşturulurken devreye girilir.)
     
-3. **RID Master**: Her domainin içinde benzersiz kimlik numaraları (RID'ler) atanır. Bu rol, kullanıcı ve grup nesneleri için benzersiz ID'lerin atanmasından sorumludur. Bir domain ==içinde yalnızca bir tane RID Master== bulunur.
+3. **`RID Master`**: Her domainin içinde `benzersiz kimlik numaraları (RID'ler)` atanır. Bu rol, kullanıcı ve grup objeleri için benzersiz ID'lerin atanmasından sorumludur. Bir domain içinde `yalnızca bir tane RID Master` bulunur.
     
-4. **PDC Emulator**: Eski Windows NT sistemleri ile uyumluluğu sağlamak için kullanılan bu rol, daha çok zaman senkronizasyonu ve şifre sıfırlama işlemleri gibi kritik görevleri yerine getirir. Her domain içinde yalnızca bir tane PDC Emulator bulunur.
+4. **PDC Emulator**: Eski Windows NT sistemleri ile uyumluluğu sağlamak için kullanılan bu rol, daha çok zaman senkronizasyonu ve şifre sıfırlama işlemleri gibi kritik görevleri yerine getirir. Her domain içinde `yalnızca bir tane PDC Emulator` bulunur.
     
-5. **Infrastructure Master**: Bu rol, domainler arasında geçiş yaparken, kullanıcı ve grup bilgilerini güncel tutar. Bir domain içinde yalnızca bir tane Infrastructure Master bulunur.
+5. **`Infrastructure Master`**: Bu rol, domainler arasında geçiş yaparken, kullanıcı ve grup bilgilerini güncel tutar. Bir domain içinde yalnızca `bir tane Infrastructure Master` bulunur.
     
 
 #### FSMO Rolleri ve Dağıtımı
@@ -515,14 +447,16 @@ FSMO, Active Directory'nin doğru çalışmasını sağlamak için önemli rolle
 
 
 ### Global Catalog
-[Global katalog](https://learn.microsoft.com/en-us/windows/win32/ad/global-catalog) (GC), Active Directory forest'taki ==TÜM objectlerin kopyalarını== depolayan bir domain controller'dır. GC, geçerli domain'deki tüm objectlerin tam bir kopyasını ve forest'taki diğer domain'lere ait objectlerin kısmi bir kopyasını saklar. Standart domain controller'lar kendi domain'ine ait objectlerin tam bir kopyasını tutar ancak forest'taki farklı domain'lere ait objectlerin kopyasını tutmaz. GC, hem kullanıcıların hem de uygulamaların forest'ındaki HERHANGİ bir domain'deki herhangi bir object hakkında bilgi bulmasını sağlar. GC, bir domain controller üzerinde etkinleştirilen bir özelliktir ve aşağıdaki fonksiyonları yerine getirir:
+
+[Global katalog](https://learn.microsoft.com/en-us/windows/win32/ad/global-catalog) (GC), Active Directory forest'taki `TÜM objectlerin kopyalarını` depolayan bir domain controller'dır. GC, geçerli domain'deki tüm objectlerin tam bir kopyasını ve forest'taki diğer domain'lere ait objectlerin kısmi bir kopyasını saklar. Standart domain controller'lar kendi domain'ine ait objectlerin tam bir kopyasını tutar ancak forest'taki farklı domain'lere ait objectlerin kopyasını tutmaz. GC, hem kullanıcıların hem de uygulamaların forest'ındaki HERHANGİ bir domain'deki herhangi bir object hakkında bilgi bulmasını sağlar. GC, bir domain controller üzerinde etkinleştirilen bir özelliktir ve aşağıdaki fonksiyonları yerine getirir:
+
 * Authentication (bir access token oluşturulduğunda dahil edilen, bir kullanıcı hesabının ait olduğu tüm gruplar için sağlanan yetkilendirme)
 * Obje arama (bir forest içindeki dizin yapısını şeffaf hale getirerek, bir obje hakkında sadece bir attribute sağlayarak bir forest içindeki tüm domainler arasında arama yapılmasına izin verir).
 
 
 ### Read-Only Domain Controller (RODC) Nedir?
 
-**RODC**, Active Directory (AD) ortamında, ==sadece okuma işlemlerini== yapabilen özel bir Domain Controller türüdür. Yani, RODC üzerinde yapılan herhangi bir değişiklik, AD veritabanına yansımaz. RODC, bir DC (Domain Controller) gibi çalışabilir, ancak **veritabanı, SYSVOL ve DNS** gibi bileşenler sadece **okuma** modunda olup, değişiklikler yalnızca başka bir "normal" Domain Controller tarafından yapılabilir.
+**[Read-Only Domain Controller](https://docs.microsoft.com/en-us/windows/win32/ad/rodc-and-active-directory-schema) (RODC)**, yalnızca okunabilir bir **Active Directory** veritabanına sahiptir. Bir RODC'de, **RODC bilgisayar hesabı** ve **RODC KRBTGT şifreleri** dışındaki hiçbir **AD** hesabı şifresi `cache` alınmaz. **RODC**'nin **AD veritabanı**, **SYSVOL** veya **DNS** üzerinden herhangi bir değişiklik yayımlanmaz. **RODC'ler**, ayrıca yalnızca okunabilir bir **DNS sunucusu** içerir, admin rolü ayrımına olanak tanır, ortamda replikasyon trafiğini azaltır ve **SYSVOL** değişikliklerinin diğer **DC**'lere replikasyonunu engeller.
 
 #### RODC'nin Özellikleri:
 
@@ -532,16 +466,16 @@ FSMO, Active Directory'nin doğru çalışmasını sağlamak için önemli rolle
     
 3. **Veri Replikasyonu**: RODC'ler, **veritabanı değişikliklerini** diğer Domain Controller'larla senkronize etmez. Bu, **SYSVOL** (yazılım dağıtımı, grup policy vb. bilgileri tutan alan) gibi bileşenlerin RODC üzerinden **değiştirilmesini engeller**. Yani, RODC, sadece verileri **okur** ve sistemdeki diğer DC'lere **değişiklik göndermediği** için replikasyon trafiği de azalır. Bu da sistemin daha verimli çalışmasını sağlar.
     
-4. **DNS Sunucusu**: RODC, aynı zamanda bir **DNS sunucusu** içerir, ancak bu DNS sunucu da sadece okunabilir durumdadır. Bu özellik, özellikle uzak şubelerde ya da güvenliği artırılmış bölgelerde RODC kullanılmasını destekler. DNS sunucusunun okuma işlemleri yapılabilir, ancak veritabanı güncellenemez.
+4. **DNS Sunucusu**: RODC, aynı zamanda bir **DNS sunucusu** içerir, ancak bu DNS sunucu da sadece okunabilir durumdadır. Bu özellik, özellikle remote şubelerde ya da güvenliği artırılmış bölgelerde RODC kullanılmasını destekler. DNS sunucusunun okuma işlemleri yapılabilir, ancak veritabanı güncellenemez.
     
-5. **Yönetici Rolü Ayrımı (Delegation of Admin Roles)**: RODC'ler, **admin rolleri ayrımı** sağlar. Yani, RODC üzerinde, şube yöneticileri veya belirli kullanıcılar bazı yönetimsel görevleri yerine getirebilir, ancak genel AD veritabanına yapılan değişikliklere müdahale edemezler. Bu özellik, şube ofisleri veya uzak lokasyonlar için ideal bir çözüm sunar çünkü şube yöneticileri yalnızca gerekli görevleri yerine getirir, ancak tüm ağ üzerinde kapsamlı değişiklik yapma yetkisine sahip olmazlar.
+5. **Yönetici Rolü Ayrımı (Delegation of Admin Roles)**: RODC'ler, **admin rolleri ayrımı** sağlar. Yani, RODC üzerinde, şube yöneticileri veya belirli kullanıcılar bazı yönetimsel görevleri yerine getirebilir, ancak genel AD veritabanına yapılan değişikliklere müdahale edemezler. Bu özellik, şube ofisleri veya remote lokasyonlar için ideal bir çözüm sunar çünkü şube yöneticileri yalnızca gerekli görevleri yerine getirir, ancak tüm ağ üzerinde kapsamlı değişiklik yapma yetkisine sahip olmazlar.
     
-6. **Güvenlik**: RODC, uzak ofislerde veya daha az güvenli ortamlarda kullanılmak üzere tasarlanmış bir çözüm sunar. Çünkü şube ofislerinde veya dış lokasyonlarda, merkezi Active Directory veritabanı üzerinde değişiklik yapma ihtiyacı olmayan kullanıcıların talepleri için RODC'ler kullanılır. Bu sayede, merkezi veritabanının güvenliği risk altında olmadan, kullanıcılara **okuma erişimi** sağlanır.
+6. **Güvenlik**: RODC, remote ofislerde veya daha az güvenli ortamlarda kullanılmak üzere tasarlanmış bir çözüm sunar. Çünkü şube ofislerinde veya dış lokasyonlarda, merkezi Active Directory veritabanı üzerinde değişiklik yapma ihtiyacı olmayan kullanıcıların talepleri için RODC'ler kullanılır. Bu sayede, merkezi veritabanının güvenliği risk altında olmadan, kullanıcılara **okuma erişimi** sağlanır.
     
 
 #### RODC Kullanım Senaryoları:
 
-- **Uzak Ofisler ve Şubeler**: Uzak ofislerde ve şubelerde, merkezi Active Directory sunucusuna doğrudan erişim sağlamak yerine, **RODC** kullanarak, şubedeki kullanıcıların kimlik doğrulama işlemleri gerçekleştirilir. Ancak, tüm değişiklikler ana domain controller’a iletilir.
+- **Uzak Ofisler ve Şubeler**: Remote ofislerde ve şubelerde, merkezi Active Directory sunucusuna doğrudan erişim sağlamak yerine, **RODC** kullanarak, şubedeki kullanıcıların kimlik doğrulama işlemleri gerçekleştirilir. Ancak, tüm değişiklikler main domain controller’a iletilir.
     
 - **Güvenlik Risklerinin Azaltılması**: Eğer uzak ofiste fiziksel güvenlik önlemleri zayıfsa, RODC kullanmak **parola güvenliği** açısından faydalıdır. Çünkü, RODC üzerinde parolalar saklanmaz, bu da olası bir fiziksel saldırı durumunda **gizliliğin korunmasını** sağlar.
     
@@ -550,15 +484,17 @@ FSMO, Active Directory'nin doğru çalışmasını sağlamak için önemli rolle
 
 #### Özetle:
 
-RODC, Active Directory’nin sadece okunabilir bir versiyonunu sunar ve bu da özellikle uzak ofislerde güvenliği artırırken, veritabanı değişikliklerini merkezi kontrol altına almayı sağlar. Bu, şube ofislerinde veya fiziksel güvenliğin daha düşük olduğu ortamlarda güvenlik risklerini azaltırken, ağda veri replikasyonunu optimize eder. Bu tür bir yapı, çoklu ofislerin olduğu büyük organizasyonlarda ideal bir çözüm sunar.
+RODC, Active Directory’nin `read-only` bir versiyonunu sunar ve bu da özellikle remote ofislerde güvenliği artırırken, veritabanı değişikliklerini merkezi kontrol altına almayı sağlar. Bu, şube ofislerinde veya fiziksel güvenliğin daha düşük olduğu ortamlarda güvenlik risklerini azaltırken, ağda veri replikasyonunu optimize eder. Bu tür bir yapı, çoklu ofislerin olduğu büyük organizasyonlarda ideal bir çözüm sunar.
 
 
 ### Replication
-[Replikasyon](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/replication/active-directory-replication-concepts), AD objectleri güncelleştirildiğinde ve bir Domain Controller'dan diğerine aktarıldığında AD'de gerçekleşir. Bir DC eklendiğinde, bunlar arasındaki replikasyon'u yönetmek için bağlantı objectleri oluşturulur. Bu bağlantılar, tüm DC'lerde bulunan Knowledge Consistency Checker (KCC) servisi tarafından yapılır. Replikasyon, değişikliklerin bir forestdaki diğer tüm DC'lerle senkronize edilmesini sağlar ve bir domain controller'ın arızalanması durumunda bir yedek oluşturulmasına yardımcı olur.
+
+**Active Directory**'de [replikasyon](https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/replication/active-directory-replication-concepts), **object**'ler güncellendiğinde ve bir **Domain Controller**'dan (DC) diğerine aktarıldığında gerçekleşir. Bir **DC** eklendiğinde, aralarındaki replikasyonu yönetmek için bağlantı **objects**'leri oluşturulur. Bu bağlantılar, tüm **DC**'lerde bulunan **`Knowledge Consistency Checker (KCC)`** servisi tarafından yapılır. Replikasyon, değişikliklerin **forest**'daki diğer tüm **DC**'lerle senkronize edilmesini sağlar ve bir **Domain Controller** arızalandığında yedekleme oluşturulmasına yardımcı olur.
 
 
 ### Service Principal Name  (SPN)
-[Service Principal Name](https://learn.microsoft.com/en-us/windows/win32/ad/service-principal-names) (SPN) bir service örneğini benzersiz bir şekilde tanımlar. Kerberos kimlik doğrulaması tarafından bir servis örneğini bir oturum açma hesabıyla ilişkilendirmek için kullanılırlar ve bir client uygulamanın hesap adını bilmesine gerek kalmadan bir hesabın kimliğini doğrulamak için service'den talepte bulunmasına olanak tanırlar.
+
+**[Service Principal Nam](https://docs.microsoft.com/en-us/windows/win32/ad/service-principal-names)e (SPN)**, bir servis örneğini benzersiz şekilde tanımlar. **Kerberos** kimlik doğrulaması tarafından, bir servis örneğini bir oturum açma hesabıyla ilişkilendirmek için kullanılır, bu da bir **client** uygulamasının, hesap adını bilmeden servise, bir hesabı kimlik doğrulamak için başvurmasını sağlar.
 
 #### Örnek Senaryo:
 
@@ -574,25 +510,25 @@ Bu SPN, **HTTP** servisini **[www.example.com](http://www.example.com)** üzerin
 
 **Group Policy Object (GPO)**, Windows ortamlarında bilgisayarlar ve kullanıcılar için merkezi olarak yapılandırma ayarlarını ve politikalarını belirlemeye yarayan bir yönetim aracıdır.
 
-[Group Policy objectleri (GPO'lar)](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/policy/group-policy-objects) ==policy ayarlarının sanal koleksiyonlarıdır==. Her GPO'nun benzersiz bir GUID'si vardır. Bir GPO local dosya sistemi ayarlarını veya Active Directory ayarlarını içerebilir. GPO ayarları hem kullanıcı hem de bilgisayar objectlerine uygulanabilir. Domain içindeki tüm kullanıcılara ve bilgisayarlara uygulanabilir veya OU düzeyinde daha ayrıntılı olarak tanımlanabilirler.
-
+**[Group Policy Objects](https://docs.microsoft.com/en-us/previous-versions/windows/desktop/policy/group-policy-objects) (GPO'lar)**, policy ayarlarının sanal koleksiyonlarıdır. Her GPO'nun benzersiz bir GUID'i vardır. Bir GPO, local dosya sistemi ayarlarını veya Active Directory ayarlarını içerebilir. GPO ayarları hem user hem de computer objelerine uygulanabilir. Bunlar, domain içindeki tüm user'lar ve bilgisayarlara uygulanabilir veya OU düzeyinde daha ayrıntılı olarak tanımlanabilir. Örneğin, bir GPO aracılığıyla kullanıcıların masaüstü arka planlarını değiştirmeleri engellenebilir.
 
 ### Access Control List (ACL)
-[Erişim Kontrol Listesi (ACL)](https://learn.microsoft.com/en-us/windows/win32/secauthz/access-control-lists), bir object için geçerli olan Erişim Kontrol Girişlerinin (ACE'ler) sıralı koleksiyonudur.
 
-**Access Control List (ACL)**, bir dosya, klasör veya ağ kaynağı üzerindeki erişim haklarını belirleyen bir listedir. Her ACL, kullanıcılar ve gruplar için izinleri tanımlar, böylece hangi kullanıcıların veya grupların kaynağa ne tür erişim (okuma, yazma, yürütme) sağladığını belirler. ACL'ler, güvenlik ve yönetim amaçlı olarak kaynaklara kimlerin erişebileceğini ve hangi işlemleri yapabileceğini denetler.
+**[Access Control List (ACL)](https://docs.microsoft.com/en-us/windows/win32/secauthz/access-control-lists)**, bir **object**'e uygulanan sıralı **Access Control Entries (ACEs)** koleksiyonudur.
+
+**Access Control List (ACL)**, bir dosya, klasör veya ağ kaynağı üzerindeki `access right`'leri belirleyen bir listedir. Her ACL, kullanıcılar ve gruplar için izinleri tanımlar, böylece hangi kullanıcıların veya grupların kaynağa ne tür erişim (okuma, yazma, yürütme) sağladığını belirler. ACL'ler, güvenlik ve yönetim amaçlı olarak kaynaklara kimlerin erişebileceğini ve hangi işlemleri yapabileceğini denetler.
 
 ### Access Control Entries (ACEs)
 
-Her Access Control Entry (ACE), bir ACL'deki bir Trustee (kullanıcı hesabı, grup hesabı veya oturum açma oturumu) ilişkin kimlik bilgilerini belirler ve belirtilen Trustee için izin verilen, reddedilen veya denetlenen erişim haklarını listeler.
+Bir **[Access Control Entry](https://docs.microsoft.com/en-us/windows/win32/secauthz/access-control-entries) (ACE)**, bir **ACL**'de, bir **trustee**'yi (kullanıcı hesabı, grup hesabı veya oturum açma oturumu) tanımlar ve verilen **trustee** için izin verilen, reddedilen veya denetlenen **access right**'ları listeler.
 
-**Trustee**: Erişim haklarına sahip olan kişi veya varlık, yani bir kullanıcı hesabı, grup hesabı veya oturum açma oturumudur.
+**`Trustee`**: Access right'larına sahip olan kişi veya varlık, yani bir kullanıcı hesabı, grup hesabı veya oturum açma oturumudur.
 
 Access Control Entries (ACE), bir Access Control List (ACL) içinde bulunan ve belirli bir kullanıcı veya grubun bir kaynağa (dosya, dizin, nesne vb.) erişim izinlerini tanımlayan tek bir giriştir.
 
 ### Discretionary Access Control List (DACL)
 
-DACL'ler (Discretionary Access Control List), hangi security policy'lerine (kullanıcı veya gruplar) bir objeye erişim izni verildiğini veya reddedildiğini tanımlar; bu liste, ACE'lerden (Access Control Entries) oluşur. Bir process, güvenli bir nesneye erişmeye çalıştığında, sistem, erişime izin verilip verilmeyeceğini belirlemek için objenin DACL'sindeki ACE'leri kontrol eder. Eğer bir objenin DACL'si yoksa, sistem herkese tam erişim izni verir, ancak DACL'de hiç ACE girişi yoksa, sistem tüm erişim girişimlerini reddeder. DACL'deki ACE'ler, istenen hakları veren bir eşleşme bulunana veya erişim reddedilene kadar sırayla kontrol edilir.
+**DACLs**, hangi **security principle**'lerin bir **object**'e erişim izni verilip verilmeyeceğini tanımlar; bir **`ACE`** listesi içerir. Bir **process**, güvenli bir **object**'e erişmeye çalıştığında, sistem, erişimi verip vermemek için **object**'in **DACL**'indeki **ACE**'leri kontrol eder. Eğer bir **object**'in **DACL**'i yoksa, sistem herkes için tam erişim izni verir, ancak eğer **DACL**'de hiç **ACE** girişi yoksa, sistem tüm erişim girişimlerini reddeder. **DACL**'deki **ACE**'ler, talep edilen **access right**'ları verecek bir eşleşme bulunana kadar ya da erişim reddedilene kadar sırasıyla kontrol edilir.
 
 ----
 
@@ -608,13 +544,13 @@ DACL'ler (Discretionary Access Control List), hangi security policy'lerine (kull
     
     - ACE, DACL içindeki tek bir giriştir ve belirli bir kullanıcı veya gruba **izin verilen** veya **reddedilen** erişim haklarını belirtir.
         
-    - Örneğin, bir ACE, "Ahmet" kullanıcısına bir dosyayı okuma izni verebilir veya "Yöneticiler" grubuna yazma iznini reddedebilir.
+    - Örneğin, bir ACE, "Ahmet" kullanıcısına bir dosyayı okuma izni verebilir veya "Administrator" grubuna yazma iznini reddedebilir.
         
-3. **Erişim Kontrolü Nasıl Çalışır?**
+3. **Access Control Nasıl Çalışır?**
     
     - Bir process, bir objeye erişmeye çalıştığında, sistem şu adımları izler:
         
-        - Nesnenin DACL'sini kontrol eder.
+        - Objenin DACL'sini kontrol eder.
             
         - DACL içindeki ACE'leri sırayla inceler.
             
@@ -632,7 +568,7 @@ DACL'ler (Discretionary Access Control List), hangi security policy'lerine (kull
         
 6. **ACE'lerin Sırası Neden Önemli?**
     
-    - DACL'deki ACE'ler, **sırayla** kontrol edilir. İlk eşleşen ACE, erişim kararını belirler. Bu nedenle, ACE'lerin doğru sıralanması önemlidir. Örneğin, bir kullanıcıya önce izin veren bir ACE, ardından erişimi reddeden bir ACE varsa, erişim izni verilir.
+    - DACL'deki ACE'ler, **`sırayla`** kontrol edilir. İlk eşleşen ACE, erişim kararını belirler. Bu nedenle, ACE'lerin doğru sıralanması önemlidir. Örneğin, bir kullanıcıya önce izin veren bir ACE, ardından erişimi reddeden bir ACE varsa, erişim izni verilir.
         
 
 
@@ -646,14 +582,15 @@ DACL'ler (Discretionary Access Control List), hangi security policy'lerine (kull
     
 - DACL var ama ACE yoksa, **hiç kimse erişemez**.
     
-- Erişim kontrolü, ACE'lerin sırayla kontrol edilmesiyle gerçekleşir.
+- Erişim kontrolü, ACE'lerin `sırayla` kontrol edilmesiyle gerçekleşir.
 
 
 ---
 
 
 ### Sistem Erişim Kontrol Listeleri (SACL)
-Yöneticilerin güvenli objectlere yapılan erişim denemelerini loga kaydetmesini sağlar. ACE'ler, sistemin güvenlik olay günlüğünde bir kayıt oluşturmasına neden olan erişim girişimlerinin türlerini belirtir.
+**Administrators**, güvenli **objects**'lere yapılan erişim girişimlerini kaydetmelerine olanak tanır. **ACE**'ler, sistemin güvenlik **log**'unda bir kayıt oluşturmasına neden olan erişim girişimi türlerini belirtir.
+
 
 **SACL (System Access Control List)**, bir objeye (dosya, dizin vb.) yapılan erişim girişimlerinin **kaydedilmesini** ve **denetlenmesini** sağlayan bir listedir. DACL'den farklı olarak, SACL erişim izinlerini yönetmez; sadece hangi erişim türlerinin (okuma, yazma, silme gibi) **log kaydı** olarak tutulacağını belirler. Özellikle güvenlik ve uyumluluk için kullanılır. Örneğin, bir dosyaya kimlerin eriştiğini veya değişiklik yaptığını kaydeder.
 
@@ -1016,22 +953,22 @@ Kerberos kimlik doğrulaması, kullanıcıların kimlik bilgilerini tüketilebil
 
 ###### B. **Kullanıcı Oturum Açma Süreci:**
 
-1. **Authentication Service Request (AS-REQ):**
+7. **Authentication Service Request (AS-REQ):**
     
     - Kullanıcı, bir sisteme oturum açmak için **client**'ından **KDC**'ye bir kimlik doğrulama isteği gönderir.
     - Bu istek **kullanıcının parolasıyla şifrelenir.**
     
-2. **Ticket Granting Ticket (TGT):**
+8. **Ticket Granting Ticket (TGT):**
     
     - KDC, kullanıcının parolasını kullanarak isteğin **şifresini çözer**.
     - Eğer şifre çözülürse, **Ticket Granting Ticket (TGT)** oluşturulur ve kullanıcıya iletilir.
 
-3. **Ticket Granting Service Request (TGS-REQ):**
+9. **Ticket Granting Service Request (TGS-REQ):**
     
     - Kullanıcı, TGT’sini sunarak **TGS bileti** talep eder.
     - TGT, **NTLM parola hash’i** ile şifrelenmiş olarak iletilir.
 
-4. **Service'e Erişim:**
+10. **Service'e Erişim:**
     
     - Kullanıcı, TGS biletini hedef **servis** veya uygulamaya sunar.
     - Server bu ticket'ın şifresini çözer ve kullanıcının kimliğini doğrular.
@@ -1361,18 +1298,18 @@ LDAP'taki **BIND**, bir LDAP oturumunda kimlik doğrulama durumunu belirlemek i�
 
 ### BIND İşleminde Ne Olur?
 
-1. **Bağlantı Kurulması**: client, LDAP sunucusuna bir bağlantı kurar.
-2. **Kimlik Doğrulama Gönderimi**: Client, kimlik bilgilerini (kullanıcı adı ve şifre gibi) BIND işlemi aracılığıyla LDAP sunucusuna gönderir.
-3. **Kimlik Doğrulama Sonucu**: Sunucu, kimlik bilgilerini doğrular ve başarılı/başarısız sonucunu döner.
+11. **Bağlantı Kurulması**: client, LDAP sunucusuna bir bağlantı kurar.
+12. **Kimlik Doğrulama Gönderimi**: Client, kimlik bilgilerini (kullanıcı adı ve şifre gibi) BIND işlemi aracılığıyla LDAP sunucusuna gönderir.
+13. **Kimlik Doğrulama Sonucu**: Sunucu, kimlik bilgilerini doğrular ve başarılı/başarısız sonucunu döner.
 
 ### LDAP Kimlik Doğrulama Türleri
 
-1. **Simple Bind**:
+14. **Simple Bind**:
     
     - Düz metin olarak kullanıcı adı ve şifre gönderir.
     - Güvensizdir ve yalnızca şifreleme (TLS/SSL) kullanılarak güvenli hale getirilebilir.
     
-2. **SASL Bind** (Simple Authentication and Security Layer):
+15. **SASL Bind** (Simple Authentication and Security Layer):
     
     - Gelişmiş bir kimlik doğrulama mekanizmasıdır.
     - Örneğin, Kerberos gibi protokollerle entegre çalışabilir.
@@ -1444,7 +1381,7 @@ Not: Windows Vista ve Windows Server 2008'den önceki Windows işletim sistemler
 
 ###### ÖZET 
 
-1. **NTLM Kimlik Doğrulama Protokolü**:
+16. **NTLM Kimlik Doğrulama Protokolü**:
     
     - NTLM, modern Windows sistemlerinde kullanılan bir **challenge-response** (meydan okuma-cevap) kimlik doğrulama protokolüdür.
     - Kimlik doğrulama sürecinde üç mesaj kullanılır:
@@ -1452,24 +1389,24 @@ Not: Windows Vista ve Windows Server 2008'den önceki Windows işletim sistemler
         - **CHALLENGE_MESSAGE**: Sunucu, client'ın kimliğini doğrulamak için bu mesajı gönderir.
         - **AUTHENTICATE_MESSAGE**: Son olarak, client bu mesajla yanıt verir.
 
-2. **NTLM Hash'lerinin Saklanması**:
+17. **NTLM Hash'lerinin Saklanması**:
     
     - **LM Hash** ve **NT Hash** olmak üzere iki tür hash değeri vardır.
         - Bu hash'ler, **SAM (Security Account Manager)** veritabanı veya **NTDS.DIT** (Domain Controller üzerindeki veritabanı dosyasında) saklanır.
 
-3. **Hash Türleri**:
+18. **Hash Türleri**:
     
     - **LM Hash**: Eski bir hash türüdür, ancak genellikle zayıf bir güvenlik sağlar ve modern sistemlerde nadiren kullanılır.
     - **NT Hash**: Kullanıcının parolasının **little-endian UTF-16** formatında şifrelenmiş haliyle, **MD4** algoritmasıyla oluşturulan hash değeridir. Bu değer daha güvenlidir.
 
-4. **NT Hash Algoritması**:
+19. **NT Hash Algoritması**:
     
     - **NT Hash** algoritması şu şekilde çalışır:
         - **UTF-16-LE** (little-endian) formatında şifrelenmiş parola alınır.
         - Ardından bu şifreli parola, **MD4** algoritması ile hashlenir.
         - Sonuçta elde edilen değer, **NT Hash** olarak saklanır.
 
-5. **Kimlik Doğrulama Adımları**:
+20. **Kimlik Doğrulama Adımları**:
     
     - Kullanıcı, bu hash'leri kullanarak kimlik doğrulama işlemine girer.
     - **NTLM** kimlik doğrulaması, bu hash'leri kullanarak, password doğrulaması yapılmadan önce **challenge-response** mesajları aracılığıyla kimlik doğrulaması sağlar.
@@ -1528,22 +1465,22 @@ NTLMv2 protokolü ilk olarak Windows NT 4.0 SP4'te tanıtılmış ve NTLMv1'e da
 
 NTLMv2 protokolünü daha ayrıntılı ve madde madde açıklayayım:
 
-1. **NTLMv2'nin Tanıtımı ve Geliştirilmesi:**
+21. **NTLMv2'nin Tanıtımı ve Geliştirilmesi:**
     
     - **NTLMv2**, Windows NT 4.0 SP4 ile tanıtıldı.
     - **NTLMv2**, daha önceki protokol olan **NTLMv1**'in güvenlik açıklarını kapatmak için geliştirilmiş bir alternatif olarak tasarlandı.
     - **Windows Server 2000**'den itibaren **varsayılan kimlik doğrulama protokolü** olarak kullanıma sunuldu.
 
-2. **NTLMv2'nin Güçlendirilmiş Güvenliği:**
+22. **NTLMv2'nin Güçlendirilmiş Güvenliği:**
     
     - **NTLMv1**'in karşılaştığı bazı **sahtecilik (spoofing)** saldırılarına karşı **NTLMv2** daha dayanıklıdır.
     - Yani NTLMv2, güvenlik açıklarını kapatarak daha güvenli bir kimlik doğrulama sağlar.
 
-3. **NTLMv2'nin Responsları:**
+23. **NTLMv2'nin Responsları:**
     
     - NTLMv2, sunucudan aldığı **8 baytlık bir challenge**  ile iki farklı **yanıt** gönderir.
 
-4. **Birinci Yanıt:**
+24. **Birinci Yanıt:**
     
     - Bu yanıt, **HMAC-MD5** (Hash-based Message Authentication Code - MD5) algoritması ile oluşturulmuş bir **16 baytlık hash** içerir.
     - Bu hash, aşağıdaki bileşenlerin birleşiminden türetilir:
@@ -1551,7 +1488,7 @@ NTLMv2 protokolünü daha ayrıntılı ve madde madde açıklayayım:
         - **Client tarafından rastgele oluşturulan challenge**.
         - **Kullanıcının kimlik bilgileri** (şifre veya parola).
 
-5. **İkinci Yanıt:**
+25. **İkinci Yanıt:**
     
     - İkinci yanıt, **değişken uzunluktaki client challenge'ı** içerir.
     - Bu challenge, aşağıdaki bileşenleri içerir:
@@ -1559,7 +1496,7 @@ NTLMv2 protokolünü daha ayrıntılı ve madde madde açıklayayım:
         - **8 baytlık rastgele bir değer**.
         - **Doamin adı ** (domain name).
 
-6. **Genel Algoritma:**
+26. **Genel Algoritma:**
     
     - NTLMv2 protokolü, bu iki yanıtla birlikte kimlik doğrulaması gerçekleştirilir. Hem client hem de server, bu yanıtları doğrulamak için aynı algoritmayı kullanır.
     - NTLMv2'nin güvenliği, kullanıcının kimlik bilgilerini ve çeşitli rastgele verileri içerdiği için NTLMv1'e göre daha güçlüdür.
@@ -2465,23 +2402,23 @@ Bir kullanıcıyı GUI üzerinden eklemeden önce, **Active Directory Users and
 
 Bir AD kullanıcısını GUI üzerinden eklemek için öncelikle **Active Directory Users and Computers** aracını, **Başlat Menüsü**'ndeki **Administrative Tools** klasörü üzerinden açmamız gerekiyor.
 
-1. “IT” üzerine sağ tıklayın, ''New'' > ''User'' seçin.
+27. “IT” üzerine sağ tıklayın, ''New'' > ''User'' seçin.
 
 ![Pasted image 20250127232858.png](/img/user/resimler/Pasted%20image%2020250127232858.png)
 
-2. Kullanıcının adını ve soyadını ekleyin, “ User Logon Name:” `acepheus` olarak ayarlayın ve ardından Next tuşuna basın.
+28. Kullanıcının adını ve soyadını ekleyin, “ User Logon Name:” `acepheus` olarak ayarlayın ve ardından Next tuşuna basın.
 
 ![Pasted image 20250127232902.png](/img/user/resimler/Pasted%20image%2020250127232902.png)
 
-3. `NewP@ssw0rd123!` şeklinde bir parola belirleyin ve “Kullanıcı bir sonraki oturum açışında parolasını değiştirmelidir” kutusunu işaretleyin.
+29. `NewP@ssw0rd123!` şeklinde bir parola belirleyin ve “Kullanıcı bir sonraki oturum açışında parolasını değiştirmelidir” kutusunu işaretleyin.
 
 ![Pasted image 20250127233026.png](/img/user/resimler/Pasted%20image%2020250127233026.png)
 
-4. Tüm özellikler doğru görünüyorsa, son pencerede “ Finish” i seçin
+30. Tüm özellikler doğru görünüyorsa, son pencerede “ Finish” i seçin
 
 ![Pasted image 20250127233043.png](/img/user/resimler/Pasted%20image%2020250127233043.png)
 
-5. Yeni Kullanıcımız artık OU'da bulunmaktadır.
+31. Yeni Kullanıcımız artık OU'da bulunmaktadır.
 
 ![Pasted image 20250127233046.png](/img/user/resimler/Pasted%20image%2020250127233046.png)
 
@@ -2490,11 +2427,11 @@ Bir AD kullanıcısını GUI üzerinden eklemek için öncelikle **Active Direc
 
 Yeni kullanıcı **Andromeda Cepheus**'u domain'imize ekleyeceğiz. Bunu aşağıdaki adımları izleyerek yapabiliriz:
 
-1. **IT** üzerine sağ tıklayın > **New** > **User** seçeneğini seçin. Doldurmanız gereken alanların bulunduğu bir açılır pencere belirecektir.
+32. **IT** üzerine sağ tıklayın > **New** > **User** seçeneğini seçin. Doldurmanız gereken alanların bulunduğu bir açılır pencere belirecektir.
     
-2. Kullanıcının **First Name** (Ad) ve **Last Name** (Soyad) bilgilerini ekleyin, **User Logon Name** (Kullanıcı Oturum Açma Adı) olarak **acepheus** ayarlayın ve ardından **Next**'e tıklayın.
+33. Kullanıcının **First Name** (Ad) ve **Last Name** (Soyad) bilgilerini ekleyin, **User Logon Name** (Kullanıcı Oturum Açma Adı) olarak **acepheus** ayarlayın ve ardından **Next**'e tıklayın.
     
-3. Yeni kullanıcıya **NewP@ssw0rd123!** şifresini verin, şifreyi tekrar onaylayın ve **User must change password at next login** (Kullanıcı bir sonraki oturum açışında şifresini değiştirmeli) kutusunu işaretleyin, ardından **Next**'e tıklayın. Tüm öznitelikler doğru görünüyorsa, son pencerede **Finish**'i seçin.
+34. Yeni kullanıcıya **NewP@ssw0rd123!** şifresini verin, şifreyi tekrar onaylayın ve **User must change password at next login** (Kullanıcı bir sonraki oturum açışında şifresini değiştirmeli) kutusunu işaretleyin, ardından **Next**'e tıklayın. Tüm öznitelikler doğru görünüyorsa, son pencerede **Finish**'i seçin.
     
 
 ### **Kullanıcı Hesabını Kaldırma**
@@ -2515,32 +2452,32 @@ PS C:\htb> Remove-ADUser -Identity pvalencia
 
 **ADUC snap-in**'inden en basit yöntem, **find** (bul) işlevini kullanmaktır. Inlanefreight'te birden fazla OU'da birçok kullanıcı bulunmaktadır. **Find** özelliğini kullanmak için:
 
-1. **Employees** üzerine sağ tıklayın ve **Find** (Bul) seçeneğini seçin.
+35. **Employees** üzerine sağ tıklayın ve **Find** (Bul) seçeneğini seçin.
     
-2. Aramak istediğiniz kullanıcı adını yazın, bu durumda **"Paul Valencia"** yazın ve **Find Now** (Şimdi Bul) düğmesine tıklayın. Eğer bu isimde bir kullanıcı varsa, arama sonuçları **Find** penceresinin alt kısmında görünecektir.
+36. Aramak istediğiniz kullanıcı adını yazın, bu durumda **"Paul Valencia"** yazın ve **Find Now** (Şimdi Bul) düğmesine tıklayın. Eğer bu isimde bir kullanıcı varsa, arama sonuçları **Find** penceresinin alt kısmında görünecektir.
     
-3. Şimdi, kullanıcı üzerine sağ tıklayın ve **Delete** (Sil) seçeneğini seçin. Kullanıcının silinmesini onaylamak için bir açılır pencere belirecektir. **Yes** (Evet) düğmesine tıklayın.
+37. Şimdi, kullanıcı üzerine sağ tıklayın ve **Delete** (Sil) seçeneğini seçin. Kullanıcının silinmesini onaylamak için bir açılır pencere belirecektir. **Yes** (Evet) düğmesine tıklayın.
     
-4. Kullanıcının silindiğini doğrulamak için, **Find** özelliğini tekrar kullanarak kullanıcıyı arayabilirsiniz.
+38. Kullanıcının silindiğini doğrulamak için, **Find** özelliğini tekrar kullanarak kullanıcıyı arayabilirsiniz.
 
 
 ### GUI aracılığıyla Kullanıcı Silme
 
 Bir kullanıcıyı GUI üzerinden silmek için, daha önce bir kullanıcıyı domain'e eklerken kullandığımız gibi **ADUC snap-in**'ini kullanacağız.
 
-1. “Employees OU” üzerine sağ tıklayın ve ‘find’ seçeneğini seçin.
+39. “Employees OU” üzerine sağ tıklayın ve ‘find’ seçeneğini seçin.
 
 ![Pasted image 20250127235004.png](/img/user/resimler/Pasted%20image%2020250127235004.png)
 
-2. Aramak istediğiniz kullanıcı adını, bu durumda “Paul Valencia” yazın ve “ Find Now” tuşuna basın.
+40. Aramak istediğiniz kullanıcı adını, bu durumda “Paul Valencia” yazın ve “ Find Now” tuşuna basın.
 
 ![Pasted image 20250128000123.png](/img/user/resimler/Pasted%20image%2020250128000123.png)
 
-3. Kullanıcıya sağ tıklayın ve sil'i seçin
+41. Kullanıcıya sağ tıklayın ve sil'i seçin
 
 ![Pasted image 20250128000138.png](/img/user/resimler/Pasted%20image%2020250128000138.png)
 
-2. Yeni bir geçici şifre belirleyin ve “ Unlock” ve “User must change password” iletişim kutularını seçin.
+42. Yeni bir geçici şifre belirleyin ve “ Unlock” ve “User must change password” iletişim kutularını seçin.
 
 ![Pasted image 20250128000213.png](/img/user/resimler/Pasted%20image%2020250128000213.png)
 
@@ -2574,17 +2511,17 @@ PS C:\htb> Set-ADUser -Identity amasters -ChangePasswordAtLogon $true
 
 Bu kullanıcı hesabının kilidini açmak birkaç adım gerektirecektir. İlk olarak hesabın kilidini açacağız, ardından kullanıcının bir sonraki oturum açışında şifresini değiştirmesini zorunlu kılacağız ve son olarak geçici bir şifre belirleyerek kullanıcının oturum açıp şifresini kendisinin değiştirmesini sağlayacağız. Bunu aşağıdaki adımları izleyerek yapabiliriz:
 
-1. Kullanıcı üzerine sağ tıklayın ve **Reset Password** (Şifreyi Sıfırla) seçeneğini seçin.
+43. Kullanıcı üzerine sağ tıklayın ve **Reset Password** (Şifreyi Sıfırla) seçeneğini seçin.
     
-2. Açılan pencerede geçici şifreyi yazın, şifreyi onaylayın ve **"User must change password at next logon"** (Kullanıcı bir sonraki oturum açışında şifresini değiştirmeli) ile **"Unlock the user's account"** (Kullanıcı hesabının kilidini aç) kutularını işaretleyin.
+44. Açılan pencerede geçici şifreyi yazın, şifreyi onaylayın ve **"User must change password at next logon"** (Kullanıcı bir sonraki oturum açışında şifresini değiştirmeli) ile **"Unlock the user's account"** (Kullanıcı hesabının kilidini aç) kutularını işaretleyin.
     
-3. İşlem tamamlandığında, değişiklikleri uygulamak için **OK** (Tamam) düğmesine tıklayın. Eğer bir hata oluşmazsa, kullanıcının şifresinin değiştirildiğini bildiren bir uyarı alacaksınız.
+45. İşlem tamamlandığında, değişiklikleri uygulamak için **OK** (Tamam) düğmesine tıklayın. Eğer bir hata oluşmazsa, kullanıcının şifresinin değiştirildiğini bildiren bir uyarı alacaksınız.
     
 
 ### **GUI Üzerinden Kullanıcı Hesabının Kilidini Açma**
 
 Adam Masters'ın hesabının kilidini açmak için, daha önce bir kullanıcıyı domain'e eklerken kullandığımız gibi **ADUC snap-in**'ini kullanacağız.
 
-1. Adam Master'ın hesabına sağ tıklayın ve “ Reset Password” (Parolayı Sıfırla) seçeneğini seçin.
+46. Adam Master'ın hesabına sağ tıklayın ve “ Reset Password” (Parolayı Sıfırla) seçeneğini seçin.
 
 ![Pasted image 20250128000034.png](/img/user/resimler/Pasted%20image%2020250128000034.png)
