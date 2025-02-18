@@ -410,4 +410,50 @@ Aşağıdaki bölümlerde, BloodHound ile çalışmaya başlayacak ve Active Dir
 
 ## BloodHound Overview
 
+### Active Directory Access Management
+
+Active Directory'de erişim yönetimi karmaşıktır ve günlük yapılandırmalarda zafiyetler veya kötü uygulamalar kolayca ortaya çıkabilir.
+
+Hem saldırganlar hem de savunmacılar, bir kullanıcının tüm erişimlerini keşfetmede veya denetlemede ve bu erişimlerin nasıl birbirine bağlı olduğunu anlamada genellikle zorluk yaşar. Bu bağlantılar, kullanıcıya aslında sahip olmaması gereken ayrıcalıkları kazandırabilir.
+
+Active Directory ortamlarında saldırı yüzeyi ve üretilen veri miktarı oldukça karmaşıktır ve sürekli gelişmektedir. Bu nedenle, bu verilerin toplanmasını ve analiz edilmesini otomatikleştirecek bir yönteme ihtiyaç duyuldu. İşte bu noktada, [@_wald0](https://www.twitter.com/_wald0), [@harmj0y](https://twitter.com/harmj0y) ve [@CptJesus](https://twitter.com/CptJesus) tarafından [BloodHound](https://github.com/BloodHoundAD/BloodHound) geliştirildi.
+
+
+### BloodHound Overview
+
+BloodHound, saldırganlar ve savunmacılar tarafından Active Directory domain güvenliğini analiz etmek için kullanılan açık kaynaklı bir araçtır. Bu araç, Active Directory domaininden büyük miktarda veri toplar. Geleneksel enumarasyon yöntemleriyle tespit edilmesi zor veya imkânsız olan domain saldırı yollarını belirlemek için **graf teorisini** kullanarak objeler arasındaki ilişkileri görsel olarak temsil eder.
+
+BloodHound, **4.0 sürümünden itibaren Azure desteği** de sunmaktadır. Bu modülün ana odağı **Active Directory** olacak olsa da, [Azure Enumeration](https://academy.hackthebox.com/module/69/section/2070) bölümünde **AzureHound**’a da giriş yapacağız.
+
+BloodHound tarafından kullanılacak veri, **[SharpHound](https://github.com/BloodHoundAD/BloodHound/tree/master/Collectors)** **collector** kullanılarak elde edilir. **PowerShell** ve **C#** ile kullanılabilen bu **collector**, veri toplama işlemini gerçekleştirmek için kullanılır. Veri toplama sürecini ilerleyen bölümlerde ele alacağız.
+
+
+### BloodHound Graph Theory & Cypher Query Language
+
+**BloodHound**, [**Graph Theory**](https://en.wikipedia.org/wiki/Graph_theory)'yi kullanır; bu, **object**'ler arasındaki ikili ilişkileri modellemek için kullanılan matematiksel yapılardır. Bu bağlamda bir **graph**, **[node](https://bloodhound.readthedocs.io/en/latest/data-analysis/nodes.html)**'lardan (**Active Directory object**'leri, örneğin **user**, **group**, **computer**, vb.) oluşur ve **[edge](https://bloodhound.readthedocs.io/en/latest/data-analysis/edges.html)**'ler ile bağlanır (**object**'ler arasındaki ilişkiler, örneğin **MemberOf**, **AdminTo**, vb.). **Node** ve **edge** kavramlarını ilerleyen bölümlerde daha ayrıntılı ele alacağız, ancak **BloodHound**'un nasıl çalıştığını görmek için bir örnek yapalım.
+
+Araç, ilişkileri analiz etmek için **[Cypher Query Language](https://neo4j.com/docs/getting-started/current/cypher-intro/)** kullanır. **Cypher**, **Neo4j**'in **graph query language**'idir ve **graph**'tan veri çekmemizi sağlar. **SQL**'e benzer şekilde tasarlandığından, sorguların nasıl çalıştığına değil, hangi veriyi çekmek istediğimize odaklanmamıza olanak tanır. Öğrenilmesi en kolay **graph query language** olarak kabul edilir, çünkü diğer dillerle benzerliği ve sezgiselliği sayesinde anlaşılması kolaydır. **Cypher query**'leri ile ilgili detayları ilerleyen bölümlerde ele alacağız.
+
+Aşağıdaki **diagram**, iki **node** (**A** ve **B**) içermektedir. Bu örnekte yalnızca **node A**'dan **node B**'ye gidebiliriz; tersi mümkün değildir.
+
+![Pasted image 20250219005238.png](/img/user/Pasted%20image%2020250219005238.png)
+
+Bu, **A**'yı **user** **Grace**, **B**'yi ise **group** **SQL Admins** olarak simüle edebilir. İkisi arasındaki çizgi **edge**'i temsil eder ve bu durumda **MemberOf** ilişkisidir. Aşağıdaki **graphic**, **BloodHound**'da **user** **Grace**'in **SQL Admins** **group**'unun bir üyesi olduğunu gösterir.
+
+![Pasted image 20250219005354.png](/img/user/Pasted%20image%2020250219005354.png)
+
+Hadi **nodes** arasındaki daha karmaşık bir ilişkiyi inceleyelim. Aşağıdaki **graphic**, sekiz (**8**) **node** ve on (**10**) **edge** içeriyor. **Node H**, **node G**'ye ulaşabilir, ancak hiçbir **node**'un **node H**'ye doğrudan bir yolu yoktur. **Node A**'dan **node C**'ye gitmek için önce **node G**'ye, ardından **node F**'ye ve son olarak **node C**'ye geçebiliriz, ancak bu en kısa yol değildir. **BloodHound**'un yeteneklerinden biri de en kısa yolu bulmaktır. Bu örnekte, **node A**'dan **node C**'ye en kısa yol, **node B** üzerinden tek bir sıçrama yapmaktır.
+
+![Pasted image 20250219005635.png](/img/user/Pasted%20image%2020250219005635.png)
+
+Önceki örnekte, **BloodHound**'u kullanarak **Grace**'in **SQL Admins** grubunun bir üyesi olduğunu keşfettik, ki bu oldukça basit bir bilgidir. Aynı bilgiyi **Active Directory Users and Computers GUI** veya `net user grace /domain` komutuyla da elde edebiliriz. Yalnızca bu bilgiye dayanarak, **Grace**'in **Domain Admins** grubuna doğrudan bir yolu olmadığını düşünebiliriz. Ancak, **BloodHound** burada devreye girerek **nodes** arasındaki keşfedilmesi zor ilişkileri bulmamıza yardımcı olur.
+
+Şimdi **BloodHound**'u bir harita gezgini olarak kullanıp, **Grace**'in **Domain Admins** grubuna nasıl ulaşabileceğini soralım. İşte sonuç:
+
+![Pasted image 20250219005741.png](/img/user/Pasted%20image%2020250219005741.png)
+
+Bu, **`Grace`**'in **`SQL Admins`** grubunun bir üyesi olarak **`Peter`**'ın şifresini değiştirme yetkisine sahip olduğu anlamına gelir. **`Peter`**'ın yeni şifresiyle kimlik doğrulaması yaparak **`Domain Admins`** grubunun bir üyesi gibi işlem gerçekleştirebiliriz. **`Peter`** doğrudan bir üye olmasa da, **Domain Admins** grubunun üyesi olan bir grubun içinde yer almaktadır.
+
+
+### BloodHound for Enterprise
 
