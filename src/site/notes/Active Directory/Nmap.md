@@ -271,9 +271,9 @@ Bazı sistem yöneticileri, TCP portlarını filtrelemeye ek olarak UDP portlar�
 sudo nmap 10.129.2.28 -F -sU
 ```
 
-|   |   |
-|---|---|
-|`-F`|Scans top 100 ports.|
+|      |                      |
+| ---- | -------------------- |
+| `-F` | Scans top 100 ports. |
 
 ```shell-session
 sudo nmap 10.129.2.28 -sU -Pn -n --disable-arp-ping --packet-trace -p 137 --reason 
