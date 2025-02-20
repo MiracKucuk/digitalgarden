@@ -3,7 +3,7 @@
 ---
 
 
-Sızma testinin ve dolayısıyla numaralandırmanın dinamik bir süreç olduğunu biliyoruz. Sonuç olarak, dış ve iç sızma testleri için serbest dinamikleri içeren ve verilen ortama göre çok çeşitli değişikliklere ve uyarlamalara izin veren statik bir numaralandırma metodolojisi geliştirdik. Bu metodoloji 6 katmandan oluşmaktadır ve mecazi anlamda numaralandırma süreci ile geçmeye çalıştığımız sınırları temsil etmektedir. Tüm numaralandırma süreci üç farklı seviyeye ayrılmıştır:
+Penetration testing ve enumeration dinamik bir süreçtir. External ve internal testler için esnek bir metodoloji geliştirilmiştir. Bu metodoloji, 6 katmandan oluşur ve enumeration sürecini üç seviyeye ayırır, ortama göre değişikliklere ve uyarlamalara imkan tanır.
 
 * `Infrastructure-based enumeration`
 * `Host-based enumeration`
@@ -11,102 +11,74 @@ Sızma testinin ve dolayısıyla numaralandırmanın dinamik bir süreç olduğu
 
 [Ayrıntılı Resim](https://academy.hackthebox.com/storage/modules/112/enum-method3.png)
 
-Not: Gösterilen her katmanın bileşenleri ana kategorileri temsil etmektedir ve aranacak tüm bileşenlerin tam listesi değildir. Ayrıca, burada birinci ve ikinci katmanın (İnternet Varlığı, Gateway) Active Directory altyapısı gibi intranet için tam olarak geçerli olmadığı belirtilmelidir. İç altyapıya yönelik katmanlar diğer modüllerde ele alınacaktır.
+Not: Gösterilen her katmanın bileşenleri ana kategorileri temsil etmektedir ve aranacak tüm bileşenlerin tam listesi değildir. Ayrıca, burada birinci ve ikinci katmanın (İnternet Varlığı, Gateway) Active Directory altyapısı gibi `intranet` için tam olarak geçerli olmadığı belirtilmelidir. İç altyapıya yönelik katmanlar diğer modüllerde ele alınacaktır.
 
-| **Katman**                 | **Açıklama**                                                                            | **Bilgi Kategorileri**                                                                                      |
-| -------------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| **İnternet Varlığı**       | Şirketin internet üzerindeki varlığını ve dışarıdan erişilebilen altyapısını tanımlama. | Domain'ler, Subdomain'ler, vHost'lar, ASN, Netblock'lar, IP Adresleri, Bulut Sunucuları, Güvenlik Önlemleri |
-| **Ağ Geçidi**              | Şirketin dış ve iç altyapısını korumak için olası güvenlik önlemlerini belirleme.       | Firewall'lar, DMZ, IPS/IDS, EDR, Proxy'ler, NAC, Ağ Segmentasyonu, VPN, Cloudflare                          |
-| **Erişilebilir Servisler** | Dışarıda veya içeride barındırılan erişilebilir arayüzleri ve servisleri tanımlama.     | Servis Türü, İşlevsellik, Konfigürasyon, Port, Versiyon, Arayüz                                             |
-| **Process'ler**            | Servislerle ilişkili iç process'leri, kaynakları ve hedefleri tanımlama.                | PID, İşlenen Veriler, Görevler, Kaynak, Hedef                                                               |
-| **Yetkiler**               | Erişilebilir servislere yönelik iç izin ve yetkileri belirleme.                         | Gruplar, Kullanıcılar, İzinler, Kısıtlamalar, Ortam                                                         |
-| **OS Yapılandırması**      | İç bileşenleri ve sistem yapılandırmasını tanımlama.                                    | OS Türü, Yama Seviyesi, Ağ Konfigürasyonu, OS Ortamı, Konfigürasyon Dosyaları, Hassas Private Dosyalar      |
-
-**Önemli Not:** İnsan faktörü ve çalışanlar tarafından **OSINT** kullanılarak elde edilebilecek bilgiler, basitlik sağlamak amacıyla "İnternet Varlığı" katmanından çıkarılmıştır.
-
-Son olarak tüm sızma testini, boşlukları belirlememiz ve bizi mümkün olduğunca hızlı ve etkili bir şekilde içeri sokacak yolu bulmamız gereken bir labirent şeklinde hayal edebiliriz. Bu tür bir labirent şöyle görünebilir:
-
-![Pasted image 20241225225406.png](/img/user/resimler/Pasted%20image%2020241225225406.png)
-Kareler boşlukları/zafiyetleri temsil etmektedir.
-
-
-**Katman No.1: İnternet Varlığı**  
-Bu katmanda, şirketin İnternet üzerindeki varlığını temsil eden domain'ler, subdomain'ler, netblock'lar gibi bilgileri bulmak için çeşitli teknikler kullanılır. Amacı, test edilebilecek hedef sistemleri ve arayüzleri tanımlamaktır.
-
-**Katman No.2: Ağ Geçidi**  
-Hedefin arayüzünü, güvenlik önlemlerini ve ağdaki konumunu anlamaya çalışırız. Amacımız, karşılaştığımız sistemi ve dikkat edilmesi gereken noktaları anlamaktır.
-
-**Katman No.3: Erişilebilir Servisler**  
-Her servisin amacı ve işlevselliği incelenir. Bu katmanın amacı, hedef sistemi anlamak ve etkili bir şekilde iletişim kurarak onu kullanmaktır.
-
-**Katman No.4: Process'ler**  
-Komutlar çalıştırıldığında veriler işlenir ve process başlatılır. Amacımız, process'ler arasındaki bağımlılıkları tanımlamaktır.
-
-**Katman No.5: Yetkiler**  
-Servisler, kullanıcıların izin ve ayrıcalıkları ile çalışır. Bu ayrıcalıkları tanımlamak ve nelerin mümkün olduğunu anlamak önemlidir.
-
-**Katman No.6: OS Yapılandırması**  
-İç erişim kullanarak işletim sistemi hakkında bilgi toplanır. Amacı, sistemin iç güvenliğini görmek ve hassas bilgileri belirlemektir.
-
----
-
+| **Katman**                 | **Açıklama**                                                                            | **Bilgi Kategorileri**                                                                                            |
+| -------------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **İnternet Varlığı**       | Şirketin internet üzerindeki varlığını ve dışarıdan erişilebilen altyapısını tanımlama. | `Domain`'ler, `Subdomain`'ler, `vHost`'lar, ASN, Netblock'lar, IP Adresleri, Cloud Sunucuları, Güvenlik Önlemleri |
+| **Gateway**                | Şirketin dış ve iç altyapısını korumak için olası güvenlik önlemlerini belirleme.       | Firewall'lar, DMZ, IPS/IDS, EDR, Proxy'ler, NAC, Ağ Segmentasyonu, VPN, Cloudflare                                |
+| **Erişilebilir Servisler** | Dışarıda veya içeride barındırılan erişilebilir arayüzleri ve servisleri tanımlama.     | Servis Türü, İşlevsellik, Konfigürasyon, Port, Versiyon, Arayüz                                                   |
+| **Process'ler**            | Servislerle ilişkili iç process'leri, kaynakları ve hedefleri tanımlama.                | PID, İşlenen Veriler, Görevler, Kaynak, Hedef                                                                     |
+| **Privileges**             | Erişilebilir servislere yönelik iç izin ve yetkileri belirleme.                         | Groups, Users, Permissions, Restrictions, Environment                                                             |
+| **OS Yapılandırması**      | İç bileşenleri ve sistem yapılandırmasını tanımlama.                                    | OS Türü, Yama Seviyesi, Ağ Konfigürasyonu, OS Ortamı, Konfigürasyon Dosyaları, Hassas Private Dosyalar            |
 
 # FTP
 
-* FTP, TCP/IP protokol stack'inin uygulama katmanında çalışır.
-* Böylece HTTP ya da POP ile aynı katmanda yer alır. Bu protokoller de servislerini gerçekleştirmek için browser ya da e-posta clientlerin desteği ile çalışır. File Transfer Protocol için özel FTP programları da vardır.
+* FTP, TCP/IP protokol stack'inin `application` katmanında çalışır.
+* Böylece `HTTP` ya da `POP` ile aynı katmanda yer alır. Bu protokoller de servislerini gerçekleştirmek için browser ya da e-posta clientlerin desteği ile çalışır. File Transfer Protocol için özel FTP programları da vardır.
 
-FTP protokolünü kullanarak lokal dosyaları bir sunucuya yüklemek ve diğer dosyaları indirmek istediğimizi düşünelim. Bir FTP bağlantısında iki kanal açılır. İlk olarak, client ve server TCP port 21 üzerinden bir kontrol kanalı kurarlar. Client sunucuya komutlar gönderir ve sunucu durum kodlarını döndürür. Daha sonra her iki iletişim katılımcısı TCP port 20 üzerinden veri kanalını kurar. Bu kanal yalnızca veri iletimi için kullanılır ve protokol bu işlem sırasında hataları izler. İletim sırasında bir bağlantı koparsa, yeniden temas kurulduktan sonra aktarım devam ettirilebilir.
+FTP protokolünü kullanarak lokal dosyaları bir sunucuya yüklemek ve diğer dosyaları indirmek istediğimizi düşünelim. Bir FTP bağlantısında iki kanal açılır. İlk olarak, `client` ve server TCP port 21 üzerinden bir `kontrol` `kanalı` kurarlar. Client sunucuya komutlar gönderir ve sunucu durum kodlarını döndürür. Daha sonra her iki iletişim katılımcısı TCP port 20 üzerinden veri kanalını kurar. Bu kanal yalnızca veri iletimi için kullanılır ve protokol bu işlem sırasında hataları izler. İletim sırasında bir bağlantı koparsa, yeniden temas kurulduktan sonra aktarım devam ettirilebilir.
 
 
 **Aktif FTP:**
 
 - FTP client, sunucuya TCP port 21 üzerinden bağlanıyor.
 - Client, sunucuya hangi client  portu üzerinden veri alışverişi yapacağını söylüyor.
-- Ancak, client bir güvenlik duvarı (firewall) ile korunuyorsa, dışarıdan gelen bağlantılar (sunucunun client’e cevap vermesi) engellenebilir. Yani güvenlik duvarı, sunucunun bağlantı başlatmasını engeller.
+- Ancak, client bir güvenlik duvarı (firewall) ile korunuyorsa, dışarıdan gelen bağlantılar (sunucunun client’e cevap vermesi) engellenebilir. Yani firewall sunucunun bağlantı başlatmasını engeller.
 
 **Pasif FTP:**
 
 - Bu sorun için **pasif mod** geliştirilmiş.
 - Pasif modda, sunucu client’e, hangi sunucu portu üzerinden veri alışverişi yapacağını söyler.
-- Bu modda bağlantıyı **client başlattığı için**, güvenlik duvarı client’den gelen isteği engellemez.
+- Bu modda bağlantıyı **client başlattığı için**, firewall client’den gelen isteği engellemez.
 
-FTP (File Transfer Protocol), dosya transferi için kullanılan bir protokoldür ve çeşitli **komutlar** ve **durum kodları** içerir. Bu komutlar, client tarafından sunucuya belirli görevleri yapması için gönderilir. Örneğin, bir dosya yükleme, indirme, silme ya da dizin oluşturma isteği olabilir. Her komutun sonucunda, sunucu bir **durum kodu** ile cevap verir. Bu kod, komutun başarılı olup olmadığını veya hangi aşamada olduğunu gösterir.
+FTP (File Transfer Protocol), dosya transferi için kullanılan bir protokoldür. Client, sunucuya dosya yükleme, indirme, silme veya dizin oluşturma gibi komutlar gönderir. Sunucu, her komuta bir [durum koduyla](https://en.wikipedia.org/wiki/List_of_FTP_server_return_codes) yanıt verir; bu kod, işlemin başarılı olup olmadığını veya hangi aşamada olduğunu belirtir.
 
+[[Aktif ve pasif mod farkı detaylı açıklama\|Aktif ve pasif mod farkı detaylı açıklama]]
 
 
 ### FTP Komutları
 
-·  **USER**: client, bu komut ile sunucuya kullanıcı adını bildirir.
-·  **PASS**: Kullanıcı şifresini sunucuya gönderir.
-·  **LIST**: Sunucudaki mevcut dosya ve dizinlerin listesini istemek için kullanılır.
-·  **RETR**: Sunucudan dosya indirme isteği.
-·  **STOR**: Sunucuya dosya yükleme isteği.
-·  **DELE**: Sunucudaki bir dosyayı silme komutu.
-·  **MKD**: Sunucuda yeni bir dizin oluşturma komutu.
-·  **CWD**: Sunucudaki mevcut çalışma dizinini değiştirme komutu.
+·  **`USER`**: client, bu komut ile sunucuya kullanıcı adını bildirir.
+·  **`PASS`**: Kullanıcı şifresini sunucuya gönderir.
+·  **`LIST`**: Sunucudaki mevcut dosya ve dizinlerin listesini istemek için kullanılır.
+·  **`RETR`**: Sunucudan dosya indirme isteği.
+·  **`STOR`**: Sunucuya dosya yükleme isteği.
+·  **`DELE`**: Sunucudaki bir dosyayı silme komutu.
+·  **`MKD`**: Sunucuda yeni bir dizin oluşturma komutu.
+·  **`CWD`**: Sunucudaki mevcut çalışma dizinini değiştirme komutu.
 
 
 ### **FTP Durum Kodları**
 
 Her komut sonrasında sunucu, komutun sonucunu belirten bir **üç haneli durum kodu** ile cevap verir.
 
-·  **200**: Komut başarıyla kabul edildi. ("OK" anlamına gelir)
-·  **220**: Sunucu bağlantıya hazır.
-·  **221**: Oturum kapatıldı.
-·  **230**: Başarıyla giriş yapıldı.
-·  **331**: Kullanıcı adı kabul edildi, şifre bekleniyor.
-·  **425**: Bağlantı kurulamadı.
-·  **450**: Dosya işlenemedi (örneğin, dosyaya erişim engellendi).
-·  **500**: Geçersiz komut (komut tanınmadı).
-·  **550**: Dosya bulunamadı ya da erişim engellendi (örneğin, dosya silinemedi).
+·  **`200`**: Komut başarıyla kabul edildi. ("OK" anlamına gelir)
+·  **`220`**: Sunucu bağlantıya hazır.
+·  **`221`**: Oturum kapatıldı.
+·  **`230`**: Başarıyla giriş yapıldı.
+·  **`331`**: Kullanıcı adı kabul edildi, şifre bekleniyor.
+·  **`425`**: Bağlantı kurulamadı.
+·  **`450`**: Dosya işlenemedi (örneğin, dosyaya erişim engellendi).
+·  **`500`**: Geçersiz komut (komut tanınmadı).
+·  **`550`**: Dosya bulunamadı ya da erişim engellendi (örneğin, dosya silinemedi).
 
 Ayrıca FTP'nin açık metinli bir protokoldür . MITM açık .
 
 
 ### **TFTP**
 
-Trivial File Transfer Protocol (TFTP) FTP'den daha basittir ve client ve server processleri arasında dosya transferi gerçekleştirir. Ancak, kullanıcı kimlik doğrulaması ve FTP tarafından desteklenen diğer değerli özellikleri sağlamaz. Buna ek olarak, FTP TCP kullanırken, TFTP UDP kullanır, bu da onu güvenilmez bir protokol haline getirir ve UDP destekli uygulama katmanı **hata yönetimi** kullanmasına neden olur.
+`Trivial File Transfer Protocol` (TFTP) FTP'den daha basittir ve client ve server processleri arasında dosya transferi gerçekleştirir. Ancak, kullanıcı `kimlik doğrulaması` ve FTP tarafından desteklenen diğer değerli özellikleri sağlamaz. Buna ek olarak, FTP `TCP` kullanırken, TFTP `UDP` kullanır, bu da onu güvenilmez bir protokol haline getirir ve UDP destekli uygulama katmanı **hata yönetimi** kullanmasına neden olur.
 
 Parolalar aracılığıyla korumalı oturum açmayı desteklemez ve yalnızca işletim sistemindeki bir dosyanın okuma ve yazma izinlerine dayalı olarak erişim sınırlarını belirler.
 
@@ -116,20 +88,19 @@ Güvenlik eksikliği nedeniyle, TFTP, FTP'den farklı olarak, yalnızca local ve
 
 ### TFTP Komutları :
 
-**connect** : Dosya aktarımları için remote host'u ve isteğe bağlı olarak portu ayarlar.
+**`connect`** : Dosya aktarımları için remote host'u ve isteğe bağlı olarak portu ayarlar.
 
-**get** : Bir dosyayı veya dosya kümesini remote host'tan local host'a aktarır.
+**`get`** : Bir dosyayı veya dosya kümesini remote host'tan local host'a aktarır.
 
-**put** : Bir dosyayı veya dosya kümesini local hosttan uzak host üzerine aktarır.
+**`put`** : Bir dosyayı veya dosya kümesini local hosttan uzak host üzerine aktarır.
 
-**quit** : Tftp'den çıkar.
+**`quit`** : Tftp'den çıkar.
 
-**status** : Geçerli aktarım modu (ascii veya binary), bağlantı durumu, zaman aşımı değeri vb. dahil olmak üzere tftp'nin geçerli durumunu gösterir.
+**`status`** : Geçerli aktarım modu (ascii veya binary), bağlantı durumu, zaman aşımı değeri vb. dahil olmak üzere tftp'nin geçerli durumunu gösterir.
 
-**verbose** : Dosya aktarımı sırasında ek bilgi görüntüleyen verbose modunu açar veya kapatır.
+**`verbose`** : Dosya aktarımı sırasında ek bilgi görüntüleyen verbose modunu açar veya kapatır.
 
-FTP client’inin aksine, TFTP dizin listeleme işlevine sahip değildir.
-
+FTP client’inin aksine, TFTP `dizin listeleme` işlevine sahip değildir.
 
 
 ## Default Configuration
@@ -153,25 +124,25 @@ M1R4CKCK@htb[/htb]$ cat /etc/vsftpd.conf | grep -v "#"
 
 
 
-|**Ayar**|**Açıklama**|
-|---|---|
-|**listen=NO**|VSFTPD'nin inetd üzerinden mi yoksa bağımsız bir daemon olarak mı çalıştırılacağını belirler.|
-|**listen_ipv6=YES**|IPv6 üzerinden bağlantı dinlenip dinlenmeyeceğini belirler.|
-|**anonymous_enable=NO**|Anonim kullanıcıların erişimine izin verilip verilmeyeceğini belirler.|
-|**local_enable=YES**|Yerel kullanıcıların oturum açmasına izin verir.|
-|**dirmessage_enable=YES**|Kullanıcılar belirli dizinlere girdiğinde aktif dizin mesajlarını görüntüler.|
-|**use_localtime=YES**|Yerel saati kullanmayı etkinleştirir.|
-|**xferlog_enable=YES**|Yükleme/indirme işlemlerinin kaydedilmesini etkinleştirir.|
-|**connect_from_port_20=YES**|Port 20 üzerinden bağlantı kurulmasını sağlar.|
-|**secure_chroot_dir=/var/run/vsftpd/empty**|Güvenli bir chroot işlemi için kullanılan boş dizinin adını belirtir.|
-|**pam_service_name=vsftpd**|VSFTPD'nin kullanacağı PAM hizmetinin adını belirtir.|
-|**rsa_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem**|SSL şifreli bağlantılar için kullanılan RSA sertifika dosyasının yolunu belirtir.|
-|**rsa_private_key_file=/etc/ssl/private/ssl-cert-snakeoil.key**|SSL bağlantıları için kullanılan RSA özel anahtar dosyasının yolunu belirtir.|
-|**ssl_enable=NO**|SSL şifrelemesini etkinleştirir veya devre dışı bırakır.|
+| **Ayar**                                                        | **Açıklama**                                                                                                                                             |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **listen=NO**                                                   | VSFTPD'nin inetd üzerinden mi yoksa  **Standalone** (bağımsız) bir daemon olarak mı çalıştırılacağını belirler. ([[inetd ve Standalone nedir açıklama\|inetd ve Standalone nedir açıklama]]) |
+| **listen_ipv6=YES**                                             | IPv6 üzerinden bağlantı dinlenip dinlenmeyeceğini belirler.                                                                                              |
+| **anonymous_enable=NO**                                         | Anonim kullanıcıların erişimine izin verilip verilmeyeceğini belirler.                                                                                   |
+| **local_enable=YES**                                            | Local kullanıcıların oturum açmasına izin verir.                                                                                                         |
+| **dirmessage_enable=YES**                                       | Kullanıcılar belirli dizinlere girdiğinde aktif dizin mesajlarını görüntüler.                                                                            |
+| **use_localtime=YES**                                           | Local saati kullanmayı etkinleştirir.                                                                                                                    |
+| **xferlog_enable=YES**                                          | Yükleme/indirme işlemlerinin kaydedilmesini etkinleştirir.                                                                                               |
+| **connect_from_port_20=YES**                                    | Port 20 üzerinden bağlantı kurulmasını sağlar.                                                                                                           |
+| **secure_chroot_dir=/var/run/vsftpd/empty**                     | Güvenli bir [[chroot\|chroot]] processi için kullanılan boş dizinin adını belirtir.                                                                              |
+| **pam_service_name=vsftpd**                                     | VSFTPD'nin kullanacağı [[PAM servisini\|PAM servisini]] adını belirtir.                                                                                                 |
+| **rsa_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem**          | SSL şifreli bağlantılar için kullanılan RSA sertifika dosyasının yolunu belirtir.                                                                        |
+| **rsa_private_key_file=/etc/ssl/private/ssl-cert-snakeoil.key** | SSL bağlantıları için kullanılan RSA private key dosyasının yolunu belirtir.                                                                             |
+| **ssl_enable=NO**                                               | SSL şifrelemesini etkinleştirir veya devre dışı bırakır.                                                                                                 |
 
-Bu ayarlar, **vsftpd.conf** dosyasında yapılandırılarak FTP sunucusunun çalışma şeklini belirler. Özellikle güvenlik açısından **anonymous_enable**, **ssl_enable**, ve **pam_service_name** gibi ayarların doğru yapılandırılması önemlidir.
+Bu ayarlar, **vsftpd.conf** dosyasında yapılandırılarak FTP sunucusunun çalışma şeklini belirler. Özellikle güvenlik açısından **`anonymous_enable`**, **`ssl_enable`**, ve **`pam_service_name`** gibi ayarların doğru yapılandırılması önemlidir.
 
-Ayrıca, **/etc/ftpusers** adında bir dosya vardır ve bu dosyaya da dikkat etmemiz gerekir, çünkü bu dosya belirli kullanıcıların FTP hizmetine erişimini engellemek için kullanılır. Aşağıdaki örnekte, guest, john ve kevin kullanıcılarının Linux sisteminde var olsalar bile FTP servisine giriş yapmalarına izin verilmez.
+Ayrıca, **`/etc/ftpusers`** adında bir dosya vardır ve bu dosyaya da dikkat etmemiz gerekir, çünkü bu dosya belirli kullanıcıların FTP servisine erişimini engellemek için kullanılır. Aşağıdaki örnekte, `guest`, `john` ve `kevin` kullanıcılarının Linux sisteminde var olsalar bile FTP servisine giriş yapmalarına izin verilmez.
 
 
 #### FTPUSERS
@@ -198,7 +169,7 @@ FTP sunucularında güvenlik için kimlik doğrulama ve anonim erişim gibi ayar
 | **anon_root=/home/username/ftp** | Anonim kullanıcıların erişimine izin verilen dizini belirtir.                                                                |
 | **write_enable=YES**             | FTP komutlarının kullanılmasına izin verir: **STOR**, **DELE**, **RNFR**, **RNTO**, **MKD**, **RMD**, **APPE**, ve **SITE**. |
 
-vsFTPd sunucusuna bağlanır bağlanmaz, FTP sunucusunun banner'ı ile birlikte 220 yanıt kodu görüntülenir. Genellikle bu banner servisin açıklamasını ve hatta sürümünü içerir.
+vsFTPd sunucusuna bağlanır bağlanmaz, FTP sunucusunun banner'ı ile birlikte 220 yanıt kodu görüntülenir. Genellikle bu banner servisin açıklamasını ve hatta `sürümünü` içerir.
 
 #### Anonymous Login
 
@@ -248,10 +219,10 @@ Hash mark printing: off; Use of PORT cmds: on
 Tick counter printing: off
 ```
 
-Bazı komutlar ara sıra kullanılmalıdır, çünkü bunlar sunucunun bize amaçlarımız için kullanabileceğimiz daha fazla bilgi göstermesini sağlayacaktır. Bu komutlar debug ve trace komutlarını içerir.
+Bazı komutlar ara sıra kullanılmalıdır, çünkü bunlar sunucunun bize amaçlarımız için kullanabileceğimiz daha fazla bilgi göstermesini sağlayacaktır. Bu komutlar `debug` ve `trace` komutlarını içerir.
 
 
-#### vsFTPd Detailed Output
+#### vsFTPd Detailed Output (debug - trace)
 
 ```shell-session
 ftp> debug
@@ -279,26 +250,26 @@ drwxrwxr-x    2 1002     1002         4096 Sep 14 16:50 Employees
 ```
 
 
-|**Ayar**|**Açıklama**|
-|---|---|
-|**dirmessage_enable=YES**|Kullanıcılar yeni bir dizine ilk kez girdiklerinde bir mesaj gösterilmesini sağlar.|
-|**chown_uploads=YES**|Anonim olarak yüklenen dosyaların sahipliğinin değiştirilmesini etkinleştirir.|
-|**chown_username=username**|Anonim olarak yüklenen dosyaların sahipliği verilecek kullanıcıyı belirtir.|
-|**local_enable=YES**|Yerel kullanıcıların oturum açmasına izin verir.|
-|**chroot_local_user=YES**|Yerel kullanıcıları kendi **home** dizinlerine kilitler.|
-|**chroot_list_enable=YES**|Yerel kullanıcıların **home** dizinlerine kilitlenmesini belirlemek için bir kullanıcı listesi kullanılmasını sağlar.|
+| **Ayar**                    | **Açıklama**                                                                                                          |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **dirmessage_enable=YES**   | Kullanıcılar yeni bir dizine ilk kez girdiklerinde bir mesaj gösterilmesini sağlar.                                   |
+| **chown_uploads=YES**       | Anonim olarak yüklenen dosyaların sahipliğinin değiştirilmesini etkinleştirir.                                        |
+| **chown_username=username** | Anonim olarak yüklenen dosyaların sahipliği verilecek kullanıcıyı belirtir.                                           |
+| **local_enable=YES**        | Local kullanıcıların oturum açmasına izin verir.                                                                      |
+| **chroot_local_user=YES**   | Local kullanıcıları kendi **home** dizinlerine kilitler.                                                              |
+| **chroot_list_enable=YES**  | Local kullanıcıların **home** dizinlerine kilitlenmesini belirlemek için bir kullanıcı listesi kullanılmasını sağlar. |
 
-Bu ayarlar, local ve anonim kullanıcıların erişim haklarını, yükleme davranışlarını ve dizinlerdeki hareketlerini kontrol etmeye yöneliktir. Özellikle **chroot_local_user** ve **chroot_list_enable** ayarları, kullanıcıların yalnızca izin verilen dizinlere erişmesini sağlayarak güvenliği artırır.
+Bu ayarlar, local ve anonim kullanıcıların erişim haklarını, yükleme davranışlarını ve dizinlerdeki hareketlerini kontrol etmeye yöneliktir. Özellikle **`chroot_local_user`** ve **`chroot_list_enable`** ayarları, kullanıcıların yalnızca izin verilen dizinlere erişmesini sağlayarak güvenliği artırır.
 
 
-|**Ayar**|**Açıklama**|
-|---|---|
-|**hide_ids=YES**|Dizin listelerinde tüm kullanıcı ve grup bilgilerini "ftp" olarak görüntüler.|
-|**ls_recurse_enable=YES**|Dizin listelerinde alt dizinlerin de listelenmesini sağlar (**recursive listing** özelliğini etkinleştirir).|
+| **Ayar**                  | **Açıklama**                                                                                                 |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **hide_ids=YES**          | Dizin listelerinde tüm kullanıcı ve grup bilgilerini "ftp" olarak görüntüler.                                |
+| **ls_recurse_enable=YES** | Dizin listelerinde alt dizinlerin de listelenmesini sağlar (**recursive listing** özelliğini etkinleştirir). |
 
-Bu ayarlar, FTP sunucusunda dizin listelerinin nasıl görüntüleneceğini kontrol eder. **hide_ids** ayarı, kullanıcı ve grup bilgilerinin gizlenmesini sağlarken, **ls_recurse_enable** ise dizin içeriklerini daha kapsamlı listelemek için kullanılabilir.
+Bu ayarlar, FTP sunucusunda dizin listelerinin nasıl görüntüleneceğini kontrol eder. **`hide_ids`** ayarı, kullanıcı ve grup bilgilerinin gizlenmesini sağlarken, **`ls_recurse_enable`** ise dizin içeriklerini daha kapsamlı listelemek için kullanılabilir.
 
-Eğer `hide_ids=YES` ayarı aktifse, hizmetin UID (Kullanıcı Kimliği) ve GID (Grup Kimliği) bilgileri gizlenecek ve bu durum, dosyaların hangi kullanıcı ve grup tarafından oluşturulduğunu veya yüklendiğini belirlemeyi zorlaştıracaktır.
+Eğer `hide_ids=YES` ayarı aktifse, servisin `UID` (Kullanıcı Kimliği) ve `GID` (Grup Kimliği) bilgileri gizlenecek ve bu durum, dosyaların hangi kullanıcı ve grup tarafından oluşturulduğunu veya yüklendiğini belirlemeyi zorlaştıracaktır.
 
 #### Hiding IDs - YES
 
@@ -322,17 +293,17 @@ drwxrwxr-x    2 ftp     ftp         4096 Sep 14 16:50 Employees
 ```
 
 
-`TYPE A`: FTP istemcisi ASCII moduna geçti, bu mod metin dosyalarının transferi için kullanılır.
+`TYPE A`: FTP client'i ASCII moduna geçti, bu mod text dosyalarının transferi için kullanılır.
 
-`Permission denied`: FTP istemcisinin soket ayarlarını değiştirme izni olmadığı anlamına gelir; genellikle kritik bir durum değildir.
+`Permission denied`: FTP client'inin soket ayarlarını değiştirme izni olmadığı anlamına gelir; genellikle kritik bir durum değildir.
 
-`PORT 10,10,14,4,223,101`: Bu komut, FTP transferi için bir veri bağlantısı ayarlamakta kullanılır. Sayılar, istemcinin IP adresini ve portunu temsil eder.
+`PORT 10,10,14,4,223,101`: Bu komut, FTP transferi için bir veri bağlantısı ayarlamakta kullanılır. Sayılar, clientinin IP adresini ve portunu temsil eder.
 
 `LIST`: Bu komut, mevcut dizindeki dosya ve dizinlerin listesini alır.
 
-Bu ayar lokal kullanıcı adlarının açığa çıkmasını engelleyen bir güvenlik özelliğidir. Kullanıcı adları ile FTP ve SSH gibi servislere ve diğerlerine teoride brute-force saldırısı ile saldırabiliriz. Ancak gerçekte, **fail2ban** çözümleri artık IP adresini günlüğe kaydeden ve belirli sayıda başarısız giriş denemesinden sonra altyapıya tüm erişimi engelleyen herhangi bir altyapının standart bir uygulamasıdır.
+Bu ayar lokal kullanıcı adlarının açığa çıkmasını engelleyen bir güvenlik özelliğidir. Kullanıcı adları ile FTP ve SSH gibi servislere ve diğerlerine teoride `brute-force` saldırısı ile saldırabiliriz. Ancak gerçekte, **[fail2ban](https://en.wikipedia.org/wiki/Fail2ban)** çözümleri artık IP adresini günlüğe kaydeden ve belirli sayıda başarısız giriş denemesinden sonra altyapıya tüm erişimi engelleyen herhangi bir altyapının standart bir uygulamasıdır.
 
-**ls_recurse_enable=YES** ayarı, genellikle vsFTPd sunucusunda FTP dizin yapısını daha iyi görmek için kullanılır; bu ayar, tüm görünür içeriği tek seferde görüntülememizi sağlar.
+**`ls_recurse_enable=YES`** ayarı, genellikle vsFTPd sunucusunda FTP dizin yapısını daha iyi görmek için kullanılır; bu ayar, tüm görünür içeriği tek seferde görüntülememizi sağlar.
 
 
 #### Recursive Listing
@@ -377,7 +348,7 @@ drwxrwxrwx    2 ftp      ftp          4096 Sep 16 18:00 Inlanefreight
 226 Directory send OK.
 ```
 
-Böyle bir FTP sunucusundan dosya indirmenin yanı sıra bizim tarafımızdan oluşturulan dosyaları yüklemek de ana özelliklerden biridir. Bu, örneğin, hostun sistem komutlarını yürütmesini sağlamak için LFI güvenlik açıklarını kullanmamızı sağlar. Dosyalar dışında, görüntüleyebilir, indirebilir ve inceleyebiliriz. FTP günlükleri ile Remote Command Execution'a (RCE) yol açan saldırılar da mümkündür. Bu, FTP hizmetleri ve numaralandırma aşamamız sırasında tespit edebildiğimiz tüm servisler için geçerlidir.
+Böyle bir FTP sunucusundan dosya indirmek temel özelliklerden biridir, ayrıca oluşturduğumuz dosyaları yüklemek de mümkündür. Bu, örneğin, bir **LFI** açığını kullanarak **host**'un **system command** çalıştırmasını sağlamamıza olanak tanır. Dosyaların yanı sıra, görüntüleyebilir, indirebilir ve inceleyebiliriz. Ayrıca, **FTP logs** üzerinden yapılan saldırılar **Remote Command Execution (RCE)** ile sonuçlanabilir. Bu durum, yalnızca **FTP services** için değil, aynı zamanda **enumeration** aşamasında tespit edebildiğimiz tüm servisler için geçerlidir.
 
 
 #### Download a File
@@ -415,7 +386,7 @@ M1R4CKCK@htb[/htb]$ ls | grep Notes.txt
 'Important Notes.txt'
 ```
 
-Ayrıca erişebildiğimiz tüm dosya ve klasörleri tek seferde indirebiliriz. Bu, özellikle FTP sunucusunda daha büyük bir klasör yapısında birçok farklı dosya varsa kullanışlıdır. Ancak, şirketten hiç kimse genellikle tüm dosyaları ve içeriği bir kerede indirmek istemediği için bu durum alarmlara neden olabilir.
+Ayrıca erişebildiğimiz tüm dosya ve klasörleri tek seferde indirebiliriz. Bu, özellikle FTP sunucusunda daha büyük bir klasör yapısında birçok farklı dosya varsa kullanışlıdır. Ancak, şirketten hiç kimse genellikle tüm dosyaları ve içeriği bir kerede indirmek istemediği için bu durum `alarmlara` neden olabilir.
 
 
 #### Download All Available Files
@@ -536,7 +507,7 @@ M1R4CKCK@htb[/htb]$ find / -type f -name ftp* 2>/dev/null | grep scripts
 /usr/share/nmap/scripts/ftp-brute.nse
 ```
 
-Bildiğimiz gibi, FTP sunucusu genellikle Nmap kullanarak tarayabileceğimiz standart TCP portu 21 üzerinde çalışır. Ayrıca hedefimiz 10.129.14.136'ya karşı sürüm taraması (-sV), agresif tarama (-A) ve varsayılan komut dosyası taraması (-sC) kullanıyoruz.
+Bildiğimiz gibi, FTP sunucusu genellikle Nmap kullanarak tarayabileceğimiz standart TCP portu 21 üzerinde çalışır. Ayrıca hedefimiz 10.129.14.136'ya karşı version taraması (-sV), agresif tarama (-A) ve varsayılan komut dosyası taraması (-sC) kullanıyoruz.
 
 ```shell-session
 M1R4CKCK@htb[/htb]$ sudo nmap -sV -p21 -sC -A 10.129.14.136
@@ -569,9 +540,9 @@ PORT   STATE SERVICE VERSION
 |_End of status
 ```
 
-Varsayılan script taraması servislerin parmak izlerini, yanıtlarını ve standart portlarını temel alır. Nmap servisi tespit ettikten sonra, işaretli scriptleri birbiri ardına çalıştırarak farklı bilgiler sağlar. Örneğin, ftp-anon NSE betiği FTP sunucusunun anonim erişime izin verip vermediğini kontrol eder. Eğer öyleyse, FTP root dizininin içeriği anonim kullanıcı için oluşturulur.
+Varsayılan script taraması servislerin parmak izlerini, yanıtlarını ve standart portlarını temel alır. Nmap servisi tespit ettikten sonra, işaretli scriptleri birbiri ardına çalıştırarak farklı bilgiler sağlar. Örneğin, ftp-anon NSE scripti FTP sunucusunun anonim erişime izin verip vermediğini kontrol eder. Eğer öyleyse, FTP root dizininin içeriği anonim kullanıcı için oluşturulur.
 
-Örneğin ftp-syst, FTP sunucusunun durumu hakkında bilgi görüntüleyen STAT komutunu çalıştırır. Bu, yapılandırmaların yanı sıra FTP sunucusunun sürümünü de içerir. Nmap ayrıca, taramalarımızda --script-trace seçeneğini kullanırsak, NSE komut dosyalarının ilerlemesini ağ düzeyinde izleme yeteneği sağlar. Bu, Nmap'in hangi komutları gönderdiğini, hangi portların kullanıldığını ve taranan sunucudan hangi yanıtları aldığımızı görmemizi sağlar.
+Örneğin `ftp-syst`, FTP sunucusunun durumu hakkında bilgi görüntüleyen `STAT` komutunu çalıştırır. Bu, yapılandırmaların yanı sıra FTP sunucusunun sürümünü de içerir. Nmap ayrıca, taramalarımızda `--script-trace` seçeneğini kullanırsak, NSE komut dosyalarının ilerlemesini ağ düzeyinde izleme yeteneği sağlar. Bu, Nmap'in hangi komutları gönderdiğini, hangi portların kullanıldığını ve taranan sunucudan hangi yanıtları aldığımızı görmemizi sağlar.
 
 
 ```shell-session
@@ -595,7 +566,7 @@ NSOCK INFO [11.4660s] nsock_trace_handler_callback(): Callback: READ SUCCESS for
 NSE: TCP 10.10.14.4:54228 < 10.129.14.136:21 | 220 Welcome to HTB-Academy FTP service.
 ```
 
-Tarama geçmişi, servise karşı çeşitli zaman aşımlarıyla birlikte dört farklı paralel taramanın çalıştığını gösteriyor. NSE scriptleri için, lokal makinemizin diğer çıkış portlarını (54226, 54228, 54230, 54232) kullandığını ve ilk olarak CONNECT komutuyla bağlantıyı başlattığını görüyoruz. Sunucudan gelen ilk yanıttan, hedef FTP sunucusundan ikinci NSE scriptimize (54228) sunucudan banner aldığımızı görebiliyoruz. Gerekirse, elbette, FTP sunucusuyla etkileşim kurmak için netcat veya telnet gibi diğer uygulamaları kullanabiliriz.
+Tarama geçmişi, servise karşı çeşitli zaman aşımlarıyla birlikte dört farklı paralel taramanın çalıştığını gösteriyor. NSE scriptleri için, lokal makinemizin diğer çıkış portlarını (54226, 54228, 54230, 54232) kullandığını ve ilk olarak `CONNECT` komutuyla bağlantıyı başlattığını görüyoruz. Sunucudan gelen ilk yanıttan, hedef FTP sunucusundan ikinci NSE scriptimize (54228) sunucudan banner aldığımızı görebiliyoruz. Gerekirse, elbette, FTP sunucusuyla etkileşim kurmak için `netcat` veya `telnet` gibi diğer uygulamaları kullanabiliriz.
 
 
 ### Service Etkileşimi
@@ -608,7 +579,7 @@ M1R4CKCK@htb[/htb]$ nc -nv 10.129.14.136 21
 M1R4CKCK@htb[/htb]$ telnet 10.129.14.136 21
 ```
 
-FTP sunucusu TLS/SSL şifreleme ile çalışıyorsa durum biraz farklı görünür. Çünkü o zaman TLS/SSL ile çalışabilen bir client'a ihtiyacımız var. Bunun için openssl client'ını kullanabilir ve FTP sunucusu ile iletişim kurabiliriz. openssl kullanmanın iyi yanı, SSL sertifikasını görebilmemizdir, bu da yardımcı olabilir.
+FTP sunucusu `TLS/SSL` şifreleme ile çalışıyorsa durum biraz farklı görünür. Çünkü o zaman TLS/SSL ile çalışabilen bir client'a ihtiyacımız var. Bunun için openssl client'ını kullanabilir ve FTP sunucusu ile iletişim kurabiliriz. `openssl` kullanmanın iyi yanı, `SSL` sertifikasını görebilmemizdir, bu da yardımcı olabilir.
 
 ```shell-session
 M1R4CKCK@htb[/htb]$ openssl s_client -connect 10.129.14.136:21 -starttls ftp

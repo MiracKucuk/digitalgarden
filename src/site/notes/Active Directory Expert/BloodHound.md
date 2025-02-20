@@ -1274,3 +1274,86 @@ Belirli bir tür aramak istiyorsak, aramamızı **node type** ile önceden belir
 
 
 ## Pathfinding
+
+Arama çubuğundaki bir diğer harika özellik ise **Pathfinding** (Yol Bulma). Bu özellik, iki belirli **edge** (kenar) arasında bir saldırı yolu bulmamıza olanak tanır.
+
+Örneğin, **ryan** ile **Domain Admins** arasında bir saldırı yolu arayabiliriz. Yol sonucu şöyle olur:
+
+**Ryan > Mark > HelpDesk > ITSecurity > Domain Admins**
+
+Bu yol, **ForceChangePassword** **edge**'ini içeriyor; diyelim ki kullanıcıların şifrelerini değiştirmeyi istemiyoruz. **Filtre** seçeneğini kullanarak **ForceChangePassword**'ı işaretini kaldırabiliriz ve bu **edge** olmadan yolu arayabiliriz. Sonuç şöyle olur:
+
+**Ryan > AddSelf > Tech_Support > Testinggroup > HelpDesk > ITSecurity > Domain Admins**
+
+![indir (3).gif](/img/user/indir%20(3).gif)
+
+## Upper Right Menu
+
+Sağ üst köşede etkileşimde bulunabileceğimiz çeşitli seçenekler bulacağız. Şimdi bu seçeneklerden bazılarını açıklayalım:
+
+![indir (4).gif](/img/user/indir%20(4).gif)
+
+**Refresh**: Önceki sorguyu yeniden çalıştırır ve sonuçları gösterir.
+
+**Export Graph**: Geçerli grafiği JSON formatında kaydeder, böylece daha sonra içeri aktarılabilir. Ayrıca, geçerli grafiği PNG formatında bir resim olarak kaydedebiliriz.
+
+**Import Graph**: Export ettiğimiz yaptığımız JSON formatındaki grafiği görüntüleyebiliriz.
+
+![indir (5) 1.gif](/img/user/indir%20(5)%201.gif)
+
+**Upload Data**: SharpHound, BloodHound.py veya AzureHound verilerini Neo4j'ye yükler. Yükleme verisini yükleme butonuyla seçebiliriz veya JSON ya da zip dosyasını doğrudan BloodHound penceresine sürükleyip bırakabiliriz.
+
+![indir (6).gif](/img/user/indir%20(6).gif)
+
+**Not:** Yükleme sırasında, BloodHound yeni verileri ekleyecek ancak yinelenen verileri görmezden gelecektir.
+
+**Not:** Zip dosyaları, parola korumalı olarak yüklenemez.
+
+* **Change Layout Type**: Hiyerarşik veya kuvvet yönlendirilmiş düzenler arasında geçiş yapar.
+
+* **Settings**: Node ve edge'lerin görüntü ayarlarını ayarlamamıza olanak tanır, sorgu debug modu, düşük detay modu ve karanlık mod gibi seçenekleri etkinleştirir.
+
+	* **Node Collapse Threshold**: Sadece bir ilişkiye sahip olan yol sonlarındaki node'ları çökertecek değeri ayarlar. 0, devre dışı bırakır, varsayılan 5.
+
+	* **Edge Label Display**: Edge taglarını ne zaman görüntüleyeceğimizi ayarlar. Her zaman Görüntüle seçeneği, MemberOf, Contains gibi edgeleri her zaman gösterir.
+
+	* **Node Label Display**: Node taglarını ne zaman görüntüleyeceğimizi ayarlar. Her zaman Görüntüle seçeneği, node adlarını, kullanıcı adlarını, bilgisayar adlarını vb. her zaman gösterir.
+
+	* **Query Debug Mode**: raw sorgular raw Sorgu Box'da görüntülenir. Bu konu, Cypher Queries bölümünde daha ayrıntılı şekilde ele alınacaktır.
+
+	* **Low Detail Mode**: Performansı artırmak için grafiksel düzenlemeler yapar.
+
+	* **Dark Mode**: Arayüz için Karanlık modu etkinleştirir.
+
+![Pasted image 20250219091220.png](/img/user/Pasted%20image%2020250219091220.png)
+
+
+About (Hakkında): Yazılımın yazarı ve sürümü hakkında bilgi gösterir.
+
+
+## Shortcuts
+
+İşte faydalanabileceğimiz dört (4) kısayol:
+
+| Kısayol       | Açıklama                                                                                                                                                                                                                   |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **CTRL**      | CTRL tuşuna basmak, üç farklı node tag gösterim ayarını döngüsel olarak geçirecektir: varsayılan, her zaman göster, her zaman gizle.                                                                                       |
+| **Spacebar**  | Spacebar tuşuna basmak, şu anda çizilen tüm nodeların listelendiği "spotlight" penceresini açar. Listeden bir öğeye tıklayarak, GUI'nin o node'a yakınlaştırma yapmasını ve kısa bir süreliğine vurgulamasını sağlarsınız. |
+| **Backspace** | Backspace tuşuna basmak, önceki grafik sonucu görüntüsüne geri dönmenizi sağlar. Bu, arama çubuğundaki Geri butonuna tıklamakla aynı işlevi görür.                                                                         |
+| **S**         | S harfine basmak, arama çubuğundaki Daha Fazla Bilgi butonuna tıklamakla aynı işlevi gören bilgi panelinin genişletilmesini veya daraltılmasını sağlar.                                                                    |
+
+
+## Database Info
+
+BloodHound Veritabanı Bilgisi sekmesi, kullanıcılara mevcut BloodHound veritabanı durumları hakkında hızlı bir genel bakış sağlar. Burada, kullanıcılar veritabanının oturum sayısını, ilişkilerini, ACL'lerini, Azure objelerini ve ilişkilerini ve Active Directory Objelerini görüntüleyebilirler.
+
+Ayrıca, veritabanını yönetmek için birkaç seçenek mevcuttur
+
+| Seçenek                    | Açıklama                                                                                                                                                                                                        |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Clear Database**         | Kullanıcıların tüm **node**'ları, ilişkileri ve özellikleri içeren veritabanını tamamen temizlemelerini sağlar. Bu, yeni bir değerlendirmeye başlarken veya eski verilere karşılık geldiğinde faydalı olabilir. |
+| **Clear Sessions**         | Kullanıcıların veritabanından tüm kaydedilen sessionları temizlemelerini sağlar.                                                                                                                                |
+| **Refresh Database Stats** | Görüntülenen istatistikleri, veritabanında yapılan herhangi bir değişikliği yansıtacak şekilde günceller.                                                                                                       |
+| **Warming Up Database**    | Veritabanının tamamını belleğe yükleyen bir processdir, bu da sorguları önemli ölçüde hızlandırabilir. Ancak bu process, veritabanı büyükse tamamlanması zaman alabilir.                                        |
+
+Bu bölümde, BloodHound'un grafiksel arayüzünü ve en kullanışlı özelliklerini nasıl kullanacağımızı öğrendik. Bir sonraki bölümde ise Active Directory için farklı BloodHound `node`'larını ayrıntılı olarak inceleyeceğiz.
