@@ -4396,21 +4396,26 @@ SMB 10.129.204.133 445 MS01 SerializationVersion 1.1.0.1
 ```
 
 
-PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
+PowerShell seçeneği -X çalıştırıldığında, perde arkasında `CrackMapExec` aşağıdakileri yapacaktır:
 
-12. AMSI baypas
-13. Payload'u gizleyin
-14. Payload'u çalıştırın
+* AMSI bypass 
+* Obfuscate the payload 
+* Execute the payload
 
 ### Özel AMSI Bypass Çalıştırma
 
-Bu teknikler PowerShell çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, --amsi-bypass seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
+Bu teknikler `PowerShell` çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, `--amsi-bypass` seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
 
-15. “Değiştirilmiş Amsi ScanBuffer Yaması” içeren dosyayı indirin
+*  “Modified Amsi ScanBuffer Patch” içeren dosyayı indirin
 
 
-### “Değiştirilmiş Amsi ScanBuffer Yaması” ile Bir Dosya Oluşturun
-![Pasted image 20241203101828.png](/img/user/resimler/Pasted%20image%2020241203101828.png)
+### “Modified Amsi ScanBuffer Patch” ile Bir Dosya Oluşturun
+
+```
+wget https://raw.githubusercontent.com/juliourena/plaintext/master/Powershell/s hantanukhande-amsi.ps1 -q
+```
+
+
 Payload'u olduğu gibi çalıştırmaya çalışırsak, komut maksimum uzunluk olan 8191 karakteri aşacağı için başarısız olacaktır
 
 ### Komut Maksimum Uzunluğu Aşıyor
@@ -6197,21 +6202,24 @@ Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalış
 {{CODE_BLOCK_155}}
 
 
-PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
+PowerShell seçeneği -X çalıştırıldığında, perde arkasında `CrackMapExec` aşağıdakileri yapacaktır:
 
-12. AMSI baypas
-13. Payload'u gizleyin
-14. Payload'u çalıştırın
+* AMSI bypass 
+* Obfuscate the payload 
+* Execute the payload
 
 ### Özel AMSI Bypass Çalıştırma
 
-Bu teknikler PowerShell çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, --amsi-bypass seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
+Bu teknikler `PowerShell` çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, `--amsi-bypass` seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
 
-15. “Değiştirilmiş Amsi ScanBuffer Yaması” içeren dosyayı indirin
+*  “Modified Amsi ScanBuffer Patch” içeren dosyayı indirin
 
 
-### “Değiştirilmiş Amsi ScanBuffer Yaması” ile Bir Dosya Oluşturun
-![Pasted image 20241203101828.png](/img/user/resimler/Pasted%20image%2020241203101828.png)
+### “Modified Amsi ScanBuffer Patch” ile Bir Dosya Oluşturun
+
+{{CODE_BLOCK_156}}
+
+
 Payload'u olduğu gibi çalıştırmaya çalışırsak, komut maksimum uzunluk olan 8191 karakteri aşacağı için başarısız olacaktır
 
 ### Komut Maksimum Uzunluğu Aşıyor
@@ -8004,21 +8012,24 @@ Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalış
 {{CODE_BLOCK_155}}
 
 
-PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
+PowerShell seçeneği -X çalıştırıldığında, perde arkasında `CrackMapExec` aşağıdakileri yapacaktır:
 
-12. AMSI baypas
-13. Payload'u gizleyin
-14. Payload'u çalıştırın
+* AMSI bypass 
+* Obfuscate the payload 
+* Execute the payload
 
 ### Özel AMSI Bypass Çalıştırma
 
-Bu teknikler PowerShell çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, --amsi-bypass seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
+Bu teknikler `PowerShell` çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, `--amsi-bypass` seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
 
-15. “Değiştirilmiş Amsi ScanBuffer Yaması” içeren dosyayı indirin
+*  “Modified Amsi ScanBuffer Patch” içeren dosyayı indirin
 
 
-### “Değiştirilmiş Amsi ScanBuffer Yaması” ile Bir Dosya Oluşturun
-![Pasted image 20241203101828.png](/img/user/resimler/Pasted%20image%2020241203101828.png)
+### “Modified Amsi ScanBuffer Patch” ile Bir Dosya Oluşturun
+
+{{CODE_BLOCK_156}}
+
+
 Payload'u olduğu gibi çalıştırmaya çalışırsak, komut maksimum uzunluk olan 8191 karakteri aşacağı için başarısız olacaktır
 
 ### Komut Maksimum Uzunluğu Aşıyor
@@ -9794,21 +9805,24 @@ Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalış
 {{CODE_BLOCK_155}}
 
 
-PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
+PowerShell seçeneği -X çalıştırıldığında, perde arkasında `CrackMapExec` aşağıdakileri yapacaktır:
 
-12. AMSI baypas
-13. Payload'u gizleyin
-14. Payload'u çalıştırın
+* AMSI bypass 
+* Obfuscate the payload 
+* Execute the payload
 
 ### Özel AMSI Bypass Çalıştırma
 
-Bu teknikler PowerShell çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, --amsi-bypass seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
+Bu teknikler `PowerShell` çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, `--amsi-bypass` seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
 
-15. “Değiştirilmiş Amsi ScanBuffer Yaması” içeren dosyayı indirin
+*  “Modified Amsi ScanBuffer Patch” içeren dosyayı indirin
 
 
-### “Değiştirilmiş Amsi ScanBuffer Yaması” ile Bir Dosya Oluşturun
-![Pasted image 20241203101828.png](/img/user/resimler/Pasted%20image%2020241203101828.png)
+### “Modified Amsi ScanBuffer Patch” ile Bir Dosya Oluşturun
+
+{{CODE_BLOCK_156}}
+
+
 Payload'u olduğu gibi çalıştırmaya çalışırsak, komut maksimum uzunluk olan 8191 karakteri aşacağı için başarısız olacaktır
 
 ### Komut Maksimum Uzunluğu Aşıyor
@@ -11595,21 +11609,24 @@ Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalış
 {{CODE_BLOCK_155}}
 
 
-PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
+PowerShell seçeneği -X çalıştırıldığında, perde arkasında `CrackMapExec` aşağıdakileri yapacaktır:
 
-12. AMSI baypas
-13. Payload'u gizleyin
-14. Payload'u çalıştırın
+* AMSI bypass 
+* Obfuscate the payload 
+* Execute the payload
 
 ### Özel AMSI Bypass Çalıştırma
 
-Bu teknikler PowerShell çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, --amsi-bypass seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
+Bu teknikler `PowerShell` çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, `--amsi-bypass` seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
 
-15. “Değiştirilmiş Amsi ScanBuffer Yaması” içeren dosyayı indirin
+*  “Modified Amsi ScanBuffer Patch” içeren dosyayı indirin
 
 
-### “Değiştirilmiş Amsi ScanBuffer Yaması” ile Bir Dosya Oluşturun
-![Pasted image 20241203101828.png](/img/user/resimler/Pasted%20image%2020241203101828.png)
+### “Modified Amsi ScanBuffer Patch” ile Bir Dosya Oluşturun
+
+{{CODE_BLOCK_156}}
+
+
 Payload'u olduğu gibi çalıştırmaya çalışırsak, komut maksimum uzunluk olan 8191 karakteri aşacağı için başarısız olacaktır
 
 ### Komut Maksimum Uzunluğu Aşıyor
@@ -13402,21 +13419,24 @@ Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalış
 {{CODE_BLOCK_155}}
 
 
-PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
+PowerShell seçeneği -X çalıştırıldığında, perde arkasında `CrackMapExec` aşağıdakileri yapacaktır:
 
-12. AMSI baypas
-13. Payload'u gizleyin
-14. Payload'u çalıştırın
+* AMSI bypass 
+* Obfuscate the payload 
+* Execute the payload
 
 ### Özel AMSI Bypass Çalıştırma
 
-Bu teknikler PowerShell çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, --amsi-bypass seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
+Bu teknikler `PowerShell` çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, `--amsi-bypass` seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
 
-15. “Değiştirilmiş Amsi ScanBuffer Yaması” içeren dosyayı indirin
+*  “Modified Amsi ScanBuffer Patch” içeren dosyayı indirin
 
 
-### “Değiştirilmiş Amsi ScanBuffer Yaması” ile Bir Dosya Oluşturun
-![Pasted image 20241203101828.png](/img/user/resimler/Pasted%20image%2020241203101828.png)
+### “Modified Amsi ScanBuffer Patch” ile Bir Dosya Oluşturun
+
+{{CODE_BLOCK_156}}
+
+
 Payload'u olduğu gibi çalıştırmaya çalışırsak, komut maksimum uzunluk olan 8191 karakteri aşacağı için başarısız olacaktır
 
 ### Komut Maksimum Uzunluğu Aşıyor
@@ -15199,21 +15219,24 @@ Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalış
 {{CODE_BLOCK_155}}
 
 
-PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
+PowerShell seçeneği -X çalıştırıldığında, perde arkasında `CrackMapExec` aşağıdakileri yapacaktır:
 
-12. AMSI baypas
-13. Payload'u gizleyin
-14. Payload'u çalıştırın
+* AMSI bypass 
+* Obfuscate the payload 
+* Execute the payload
 
 ### Özel AMSI Bypass Çalıştırma
 
-Bu teknikler PowerShell çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, --amsi-bypass seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
+Bu teknikler `PowerShell` çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, `--amsi-bypass` seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
 
-15. “Değiştirilmiş Amsi ScanBuffer Yaması” içeren dosyayı indirin
+*  “Modified Amsi ScanBuffer Patch” içeren dosyayı indirin
 
 
-### “Değiştirilmiş Amsi ScanBuffer Yaması” ile Bir Dosya Oluşturun
-![Pasted image 20241203101828.png](/img/user/resimler/Pasted%20image%2020241203101828.png)
+### “Modified Amsi ScanBuffer Patch” ile Bir Dosya Oluşturun
+
+{{CODE_BLOCK_156}}
+
+
 Payload'u olduğu gibi çalıştırmaya çalışırsak, komut maksimum uzunluk olan 8191 karakteri aşacağı için başarısız olacaktır
 
 ### Komut Maksimum Uzunluğu Aşıyor
@@ -17000,21 +17023,24 @@ Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalış
 {{CODE_BLOCK_155}}
 
 
-PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
+PowerShell seçeneği -X çalıştırıldığında, perde arkasında `CrackMapExec` aşağıdakileri yapacaktır:
 
-12. AMSI baypas
-13. Payload'u gizleyin
-14. Payload'u çalıştırın
+* AMSI bypass 
+* Obfuscate the payload 
+* Execute the payload
 
 ### Özel AMSI Bypass Çalıştırma
 
-Bu teknikler PowerShell çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, --amsi-bypass seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
+Bu teknikler `PowerShell` çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, `--amsi-bypass` seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
 
-15. “Değiştirilmiş Amsi ScanBuffer Yaması” içeren dosyayı indirin
+*  “Modified Amsi ScanBuffer Patch” içeren dosyayı indirin
 
 
-### “Değiştirilmiş Amsi ScanBuffer Yaması” ile Bir Dosya Oluşturun
-![Pasted image 20241203101828.png](/img/user/resimler/Pasted%20image%2020241203101828.png)
+### “Modified Amsi ScanBuffer Patch” ile Bir Dosya Oluşturun
+
+{{CODE_BLOCK_156}}
+
+
 Payload'u olduğu gibi çalıştırmaya çalışırsak, komut maksimum uzunluk olan 8191 karakteri aşacağı için başarısız olacaktır
 
 ### Komut Maksimum Uzunluğu Aşıyor
@@ -18807,21 +18833,24 @@ Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalış
 {{CODE_BLOCK_155}}
 
 
-PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
+PowerShell seçeneği -X çalıştırıldığında, perde arkasında `CrackMapExec` aşağıdakileri yapacaktır:
 
-12. AMSI baypas
-13. Payload'u gizleyin
-14. Payload'u çalıştırın
+* AMSI bypass 
+* Obfuscate the payload 
+* Execute the payload
 
 ### Özel AMSI Bypass Çalıştırma
 
-Bu teknikler PowerShell çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, --amsi-bypass seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
+Bu teknikler `PowerShell` çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, `--amsi-bypass` seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
 
-15. “Değiştirilmiş Amsi ScanBuffer Yaması” içeren dosyayı indirin
+*  “Modified Amsi ScanBuffer Patch” içeren dosyayı indirin
 
 
-### “Değiştirilmiş Amsi ScanBuffer Yaması” ile Bir Dosya Oluşturun
-![Pasted image 20241203101828.png](/img/user/resimler/Pasted%20image%2020241203101828.png)
+### “Modified Amsi ScanBuffer Patch” ile Bir Dosya Oluşturun
+
+{{CODE_BLOCK_156}}
+
+
 Payload'u olduğu gibi çalıştırmaya çalışırsak, komut maksimum uzunluk olan 8191 karakteri aşacağı için başarısız olacaktır
 
 ### Komut Maksimum Uzunluğu Aşıyor
