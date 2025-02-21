@@ -977,6 +977,8 @@ Client KDC içerisinde yer alan Authentication Server'a bir `AS-REQ` paketi gön
 Authentication Server Client `id` değeri ile isteği yapan user'ın kim olduğunu anlar. Daha sonra Active directory'deki `NTDS.dit veritabanı` dosyasına giderek bu userın `password hashini` elde eder. Elde ettiği hash ile **client secret key**  ile şifrelenmiş paketi açar . Eğer her şey yolunda giderse Authentication server'ın elinde bir `time stamp` değeri olur . Bu değeri Client'ın gönderdiği **AS-REQ** paketinin time stamp değeri ile karşılaştırır. Karşılaştırma sonucu yanlış ise iletişim kesilir. Karşılaştırma sonucu doğru ise bir sonraki adıma geçilir.
 
 
+![TGT.drawio 1.png](/img/user/TGT.drawio%201.png)
+
 ### **2.**   TGT + Session Key
 
 Authentication Server client'a bir **`AS-REP`** paketi gönderir. Bu paketin içerisinde iki tane mesaj değeri vardır . Bunlar **`message A`** ve **`message B`**.
@@ -991,6 +993,7 @@ Bu yüzden `client message A 'yı açar ve client TGS session key değerini elde
 
 Sonuç olarak client aldığı AS-REP paketinden `message B mesajını yani TGT biletini` ve `client TGS session key bilgisini elde` etti. Client şimdi sıradaki işleme geçebilir.
 
+![Response TGT.drawio.png](/img/user/Response%20TGT.drawio.png)
 
 ### **3.** Request Ticket + Auth
 
@@ -998,7 +1001,7 @@ Client artık TGT biletini almış ve domaine authentice olabilmiştir. Artık s
 
 Bunun için client Ticket Granting Server'a TGS-REQ paketi içerisinde iki adet mesaj gönderir. Bu mesajlar `message C` ve `message D`'dir.
 
-Message C mesajının içerisinde Authentication serverdan alınan `message B` değeri yani TGT bileti, ve giriş yapmak istediği `SMTP Server'ın Service Principal name` bilgisi bulunmaktadır. Message C değeri `şifrelenmez` , zaten içindeki message B değeri TGS s`ecret key değeri` ile şifrelenmişti. `SPN değeri ise açık metin olarak gönderilir`. Bunu aşağıda wireshark ile incelediğimiz  TGS-REQ paketinde görebilirsiniz.
+Message C mesajının içerisinde Authentication serverdan alınan `message B` değeri yani TGT bileti, ve giriş yapmak istediği `SMTP Server'ın Service Principal name` bilgisi bulunmaktadır. Message C değeri `şifrelenmez` , zaten içindeki message B değeri TGS `secret key değeri` ile şifrelenmişti. `SPN değeri ise açık metin olarak gönderilir`. Bunu aşağıda wireshark ile incelediğimiz  TGS-REQ paketinde görebilirsiniz.
 
 **Service Principal Name (SPN),** bir servis ile ilişkilendirilmiş benzersiz bir adımdır. SPN, bir clientin belirli bir servise erişebilmesi için, o servisin kimliğini doğrulamak amacıyla kullanılan bir değeri ifade eder. SPN, genellikle bir servisin çalıştığı host ve servisin türünü içeren bir yapıdadır. Bu bilgiler, Kerberos kimlik doğrulama protokolünde, client ile sunucu arasında güvenli bir iletişim kurulabilmesi için kullanılır.
 
@@ -1037,6 +1040,7 @@ AP-REP paketinin içerisinde message H vardır. Message H client Server session 
 Client elindeki client server session keyi kullanarak message H'yi açar ve mesajın içinde kendi gönderdiği message G'yi elde ettiğinde Hedef SMTP Server'a authentice olduğunu doğrulamış olur. Ve böylece client kerberos authentication kullanarak giriş yapmak istediği SMTP Server'a giriş yapabilmiş olur.
 
 **Yukarıda anlatılan aşamalar detaylı bir şekilde aşağıdaki görsellerde verilmiştir:**
+
 ![Pasted image 20250130015639.png](/img/user/resimler/Pasted%20image%2020250130015639.png)
 
 ![Pasted image 20250130015650.png](/img/user/resimler/Pasted%20image%2020250130015650.png)

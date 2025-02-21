@@ -42,7 +42,6 @@ smb: \> help
 smb: \> !ls
 
 smb: \> !cat password.txt
-	
 ```
 
 

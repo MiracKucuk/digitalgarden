@@ -986,34 +986,39 @@ SMB 10.129.203.121 445 DC01 Users READ
 
 Topladığımız bilgiler, domain içinde foothold elde etmek için faydalı olabilir. Password policy'deki bilgileri kullanarak bir Password Spraying saldırısı düzenleyebilir, ASREPRoasting gibi saldırılar gerçekleştirebilir veya açık bir share folder üzerinden gizli bilgilere erişim sağlayabiliriz.
 
-Burada kaldım 
-
-----
-
 ### Understanding Password Policy
-Password Policy için Microsoft belgeleri, Windows için [password ilkelerine](https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/password-policy) genel bir bakış ve her ilke ayarı için bilgi bağlantıları sağlar.
 
-Çıktıda gördüğümüz politika ayarlarından biri, 1 olarak ayarlanmış olan Domain Password Complex'tir.[ Password must meet complexity requirements]([Password must meet complexity requirements - Windows 10 | Microsoft Learn](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/password-must-meet-complexity-requirements)) politika ayarı, parolaların bir dizi güçlü parola yönergesini karşılaması gerekip gerekmediğini belirler. Etkinleştirildiğinde, bu ayar parolaların aşağıdaki ölçütleri karşılamasını gerektirir:
+Password Policy için Microsoft belgeleri, Windows için [password policy'lerine](https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/password-policy) genel bir bakış ve her policy ayarı için bilgi bağlantıları sağlar.
 
-* Parolalar, kullanıcının sAMAccountName (kullanıcı hesabı adı) değerini veya displayName'in tamamını (tam ad değeri) içeremez. Her iki kontrol de büyük/küçük harfe duyarlı değildir.
+Çıktıda gördüğümüz policy ayarlarından biri, 1 olarak ayarlanmış olan Domain Password Complex'tir.[ Password must meet complexity requirements]([Password must meet complexity requirements - Windows 10 | Microsoft Learn](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/password-must-meet-complexity-requirements)) politika ayarı, parolaların bir dizi güçlü parola yönergesini karşılaması gerekip gerekmediğini belirler. Etkinleştirildiğinde, bu ayar parolaların aşağıdaki ölçütleri karşılamasını gerektirir:
+
+* Parolalar, kullanıcının `sAMAccountName` (kullanıcı hesabı adı) değerini veya `displayName`'in tamamını (tam ad değeri) içeremez. Her iki kontrol de büyük/küçük harfe duyarlı değildir.
 * Parola aşağıdaki kategorilerden üçünden karakter içermelidir:
-* Avrupa dillerinin büyük harfleri (A'dan Z'ye, aksan işaretleri, Yunanca ve Kiril karakterleri ile birlikte)
-* Avrupa dillerinin küçük harfleri (a'dan z'ye, diyezli, aksan işaretli, Yunanca ve Kiril karakterli)
-*  Taban 10 basamakları (0 ile 9 arası)
-* Alfasayısal olmayan karakterler (özel karakterler): hide01.ir (~!@#$%^&*_-+=`|\(){} []:;"'<>,.?/) Euro veya İngiliz Sterlini gibi para birimi sembolleri bu ilke ayarı için özel karakter olarak sayılmaz.
-* Alfabetik karakter olarak sınıflandırılan ancak büyük veya küçük harf olmayan herhangi bir Unicode karakteri. Bu grup Asya dillerindeki Unicode karakterlerini içerir.
+	* Avrupa dillerinin büyük harfleri (A'dan Z'ye, aksan işaretleri, Yunanca ve Kiril karakterleri ile birlikte)
+	* Avrupa dillerinin küçük harfleri (a'dan z'ye, diyezli, aksan işaretli, Yunanca ve Kiril karakterli)
+	*  Taban 10 basamakları (0 ile 9 arası)
+	* Alfasayısal olmayan karakterler (özel karakterler):  (`~!@#$%^&*_-+=|\(){} []:;"'<>,.?/) Euro veya İngiliz Sterlini gibi para birimi sembolleri bu policy ayarı için özel karakter olarak sayılmaz.
+	* Alfabetik karakter olarak sınıflandırılan ancak büyük veya küçük harf olmayan herhangi bir Unicode karakteri. Bu grup Asya dillerindeki Unicode karakterlerini içerir.
 
 Not: Parolalar değiştirildiğinde veya oluşturulduğunda karmaşıklık gereksinimleri uygulanır.
 
-Password Spraying saldırısı için numaralandırılması gereken bir diğer önemli parametre de Account Lockout Threshold'dur (Hesap Kilitleme Eşiği) . Bu ilke ayarı, bir kullanıcı hesabının kilitlenmesine neden olacak başarısız oturum açma girişimlerinin sayısını belirler. Kilitli bir hesap, siz sıfırlayana kadar veya CrackMapExec çıktısında da görüntülenen Hesap Kilitleme Süresi ilke ayarı tarafından belirtilen dakika sayısı sona erene kadar kullanılamaz.
+Password Spraying saldırısı için numaralandırılması gereken bir diğer önemli parametre de `Account Lockout Threshold`'dur (Hesap Kilitleme Eşiği) . Bu policy ayarı, bir kullanıcı hesabının kilitlenmesine neden olacak başarısız oturum açma girişimlerinin sayısını belirler. Kilitli bir hesap, siz sıfırlayana kadar veya `CrackMapExec` çıktısında da görüntülenen Hesap Kilitleme Süresi policy ayarı tarafından belirtilen dakika sayısı sona erene kadar kullanılamaz.
 
-Bu şifre politikasına dayanarak, kilitleme politikası yoktur. İstediğimiz kadar parola deneyebiliriz ve hesaplar kilitlenmez. Politikaya göre, parola en az yedi karakterden oluşacak ve en az birer büyük ve küçük harf ile bir özel karakter içerecektir.
+Bu password politikasına göre, herhangi bir **hesap kilitleme politikası (lockout policy)** bulunmamaktadır. Bu nedenle, istediğimiz kadar parola denemesi yapabiliriz ve hesaplar kilitlenmez.
 
-Not: CrackMapExec, varsa Password Setting Objects'i (PSO) değil, yalnızca Default Password Policy'yi kontrol eder.
+Bu politikaya göre, parolalar **en az yedi karakter** uzunluğunda olmalı ve **en az bir büyük harf, bir küçük harf ve bir özel karakter** içermelidir.
+
+Not: CrackMapExec, varsa `Password Setting Objects`'i (PSO) değil, yalnızca `Default Password Policy`'yi kontrol eder.
+
+
+Bu bölümde, **`NULL session authentication`** ile yapılandırılmış bir **domain**'den nasıl bilgi alacağımızı öğrendik.
+
+Bir sonraki bölümde, bu bilgileri kullanarak **kimlik bilgilerini nasıl tespit edeceğimizi** öğreneceğiz.
 
 
 ### Password Spraying
-NULL Session açığını kötüye kullanan kullanıcıların bir listesini bulduk. Şimdi domain'de bir yer edinmek için geçerli bir şifre bulmamız gerekiyor. Elimizde uygun bir kullanıcı listesi yoksa veya hedef NULL Session saldırısına karşı savunmasız değilse, geçerli kullanıcı adlarını bulmak için OSINT (yani LinkedIn'de avlanma), geniş bir kullanıcı adı listesi ve Kerbrute ile brute-forcing, fiziksel keşif vb. gibi başka bir yola ihtiyacımız olacaktır. Bu bölümde, bir kullanıcı adı listesine sahip olduğumuzda bir dizi hedefe karşı kimlik doğrulamayı test ederek geçerli bir kimlik bilgisi kümesini nasıl bulacağımızı öğreneceğiz.
+
+NULL Session açığını kötüye kullanan kullanıcıların bir listesini bulduk. Şimdi domain'de bir yer edinmek için geçerli bir şifre bulmamız gerekiyor. Elimizde uygun bir kullanıcı listesi yoksa veya hedef `NULL Session` saldırısına karşı savunmasız değilse, geçerli kullanıcı adlarını bulmak için OSINT (yani LinkedIn'de avlanma), geniş bir kullanıcı adı listesi ve Kerbrute ile brute-forcing, fiziksel keşif vb. gibi başka bir yola ihtiyacımız olacaktır. Bu bölümde, bir kullanıcı adı listesine sahip olduğumuzda bir dizi hedefe karşı kimlik doğrulamayı test ederek geçerli bir kimlik bilgisi kümesini nasıl bulacağımızı öğreneceğiz.
 
 ### Creating a Password List
 Bu kullanıcıların şifrelerini bilmiyoruz, ancak bildiğimiz şey şifre politikasıdır. Welcome1 ve Password123 gibi yaygın parolalardan oluşan özel bir sözcük listesi, sonunda yıl olan geçerli ay, şirket adı veya domain adı oluşturabilir ve farklı mutasyonlar uygulayabiliriz. Parola mutasyonları hakkında daha fazla bilgi edinmek için Akademi modülü Parola Saldırıları'na göz atın. Parola olarak alan adını büyük harf, sayı ve sonunda ünlem işareti ile kullanalım:
