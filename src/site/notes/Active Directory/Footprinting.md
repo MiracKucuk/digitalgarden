@@ -44,7 +44,7 @@ FTP protokolünü kullanarak lokal dosyaları bir sunucuya yüklemek ve diğer d
 
 FTP (File Transfer Protocol), dosya transferi için kullanılan bir protokoldür. Client, sunucuya dosya yükleme, indirme, silme veya dizin oluşturma gibi komutlar gönderir. Sunucu, her komuta bir [durum koduyla](https://en.wikipedia.org/wiki/List_of_FTP_server_return_codes) yanıt verir; bu kod, işlemin başarılı olup olmadığını veya hangi aşamada olduğunu belirtir.
 
-[[Aktif ve pasif mod farkı detaylı açıklama\|Aktif ve pasif mod farkı detaylı açıklama]]
+[[Bağlantılar/Aktif ve pasif mod farkı detaylı açıklama\|Aktif ve pasif mod farkı detaylı açıklama]]
 
 
 ### FTP Komutları
@@ -126,7 +126,7 @@ M1R4CKCK@htb[/htb]$ cat /etc/vsftpd.conf | grep -v "#"
 
 | **Ayar**                                                        | **Açıklama**                                                                                                                                             |
 | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **listen=NO**                                                   | VSFTPD'nin inetd üzerinden mi yoksa  **Standalone** (bağımsız) bir daemon olarak mı çalıştırılacağını belirler. ([[inetd ve Standalone nedir açıklama\|inetd ve Standalone nedir açıklama]]) |
+| **listen=NO**                                                   | VSFTPD'nin inetd üzerinden mi yoksa  **Standalone** (bağımsız) bir daemon olarak mı çalıştırılacağını belirler. ([[Bağlantılar/inetd ve Standalone nedir açıklama\|inetd ve Standalone nedir açıklama]]) |
 | **listen_ipv6=YES**                                             | IPv6 üzerinden bağlantı dinlenip dinlenmeyeceğini belirler.                                                                                              |
 | **anonymous_enable=NO**                                         | Anonim kullanıcıların erişimine izin verilip verilmeyeceğini belirler.                                                                                   |
 | **local_enable=YES**                                            | Local kullanıcıların oturum açmasına izin verir.                                                                                                         |
@@ -134,8 +134,8 @@ M1R4CKCK@htb[/htb]$ cat /etc/vsftpd.conf | grep -v "#"
 | **use_localtime=YES**                                           | Local saati kullanmayı etkinleştirir.                                                                                                                    |
 | **xferlog_enable=YES**                                          | Yükleme/indirme işlemlerinin kaydedilmesini etkinleştirir.                                                                                               |
 | **connect_from_port_20=YES**                                    | Port 20 üzerinden bağlantı kurulmasını sağlar.                                                                                                           |
-| **secure_chroot_dir=/var/run/vsftpd/empty**                     | Güvenli bir [[chroot\|chroot]] processi için kullanılan boş dizinin adını belirtir.                                                                              |
-| **pam_service_name=vsftpd**                                     | VSFTPD'nin kullanacağı [[PAM servisini\|PAM servisini]] adını belirtir.                                                                                                 |
+| **secure_chroot_dir=/var/run/vsftpd/empty**                     | Güvenli bir [[Bağlantılar/chroot\|chroot]] processi için kullanılan boş dizinin adını belirtir.                                                                              |
+| **pam_service_name=vsftpd**                                     | VSFTPD'nin kullanacağı [[Bağlantılar/PAM servisini\|PAM servisini]] adını belirtir.                                                                                                 |
 | **rsa_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem**          | SSL şifreli bağlantılar için kullanılan RSA sertifika dosyasının yolunu belirtir.                                                                        |
 | **rsa_private_key_file=/etc/ssl/private/ssl-cert-snakeoil.key** | SSL bağlantıları için kullanılan RSA private key dosyasının yolunu belirtir.                                                                             |
 | **ssl_enable=NO**                                               | SSL şifrelemesini etkinleştirir veya devre dışı bırakır.                                                                                                 |

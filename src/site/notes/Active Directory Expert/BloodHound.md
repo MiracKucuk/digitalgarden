@@ -82,18 +82,18 @@ The Neo4j Graph Database - neo4j service was started successfully.
 
 Neo4j veritabanını yapılandırmak için bir web tarayıcısı açın ve Neo4j web konsoluna şu adresten gidin: [http://localhost:7474/](http://localhost:7474/)
 
-![Pasted image 20250219001317.png](/img/user/Pasted%20image%2020250219001317.png)
+![Pasted image 20250219001317.png](/img/user/resimler/Pasted%20image%2020250219001317.png)
 
 Web konsolunda Neo4j'ye, kullanıcı adı olarak `neo4j` ve şifre olarak `neo4j` ile kimlik doğrulaması yapın, veritabanını boş bırakın ve şifre değiştirmeniz istendiğinde şifreyi değiştirin.
 
-![Pasted image 20250219001346.png](/img/user/Pasted%20image%2020250219001346.png)
+![Pasted image 20250219001346.png](/img/user/resimler/Pasted%20image%2020250219001346.png)
 
 
 ### Download BloodHound GUI
 
 1. En son sürüm BloodHound GUI'yi Windows için [https://github.com/BloodHoundAD/BloodHound/releases](https://github.com/BloodHoundAD/BloodHound/releases) adresinden indirin.
 
-![Pasted image 20250219001429.png](/img/user/Pasted%20image%2020250219001429.png)
+![Pasted image 20250219001429.png](/img/user/resimler/Pasted%20image%2020250219001429.png)
 
 Not: Tarayıcıdan veya antivirüs yazılımından dosyanın zararlı olduğuna dair bir uyarı alabiliriz. Uyarıyı görmezden gelip indirmeye izin verin.
 
@@ -101,7 +101,7 @@ Not: Tarayıcıdan veya antivirüs yazılımından dosyanın zararlı olduğuna 
 2. neo4j için ayarladığınız kimlik bilgileriyle kimlik doğrulaması yapın.
 
 
-![Pasted image 20250219001521.png](/img/user/Pasted%20image%2020250219001521.png)
+![Pasted image 20250219001521.png](/img/user/resimler/Pasted%20image%2020250219001521.png)
 
 
 ### Linux Installation
@@ -277,18 +277,18 @@ Neo4j veritabanarını yapılandırmak için Windows'ta yaptığımız aynı ad�
 
 Bir web tarayıcısı açın ve Neo4j web konsoluna [http://localhost:7474/](http://localhost:7474/) adresinden erişin.
 
-![Pasted image 20250219002538.png](/img/user/Pasted%20image%2020250219002538.png)
+![Pasted image 20250219002538.png](/img/user/resimler/Pasted%20image%2020250219002538.png)
 
 Neo4j varsayılan kimlik bilgilerini değiştirin. Web konsolunda `neo4j` kullanıcı adı ve `neo4j` şifresiyle oturum açın, veritabanını boş bırakın ve şifre değiştirmeniz istendiğinde yeni şifreyi belirleyin.
 
-![Pasted image 20250219002601.png](/img/user/Pasted%20image%2020250219002601.png)
+![Pasted image 20250219002601.png](/img/user/resimler/Pasted%20image%2020250219002601.png)
 
 
 ### Download BloodHound GUI
 
 1. BloodHound GUI'nin en son sürümünü Linux için [https://github.com/BloodHoundAD/BloodHound/releases](https://github.com/BloodHoundAD/BloodHound/releases) adresinden indirin.
 
-![Pasted image 20250219002716.png](/img/user/Pasted%20image%2020250219002716.png)
+![Pasted image 20250219002716.png](/img/user/resimler/Pasted%20image%2020250219002716.png)
 
 1. Klasörü zipten çıkarın, ardından BloodHound'u --no-sandbox bayrağı ile çalıştırın:
 
@@ -314,7 +314,7 @@ cd BloodHound-linux-x64/
 
 1. Neo4j için ayarladığınız kimlik bilgileri ile giriş yapın.
 
-![Pasted image 20250219002907.png](/img/user/Pasted%20image%2020250219002907.png)
+![Pasted image 20250219002907.png](/img/user/resimler/Pasted%20image%2020250219002907.png)
 
 
 ### MacOS Install
@@ -396,7 +396,7 @@ Starting Neo4j.
 1. [http://localhost:7474/](http://localhost:7474/) adresine gidin ve kimlik bilgisi olmadan giriş yapmak için "Connect" seçeneğine tıklayın.
 2. Neo4j hesabı için yeni bir şifre ayarlamak için şu sorguyu çalıştırın: `ALTER USER neo4j SET PASSWORD 'Password123';`
 
-![Pasted image 20250219003322.png](/img/user/Pasted%20image%2020250219003322.png)
+![Pasted image 20250219003322.png](/img/user/resimler/Pasted%20image%2020250219003322.png)
 
 1. Neo4j servisini durdurun.
 2. `/etc/neo4j/neo4j.conf` dosyasını düzenleyin ve `dbms.security.auth_enabled=false` satırını yorum satırı haline getirin.
@@ -436,21 +436,21 @@ Araç, ilişkileri analiz etmek için **[Cypher Query Language](https://neo4j.co
 
 Aşağıdaki **diagram**, iki **node** (**A** ve **B**) içermektedir. Bu örnekte yalnızca **node A**'dan **node B**'ye gidebiliriz; tersi mümkün değildir.
 
-![Pasted image 20250219005238.png](/img/user/Pasted%20image%2020250219005238.png)
+![Pasted image 20250219005238.png](/img/user/resimler/Pasted%20image%2020250219005238.png)
 
 Bu, **A**'yı **user** **Grace**, **B**'yi ise **group** **SQL Admins** olarak simüle edebilir. İkisi arasındaki çizgi **edge**'i temsil eder ve bu durumda **MemberOf** ilişkisidir. Aşağıdaki **graphic**, **BloodHound**'da **user** **Grace**'in **SQL Admins** **group**'unun bir üyesi olduğunu gösterir.
 
-![Pasted image 20250219005354.png](/img/user/Pasted%20image%2020250219005354.png)
+![Pasted image 20250219005354.png](/img/user/resimler/Pasted%20image%2020250219005354.png)
 
 Hadi **nodes** arasındaki daha karmaşık bir ilişkiyi inceleyelim. Aşağıdaki **graphic**, sekiz (**8**) **node** ve on (**10**) **edge** içeriyor. **Node H**, **node G**'ye ulaşabilir, ancak hiçbir **node**'un **node H**'ye doğrudan bir yolu yoktur. **Node A**'dan **node C**'ye gitmek için önce **node G**'ye, ardından **node F**'ye ve son olarak **node C**'ye geçebiliriz, ancak bu en kısa yol değildir. **BloodHound**'un yeteneklerinden biri de en kısa yolu bulmaktır. Bu örnekte, **node A**'dan **node C**'ye en kısa yol, **node B** üzerinden tek bir sıçrama yapmaktır.
 
-![Pasted image 20250219005635.png](/img/user/Pasted%20image%2020250219005635.png)
+![Pasted image 20250219005635.png](/img/user/resimler/Pasted%20image%2020250219005635.png)
 
 Önceki örnekte, **BloodHound**'u kullanarak **Grace**'in **SQL Admins** grubunun bir üyesi olduğunu keşfettik, ki bu oldukça basit bir bilgidir. Aynı bilgiyi **Active Directory Users and Computers GUI** veya `net user grace /domain` komutuyla da elde edebiliriz. Yalnızca bu bilgiye dayanarak, **Grace**'in **Domain Admins** grubuna doğrudan bir yolu olmadığını düşünebiliriz. Ancak, **BloodHound** burada devreye girerek **nodes** arasındaki keşfedilmesi zor ilişkileri bulmamıza yardımcı olur.
 
 Şimdi **BloodHound**'u bir harita gezgini olarak kullanıp, **Grace**'in **Domain Admins** grubuna nasıl ulaşabileceğini soralım. İşte sonuç:
 
-![Pasted image 20250219005741.png](/img/user/Pasted%20image%2020250219005741.png)
+![Pasted image 20250219005741.png](/img/user/resimler/Pasted%20image%2020250219005741.png)
 
 Bu, **`Grace`**'in **`SQL Admins`** grubunun bir üyesi olarak **`Peter`**'ın şifresini değiştirme yetkisine sahip olduğu anlamına gelir. **`Peter`**'ın yeni şifresiyle kimlik doğrulaması yaparak **`Domain Admins`** grubunun bir üyesi gibi işlem gerçekleştirebiliriz. **`Peter`** doğrudan bir üye olmasa da, **Domain Admins** grubunun üyesi olan bir grubun içinde yer almaktadır.
 
@@ -561,7 +561,7 @@ Not: **Domain-joined** makinelerden bilgi toplamak, örneğin local grup üyelik
 
 SharpHound sonlandığında, varsayılan olarak, ismi mevcut tarih ile başlayıp **BloodHound** ile biten bir zip dosyası oluşturacaktır. Bu zip arşivi, bir grup **JSON** dosyası içerir.
 
-![Pasted image 20250219013310.png](/img/user/Pasted%20image%2020250219013310.png)
+![Pasted image 20250219013310.png](/img/user/resimler/Pasted%20image%2020250219013310.png)
 
 
 #### Importing Data into BloodHound
@@ -584,18 +584,18 @@ Username: neo4j
 Password: Password123
 ```
 
-![Pasted image 20250219013440.png](/img/user/Pasted%20image%2020250219013440.png)
+![Pasted image 20250219013440.png](/img/user/resimler/Pasted%20image%2020250219013440.png)
 
 En sağdaki **upload** butonuna tıklayın, zip dosyasını bulun ve yükleyin. Yükleme yüzdesinin tamamlanma durumunu gösteren bir durum bilgisi göreceksiniz.
 
-![Pasted image 20250219013503.png](/img/user/Pasted%20image%2020250219013503.png)
+![Pasted image 20250219013503.png](/img/user/resimler/Pasted%20image%2020250219013503.png)
 
 Not: İstediğimiz kadar zip dosyası yükleyebiliriz. **BloodHound**, verileri çoğaltmaz, ancak veritabanında bulunmayan verileri ekler.
 
 1. Yükleme tamamlandığında, verileri analiz edebiliriz. **Domain** hakkında bilgi görmek istiyorsak, arama kutusuna **Domain:INLANEFREIGHT.HTB** yazabiliriz. Bu, domain ismiyle bir ikon gösterecektir. İkona tıkladığınızda, **node** (domain) hakkında, kaç kullanıcı, grup, bilgisayar, **OU** vb. olduğuna dair bilgi görüntülenir.
 
 
-![Pasted image 20250219063444.png](/img/user/Pasted%20image%2020250219063444.png)
+![Pasted image 20250219063444.png](/img/user/resimler/Pasted%20image%2020250219063444.png)
 
 Şimdi, **BloodHound** içinde bilgileri analiz etmeye başlayabilir ve hedeflerimize giden yolları bulabiliriz.
 
@@ -728,7 +728,7 @@ Bu senaryoda, **All** veya **Default** yerine **DCOnly** kullanmalıyız, çünk
 
 Yöntemleri ve bunların etkilerini bilmek oldukça önemlidir. **[SadProcessor](https://twitter.com/SadProcessor)** tarafından oluşturulan aşağıdaki tablo, her yöntemin kullandığı **communication protocols**, her teknik hakkında bilgiler ve diğer bazı detaylar için genel bir referans sunmaktadır:
 
-![Pasted image 20250219064142.png](/img/user/Pasted%20image%2020250219064142.png)
+![Pasted image 20250219064142.png](/img/user/resimler/Pasted%20image%2020250219064142.png)
 
 Not: Bu tablo, **SharpHound**'un eski bir sürümü için oluşturulmuştur. Bazı seçenekler artık mevcut değil veya değiştirilmiş olabilir, ancak yine de **collection** yöntemleri ve bunların etkileri hakkında genel bir bakış sunmaktadır. Daha fazla bilgi için **BloodHound** [dokümantasyon](https://bloodhound.readthedocs.io/en/latest/data-collection/sharphound-all-flags.html) sayfasını ziyaret edebilirsiniz.
 
@@ -824,7 +824,7 @@ Archive:  ./HTB_20230111113143_5yssigbd.w3f
 
 Şimdi verilerimizi **BloodHound**'a yükleyebiliriz:
 
-![Pasted image 20250219064934.png](/img/user/Pasted%20image%2020250219064934.png)
+![Pasted image 20250219064934.png](/img/user/resimler/Pasted%20image%2020250219064934.png)
 
 Not: Eğer **zip** dosyasına bir şifre koyarsak, önce şifreyi çözmemiz gerekecek, ancak şifre koymadıysak, dosyayı rastgele adı ve uzantısıyla olduğu gibi içe aktarabiliriz ve yine de dosya içe aktarılacaktır.
 
@@ -920,7 +920,7 @@ xfreerdp /v:10.129.204.207:13389 /u:haris /p:Hackthebox /dynamic-resolution /dri
 
 Not: **Hosts** dosyasındaki **DNS** adlarını kullanırken, dosyada bulunmayan veya yanlış yapılandırılmış adlar nedeniyle bazı hatalar meydana gelebilir.
 
-![Pasted image 20250219070043.png](/img/user/Pasted%20image%2020250219070043.png)
+![Pasted image 20250219070043.png](/img/user/resimler/Pasted%20image%2020250219070043.png)
 
 **cmd.exe**'yi çalıştırın ve ardından aşağıdaki komutu girin, bu komut başka bir **cmd.exe** penceresi başlatacak ve **htb-student** kimlik bilgileriyle giriş yapmanızı isteyecektir. Şifre **HTBRocks!**'tır:
 
@@ -930,7 +930,7 @@ Enter the password for INLANEFREIGHT\htb-student:
 Attempting to start cmd.exe as user "INLANEFREIGHT\htb-student" ...
 ```
 
-![Pasted image 20250219070113.png](/img/user/Pasted%20image%2020250219070113.png)
+![Pasted image 20250219070113.png](/img/user/resimler/Pasted%20image%2020250219070113.png)
 
 Not: **runas /netonly**, kimlik bilgilerini doğrulamaz ve yanlış kimlik bilgilerini kullanırsak, ağ üzerinden bağlantı kurmaya çalışırken bunu fark ederiz.
 
@@ -1214,11 +1214,11 @@ BloodHound Kurulum ve Yükleme bölümünde, BloodHound GUI'ye bağlanmayı tart
 
 Başarıyla giriş yaptıktan sonra, BloodHound şu sorguyu gerçekleştirecek: `Find all Domain Admins`  Tüm Domain Admin'lerini bul ve gruba ait kullanıcıları görüntüle.
 
-![Pasted image 20250219074252.png](/img/user/Pasted%20image%2020250219074252.png)
+![Pasted image 20250219074252.png](/img/user/resimler/Pasted%20image%2020250219074252.png)
 
 Bu alan, BloodHound'un **node**'ları ve bunların ilişkilerini **edge**'lerle gösterdiği Grafik Çizim Alanı olarak bilinir. Grafiği etkileşimli olarak inceleyebilir, objeleri taşıyabilir, yakınlaştırabilir veya uzaklaştırabiliriz (fare kaydırma tekerleği veya sağ alt köşedeki düğmelerle), **node**'lara tıklayarak daha fazla bilgi görebiliriz veya farklı işlemler yapmak için sağ tıklayabiliriz.
 
-![indir.gif](/img/user/indir.gif)
+![indir.gif](/img/user/resimler/indir.gif)
 
 Bu seçenekleri açıklayalım:
 
@@ -1235,7 +1235,7 @@ Bu seçenekleri açıklayalım:
 
 **Graph Drawing Area** ayrıca **Edges** ile etkileşimde bulunmamıza da olanak tanır. **Edges**, iki **node** arasındaki bağlantıyı temsil eder ve bir **object**'ten diğerine nasıl geçeceğimizi anlamamıza yardımcı olur. BloodHound'da birçok **edge** olduğundan, her birini nasıl kötüye kullanabileceğimizi takip etmek zor olabilir. BloodHound ekibi, her bir **edge**'i nasıl kötüye kullanabileceğimize dair bilgi, örnekler ve referanslar görebileceğimiz bir yardım menüsü ekledi.
 
-![indir (1).gif](/img/user/indir%20(1).gif)
+![indir (1).gif](/img/user/resimler/indir%20(1).gif)
 
 ## Search Bar
 
@@ -1243,7 +1243,7 @@ Bu seçenekleri açıklayalım:
 
 Belirli bir tür aramak istiyorsak, aramamızı **node type** ile önceden belirtebiliriz, örneğin **user:peter** veya **group:domain**. Bunu nasıl yapacağımızı şimdi görelim:
 
-![indir (2).gif](/img/user/indir%20(2).gif)
+![indir (2).gif](/img/user/resimler/indir%20(2).gif)
 
 İşte aramamıza ekleyebileceğimiz tüm **node types**  tam listesi:
 
@@ -1285,13 +1285,13 @@ Bu yol, **ForceChangePassword** **edge**'ini içeriyor; diyelim ki kullanıcıla
 
 **Ryan > AddSelf > Tech_Support > Testinggroup > HelpDesk > ITSecurity > Domain Admins**
 
-![indir (3).gif](/img/user/indir%20(3).gif)
+![indir (3).gif](/img/user/resimler/indir%20(3).gif)
 
 ## Upper Right Menu
 
 Sağ üst köşede etkileşimde bulunabileceğimiz çeşitli seçenekler bulacağız. Şimdi bu seçeneklerden bazılarını açıklayalım:
 
-![indir (4).gif](/img/user/indir%20(4).gif)
+![indir (4).gif](/img/user/resimler/indir%20(4).gif)
 
 **Refresh**: Önceki sorguyu yeniden çalıştırır ve sonuçları gösterir.
 
@@ -1299,11 +1299,11 @@ Sağ üst köşede etkileşimde bulunabileceğimiz çeşitli seçenekler bulaca�
 
 **Import Graph**: Export ettiğimiz yaptığımız JSON formatındaki grafiği görüntüleyebiliriz.
 
-![indir (5) 1.gif](/img/user/indir%20(5)%201.gif)
+![indir (5) 1.gif](/img/user/resimler/indir%20(5)%201.gif)
 
 **Upload Data**: SharpHound, BloodHound.py veya AzureHound verilerini Neo4j'ye yükler. Yükleme verisini yükleme butonuyla seçebiliriz veya JSON ya da zip dosyasını doğrudan BloodHound penceresine sürükleyip bırakabiliriz.
 
-![indir (6).gif](/img/user/indir%20(6).gif)
+![indir (6).gif](/img/user/resimler/indir%20(6).gif)
 
 **Not:** Yükleme sırasında, BloodHound yeni verileri ekleyecek ancak yinelenen verileri görmezden gelecektir.
 
@@ -1325,7 +1325,7 @@ Sağ üst köşede etkileşimde bulunabileceğimiz çeşitli seçenekler bulaca�
 
 	* **Dark Mode**: Arayüz için Karanlık modu etkinleştirir.
 
-![Pasted image 20250219091220.png](/img/user/Pasted%20image%2020250219091220.png)
+![Pasted image 20250219091220.png](/img/user/resimler/Pasted%20image%2020250219091220.png)
 
 
 About (Hakkında): Yazılımın yazarı ve sürümü hakkında bilgi gösterir.

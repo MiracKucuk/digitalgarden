@@ -2,7 +2,7 @@
 {"dg-publish":true,"permalink":"/active-directory/nmap/"}
 ---
 
-TCP-SYN taraması (-sS) en popüler yöntemdir. SYN bayrağı gönderilir, tam bağlantı kurulmaz:
+TCP-SYN taraması (`-sS`) en popüler yöntemdir. SYN bayrağı gönderilir, tam bağlantı kurulmaz:
 
 - SYN-ACK cevabı: Port açık
 - RST cevabı: Port kapalı
@@ -64,7 +64,7 @@ M1R4CKCK@htb[/htb]$ sudo nmap -sn -oA tnet 10.129.2.18-20| grep for | cut -d" " 
 10.129.2.20
 ```
 
-Eğer port taramasını (`-sn`) devre dışı bırakırsak, Nmap otomatik olarak `ICMP Echo Requests (-PE)` ile ping taraması yapar. Böyle bir istek gönderildikten sonra, ping atan host canlıysa genellikle bir `ICMP reply` bekleriz. Daha da ilginci, önceki taramalarımız bunu yapmıyordu çünkü Nmap bir `ICMP echo` isteği göndermeden önce, bir `ARP reply` ile sonuçlanan bir `ARP pingi` gönderiyordu. Bunu “`--packet-trace`” seçeneği ile doğrulayabiliriz. ICMP echo isteklerinin gönderildiğinden emin olmak için, bunun için (-PE) seçeneğini de tanımlıyoruz.
+Eğer port taramasını (`-sn`) devre dışı bırakırsak, Nmap otomatik olarak `ICMP Echo Requests (-PE)` ile ping taraması yapar. Böyle bir istek gönderildikten sonra, ping atan host canlıysa genellikle bir `ICMP reply` bekleriz. Daha da ilginci, önceki taramalarımız bunu yapmıyordu çünkü Nmap bir `ICMP echo` isteği göndermeden önce, bir `ARP reply` ile sonuçlanan bir `ARP pingi` gönderiyordu. Bunu “`--packet-trace`” seçeneği ile doğrulayabiliriz. ICMP echo isteklerinin gönderildiğinden emin olmak için, bunun için (`-PE`) seçeneğini de tanımlıyoruz.
 
 ```shell-session
 M1R4CKCK@htb[/htb]$ sudo nmap 10.129.2.18 -sn -oA host -PE --packet-trace 
@@ -78,7 +78,9 @@ MAC Address: DE:AD:00:00:BE:EF
 Nmap done: 1 IP address (1 host up) scanned in 0.05 seconds
 ```
 
-Nmap'in hedefimizi neden “LİVE” olarak işaretlediğini belirlemenin bir başka yolu da “--reason” seçeneğidir.
+Nmap'in hedefimizi neden “LİVE” olarak işaretlediğini belirlemenin bir başka yolu da “`--reason`” seçeneğidir.
+
+`--reason` parametresi, Nmap'in her port için neden belirli bir durumu (açık, kapalı, filtresiz vb.) tespit ettiğini göstermesini sağlar. Yani, hangi nedenlerden dolayı bir portun açık veya kapalı olduğunu belirten bilgi verir. Bu, tarama sonuçlarını daha iyi anlamanıza yardımcı olabilir.
 
 ```shell-session
 M1R4CKCK@htb[/htb]$ sudo nmap 10.129.2.18 -sn -oA host -PE --reason 
@@ -92,7 +94,7 @@ MAC Address: DE:AD:00:00:BE:EF
 Nmap done: 1 IP address (1 host up) scanned in 0.03 seconds
 ```
 
-Burada Nmap'in gerçekten de sadece ARP request ve ARP reply ile hostun canlı olup olmadığını tespit ettiğini görüyoruz. ARP isteklerini devre dışı bırakmak ve hedefimizi istediğimiz ICMP echo istekleri ile taramak için “--disable-arp-ping” seçeneğini ayarlayarak ARP pinglerini devre dışı bırakabiliriz. Daha sonra hedefimizi tekrar tarayıp gönderilen ve alınan paketlere bakabiliriz.
+Burada Nmap'in gerçekten de sadece ARP request ve ARP reply ile hostun canlı olup olmadığını tespit ettiğini görüyoruz. ARP isteklerini devre dışı bırakmak ve hedefimizi istediğimiz ICMP echo istekleri ile taramak için “`--disable-arp-ping`” seçeneğini ayarlayarak ARP pinglerini devre dışı bırakabiliriz. Daha sonra hedefimizi tekrar tarayıp gönderilen ve alınan paketlere bakabiliriz.
 
 ```shell-session
 M1R4CKCK@htb[/htb]$ sudo nmap 10.129.2.18 -sn -oA host -PE --packet-trace --disable-arp-ping 
@@ -118,19 +120,19 @@ Cevap : Windows (ttl değeri 128 olduğu için)
 
 # Host and Port Scanning
 
-| **State**            | **Description**                                                                                                                                                                         |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **open**             | Taranan porta bağlantının kurulduğunu gösterir. Bu bağlantılar TCP bağlantıları, UDP datagramları veya SCTP birleşimleri olabilir.                                                      |
-| **closed**           | Portun kapalı olarak gösterilmesi, TCP protokolünün aldığımız paketin RST bayrağı içerdiğini belirttiği anlamına gelir. Hedefin aktif olup olmadığını belirlemek için kullanılabilir.   |
-| **filtered**         | Nmap, taranan portun açık mı yoksa kapalı mı olduğunu doğru bir şekilde tespit edemez çünkü ya hedeften port için bir yanıt alınmaz ya da hedeften bir hata kodu alırız.                |
-| **unfiltered**       | Bu port durumu yalnızca ==TCP-ACK== taraması sırasında ortaya çıkar. Porta erişilebilir, ancak açık mı yoksa kapalı mı olduğunun belirlenemediği anlamına gelir.                        |
-| **open\|filtered**   | Belirli bir port için yanıt alınamadığında Nmap bu durumu ayarlar. Bu, portun bir güvenlik duvarı veya paket filtresi tarafından korunduğunu gösterebilir.                              |
-| **closed\|filtered** | Bu durum yalnızca ==IP ID idle== taramalarında ortaya çıkar. Taranan portun kapalı mı yoksa bir güvenlik duvarı tarafından filtrelenip filtrelenmediğinin belirlenemediğini ifade eder. |
+| **State**            | **Description**                                                                                                                                                                       |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **open**             | Taranan porta bağlantının kurulduğunu gösterir. Bu bağlantılar TCP bağlantıları, UDP datagramları veya SCTP birleşimleri olabilir.                                                    |
+| **closed**           | Portun kapalı olarak gösterilmesi, TCP protokolünün aldığımız paketin RST bayrağı içerdiğini belirttiği anlamına gelir. Hedefin aktif olup olmadığını belirlemek için kullanılabilir. |
+| **filtered**         | Nmap, taranan portun açık mı yoksa kapalı mı olduğunu doğru bir şekilde tespit edemez çünkü ya hedeften port için bir yanıt alınmaz ya da hedeften bir hata kodu alırız.              |
+| **unfiltered**       | Bu port durumu yalnızca `TCP-ACK` taraması sırasında ortaya çıkar. Porta erişilebilir, ancak açık mı yoksa kapalı mı olduğunun belirlenemediği anlamına gelir.                        |
+| **open\|filtered**   | Belirli bir port için yanıt alınamadığında Nmap bu durumu ayarlar. Bu, portun bir güvenlik duvarı veya paket filtresi tarafından korunduğunu gösterebilir.                            |
+| **closed\|filtered** | Bu durum yalnızca `IP ID` idle taramalarında ortaya çıkar. Taranan portun kapalı mı yoksa bir güvenlik duvarı tarafından filtrelenip filtrelenmediğinin belirlenemediğini ifade eder. |
 
 
 ## Discovering Open TCP Ports
 
-Varsayılan olarak, Nmap en çok kullanılan 1000 TCP portunu SYN taraması (`-sS`) ile tarar. Bu SYN taraması, yalnızca ==root== kullanıcısı olarak çalıştırıldığında varsayılan olarak ayarlanır, çünkü raw TCP paketleri oluşturmak için gereken soket izinlerine ihtiyaç duyar. Aksi takdirde, varsayılan olarak TCP taraması (==-sT==) gerçekleştirilir. Bu, eğer portları ve tarama yöntemlerini tanımlamazsak, bu parametrelerin otomatik olarak ayarlandığı anlamına gelir. Portları tek tek tanımlayabiliriz (-p 22,25,80,139,445), aralık olarak belirtebiliriz (-p 22-445), Nmap veritabanında en sık kullanılan olarak işaretlenmiş üst portları tarayabiliriz (--top-ports=10), tüm portları tarayabiliriz (-p-) veya hızlı port taraması yapabiliriz, ki bu da en çok kullanılan 100 portu içerir (-F).
+Varsayılan olarak, Nmap en çok kullanılan 1000 TCP portunu SYN taraması (`-sS`) ile tarar. Bu SYN taraması, yalnızca `root` kullanıcısı olarak çalıştırıldığında varsayılan olarak ayarlanır, çünkü raw TCP paketleri oluşturmak için gereken soket izinlerine ihtiyaç duyar. Aksi takdirde, varsayılan olarak TCP taraması (`-sT`) gerçekleştirilir. Bu, eğer portları ve tarama yöntemlerini tanımlamazsak, bu parametrelerin otomatik olarak ayarlandığı anlamına gelir. Portları tek tek tanımlayabiliriz (-p 22,25,80,139,445), aralık olarak belirtebiliriz (-p 22-445), Nmap veritabanında en sık kullanılan olarak işaretlenmiş üst portları tarayabiliriz (`--top-ports=10`), tüm portları tarayabiliriz (-p-) veya hızlı port taraması yapabiliriz, ki bu da en çok kullanılan 100 portu içerir (-F).
 
 - **Root değilseniz:** Nmap varsayılan olarak **TCP Connect Scan** (-sT) yapar.
 - **Root iseniz:** Nmap varsayılan olarak **SYN Scan** (-sS) yapar.
@@ -481,7 +483,7 @@ XML çıktısı ile, teknik olmayan kişiler için bile okunması kolay HTML rap
 
 #### Nmap Report
 
-![Pasted image 20250219154057.png](/img/user/Pasted%20image%2020250219154057.png)
+![Pasted image 20250219154057.png](/img/user/resimler/Pasted%20image%2020250219154057.png)
 
 Output formatları hakkında daha fazla bilgiyi [şu](https://nmap.org/book/output.html) adreste bulabilirsiniz: 
 
@@ -490,12 +492,12 @@ Soru : Hedefinizde tam bir TCP port taraması gerçekleştirin ve bir HTML rapor
 
 Cevap : `31337`
 
-![Pasted image 20250219154428.png](/img/user/Pasted%20image%2020250219154428.png)
+![Pasted image 20250219154428.png](/img/user/resimler/Pasted%20image%2020250219154428.png)
 
 
-![Pasted image 20250219154509.png](/img/user/Pasted%20image%2020250219154509.png)
+![Pasted image 20250219154509.png](/img/user/resimler/Pasted%20image%2020250219154509.png)
 
-![Pasted image 20250219154521.png](/img/user/Pasted%20image%2020250219154521.png)
+![Pasted image 20250219154521.png](/img/user/resimler/Pasted%20image%2020250219154521.png)
 
 
 
@@ -722,7 +724,7 @@ Nmap done: 1 IP address (1 host up) scanned in 97.19 seconds
 
 ```
 
-![Pasted image 20250219163955.png](/img/user/Pasted%20image%2020250219163955.png)
+![Pasted image 20250219163955.png](/img/user/resimler/Pasted%20image%2020250219163955.png)
 
 # Nmap Scripting Engine
 
@@ -932,7 +934,7 @@ nmap --script http-robots.txt -p 80,443 hedef-site.com
 ```
 
 
-![Pasted image 20250219184713.png](/img/user/Pasted%20image%2020250219184713.png)
+![Pasted image 20250219184713.png](/img/user/resimler/Pasted%20image%2020250219184713.png)
 
 
 # Performance
@@ -1365,7 +1367,7 @@ Sonraki üç bölümde, hedefimizi taramamız gereken farklı senaryolar üzerin
 
 Bize sadece IDS/IPS sistemleri tarafından korunan ve test edilebilen bir makine verilmektedir. Öğrenme amacıyla ve IDS/IPS'in nasıl davranabileceğine dair bir fikir edinmek için, şu adresteki bir durum web sayfasına erişimimiz vardır:
 
-![Pasted image 20250219230239.png](/img/user/Pasted%20image%2020250219230239.png)
+![Pasted image 20250219230239.png](/img/user/resimler/Pasted%20image%2020250219230239.png)
 
 Bu sayfa bize uyarı sayısını gösterir. Belirli bir miktarda uyarı alırsak yasaklanacağımızı biliyoruz. Bu nedenle hedef sistemi mümkün olduğunca sessiz bir şekilde test etmeliyiz.
 

@@ -976,7 +976,7 @@ Client KDC içerisinde yer alan Authentication Server'a bir `AS-REQ` paketi gön
 Authentication Server Client `id` değeri ile isteği yapan user'ın kim olduğunu anlar. Daha sonra Active directory'deki `NTDS.dit veritabanı` dosyasına giderek bu userın `password hashini` elde eder. Elde ettiği hash ile **client secret key**  ile şifrelenmiş paketi açar . Eğer her şey yolunda giderse Authentication server'ın elinde bir `time stamp` değeri olur . Bu değeri Client'ın gönderdiği **AS-REQ** paketinin time stamp değeri ile karşılaştırır. Karşılaştırma sonucu yanlış ise iletişim kesilir. Karşılaştırma sonucu doğru ise bir sonraki adıma geçilir.
 
 
-![TGT.drawio 1.png](/img/user/TGT.drawio%201.png)
+![TGT.drawio 1.png](/img/user/resimler/TGT.drawio%201.png)
 
 ### **2.**   TGT + Session Key
 
@@ -992,7 +992,7 @@ Bu yüzden `client message A 'yı açar ve client TGS session key değerini elde
 
 Sonuç olarak client aldığı AS-REP paketinden `message B mesajını yani TGT biletini` ve `client TGS session key bilgisini elde` etti. Client şimdi sıradaki işleme geçebilir.
 
-![Response TGT.drawio.png](/img/user/Response%20TGT.drawio.png)
+![Response TGT.drawio.png](/img/user/resimler/Response%20TGT.drawio.png)
 
 ### **3.** Request Ticket + Auth
 

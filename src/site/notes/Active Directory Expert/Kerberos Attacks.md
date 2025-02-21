@@ -1066,7 +1066,7 @@ $HEX[042a0337c2a156616d6f732103]
 
 **Kerberos** protokolü, bir kullanıcının bir servise kimlik doğrulaması yaparak onu kullanmasına izin verir ve **Kerberos delegation** bu servisin, orijinal kullanıcı olarak başka bir servise kimlik doğrulaması yapmasını sağlar. İşte bu prensibi açıklayan küçük bir diyagram.
 
-![Pasted image 20250215211547.png](/img/user/Pasted%20image%2020250215211547.png)
+![Pasted image 20250215211547.png](/img/user/resimler/Pasted%20image%2020250215211547.png)
 
 Bu örnekte, bir kullanıcı **WEBSRV**'ye kimlik doğrulaması yaparak web sitesine erişir. Web sitesine kimlik doğrulaması yapıldıktan sonra, kullanıcı veritabanında depolanan bilgilere erişmesi gerekir, ancak veritabanındaki tüm bilgilere erişim izni verilmemelidir. **Service** hesabı, kullanıcının yalnızca erişim hakkı olduğu kaynaklara erişmesi için, kullanıcının haklarıyla veritabanıyla iletişim kurmalıdır. İşte burada **delegation** devreye girer. **Service** hesabı, burada **WEBSRV$**, veritabanına erişirken kullanıcı gibi davranacaktır. Buna **delegation** denir.
 
@@ -1077,11 +1077,11 @@ Bu örnekte, bir kullanıcı **WEBSRV**'ye kimlik doğrulaması yaparak web site
 
 **Unconstrained delegation**, bir **service**'in, burada **WEBSRV**, başka bir **service**'e erişirken bir kullanıcıyı taklit etmesine olanak tanır. Bu, çok geniş bir izin olan ve tehlikeli bir ayrıcalıktır, bu nedenle her kullanıcı buna izin veremez.
 
-![Pasted image 20250215212431.png](/img/user/Pasted%20image%2020250215212431.png)
+![Pasted image 20250215212431.png](/img/user/resimler/Pasted%20image%2020250215212431.png)
 
 Bir hesabın **unconstrained delegation** yetkisine sahip olabilmesi için, hesabın **Delegation** sekmesinde **Trust this computer for delegation to any service (Kerberos only)** seçeneği işaretlenmiş olmalıdır.
 
-![Pasted image 20250215212530.png](/img/user/Pasted%20image%2020250215212530.png)
+![Pasted image 20250215212530.png](/img/user/resimler/Pasted%20image%2020250215212530.png)
 
 Bu seçeneği diğer hesaplara atayabilmek için yalnızca bir **`administrator`** veya bu ayrıcalıklara açıkça sahip olan yetkili bir kullanıcı işlem yapabilir. Daha spesifik olarak, bu işlemi gerçekleştirebilmek için **`SeEnableDelegationPrivilege`** ayrıcalığına sahip olmak gereklidir. Bir **`service account`**, kendisini değiştiremez ve bu seçeneği ekleyemez. Bu noktayı, sonraki bölümler için unutmamak önemlidir.
 
@@ -1096,15 +1096,15 @@ Bu bayrak bir **service account** üzerinde ayarlandığında ve bir kullanıcı
 
 Bu örnekte, **WEBSRV** yalnızca **SQL/DBSRV service**'ine kimlik doğrulamasını iletebilir, ancak diğer **service**'lere iletemez.
 
-![Pasted image 20250215213301.png](/img/user/Pasted%20image%2020250215213301.png)
+![Pasted image 20250215213301.png](/img/user/resimler/Pasted%20image%2020250215213301.png)
 
 **Constrained delegation**, **unconstrained delegation** ile aynı yerde, **service account**'ın **Delegation** sekmesinde yapılandırılabilir. **"Trust this computer for delegation to specified services only"** seçeneği seçilmelidir. **Kerberos Only** ve **Use any authentication protocol** arasındaki seçim konusunu daha sonra açıklayacağız.
 
-![Pasted image 20250215213347.png](/img/user/Pasted%20image%2020250215213347.png)
+![Pasted image 20250215213347.png](/img/user/resimler/Pasted%20image%2020250215213347.png)
 
 Unconstrained delegation'da olduğu gibi, bu seçenek varsayılan olarak bir **service account** tarafından değiştirilemez. Bu seçenek etkinleştirildiğinde, **yetkilendirilen servislerin listesi**, delegasyondan sorumlu **service account**'un **`msDS-AllowedToDelegateTo`** özelliğinde saklanır.
 
-![Pasted image 20250215214213.png](/img/user/Pasted%20image%2020250215214213.png)
+![Pasted image 20250215214213.png](/img/user/resimler/Pasted%20image%2020250215214213.png)
 
 Unconstrained delegation'da kullanıcının **TGT**'sinin bir kopyası **service account**'a gönderilirken, **constrained delegation**'da bu durum geçerli değildir. Eğer **service account** (bu örnekte **WEBSRV**) bir kullanıcı adına bir kaynağa (**SQL/DBSRV**) kimlik doğrulaması yapmak isterse, **domain controller**'a özel bir **TGS request** göndermesi gerekir. Klasik bir **TGS request**'e kıyasla iki alan değiştirilir:
 
@@ -1120,7 +1120,7 @@ Unconstrained delegation'da kullanıcının **TGT**'sinin bir kopyası **service
 
 Bu örnekte, **`DBSRV$`** hesabının **trusted list**'inde yalnızca **`WEBSRV$`** hesabı bulunmaktadır. Dolayısıyla, **`WEBSRV$`**, bir kullanıcıyı **impersonate** ederek **`DBSRV`** tarafından sunulan bir **service**'e erişmeye çalışırsa, bu işlem yetkilendirilir. Öte yandan, diğer hesapların **`DBSRV`** tarafından sağlanan herhangi bir **service**'e kimlik doğrulamasını **delegate** etmelerine izin verilmez.
 
-![Pasted image 20250215214642.png](/img/user/Pasted%20image%2020250215214642.png)
+![Pasted image 20250215214642.png](/img/user/resimler/Pasted%20image%2020250215214642.png)
 
 Diğer iki **delegation** türünden farklı olarak, **resource**, kendi **trusted list**'ini değiştirme hakkına sahiptir. Bu nedenle, herhangi bir **service account**, kendi **trusted list**'ine bir veya daha fazla hesap ekleyerek, bu hesapların kendisine kimlik doğrulamasını **delegate** etmesine izin verebilir.
 
@@ -1136,7 +1136,7 @@ PS C:\Tools> Import-Module ActiveDirectory
 PS C:\Tools> Set-ADComputer DBSRV -PrincipalsAllowedToDelegateToAccount (Get-ADComputer WEBSRV) 
 ```
 
-![Pasted image 20250215214918.png](/img/user/Pasted%20image%2020250215214918.png)
+![Pasted image 20250215214918.png](/img/user/resimler/Pasted%20image%2020250215214918.png)
 
 Attribute, beklendiği gibi dizinde güncellenir.
 
@@ -1163,4 +1163,4 @@ Bu extension, kimlik doğrulama protokollerinin her zaman kullanıcı ile servic
 
 İşte bu özellik, sınırlı delegasyonda etkinleştirilebilir veya devre dışı bırakılabilir. Eğer **Use Kerberos only** seçeneği seçilirse, service hesabı protokol geçişi yapamaz, dolayısıyla **S4U2Self** extension'ını kullanamaz. Öte yandan, **Use any authentication protocol** seçeneği ayarlandığında, service hesabı **S4U2Self** extension'ını kullanabilir ve dolayısıyla rastgele bir kullanıcı için bir **TGS ticket** oluşturabilir.
 
-![Pasted image 20250215224041.png](/img/user/Pasted%20image%2020250215224041.png)
+![Pasted image 20250215224041.png](/img/user/resimler/Pasted%20image%2020250215224041.png)
