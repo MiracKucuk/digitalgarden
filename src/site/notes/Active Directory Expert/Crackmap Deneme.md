@@ -1,5 +1,5 @@
 ---
-{"dg-publish":true,"permalink":"/active-directory-expert/using-crack-map-exec/"}
+{"dg-publish":true,"permalink":"/active-directory-expert/crackmap-deneme/"}
 ---
 
 
@@ -4723,21 +4723,21 @@ LSASS prosesinin belleği, Windows parolalarını açık metin olarak veya NTLM 
 
 CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli modüller içerir. Bunlardan bazılarını görelim:
 
-17. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
+1. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
 
 
 ### Lsassy Module
 
 ![Pasted image 20241203113833.png](/img/user/resimler/Pasted%20image%2020241203113833.png)
 
-18. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
+1. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
 
 
 ### Procdump Module
 ![Pasted image 20241203114045.png](/img/user/resimler/Pasted%20image%2020241203114045.png)
 ![Pasted image 20241203114101.png](/img/user/resimler/Pasted%20image%2020241203114101.png)
 
-19. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
+1. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
 
 
 ### Handlekatz Module
@@ -4747,7 +4747,7 @@ CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli m
 ![Pasted image 20241203114156.png](/img/user/resimler/Pasted%20image%2020241203114156.png)
 
 
-20. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
+1. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
 
 
 ### Nanodump Module
@@ -5068,8 +5068,8 @@ Eğer ana parolaya sahip değilsek bir alternatif de Lee Christensen ( @tifkin_)
 
 Bunu kullanmak için beş (5) adıma ihtiyacımız var:
 
-21. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
-22. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
+1. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
+2. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
 
 ### KeePass Yapılandırma Dosyasına Trigger Ekleme
 ![Pasted image 20241203142642.png](/img/user/resimler/Pasted%20image%2020241203142642.png)
@@ -5268,13 +5268,13 @@ Daha sonra açmak için kod yazabiliriz
 
 ### Yeni Modülümüzü Oluşturun
 Modülümüzü oluşturalım. Yeni bir yönetici hesabı oluşturacak basit bir script oluşturacağız.
-23. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
-24. Aşağıdaki kod örneğini dosyaya kopyalayın:
+1. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
+2. Aşağıdaki kod örneğini dosyaya kopyalayın:
 
 ![Pasted image 20241203150546.png](/img/user/resimler/Pasted%20image%2020241203150546.png)
 ![Pasted image 20241203150551.png](/img/user/resimler/Pasted%20image%2020241203150551.png)
 
-25. Şimdi modülümüzü özelleştirelim.
+1. Şimdi modülümüzü özelleştirelim.
 
 Bazı değişkenleri tanımlamamız gerekiyor:
 * name, modül adını nasıl çağıracağımızı belirtir. Bu durumda, createadmin dosya adını kullanacağız.
@@ -5288,7 +5288,7 @@ Ayrıca, modül için değişkenleri tanımlamak için kullanılan options() yö
 ![Pasted image 20241203150803.png](/img/user/resimler/Pasted%20image%2020241203150803.png)
 ![Pasted image 20241203150814.png](/img/user/resimler/Pasted%20image%2020241203150814.png)
 
-26. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
+1. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
 
 Bu yürütme için, yöntemin connection.execute(command, True) komutunu kullanarak bir cmd.exe komutu çalıştıracağız. Komutumuz, yeni bir kullanıcı eklemek için net user username password /add /Y değeriyle ve kullanıcıyı administrators grubuna eklemek için net localgroup administrators username /add değeriyle command değişkenine kaydedilecektir.
 
@@ -5400,8 +5400,8 @@ Aşağıdaki bölümde, Kerberos kimlik doğrulamasını ve CrackMapExec'in bu k
 
 Yazma sırasında CrackMapEec, SMB, LDAP ve MSSQL protokolleri için Kerberos Kimlik Doğrulamasını desteklemektedir. Kerberos Kimlik Doğrulamasını kullanmanın iki (2) yolu vardır:
 
-27. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
-28. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
+1. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
+2. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
 
 Linux'ta Kerberos kimlik doğrulamasını kullanırken göz önünde bulundurulması gereken önemli bir unsur, saldırdığımız bilgisayarın domain ve hedef makinenin FQDN'sini çözümlemesi gerektiğidir. Dahili bir ağdaysak, bilgisayarımızı şirketin DNS'sine domain adı çözümlemeleri yapacak şekilde yapılandırabiliriz, ancak durum böyle değildir. DNS'i yapılandıramayız ve /etc/hosts dosyasına domain controller ve hedef makinemiz için FQDN'i manuel olarak eklememiz gerekecektir.
 
@@ -6533,21 +6533,21 @@ LSASS prosesinin belleği, Windows parolalarını açık metin olarak veya NTLM 
 
 CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli modüller içerir. Bunlardan bazılarını görelim:
 
-17. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
+1. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
 
 
 ### Lsassy Module
 
 ![Pasted image 20241203113833.png](/img/user/resimler/Pasted%20image%2020241203113833.png)
 
-18. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
+1. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
 
 
 ### Procdump Module
 ![Pasted image 20241203114045.png](/img/user/resimler/Pasted%20image%2020241203114045.png)
 ![Pasted image 20241203114101.png](/img/user/resimler/Pasted%20image%2020241203114101.png)
 
-19. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
+1. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
 
 
 ### Handlekatz Module
@@ -6557,7 +6557,7 @@ CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli m
 ![Pasted image 20241203114156.png](/img/user/resimler/Pasted%20image%2020241203114156.png)
 
 
-20. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
+1. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
 
 
 ### Nanodump Module
@@ -6878,8 +6878,8 @@ Eğer ana parolaya sahip değilsek bir alternatif de Lee Christensen ( @tifkin_)
 
 Bunu kullanmak için beş (5) adıma ihtiyacımız var:
 
-21. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
-22. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
+1. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
+2. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
 
 ### KeePass Yapılandırma Dosyasına Trigger Ekleme
 ![Pasted image 20241203142642.png](/img/user/resimler/Pasted%20image%2020241203142642.png)
@@ -7078,13 +7078,13 @@ Daha sonra açmak için kod yazabiliriz
 
 ### Yeni Modülümüzü Oluşturun
 Modülümüzü oluşturalım. Yeni bir yönetici hesabı oluşturacak basit bir script oluşturacağız.
-23. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
-24. Aşağıdaki kod örneğini dosyaya kopyalayın:
+1. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
+2. Aşağıdaki kod örneğini dosyaya kopyalayın:
 
 ![Pasted image 20241203150546.png](/img/user/resimler/Pasted%20image%2020241203150546.png)
 ![Pasted image 20241203150551.png](/img/user/resimler/Pasted%20image%2020241203150551.png)
 
-25. Şimdi modülümüzü özelleştirelim.
+1. Şimdi modülümüzü özelleştirelim.
 
 Bazı değişkenleri tanımlamamız gerekiyor:
 * name, modül adını nasıl çağıracağımızı belirtir. Bu durumda, createadmin dosya adını kullanacağız.
@@ -7098,7 +7098,7 @@ Ayrıca, modül için değişkenleri tanımlamak için kullanılan options() yö
 ![Pasted image 20241203150803.png](/img/user/resimler/Pasted%20image%2020241203150803.png)
 ![Pasted image 20241203150814.png](/img/user/resimler/Pasted%20image%2020241203150814.png)
 
-26. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
+1. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
 
 Bu yürütme için, yöntemin connection.execute(command, True) komutunu kullanarak bir cmd.exe komutu çalıştıracağız. Komutumuz, yeni bir kullanıcı eklemek için net user username password /add /Y değeriyle ve kullanıcıyı administrators grubuna eklemek için net localgroup administrators username /add değeriyle command değişkenine kaydedilecektir.
 
@@ -7210,8 +7210,8 @@ Aşağıdaki bölümde, Kerberos kimlik doğrulamasını ve CrackMapExec'in bu k
 
 Yazma sırasında CrackMapEec, SMB, LDAP ve MSSQL protokolleri için Kerberos Kimlik Doğrulamasını desteklemektedir. Kerberos Kimlik Doğrulamasını kullanmanın iki (2) yolu vardır:
 
-27. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
-28. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
+1. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
+2. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
 
 Linux'ta Kerberos kimlik doğrulamasını kullanırken göz önünde bulundurulması gereken önemli bir unsur, saldırdığımız bilgisayarın domain ve hedef makinenin FQDN'sini çözümlemesi gerektiğidir. Dahili bir ağdaysak, bilgisayarımızı şirketin DNS'sine domain adı çözümlemeleri yapacak şekilde yapılandırabiliriz, ancak durum böyle değildir. DNS'i yapılandıramayız ve /etc/hosts dosyasına domain controller ve hedef makinemiz için FQDN'i manuel olarak eklememiz gerekecektir.
 
@@ -8349,21 +8349,21 @@ LSASS prosesinin belleği, Windows parolalarını açık metin olarak veya NTLM 
 
 CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli modüller içerir. Bunlardan bazılarını görelim:
 
-17. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
+1. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
 
 
 ### Lsassy Module
 
 ![Pasted image 20241203113833.png](/img/user/resimler/Pasted%20image%2020241203113833.png)
 
-18. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
+1. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
 
 
 ### Procdump Module
 ![Pasted image 20241203114045.png](/img/user/resimler/Pasted%20image%2020241203114045.png)
 ![Pasted image 20241203114101.png](/img/user/resimler/Pasted%20image%2020241203114101.png)
 
-19. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
+1. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
 
 
 ### Handlekatz Module
@@ -8373,7 +8373,7 @@ CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli m
 ![Pasted image 20241203114156.png](/img/user/resimler/Pasted%20image%2020241203114156.png)
 
 
-20. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
+1. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
 
 
 ### Nanodump Module
@@ -8694,8 +8694,8 @@ Eğer ana parolaya sahip değilsek bir alternatif de Lee Christensen ( @tifkin_)
 
 Bunu kullanmak için beş (5) adıma ihtiyacımız var:
 
-21. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
-22. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
+1. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
+2. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
 
 ### KeePass Yapılandırma Dosyasına Trigger Ekleme
 ![Pasted image 20241203142642.png](/img/user/resimler/Pasted%20image%2020241203142642.png)
@@ -8894,13 +8894,13 @@ Daha sonra açmak için kod yazabiliriz
 
 ### Yeni Modülümüzü Oluşturun
 Modülümüzü oluşturalım. Yeni bir yönetici hesabı oluşturacak basit bir script oluşturacağız.
-23. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
-24. Aşağıdaki kod örneğini dosyaya kopyalayın:
+1. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
+2. Aşağıdaki kod örneğini dosyaya kopyalayın:
 
 ![Pasted image 20241203150546.png](/img/user/resimler/Pasted%20image%2020241203150546.png)
 ![Pasted image 20241203150551.png](/img/user/resimler/Pasted%20image%2020241203150551.png)
 
-25. Şimdi modülümüzü özelleştirelim.
+1. Şimdi modülümüzü özelleştirelim.
 
 Bazı değişkenleri tanımlamamız gerekiyor:
 * name, modül adını nasıl çağıracağımızı belirtir. Bu durumda, createadmin dosya adını kullanacağız.
@@ -8914,7 +8914,7 @@ Ayrıca, modül için değişkenleri tanımlamak için kullanılan options() yö
 ![Pasted image 20241203150803.png](/img/user/resimler/Pasted%20image%2020241203150803.png)
 ![Pasted image 20241203150814.png](/img/user/resimler/Pasted%20image%2020241203150814.png)
 
-26. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
+1. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
 
 Bu yürütme için, yöntemin connection.execute(command, True) komutunu kullanarak bir cmd.exe komutu çalıştıracağız. Komutumuz, yeni bir kullanıcı eklemek için net user username password /add /Y değeriyle ve kullanıcıyı administrators grubuna eklemek için net localgroup administrators username /add değeriyle command değişkenine kaydedilecektir.
 
@@ -9026,8 +9026,8 @@ Aşağıdaki bölümde, Kerberos kimlik doğrulamasını ve CrackMapExec'in bu k
 
 Yazma sırasında CrackMapEec, SMB, LDAP ve MSSQL protokolleri için Kerberos Kimlik Doğrulamasını desteklemektedir. Kerberos Kimlik Doğrulamasını kullanmanın iki (2) yolu vardır:
 
-27. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
-28. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
+1. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
+2. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
 
 Linux'ta Kerberos kimlik doğrulamasını kullanırken göz önünde bulundurulması gereken önemli bir unsur, saldırdığımız bilgisayarın domain ve hedef makinenin FQDN'sini çözümlemesi gerektiğidir. Dahili bir ağdaysak, bilgisayarımızı şirketin DNS'sine domain adı çözümlemeleri yapacak şekilde yapılandırabiliriz, ancak durum böyle değildir. DNS'i yapılandıramayız ve /etc/hosts dosyasına domain controller ve hedef makinemiz için FQDN'i manuel olarak eklememiz gerekecektir.
 
@@ -10148,21 +10148,21 @@ LSASS prosesinin belleği, Windows parolalarını açık metin olarak veya NTLM 
 
 CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli modüller içerir. Bunlardan bazılarını görelim:
 
-17. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
+1. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
 
 
 ### Lsassy Module
 
 ![Pasted image 20241203113833.png](/img/user/resimler/Pasted%20image%2020241203113833.png)
 
-18. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
+1. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
 
 
 ### Procdump Module
 ![Pasted image 20241203114045.png](/img/user/resimler/Pasted%20image%2020241203114045.png)
 ![Pasted image 20241203114101.png](/img/user/resimler/Pasted%20image%2020241203114101.png)
 
-19. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
+1. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
 
 
 ### Handlekatz Module
@@ -10172,7 +10172,7 @@ CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli m
 ![Pasted image 20241203114156.png](/img/user/resimler/Pasted%20image%2020241203114156.png)
 
 
-20. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
+1. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
 
 
 ### Nanodump Module
@@ -10493,8 +10493,8 @@ Eğer ana parolaya sahip değilsek bir alternatif de Lee Christensen ( @tifkin_)
 
 Bunu kullanmak için beş (5) adıma ihtiyacımız var:
 
-21. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
-22. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
+1. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
+2. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
 
 ### KeePass Yapılandırma Dosyasına Trigger Ekleme
 ![Pasted image 20241203142642.png](/img/user/resimler/Pasted%20image%2020241203142642.png)
@@ -10693,13 +10693,13 @@ Daha sonra açmak için kod yazabiliriz
 
 ### Yeni Modülümüzü Oluşturun
 Modülümüzü oluşturalım. Yeni bir yönetici hesabı oluşturacak basit bir script oluşturacağız.
-23. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
-24. Aşağıdaki kod örneğini dosyaya kopyalayın:
+1. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
+2. Aşağıdaki kod örneğini dosyaya kopyalayın:
 
 ![Pasted image 20241203150546.png](/img/user/resimler/Pasted%20image%2020241203150546.png)
 ![Pasted image 20241203150551.png](/img/user/resimler/Pasted%20image%2020241203150551.png)
 
-25. Şimdi modülümüzü özelleştirelim.
+1. Şimdi modülümüzü özelleştirelim.
 
 Bazı değişkenleri tanımlamamız gerekiyor:
 * name, modül adını nasıl çağıracağımızı belirtir. Bu durumda, createadmin dosya adını kullanacağız.
@@ -10713,7 +10713,7 @@ Ayrıca, modül için değişkenleri tanımlamak için kullanılan options() yö
 ![Pasted image 20241203150803.png](/img/user/resimler/Pasted%20image%2020241203150803.png)
 ![Pasted image 20241203150814.png](/img/user/resimler/Pasted%20image%2020241203150814.png)
 
-26. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
+1. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
 
 Bu yürütme için, yöntemin connection.execute(command, True) komutunu kullanarak bir cmd.exe komutu çalıştıracağız. Komutumuz, yeni bir kullanıcı eklemek için net user username password /add /Y değeriyle ve kullanıcıyı administrators grubuna eklemek için net localgroup administrators username /add değeriyle command değişkenine kaydedilecektir.
 
@@ -10825,8 +10825,8 @@ Aşağıdaki bölümde, Kerberos kimlik doğrulamasını ve CrackMapExec'in bu k
 
 Yazma sırasında CrackMapEec, SMB, LDAP ve MSSQL protokolleri için Kerberos Kimlik Doğrulamasını desteklemektedir. Kerberos Kimlik Doğrulamasını kullanmanın iki (2) yolu vardır:
 
-27. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
-28. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
+1. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
+2. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
 
 Linux'ta Kerberos kimlik doğrulamasını kullanırken göz önünde bulundurulması gereken önemli bir unsur, saldırdığımız bilgisayarın domain ve hedef makinenin FQDN'sini çözümlemesi gerektiğidir. Dahili bir ağdaysak, bilgisayarımızı şirketin DNS'sine domain adı çözümlemeleri yapacak şekilde yapılandırabiliriz, ancak durum böyle değildir. DNS'i yapılandıramayız ve /etc/hosts dosyasına domain controller ve hedef makinemiz için FQDN'i manuel olarak eklememiz gerekecektir.
 
@@ -11958,21 +11958,21 @@ LSASS prosesinin belleği, Windows parolalarını açık metin olarak veya NTLM 
 
 CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli modüller içerir. Bunlardan bazılarını görelim:
 
-17. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
+1. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
 
 
 ### Lsassy Module
 
 ![Pasted image 20241203113833.png](/img/user/resimler/Pasted%20image%2020241203113833.png)
 
-18. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
+1. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
 
 
 ### Procdump Module
 ![Pasted image 20241203114045.png](/img/user/resimler/Pasted%20image%2020241203114045.png)
 ![Pasted image 20241203114101.png](/img/user/resimler/Pasted%20image%2020241203114101.png)
 
-19. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
+1. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
 
 
 ### Handlekatz Module
@@ -11982,7 +11982,7 @@ CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli m
 ![Pasted image 20241203114156.png](/img/user/resimler/Pasted%20image%2020241203114156.png)
 
 
-20. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
+1. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
 
 
 ### Nanodump Module
@@ -12303,8 +12303,8 @@ Eğer ana parolaya sahip değilsek bir alternatif de Lee Christensen ( @tifkin_)
 
 Bunu kullanmak için beş (5) adıma ihtiyacımız var:
 
-21. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
-22. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
+1. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
+2. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
 
 ### KeePass Yapılandırma Dosyasına Trigger Ekleme
 ![Pasted image 20241203142642.png](/img/user/resimler/Pasted%20image%2020241203142642.png)
@@ -12503,13 +12503,13 @@ Daha sonra açmak için kod yazabiliriz
 
 ### Yeni Modülümüzü Oluşturun
 Modülümüzü oluşturalım. Yeni bir yönetici hesabı oluşturacak basit bir script oluşturacağız.
-23. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
-24. Aşağıdaki kod örneğini dosyaya kopyalayın:
+1. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
+2. Aşağıdaki kod örneğini dosyaya kopyalayın:
 
 ![Pasted image 20241203150546.png](/img/user/resimler/Pasted%20image%2020241203150546.png)
 ![Pasted image 20241203150551.png](/img/user/resimler/Pasted%20image%2020241203150551.png)
 
-25. Şimdi modülümüzü özelleştirelim.
+1. Şimdi modülümüzü özelleştirelim.
 
 Bazı değişkenleri tanımlamamız gerekiyor:
 * name, modül adını nasıl çağıracağımızı belirtir. Bu durumda, createadmin dosya adını kullanacağız.
@@ -12523,7 +12523,7 @@ Ayrıca, modül için değişkenleri tanımlamak için kullanılan options() yö
 ![Pasted image 20241203150803.png](/img/user/resimler/Pasted%20image%2020241203150803.png)
 ![Pasted image 20241203150814.png](/img/user/resimler/Pasted%20image%2020241203150814.png)
 
-26. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
+1. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
 
 Bu yürütme için, yöntemin connection.execute(command, True) komutunu kullanarak bir cmd.exe komutu çalıştıracağız. Komutumuz, yeni bir kullanıcı eklemek için net user username password /add /Y değeriyle ve kullanıcıyı administrators grubuna eklemek için net localgroup administrators username /add değeriyle command değişkenine kaydedilecektir.
 
@@ -12635,8 +12635,8 @@ Aşağıdaki bölümde, Kerberos kimlik doğrulamasını ve CrackMapExec'in bu k
 
 Yazma sırasında CrackMapEec, SMB, LDAP ve MSSQL protokolleri için Kerberos Kimlik Doğrulamasını desteklemektedir. Kerberos Kimlik Doğrulamasını kullanmanın iki (2) yolu vardır:
 
-27. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
-28. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
+1. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
+2. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
 
 Linux'ta Kerberos kimlik doğrulamasını kullanırken göz önünde bulundurulması gereken önemli bir unsur, saldırdığımız bilgisayarın domain ve hedef makinenin FQDN'sini çözümlemesi gerektiğidir. Dahili bir ağdaysak, bilgisayarımızı şirketin DNS'sine domain adı çözümlemeleri yapacak şekilde yapılandırabiliriz, ancak durum böyle değildir. DNS'i yapılandıramayız ve /etc/hosts dosyasına domain controller ve hedef makinemiz için FQDN'i manuel olarak eklememiz gerekecektir.
 
@@ -13774,21 +13774,21 @@ LSASS prosesinin belleği, Windows parolalarını açık metin olarak veya NTLM 
 
 CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli modüller içerir. Bunlardan bazılarını görelim:
 
-17. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
+1. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
 
 
 ### Lsassy Module
 
 ![Pasted image 20241203113833.png](/img/user/resimler/Pasted%20image%2020241203113833.png)
 
-18. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
+1. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
 
 
 ### Procdump Module
 ![Pasted image 20241203114045.png](/img/user/resimler/Pasted%20image%2020241203114045.png)
 ![Pasted image 20241203114101.png](/img/user/resimler/Pasted%20image%2020241203114101.png)
 
-19. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
+1. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
 
 
 ### Handlekatz Module
@@ -13798,7 +13798,7 @@ CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli m
 ![Pasted image 20241203114156.png](/img/user/resimler/Pasted%20image%2020241203114156.png)
 
 
-20. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
+1. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
 
 
 ### Nanodump Module
@@ -14119,8 +14119,8 @@ Eğer ana parolaya sahip değilsek bir alternatif de Lee Christensen ( @tifkin_)
 
 Bunu kullanmak için beş (5) adıma ihtiyacımız var:
 
-21. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
-22. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
+1. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
+2. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
 
 ### KeePass Yapılandırma Dosyasına Trigger Ekleme
 ![Pasted image 20241203142642.png](/img/user/resimler/Pasted%20image%2020241203142642.png)
@@ -14319,13 +14319,13 @@ Daha sonra açmak için kod yazabiliriz
 
 ### Yeni Modülümüzü Oluşturun
 Modülümüzü oluşturalım. Yeni bir yönetici hesabı oluşturacak basit bir script oluşturacağız.
-23. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
-24. Aşağıdaki kod örneğini dosyaya kopyalayın:
+1. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
+2. Aşağıdaki kod örneğini dosyaya kopyalayın:
 
 ![Pasted image 20241203150546.png](/img/user/resimler/Pasted%20image%2020241203150546.png)
 ![Pasted image 20241203150551.png](/img/user/resimler/Pasted%20image%2020241203150551.png)
 
-25. Şimdi modülümüzü özelleştirelim.
+1. Şimdi modülümüzü özelleştirelim.
 
 Bazı değişkenleri tanımlamamız gerekiyor:
 * name, modül adını nasıl çağıracağımızı belirtir. Bu durumda, createadmin dosya adını kullanacağız.
@@ -14339,7 +14339,7 @@ Ayrıca, modül için değişkenleri tanımlamak için kullanılan options() yö
 ![Pasted image 20241203150803.png](/img/user/resimler/Pasted%20image%2020241203150803.png)
 ![Pasted image 20241203150814.png](/img/user/resimler/Pasted%20image%2020241203150814.png)
 
-26. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
+1. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
 
 Bu yürütme için, yöntemin connection.execute(command, True) komutunu kullanarak bir cmd.exe komutu çalıştıracağız. Komutumuz, yeni bir kullanıcı eklemek için net user username password /add /Y değeriyle ve kullanıcıyı administrators grubuna eklemek için net localgroup administrators username /add değeriyle command değişkenine kaydedilecektir.
 
@@ -14451,8 +14451,8 @@ Aşağıdaki bölümde, Kerberos kimlik doğrulamasını ve CrackMapExec'in bu k
 
 Yazma sırasında CrackMapEec, SMB, LDAP ve MSSQL protokolleri için Kerberos Kimlik Doğrulamasını desteklemektedir. Kerberos Kimlik Doğrulamasını kullanmanın iki (2) yolu vardır:
 
-27. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
-28. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
+1. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
+2. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
 
 Linux'ta Kerberos kimlik doğrulamasını kullanırken göz önünde bulundurulması gereken önemli bir unsur, saldırdığımız bilgisayarın domain ve hedef makinenin FQDN'sini çözümlemesi gerektiğidir. Dahili bir ağdaysak, bilgisayarımızı şirketin DNS'sine domain adı çözümlemeleri yapacak şekilde yapılandırabiliriz, ancak durum böyle değildir. DNS'i yapılandıramayız ve /etc/hosts dosyasına domain controller ve hedef makinemiz için FQDN'i manuel olarak eklememiz gerekecektir.
 
@@ -15580,21 +15580,21 @@ LSASS prosesinin belleği, Windows parolalarını açık metin olarak veya NTLM 
 
 CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli modüller içerir. Bunlardan bazılarını görelim:
 
-17. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
+1. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
 
 
 ### Lsassy Module
 
 ![Pasted image 20241203113833.png](/img/user/resimler/Pasted%20image%2020241203113833.png)
 
-18. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
+1. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
 
 
 ### Procdump Module
 ![Pasted image 20241203114045.png](/img/user/resimler/Pasted%20image%2020241203114045.png)
 ![Pasted image 20241203114101.png](/img/user/resimler/Pasted%20image%2020241203114101.png)
 
-19. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
+1. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
 
 
 ### Handlekatz Module
@@ -15604,7 +15604,7 @@ CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli m
 ![Pasted image 20241203114156.png](/img/user/resimler/Pasted%20image%2020241203114156.png)
 
 
-20. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
+1. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
 
 
 ### Nanodump Module
@@ -15925,8 +15925,8 @@ Eğer ana parolaya sahip değilsek bir alternatif de Lee Christensen ( @tifkin_)
 
 Bunu kullanmak için beş (5) adıma ihtiyacımız var:
 
-21. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
-22. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
+1. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
+2. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
 
 ### KeePass Yapılandırma Dosyasına Trigger Ekleme
 ![Pasted image 20241203142642.png](/img/user/resimler/Pasted%20image%2020241203142642.png)
@@ -16125,13 +16125,13 @@ Daha sonra açmak için kod yazabiliriz
 
 ### Yeni Modülümüzü Oluşturun
 Modülümüzü oluşturalım. Yeni bir yönetici hesabı oluşturacak basit bir script oluşturacağız.
-23. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
-24. Aşağıdaki kod örneğini dosyaya kopyalayın:
+1. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
+2. Aşağıdaki kod örneğini dosyaya kopyalayın:
 
 ![Pasted image 20241203150546.png](/img/user/resimler/Pasted%20image%2020241203150546.png)
 ![Pasted image 20241203150551.png](/img/user/resimler/Pasted%20image%2020241203150551.png)
 
-25. Şimdi modülümüzü özelleştirelim.
+1. Şimdi modülümüzü özelleştirelim.
 
 Bazı değişkenleri tanımlamamız gerekiyor:
 * name, modül adını nasıl çağıracağımızı belirtir. Bu durumda, createadmin dosya adını kullanacağız.
@@ -16145,7 +16145,7 @@ Ayrıca, modül için değişkenleri tanımlamak için kullanılan options() yö
 ![Pasted image 20241203150803.png](/img/user/resimler/Pasted%20image%2020241203150803.png)
 ![Pasted image 20241203150814.png](/img/user/resimler/Pasted%20image%2020241203150814.png)
 
-26. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
+1. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
 
 Bu yürütme için, yöntemin connection.execute(command, True) komutunu kullanarak bir cmd.exe komutu çalıştıracağız. Komutumuz, yeni bir kullanıcı eklemek için net user username password /add /Y değeriyle ve kullanıcıyı administrators grubuna eklemek için net localgroup administrators username /add değeriyle command değişkenine kaydedilecektir.
 
@@ -16257,8 +16257,8 @@ Aşağıdaki bölümde, Kerberos kimlik doğrulamasını ve CrackMapExec'in bu k
 
 Yazma sırasında CrackMapEec, SMB, LDAP ve MSSQL protokolleri için Kerberos Kimlik Doğrulamasını desteklemektedir. Kerberos Kimlik Doğrulamasını kullanmanın iki (2) yolu vardır:
 
-27. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
-28. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
+1. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
+2. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
 
 Linux'ta Kerberos kimlik doğrulamasını kullanırken göz önünde bulundurulması gereken önemli bir unsur, saldırdığımız bilgisayarın domain ve hedef makinenin FQDN'sini çözümlemesi gerektiğidir. Dahili bir ağdaysak, bilgisayarımızı şirketin DNS'sine domain adı çözümlemeleri yapacak şekilde yapılandırabiliriz, ancak durum böyle değildir. DNS'i yapılandıramayız ve /etc/hosts dosyasına domain controller ve hedef makinemiz için FQDN'i manuel olarak eklememiz gerekecektir.
 
@@ -17390,21 +17390,21 @@ LSASS prosesinin belleği, Windows parolalarını açık metin olarak veya NTLM 
 
 CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli modüller içerir. Bunlardan bazılarını görelim:
 
-17. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
+1. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
 
 
 ### Lsassy Module
 
 ![Pasted image 20241203113833.png](/img/user/resimler/Pasted%20image%2020241203113833.png)
 
-18. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
+1. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
 
 
 ### Procdump Module
 ![Pasted image 20241203114045.png](/img/user/resimler/Pasted%20image%2020241203114045.png)
 ![Pasted image 20241203114101.png](/img/user/resimler/Pasted%20image%2020241203114101.png)
 
-19. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
+1. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
 
 
 ### Handlekatz Module
@@ -17414,7 +17414,7 @@ CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli m
 ![Pasted image 20241203114156.png](/img/user/resimler/Pasted%20image%2020241203114156.png)
 
 
-20. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
+1. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
 
 
 ### Nanodump Module
@@ -17735,8 +17735,8 @@ Eğer ana parolaya sahip değilsek bir alternatif de Lee Christensen ( @tifkin_)
 
 Bunu kullanmak için beş (5) adıma ihtiyacımız var:
 
-21. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
-22. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
+1. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
+2. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
 
 ### KeePass Yapılandırma Dosyasına Trigger Ekleme
 ![Pasted image 20241203142642.png](/img/user/resimler/Pasted%20image%2020241203142642.png)
@@ -17935,13 +17935,13 @@ Daha sonra açmak için kod yazabiliriz
 
 ### Yeni Modülümüzü Oluşturun
 Modülümüzü oluşturalım. Yeni bir yönetici hesabı oluşturacak basit bir script oluşturacağız.
-23. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
-24. Aşağıdaki kod örneğini dosyaya kopyalayın:
+1. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
+2. Aşağıdaki kod örneğini dosyaya kopyalayın:
 
 ![Pasted image 20241203150546.png](/img/user/resimler/Pasted%20image%2020241203150546.png)
 ![Pasted image 20241203150551.png](/img/user/resimler/Pasted%20image%2020241203150551.png)
 
-25. Şimdi modülümüzü özelleştirelim.
+1. Şimdi modülümüzü özelleştirelim.
 
 Bazı değişkenleri tanımlamamız gerekiyor:
 * name, modül adını nasıl çağıracağımızı belirtir. Bu durumda, createadmin dosya adını kullanacağız.
@@ -17955,7 +17955,7 @@ Ayrıca, modül için değişkenleri tanımlamak için kullanılan options() yö
 ![Pasted image 20241203150803.png](/img/user/resimler/Pasted%20image%2020241203150803.png)
 ![Pasted image 20241203150814.png](/img/user/resimler/Pasted%20image%2020241203150814.png)
 
-26. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
+1. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
 
 Bu yürütme için, yöntemin connection.execute(command, True) komutunu kullanarak bir cmd.exe komutu çalıştıracağız. Komutumuz, yeni bir kullanıcı eklemek için net user username password /add /Y değeriyle ve kullanıcıyı administrators grubuna eklemek için net localgroup administrators username /add değeriyle command değişkenine kaydedilecektir.
 
@@ -18067,8 +18067,8 @@ Aşağıdaki bölümde, Kerberos kimlik doğrulamasını ve CrackMapExec'in bu k
 
 Yazma sırasında CrackMapEec, SMB, LDAP ve MSSQL protokolleri için Kerberos Kimlik Doğrulamasını desteklemektedir. Kerberos Kimlik Doğrulamasını kullanmanın iki (2) yolu vardır:
 
-27. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
-28. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
+1. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
+2. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
 
 Linux'ta Kerberos kimlik doğrulamasını kullanırken göz önünde bulundurulması gereken önemli bir unsur, saldırdığımız bilgisayarın domain ve hedef makinenin FQDN'sini çözümlemesi gerektiğidir. Dahili bir ağdaysak, bilgisayarımızı şirketin DNS'sine domain adı çözümlemeleri yapacak şekilde yapılandırabiliriz, ancak durum böyle değildir. DNS'i yapılandıramayız ve /etc/hosts dosyasına domain controller ve hedef makinemiz için FQDN'i manuel olarak eklememiz gerekecektir.
 
@@ -19206,21 +19206,21 @@ LSASS prosesinin belleği, Windows parolalarını açık metin olarak veya NTLM 
 
 CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli modüller içerir. Bunlardan bazılarını görelim:
 
-17. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
+1. [Lsassy](https://github.com/login-securite/lsassy) Python aracı, bir dizi host üzerindeki kimlik bilgilerini remote olarak ayıklamak için kullanılır. Bu [blog](https://en.hackndo.com/remote-lsass-dump-passwords/) yazısı nasıl çalıştığını açıklamaktadır. Bu araç, bir LSASS dökümündeki gerekli baytları uzaktan okumak için Impacket projesini ve kimlik bilgilerini çıkarmak için pypykatz kullanır.
 
 
 ### Lsassy Module
 
 ![Pasted image 20241203113833.png](/img/user/resimler/Pasted%20image%2020241203113833.png)
 
-18. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
+1. Procdump, LSASS process dump oluşturmak için Sysinternals'tan Microsoft Procdump'ı ve kimlik bilgilerini çıkarmak için pypykatz'ı kullanır.
 
 
 ### Procdump Module
 ![Pasted image 20241203114045.png](/img/user/resimler/Pasted%20image%2020241203114045.png)
 ![Pasted image 20241203114101.png](/img/user/resimler/Pasted%20image%2020241203114101.png)
 
-19. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
+1. HandleKatz bu araç, LSASS'a klonlanmış handle'ların kullanımını göstererek aynı şekilde gizlenmiş bir bellek dökümü oluşturur
 
 
 ### Handlekatz Module
@@ -19230,7 +19230,7 @@ CrackMapExec, LSASS process belleğinin içeriğini dump etmek için çeşitli m
 ![Pasted image 20241203114156.png](/img/user/resimler/Pasted%20image%2020241203114156.png)
 
 
-20. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
+1. Nanodump, LSASS prosesinin bir minidump'ını oluşturan esnek bir araçtır. LSASS'a bir handle açılması tespit edilebildiğinden, Nanodump LSASS'a mevcut handle'ları arayabilir. Bir tane bulunursa, onu kopyalayacak ve minidump oluşturmak için kullanacaktır. Böyle bir handle bulmanın garanti olmadığını unutmayın.
 
 
 ### Nanodump Module
@@ -19551,8 +19551,8 @@ Eğer ana parolaya sahip değilsek bir alternatif de Lee Christensen ( @tifkin_)
 
 Bunu kullanmak için beş (5) adıma ihtiyacımız var:
 
-21. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
-22. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
+1. KeePass yapılandırma dosyasını bulun. Biz bunu keepass_discover modülü ile yaptık.
+2. ACTION=ADD seçeneğini ve KEEPASS_CONFIG_PATH öğesini kullanarak trigger'ı yapılandırma dosyasına ekleyin.
 
 ### KeePass Yapılandırma Dosyasına Trigger Ekleme
 ![Pasted image 20241203142642.png](/img/user/resimler/Pasted%20image%2020241203142642.png)
@@ -19751,13 +19751,13 @@ Daha sonra açmak için kod yazabiliriz
 
 ### Yeni Modülümüzü Oluşturun
 Modülümüzü oluşturalım. Yeni bir yönetici hesabı oluşturacak basit bir script oluşturacağız.
-23. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
-24. Aşağıdaki kod örneğini dosyaya kopyalayın:
+1. ./CrackMapExec/cme/modules klasörü altında createadmin.py adında bir dosya oluşturun.
+2. Aşağıdaki kod örneğini dosyaya kopyalayın:
 
 ![Pasted image 20241203150546.png](/img/user/resimler/Pasted%20image%2020241203150546.png)
 ![Pasted image 20241203150551.png](/img/user/resimler/Pasted%20image%2020241203150551.png)
 
-25. Şimdi modülümüzü özelleştirelim.
+1. Şimdi modülümüzü özelleştirelim.
 
 Bazı değişkenleri tanımlamamız gerekiyor:
 * name, modül adını nasıl çağıracağımızı belirtir. Bu durumda, createadmin dosya adını kullanacağız.
@@ -19771,7 +19771,7 @@ Ayrıca, modül için değişkenleri tanımlamak için kullanılan options() yö
 ![Pasted image 20241203150803.png](/img/user/resimler/Pasted%20image%2020241203150803.png)
 ![Pasted image 20241203150814.png](/img/user/resimler/Pasted%20image%2020241203150814.png)
 
-26. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
+1. Daha sonra, on_admin_login() metodunu kullanarak yürütme ile çalışacağız. Bu metot değişkenlerimizi almaktan ve hedeflere istediğimiz herhangi bir görevi yürütmekten sorumludur. Çıktı olarak context.log.info ve context.log.highlight metotlarını kullanacağız (farklı renklere sahipler).
 
 Bu yürütme için, yöntemin connection.execute(command, True) komutunu kullanarak bir cmd.exe komutu çalıştıracağız. Komutumuz, yeni bir kullanıcı eklemek için net user username password /add /Y değeriyle ve kullanıcıyı administrators grubuna eklemek için net localgroup administrators username /add değeriyle command değişkenine kaydedilecektir.
 
@@ -19883,8 +19883,8 @@ Aşağıdaki bölümde, Kerberos kimlik doğrulamasını ve CrackMapExec'in bu k
 
 Yazma sırasında CrackMapEec, SMB, LDAP ve MSSQL protokolleri için Kerberos Kimlik Doğrulamasını desteklemektedir. Kerberos Kimlik Doğrulamasını kullanmanın iki (2) yolu vardır:
 
-27. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
-28. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
+1. ccache dosyasını belirtmek için KRB5CCNAME env adını kullanma. Password Attacks academy modülündeki Pass the Ticket (PtT) from Linux bölümünde Linux'tan Kerberos kullanımı anlatılmaktadır
+2. CrackMapExec 5.4.0'dan başlayarak, artık Kerberos kimlik doğrulaması için bir biletle KRB5CCNAME ortam değişkenini kullanmamız gerekmiyor. Bir kullanıcı adı ve parola veya kullanıcı adı ve hash kullanabiliriz.
 
 Linux'ta Kerberos kimlik doğrulamasını kullanırken göz önünde bulundurulması gereken önemli bir unsur, saldırdığımız bilgisayarın domain ve hedef makinenin FQDN'sini çözümlemesi gerektiğidir. Dahili bir ağdaysak, bilgisayarımızı şirketin DNS'sine domain adı çözümlemeleri yapacak şekilde yapılandırabiliriz, ancak durum böyle değildir. DNS'i yapılandıramayız ve /etc/hosts dosyasına domain controller ve hedef makinemiz için FQDN'i manuel olarak eklememiz gerekecektir.
 
