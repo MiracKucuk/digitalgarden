@@ -157,18 +157,6 @@ poetry run crackmapexec
 poetry run crackmapexec
 usage: crackmapexec [-h] [-t THREADS] [--timeout TIMEOUT] [--jitter
 INTERVAL] [--darrell] [--verbose] {ftp,ssh,winrm,mssql,rdp,ldap,smb} ...
- ______ .______ ___ ______ __ ___ .___ ___.
-___ .______ _______ ___ ___ _______ ______
- / || _ \ / \ / || |/ / | \/ | /
-\ | _ \ | ____|\ \ / / | ____| / |
- | ,----'| |_) | / ^ \ | ,----'| ' / | \ / | /
-^ \ | |_) | | |__ \ V / | |__ | ,----'
- | | | / / /_\ \ | | | < | |\/| | /
-/_\ \ | ___/ | __| > < | __| | |
- | `----.| |\ \----. / _____ \ | `----.| . \ | | | | /
-_____ \ | | | |____ / . \ | |____ | `----.
- \______|| _| `._____|/__/ \__\ \______||__|\__\ |__| |__| /__/
-\__\ | _| |_______|/__/ \__\ |_______| \______|
  A swiss army knife for
 pentesting networks
  Forged by @byt3bl33d3r and @mpgn_x64
@@ -258,18 +246,6 @@ root@d46e1e7925dc:/usr/src/crackmapexec/cme# crackmapexec
 [*] Generating SSL certificate
 usage: crackmapexec [-h] [-t THREADS] [--timeout TIMEOUT] [--jitter
 INTERVAL] [--darrell] [--verbose] {ftp,ssh,winrm,mssql,rdp,LDAP,smb} ...
- ______ .______ ___ ______ __ ___ .___ ___.
-___ .______ _______ ___ ___ _______ ______
- / || _ \ / \ / || |/ / | \/ | /
-\ | _ \ | ____|\ \ / / | ____| / |
- | ,----'| |_) | / ^ \ | ,----'| ' / | \ / | /
-^ \ | |_) | | |__ \ V / | |__ | ,----'
- | | | / / /_\ \ | | | < | |\/| | /
-/_\ \ | ___/ | __| > < | __| | |
- | `----.| |\ \----. / _____ \ | `----.| . \ | | | | /
-_____ \ | | | |____ / . \ | |____ | `----.
- \______|| _| `._____|/__/ \__\ \______||__|\__\ |__| |__| /__/
-\__\ | _| |_______|/__/ \__\ |_______| \______|
  A swiss army knife for
 pentesting networks
  Forged by @byt3bl33d3r and @mpgn_x64
@@ -370,18 +346,6 @@ crackmapexec --help
 
 usage: crackmapexec [-h] [-t THREADS] [--timeout TIMEOUT] [--jitter
 INTERVAL] [--darrell] [--verbose] {ftp,ssh,winrm,mssql,rdp,ldap,smb} ...
- ______ .______ ___ ______ __ ___ .___ ___.
-___ .______ _______ ___ ___ _______ ______
- / || _ \ / \ / || |/ / | \/ | /
-\ | _ \ | ____|\ \ / / | ____| / |
- | ,----'| |_) | / ^ \ | ,----'| ' / | \ / | /
-^ \ | |_) | | |__ \ V / | |__ | ,----'
- | | | / / /_\ \ | | | < | |\/| | /
-/_\ \ | ___/ | __| > < | __| | |
- | `----.| |\ \----. / _____ \ | `----.| . \ | | | | /
-_____ \ | | | |____ / . \ | |____ | `----.
- \______|| _| `._____|/__/ \__\ \______||__|\__\ |__| |__| /__/
-\__\ | _| |_______|/__/ \__\ |_______| \______|
  A swiss army knife for
 pentesting networks
  Forged by @byt3bl33d3r and @mpgn_x64
@@ -1888,7 +1852,6 @@ GROUPMEM... dc01.inlanefreight.htb 389 DC01 Domain Users
 
 ---
 
-
 ### MSSQL Enumeration and Attacks
 
 Bir MSSQL sunucusu bulmak çok ilginçtir çünkü veritabanları genellikle saldırı operasyonlarımızı ilerletmek ve daha fazla erişim elde etmek için kullanabileceğimiz bilgiler içerir. Değerlendirmemizin amacı olan hassas verilere de erişim elde edebiliriz. Ayrıca, [xp_cmdshell](https://learn.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/xp-cmdshell-transact-sql?view=sql-server-ver16) özelliğini kullanarak bir MSSQL veritabanı üzerinden işletim sistemi komutlarını çalıştırabiliriz.
@@ -2683,7 +2646,6 @@ Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlar
 
 
 ---
-
 
 ### Proxychains with CME
 
@@ -7751,7 +7713,6 @@ Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlar
 
 ---
 
-
 ### Proxychains with CME
 
 ### Scenario
@@ -9577,7 +9538,6 @@ Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlar
 
 ---
 
-
 ### Proxychains with CME
 
 ### Scenario
@@ -11385,7 +11345,6 @@ Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlar
 
 
 ---
-
 
 ### Proxychains with CME
 
@@ -13206,7 +13165,6 @@ Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlar
 
 ---
 
-
 ### Proxychains with CME
 
 ### Scenario
@@ -15032,7 +14990,6 @@ Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlar
 
 ---
 
-
 ### Proxychains with CME
 
 ### Scenario
@@ -16847,7 +16804,6 @@ Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlar
 
 
 ---
-
 
 ### Proxychains with CME
 
@@ -18668,7 +18624,6 @@ Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlar
 
 ---
 
-
 ### Proxychains with CME
 
 ### Scenario
@@ -20493,7 +20448,6 @@ Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlar
 
 
 ---
-
 
 ### Proxychains with CME
 
@@ -22796,7 +22750,6 @@ Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlar
 
 ---
 
-
 ### Proxychains with CME
 
 ### Scenario
@@ -24622,7 +24575,6 @@ Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlar
 
 ---
 
-
 ### Proxychains with CME
 
 ### Scenario
@@ -26430,7 +26382,6 @@ Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlar
 
 
 ---
-
 
 ### Proxychains with CME
 
@@ -28251,7 +28202,6 @@ Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlar
 
 ---
 
-
 ### Proxychains with CME
 
 ### Scenario
@@ -30077,7 +30027,6 @@ Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlar
 
 ---
 
-
 ### Proxychains with CME
 
 ### Scenario
@@ -31892,7 +31841,6 @@ Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlar
 
 
 ---
-
 
 ### Proxychains with CME
 
@@ -33713,7 +33661,6 @@ Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlar
 
 ---
 
-
 ### Proxychains with CME
 
 ### Scenario
@@ -35538,7 +35485,6 @@ Bir sonraki bölümde CrackMapExec'in bir `proxy` aracılığıyla diğer ağlar
 
 
 ---
-
 
 ### Proxychains with CME
 
