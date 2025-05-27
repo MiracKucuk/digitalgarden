@@ -95,21 +95,21 @@ HTTPS, iletişimi şifreleyerek üçüncü tarafların verilere erişimini engel
 
 ![Pasted image 20241224202618.png](/img/user/resimler/Pasted%20image%2020241224202618.png)
 
-HTTPS uygulayan web siteleri, URL'lerindeki https:// (örneğin https://www.google.com) ve web tarayıcısının adres çubuğunda URL'nin solundaki kilit simgesiyle tanımlanabilir:
+HTTPS uygulayan web siteleri, URL'lerindeki `https://` (örneğin `https://www.google.com`) ve web tarayıcısının adres çubuğunda URL'nin solundaki kilit simgesiyle tanımlanabilir:
 
 ![Pasted image 20241224202642.png](/img/user/resimler/Pasted%20image%2020241224202642.png)
 
-Not: HTTPS protokolü aracılığıyla aktarılan veriler şifrelenmiş olsa da, istek ==clear-text== bir DNS sunucusuyla iletişime geçerse ziyaret edilen URL'yi yine de açığa çıkarabilir. Bu nedenle, şifreli DNS sunucularının (örn. 8.8.8.8 veya 1.1.1.1) kullanılması veya tüm trafiğin düzgün bir şekilde şifrelendiğinden emin olmak için bir VPN hizmetinden yararlanılması önerilir.
+Not: HTTPS protokolü aracılığıyla aktarılan veriler şifrelenmiş olsa da, istek ==clear-text== bir DNS sunucusuyla iletişime geçerse ziyaret edilen URL'yi yine de açığa çıkarabilir. Bu nedenle, şifreli DNS sunucularının (örn. `8.8.8.8` veya `1.1.1.1`) kullanılması veya tüm trafiğin düzgün bir şekilde şifrelendiğinden emin olmak için bir VPN servislerinden yararlanılması önerilir.
 
 ## HTTPS Flow
 
 ![Pasted image 20241224202749.png](/img/user/resimler/Pasted%20image%2020241224202749.png)
 
-Eğer HTTPS yerine bir web sitesine **http://** ile erişmeye çalışırsak ve site HTTPS zorunluluğu uygularsa, tarayıcı önce domain'i çözümler ve hedef web sitesini barındıran web sunucusuna yönlendirme yapar. İlk olarak, şifrelenmemiş HTTP protokolü üzerinden port 80'e bir istek gönderilir. Sunucu bunu algılar ve client'i, ==301 Moved Permanently== yanıt kodu ile güvenli ==HTTPS portu 443=='e yönlendirir. 
+Eğer HTTPS yerine bir web sitesine **`http://`** ile erişmeye çalışırsak ve site HTTPS zorunluluğu uygularsa, tarayıcı önce domain'i çözümler ve hedef web sitesini barındıran web sunucusuna yönlendirme yapar. İlk olarak, şifrelenmemiş HTTP protokolü üzerinden port `80`'e bir request gönderilir. Sunucu bunu algılar ve client'i, ==`301` `Moved Permanently`== response kodu ile güvenli ==HTTPS portu `443`=='e yönlendirir. 
 
-Sonrasında, client (web tarayıcısı) kendisi hakkında bilgi veren bir "==client hello==" paketi gönderir. Buna karşılık, sunucu bir "==server hello==" ile yanıt verir ve SSL sertifikalarını değiştirmek için bir [anahtar değişimi (key exchange)](https://en.wikipedia.org/wiki/Key_exchange) başlatır. Client bu anahtarı/sertifikayı doğrular ve kendi sertifikasını gönderir. Ardından, şifrelenmiş bir [handshake](https://www.cloudflare.com/learning/ssl/what-happens-in-a-tls-handshake) gerçekleştirilir ve şifreleme ile veri aktarımının düzgün çalışıp çalışmadığı doğrulanır.
+Sonrasında, client (web tarayıcısı) kendisi hakkında bilgi veren bir "==`client hello`==" paketi gönderir. Buna karşılık, sunucu bir "==`server hello`==" ile yanıt verir ve SSL sertifikalarını değiştirmek için bir [anahtar değişimi (key exchange)](https://en.wikipedia.org/wiki/Key_exchange) başlatır. Client bu anahtarı/sertifikayı doğrular ve kendi sertifikasını gönderir. Ardından, şifrelenmiş bir [handshake](https://www.cloudflare.com/learning/ssl/what-happens-in-a-tls-handshake) gerçekleştirilir ve şifreleme ile veri aktarımının düzgün çalışıp çalışmadığı doğrulanır.
 
-**Not:** Belirli durumlarda, bir saldırgan **HTTP Downgrade** saldırısı gerçekleştirebilir. Bu saldırı, HTTPS iletişimini HTTP'ye indirger ve veri açık metin olarak aktarılır. Bu, kullanıcı farkında olmadan tüm trafiği saldırganın host'u üzerinden yönlendirmek için bir **Man-In-The-Middle (MITM)** proxy kurulumu ile yapılır. Ancak, modern tarayıcılar, sunucular ve web uygulamaları bu tür saldırılara karşı koruma sağlamaktadır.
+**Not:** Belirli durumlarda, bir saldırgan **`HTTP Downgrade`** saldırısı gerçekleştirebilir. Bu saldırı, HTTPS iletişimini HTTP'ye indirger ve veri clear text olarak aktarılır. Bu, kullanıcı farkında olmadan tüm trafiği saldırganın host'u üzerinden yönlendirmek için bir **Man-In-The-Middle (MITM)** proxy kurulumu ile yapılır. Ancak, modern tarayıcılar, sunucular ve web uygulamaları bu tür saldırılara karşı koruma sağlamaktadır.
 
 
 ## cURL for HTTPS
@@ -126,7 +126,7 @@ More details here: https://curl.haxx.se/docs/sslcerts.html
 
 Modern web tarayıcıları da aynı şeyi yaparak kullanıcıyı geçersiz SSL sertifikasına sahip bir web sitesini ziyaret etmemesi konusunda uyarır.
 
-Yerel bir web uygulamasını test ederken veya uygulama amacıyla barındırılan bir web uygulamasında böyle bir sorunla karşılaşabiliriz, çünkü bu tür web uygulamaları henüz geçerli bir SSL sertifikası uygulamamış olabilir. cURL ile sertifika kontrolünü atlamak için -k bayrağını kullanabiliriz:
+Yerel bir web uygulamasını test ederken veya uygulama amacıyla barındırılan bir web uygulamasında böyle bir sorunla karşılaşabiliriz, çünkü bu tür web uygulamaları henüz geçerli bir SSL sertifikası uygulamamış olabilir. cURL ile sertifika kontrolünü atlamak için `-k` bayrağını kullanabiliriz:
 
 ```shell-session
 M1R4CKCK@htb[/htb]$ curl -k https://inlanefreight.com
@@ -150,13 +150,13 @@ Herhangi bir HTTP isteğinin ilk satırı 'boşluklarla ayrılmış' üç ana al
 
 | **Alan**    | **Örnek**           | **Açıklama**                                                                                                    |
 | ----------- | ------------------- | --------------------------------------------------------------------------------------------------------------- |
-| **Method**  | `GET`               | HTTP yöntemi veya fiili, gerçekleştirilecek işlem türünü belirtir.                                              |
-| **Path**    | `/users/login.html` | Erişilen kaynağın yolunu ifade eder. Bu alan, bir sorgu stringiyle de sonlandırılabilir (ör. `?username=user`). |
-| **Version** | `HTTP/1.1`          | Üçüncü ve son alan, kullanılan HTTP sürümünü belirtir.                                                          |
+| **Method**  | `GET`               | HTTP method'u veya verb'ü, gerçekleştirilecek işlem türünü belirtir.                                            |
+| **Path**    | `/users/login.html` | Erişilen kaynağın yolunu ifade eder. Bu alan, bir query stringiyle de sonlandırılabilir (ör. `?username=user`). |
+| **Version** | `HTTP/1.1`          | Üçüncü ve son alan, kullanılan HTTP versiyonunu belirtir.                                                       |
 
-Sonraki satır kümesi ==Host==, ==User-Agent==, ==Cookie== ve diğer birçok olası header gibi HTTP header değer çiftlerini içerir. Bu başlıklar bir isteğin çeşitli niteliklerini belirtmek için kullanılır. Headerlar, sunucunun isteği doğrulaması için gerekli olan yeni bir satırla sonlandırılır. Son olarak, bir request, request body ve data ile bitebilir.
+Sonraki satır kümesi ==`Host`==, ==`User-Agent`==, ==`Cookie`== ve diğer birçok olası header gibi HTTP header değer çiftlerini içerir. Bu header'lar bir request'in çeşitli attribute'lerini belirtmek için kullanılır. Headerlar, sunucunun isteği doğrulaması için gerekli olan yeni bir satırla sonlandırılır. Son olarak, bir request, request body ve data ile bitebilir.
 
-Not: HTTP sürüm 1.X istekleri açık metin olarak gönderir ve farklı alanları ve farklı istekleri ayırmak için yeni satır karakteri kullanır. HTTP sürüm 2.X ise istekleri sözlük biçiminde binary data olarak gönderir.
+Not: HTTP sürüm `1.X` request'leri açık metin olarak gönderir ve farklı alanları ve farklı istekleri ayırmak için yeni satır karakteri kullanır. HTTP sürüm `2.X` ise istekleri sözlük biçiminde `binary` data olarak gönderir.
 
 ```
 GET /index.html HTTP/1.1
@@ -174,9 +174,9 @@ Accept: text/html
 
 ![Pasted image 20241224205735.png](/img/user/resimler/Pasted%20image%2020241224205735.png)
 
-Bir HTTP yanıtının ilk satırı boşluklarla ayrılmış iki alan içerir. Bunlardan ilki ==HTTP sürümü== (örn. HTTP/1.1), ikincisi ise ==HTTP response kodudur== (örn. 200 OK).
+Bir HTTP response'unun ilk satırı boşluklarla ayrılmış iki alan içerir. Bunlardan ilki ==HTTP sürümü== (örn. `HTTP/1.1`), ikincisi ise ==HTTP response kodudur== (örn. `200 OK`).
 
-Response kodları, daha sonraki bir bölümde tartışılacağı gibi, isteğin durumunu belirlemek için kullanılır. İlk satırdan sonra yanıt, HTTP isteğine benzer şekilde başlıklarını listeler. Hem request hem de response başlıkları bir sonraki bölümde ele alınacaktır.
+Response kodları, daha sonraki bir bölümde tartışılacağı gibi, isteğin durumunu belirlemek için kullanılır. İlk satırdan sonra yanıt, HTTP isteğine benzer şekilde başlıklarını listeler. Hem request hem de response header'ları bir sonraki bölümde ele alınacaktır.
 
 Son olarak, response, headerlarından sonra yeni bir satırla ayrılan bir response body ile bitebilir. Response body genellikle HTML kodu olarak tanımlanır. Ancak, JSON gibi diğer kod türleri, resimler, stil sayfaları veya komut dosyaları gibi web sitesi kaynakları veya hatta web sunucusunda barındırılan PDF belgesi gibi bir belge ile de yanıt verebilir.
 
@@ -211,37 +211,39 @@ M1R4CKCK@htb[/htb]$ curl inlanefreight.com -v
 ...SNIP...
 ```
 
-Request basitçe Host, User-Agent ve Accept başlıklarıyla birlikte GET / HTTP/1.1 gönderdi. Buna karşılık, HTTP yanıtı HTTP/1.1 401 Unauthorized'ı içeriyordu
+Request basitçe `Host`, `User-Agent` ve `Accept` başlıklarıyla birlikte `GET / HTTP/1.1` gönderdi. Buna karşılık, HTTP yanıtı `HTTP/1.1 401` `Unauthorized`'ı içeriyordu
 
-Request olduğu gibi, Response da Date, Content-Length ve Content-Type dahil olmak üzere sunucu tarafından gönderilen birkaç header içeriyordu.
+Request olduğu gibi, Response da `Date`, `Content-Length` ve `Content-Type` dahil olmak üzere server tarafından gönderilen birkaç header içeriyordu.
 
-Not : -vvv bayrağı daha da ayrıntılı bir çıktı gösterir.
-
+Not : `-vvv` bayrağı daha da ayrıntılı bir çıktı gösterir.
 
 ## Browser DevTools
 
-Modern tarayıcılardaki geliştirici araçları (**DevTools**), web değerlendirmelerinde kritik bir araçtır. [CTRL+SHIFT+I] veya [F12] ile açılabilen bu araçlar, özellikle **Network** sekmesiyle web isteklerini izlemeyi ve analiz etmeyi sağlar. Sayfayı yenileyerek tüm gönderilen istekleri görüntüleyebilirsiniz.
+Modern tarayıcılardaki geliştirici araçları (**`DevTools`**), web değerlendirmelerinde kritik bir araçtır. `[CTRL+SHIFT+I]` veya `[F12]` ile açılabilen bu araçlar, özellikle **`Network`** sekmesiyle web isteklerini izlemeyi ve analiz etmeyi sağlar. Sayfayı yenileyerek tüm gönderilen istekleri görüntüleyebilirsiniz.
 
 ![Pasted image 20241224211847.png](/img/user/resimler/Pasted%20image%2020241224211847.png)
 
-Gördüğümüz gibi, devtools bize bir bakışta response durumunu (yani yanıt kodu), kullanılan istek yöntemini (GET), istenen kaynağı (yani URL / domain) ve istenen yolu gösterir. Ayrıca, web sitesinin çok fazla istek yüklemesi durumunda, belirli bir isteği aramak için Filtre URL'lerini kullanabiliriz.
+Gördüğümüz gibi, `devtools` bize bir bakışta response durumunu (yani response kodu), kullanılan request yöntemini (GET), istenen kaynağı (yani URL `/` domain) ve istenen yolu gösterir. Ayrıca, web sitesinin çok fazla istek yüklemesi durumunda, belirli bir isteği aramak için Filtre URL'lerini kullanabiliriz.
+
+---
+
+Soru : Request ele geçirilirken kullanılan HTTP methodu nedir? (büyük/küçük harfe duyarlı)
+
+Cevap : `GET`
 
 
-Soru : İstek ele geçirilirken kullanılan HTTP yöntemi nedir? (büyük/küçük harfe duyarlı)
+Soru :  Yukarıdaki sunucuya bir GET isteği gönderin ve sunucuda çalışan Apache sürümünü bulmak için response header'larını okuyun, ardından bunu cevap olarak gönderin. (cevap formatı: `X.Y.ZZ`)
 
-Cevap : GET
-
-
-Soru :  Yukarıdaki sunucuya bir GET isteği gönderin ve sunucuda çalışan Apache sürümünü bulmak için response header'larını okuyun, ardından bunu cevap olarak gönderin. (cevap formatı: X.Y.ZZ)
-
-Cevap : 2.4.41
+Cevap : `2.4.41`
 
 ![Pasted image 20241224212425.png](/img/user/resimler/Pasted%20image%2020241224212425.png)
 
 
+----
+
 # HTTP Headers
 
-Headerlar, header adından sonra bir iki nokta üst üste (:) ile ayrılmış bir veya birden fazla değere sahip olabilir. Başlıklar şu kategorilere ayrılabilir:
+Headerlar, header adından sonra bir iki nokta üst üste (`:`) ile ayrılmış bir veya birden fazla değere sahip olabilir. Headerlar şu kategorilere ayrılabilir:
 
 - **General Headers**
 - **Entity Headers**
@@ -254,46 +256,50 @@ Headerlar, header adından sonra bir iki nokta üst üste (:) ile ayrılmış bi
 
 [General headers](https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html), hem HTTP requestlerde hem de response'larda kullanılır. Mesajın içeriğinden ziyade mesajın kendisini tanımlamak için kullanılırlar.
 
-| **Header**     | **Örnek**                             | **Açıklama**                                                                                                                                                                                                                                                                                                                         |
-| -------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Date**       | `Date: Wed, 16 Feb 2022 10:38:44 GMT` | Mesajın oluşturulduğu tarih ve saati belirtir. Zamanın standart UTC saat dilimine dönüştürülmesi tercih edilir.                                                                                                                                                                                                                      |
-| **Connection** | `Connection: close`                   | İstek tamamlandıktan sonra mevcut ağ bağlantısının açık kalıp kalmayacağını belirtir. Bu header için yaygın iki değer `close` ve `keep-alive`'dır. `Close` değeri client veya sunucudan geldiğinde bağlantının sonlandırılmak istendiğini ifade ederken, `keep-alive` bağlantının açık kalmasını ve daha fazla veri almasını sağlar. |
+| **Header**     | **Örnek**                             | **Açıklama**                                                                                                                                                                                                                                                                                                                           |
+| -------------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Date**       | `Date: Wed, 16 Feb 2022 10:38:44 GMT` | Mesajın oluşturulduğu tarih ve saati belirtir. Zamanın standart UTC saat dilimine dönüştürülmesi tercih edilir.                                                                                                                                                                                                                        |
+| **Connection** | `Connection: close`                   | Request tamamlandıktan sonra mevcut ağ bağlantısının açık kalıp kalmayacağını belirtir. Bu header için yaygın iki değer `close` ve `keep-alive`'dır. `Close` değeri client veya sunucudan geldiğinde bağlantının sonlandırılmak istendiğini ifade ederken, `keep-alive` bağlantının açık kalmasını ve daha fazla veri almasını sağlar. |
 
 
 ## Entity Headers
-General headerlara benzer şekilde, Entity Headers da hem request'de hem de responselarda ortak olabilir. Bu headerlar, bir mesaj tarafından iletilen içeriği (entity) tanımlamak için kullanılır. Genellikle yanıtlarda ve POST veya PUT isteklerinde bulunurlar.
+
+General headerlara benzer şekilde, Entity Headers da hem request'de hem de responselarda ortak olabilir. Bu headerlar, bir mesaj tarafından iletilen içeriği (entity) tanımlamak için kullanılır. Genellikle yanıtlarda ve `POST` veya `PUT` isteklerinde bulunurlar.
 
 | **Header**           | **Örnek**                     | **Açıklama**                                                                                                                                                                                                            |
 | -------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Content-Type**     | `Content-Type: text/html`     | İletilen kaynağın türünü tanımlar. Değer, tarayıcılar tarafından otomatik olarak client tarafında eklenir ve server response'unda döndürülür. `charset` alanı, kullanılan kodlama standardını belirtir (örneğin UTF-8). |
-| **Media-Type**       | `Media-Type: application/pdf` | Media-Type, Content-Type ile benzerdir ve iletilen veriyi tanımlar. Sunucunun girdiyi nasıl yorumlayacağına karar verirken bu başlık önemli bir rol oynar. `charset` alanı bu headerla da kullanılabilir.               |
+| **Media-Type**       | `Media-Type: application/pdf` | `Media-Type`, `Content-Type` ile benzerdir ve iletilen veriyi tanımlar. Sunucunun girdiyi nasıl yorumlayacağına karar verirken bu header önemli bir rol oynar. `charset` alanı bu headerla da kullanılabilir.           |
 | **Boundary**         | `boundary="b4e4fbd93540"`     | Aynı mesajda birden fazla içerik olduğunda, içerikleri ayıran pointer olarak kullanılır. Örneğin, form verilerinde, bu boundary `--b4e4fbd93540` olarak kullanılır ve formun farklı bölümlerini ayırır.                 |
 | **Content-Length**   | `Content-Length: 385`         | Geçirilen entity'nin boyutunu belirtir. Sunucu bu headerı, mesaj body'sinden veri okumak için kullanır ve tarayıcılar ve cURL gibi araçlar tarafından otomatik olarak oluşturulur.                                      |
-| **Content-Encoding** | `Content-Encoding: gzip`      | Veriler, iletilmeden önce birden fazla dönüşümden geçebilir. Örneğin, büyük veri miktarları mesaj boyutunu küçültmek için sıkıştırılabilir. Kullanılan kodlama türü, Content-Encoding başlığı ile belirtilir.           |
+| **Content-Encoding** | `Content-Encoding: gzip`      | Veriler, iletilmeden önce birden fazla dönüşümden geçebilir. Örneğin, büyük veri miktarları mesaj boyutunu küçültmek için sıkıştırılabilir. Kullanılan kodlama türü, `Content-Encoding` header'ı ile belirtilir.        |
 
 ## **Request Headers**  
-Client, HTTP işleminde requesrt headerlarını gönderir. Bu başlıklar, HTTP request'inde kullanılır ve mesajın içeriğiyle ilgili değildir. Aşağıdaki başlıklar, HTTP requestlerinde yaygın olarak görülür.
+
+Client, HTTP işleminde request headerlarını gönderir. Bu headerlar, HTTP request'inde kullanılır ve mesajın içeriğiyle ilgili değildir. Aşağıdaki başlıklar, HTTP requestlerinde yaygın olarak görülür.
 
 | **Header**        | **Örnek**                                | **Açıklama**                                                                                                                                                                                                                                     |
 | ----------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Host**          | `Host: www.inlanefreight.com`            | Kaynağa sorgulama yapılan hostu belirtir. Bu bir domain veya IP adresi olabilir. HTTP sunucuları, farklı web sitelerini barındıracak şekilde yapılandırılabilir, bu da host header'ının önemli bir keşif hedefi olmasını sağlar.                 |
 | **User-Agent**    | `User-Agent: curl/7.77.0`                | Request yapan client'i tanımlar. Tarayıcı, sürüm ve işletim sistemi gibi client hakkında çok şey ortaya koyabilir.                                                                                                                               |
-| **Referer**       | `Referer: http://www.inlanefreight.com/` | Mevcut isteğin nereden geldiğini belirtir. Örneğin, Google arama sonuçlarından bir linke tıklamak, https://google.com'ı referer yapar. Bu headera güvenmek tehlikeli olabilir çünkü kolayca manipüle edilebilir.                                 |
+| **Referer**       | `Referer: http://www.inlanefreight.com/` | Mevcut isteğin nereden geldiğini belirtir. Örneğin, Google arama sonuçlarından bir linke tıklamak, `https://google.com`'ı referer yapar. Bu headera güvenmek tehlikeli olabilir çünkü kolayca manipüle edilebilir.                               |
 | **Accept**        | `Accept: */*`                            | Client'in anlayabileceği medya türlerini belirtir. Birden fazla medya türü virgülle ayrılarak belirtilir. `*/ *` değeri, tüm medya türlerinin kabul edildiğini gösterir.                                                                         |
 | **Cookie**        | `Cookie: PHPSESSID=b4e4fbd93540`         | Ad-değer çiftlerinden oluşan cookie içerir. Cookie, client tarafında ve sunucuda depolanan, tanımlayıcı olarak kullanılan bir veri parçasıdır. Bu veriler her requestle sunucuya iletilir ve client'in erişimini sürdürür.                       |
 | **Authorization** | `Authorization: BASIC cGFzc3dvcmQK`      | Serverın client'i tanımlamasının başka bir yoludur. Başarılı kimlik doğrulamanın ardından, server client'e özel bir token döndürür. Cookies'ten farklı olarak, token'lar sadece client tarafında depolanır ve her requestle sunucuya gönderilir. |
 
 ## **Response Headers**  
-Response headers, HTTP response'larında kullanılır ve içeriğiyle ilgili değildir. Response başlıkları, yanıtla ilgili daha fazla bağlam sağlamak için kullanılır. Aşağıdaki başlıklar HTTP yanıtlarında yaygın olarak görülür.
 
-| **Header**           | **Örnek**                                   | **Açıklama**                                                                                                                                                                           |
-| -------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Server**           | `Server: Apache/2.2.14 (Win32)`             | İsteği işleyen HTTP sunucusuna dair bilgi içerir. Sunucu hakkında bilgi edinmek ve daha fazla keşif yapmak için kullanılabilir.                                                        |
-| **Set-Cookie**       | `Set-Cookie: PHPSESSID=b4e4fbd93540`        | Client tanımlaması için gereken cookie'leri içerir. Tarayıcılar, cookie'leri ayrıştırır ve sonraki istekler için depolar. Bu header, Cookie istek başlığı ile aynı formatı takip eder. |
-| **WWW-Authenticate** | `WWW-Authenticate: BASIC realm="localhost"` | Client'i, istenen kaynağa erişim için gerekli olan kimlik doğrulama türü hakkında bilgilendirir.                                                                                       |
+Response headers, HTTP response'larında kullanılır ve içeriğiyle ilgili değildir. Response header'ları, response'la ilgili daha fazla bağlam sağlamak için kullanılır. Aşağıdaki başlıklar HTTP yanıtlarında yaygın olarak görülür.
+
+| **Header**           | **Örnek**                                   | **Açıklama**                                                                                                                                                                              |
+| -------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Server**           | `Server: Apache/2.2.14 (Win32)`             | İsteği işleyen HTTP server'ına dair bilgi içerir. Server hakkında bilgi edinmek ve daha fazla keşif yapmak için kullanılabilir.                                                           |
+| **Set-Cookie**       | `Set-Cookie: PHPSESSID=b4e4fbd93540`        | Client tanımlaması için gereken cookie'leri içerir. Tarayıcılar, cookie'leri ayrıştırır ve sonraki istekler için depolar. Bu header, Cookie request header'ı ile aynı formatı takip eder. |
+| **WWW-Authenticate** | `WWW-Authenticate: BASIC realm="localhost"` | Client'i, istenen kaynağa erişim için gerekli olan kimlik doğrulama türü hakkında bilgilendirir.                                                                                          |
 
 ## **Security Headers**  
-Son olarak, **Security Headers**'a sahibiz. Tarayıcı çeşitliliği ve web tabanlı saldırıların artışıyla birlikte, güvenliği artıran başlıklar belirlemek gerekli hale geldi. HTTP güvenlik başlıkları, tarayıcının web sitesine erişirken uyması gereken belirli kurallar ve politikaları belirtmek için kullanılan yanıt başlıklarıdır.
+
+Son olarak, **Security Headers**'a sahibiz. Tarayıcı çeşitliliği ve web tabanlı saldırıların artışıyla birlikte, güvenliği artıran headerlar belirlemek gerekli hale geldi. HTTP güvenlik başlıkları, tarayıcının web sitesine erişirken uyması gereken belirli kurallar ve politikaları belirtmek için kullanılan yanıt başlıklarıdır.
 
 | **Header**                    | **Örnek**                                     | **Açıklama**                                                                                                                                                                                                                                                                                 |
 | ----------------------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -301,12 +307,12 @@ Son olarak, **Security Headers**'a sahibiz. Tarayıcı çeşitliliği ve web tab
 | **Strict-Transport-Security** | `Strict-Transport-Security: max-age=31536000` | Tarayıcının, düz metin HTTP protokolü üzerinden web sitesine erişmesine engel olur ve tüm iletişimin güvenli HTTPS protokolü üzerinden yapılmasını zorunlu kılar. Bu, saldırganların web trafiğini izleyerek şifreler gibi hassas bilgilere erişmesini engeller.                             |
 | **Referrer-Policy**           | `Referrer-Policy: origin`                     | Tarayıcının, Referer header'ı üzerinden belirtilen değeri içermesi gerekip gerekmediğini belirler. Bu, web sitesi gezintisi sırasında hassas URL'lerin ve bilgilerin açıklanmasını önlemeye yardımcı olabilir.                                                                               |
 
-**Not:** Bu bölümde yalnızca yaygın olarak görülen HTTP headerlarının küçük bir alt kümesi ele alınmıştır. HTTP iletişimlerinde kullanılabilecek birçok başka bağlamsal başlık vardır. Ayrıca, uygulamalar kendi gereksinimlerine göre özel başlıklar tanımlayabilir. Standart HTTP başlıklarının tam listesine [buradan](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers) ulaşabilirsiniz.
+**Not:** Bu bölümde yalnızca yaygın olarak görülen HTTP headerlarının küçük bir alt kümesi ele alınmıştır. HTTP iletişimlerinde kullanılabilecek birçok başka context header vardır. Ayrıca, uygulamalar kendi gereksinimlerine göre custom headerlar tanımlayabilir. Standart HTTP headerların tam listesine [buradan](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers) ulaşabilirsiniz.
 
 
 ## cURL
 
-Eğer sadece response header'larını görmek istiyorsak, ==-I== bayrağını kullanarak HEAD isteği gönderebilir ve sadece response header'larını görüntüleyebiliriz. Ayrıca, hem header'ları hem de response body'yi (örneğin HTML kodu) görüntülemek için -i bayrağını kullanabiliriz. İkisi arasındaki fark, -I bir HEAD isteği gönderirken (bir sonraki bölümde göreceğimiz gibi), -i belirttiğimiz herhangi bir request gönderir ve header'ları da yazdırır.
+Eğer sadece response header'larını görmek istiyorsak, ==`-I`== bayrağını kullanarak `HEAD` request'i gönderebilir ve sadece response header'larını görüntüleyebiliriz. Ayrıca, hem header'ları hem de response body'yi (örneğin HTML kodu) görüntülemek için `-i` bayrağını kullanabiliriz. İkisi arasındaki fark, `-I` bir `HEAD` isteği gönderirken (bir sonraki bölümde göreceğimiz gibi), `-i` belirttiğimiz herhangi bir request gönderir ve header'ları da yazdırır.
 
 ```shell-session
 M1R4CKCK@htb[/htb]$ curl -I https://www.inlanefreight.com
@@ -331,7 +337,7 @@ Strict-Transport-Security: max-age=31536000
 Referrer-Policy: origin
 ```
 
-Headerları görüntülemenin yanı sıra, cURL, daha sonraki bir bölümde göreceğimiz gibi, ==-H== bayrağı ile request headerlarını ayarlamamıza da izin verir. User-Agent veya Cookie başlıkları gibi bazı başlıkların kendi bayrakları vardır. Örneğin, User-Agent'ımızı ayarlamak için -A'yı aşağıdaki gibi kullanabiliriz:
+Headerları görüntülemenin yanı sıra, cURL, daha sonraki bir bölümde göreceğimiz gibi, ==`-H`== bayrağı ile request headerlarını ayarlamamıza da izin verir. `User-Agent` veya `Cookie` header'ları gibi bazı header'ların kendi bayrakları vardır. Örneğin, `User-Agent`'ımızı ayarlamak için `-A`'yı aşağıdaki gibi kullanabiliriz:
 
 ```shell-session
 M1R4CKCK@htb[/htb]$ curl https://www.inlanefreight.com -A 'Mozilla/5.0'
@@ -344,14 +350,15 @@ M1R4CKCK@htb[/htb]$ curl https://www.inlanefreight.com -A 'Mozilla/5.0'
 
 ## Browser DevTools
 
-Son olarak, tarayıcı devtools kullanarak HTTP header'larını nasıl önizleyebileceğimizi görelim. Önceki bölümde yaptığımız gibi, sayfa tarafından yapılan farklı istekleri görmek için **Network** sekmesine gidiyoruz. Ayrıntıları görmek için herhangi bir isteğe tıklayabiliriz.
+Son olarak, tarayıcı devtools kullanarak HTTP header'larını nasıl önizleyebileceğimizi görelim. Önceki bölümde yaptığımız gibi, sayfa tarafından yapılan farklı istekleri görmek için **`Network`** sekmesine gidiyoruz. Ayrıntıları görmek için herhangi bir isteğe tıklayabiliriz.
 
 ![Pasted image 20241224214532.png](/img/user/resimler/Pasted%20image%2020241224214532.png)
 
-İlk Headers sekmesinde hem HTTP request hem de HTTP response başlıklarını görüyoruz. Devtools başlıkları otomatik olarak bölümler halinde düzenler, ancak ayrıntılarını raw biçimlerinde görüntülemek için ==Raw== düğmesine tıklayabiliriz. Ayrıca, gelecek bölümde tartışılacağı gibi, request tarafından kullanılan cookie'leri görmek için Cookies sekmesini kontrol edebiliriz.
+İlk Headers sekmesinde hem HTTP request hem de HTTP response header'larını görüyoruz. `Devtools` başlıkları otomatik olarak bölümler halinde düzenler, ancak ayrıntılarını `raw` formatlarda görüntülemek için ==`Raw`== butonuna tıklayabiliriz. Ayrıca, gelecek bölümde tartışılacağı gibi, request tarafından kullanılan cookie'leri görmek için `Cookies` sekmesini kontrol edebiliriz.
 
+---
 
-Soru : Yukarıdaki sunucu, sayfa yüklendikten sonra flag'ı yükler. Sayfa tarafından hangi requestlerin yapıldığını görmek ve bayrağa yapılan isteği bulmak için tarayıcı devtools'undaki Network sekmesini kullanın.
+Soru : Yukarıdaki sunucu, sayfa yüklendikten sonra flag'ı yükler. Sayfa tarafından hangi requestlerin yapıldığını görmek ve bayrağa yapılan request'i bulmak için tarayıcı devtools'undaki `Network` sekmesini kullanın.
 
 Cevap : 
 
@@ -361,36 +368,38 @@ Cevap :
 
 ![Pasted image 20241224214816.png](/img/user/resimler/Pasted%20image%2020241224214816.png)
 
+----
+
 # HTTP Methods and Codes
 
-HTTP, kaynaklara erişim için farklı yöntemler destekler ve tarayıcı ile sunucu arasındaki iletişimi belirler. Test ettiğimiz HTTP isteklerinde yöntemler (GET, POST vb.) ve yanıt kodlarını cURL ile **-v** kullanarak veya tarayıcı **devtools**'un **`Method`** sütununda görebiliriz.
+HTTP, kaynaklara erişim için farklı method'lar destekler ve tarayıcı ile server arasındaki iletişimi belirler. Test ettiğimiz HTTP isteklerinde methodlar (`GET`, `POST` vb.) ve response kodlarını cURL ile **`-v`** kullanarak veya tarayıcı **devtools**'un **`Method`** sütununda görebiliriz.
 
 
 ## Request Methods
 
-| **Yöntem**  | **Açıklama**                                                                                                                                                                                                                                                                        |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **GET**     | Belirli bir kaynağı talep eder. Ek veri, URL'deki sorgu dizgileriyle sunucuya iletilebilir (ör. `?param=value`).                                                                                                                                                                    |
-| **POST**    | Sunucuya veri gönderir. Bu yöntem, metin, PDF veya diğer binary veriler gibi çeşitli türlerde girişleri işleyebilir. Gönderilen veri, headerların ardından request body'sine eklenir. Genellikle formlar/log in işlemleri veya resim/doküman gibi veriler yüklemek için kullanılır. |
-| **HEAD**    | GET request'e yapıldığında dönecek headerların talep eder, ancak request body'sini içermez. Genellikle kaynakların boyutunu kontrol etmek için kullanılır.                                                                                                                          |
-| **PUT**     | Sunucuda yeni kaynaklar oluşturur. Uygun kontroller olmadan kullanılması, zararlı kaynakların yüklenmesine yol açabilir.                                                                                                                                                            |
-| **DELETE**  | Web sunucusundaki mevcut bir kaynağı siler. Güvenlik önlemleri olmadan kullanıldığında, kritik dosyaların silinmesine ve Denial of Service  (DoS) saldırılarına neden olabilir.                                                                                                     |
-| **OPTIONS** | Sunucu hakkında, kabul ettiği yöntemler gibi bilgileri döner.                                                                                                                                                                                                                       |
-| **PATCH**   | Belirtilen kaynağa kısmi değişiklikler uygular.                                                                                                                                                                                                                                     |
+| **Yöntem**  | **Açıklama**                                                                                                                                                                                                                                                                            |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **GET**     | Belirli bir kaynağı talep eder. Ek veri, URL'deki query stringleriyle sunucuya iletilebilir (ör. `?param=value`).                                                                                                                                                                       |
+| **POST**    | Sunucuya veri gönderir. Bu method, metin, PDF veya diğer binary veriler gibi çeşitli türlerde girişleri işleyebilir. Gönderilen veri, headerların ardından request body'sine eklenir. Genellikle `formlar/log` in işlemleri veya `resim/doküman` gibi veriler yüklemek için kullanılır. |
+| **HEAD**    | GET request'e yapıldığında dönecek headerların talep eder, ancak request body'sini içermez. Genellikle kaynakların boyutunu kontrol etmek için kullanılır.                                                                                                                              |
+| **PUT**     | Serverda yeni kaynaklar oluşturur. Uygun kontroller olmadan kullanılması, zararlı kaynakların yüklenmesine yol açabilir.                                                                                                                                                                |
+| **DELETE**  | Web sunucusundaki mevcut bir kaynağı siler. Güvenlik önlemleri olmadan kullanıldığında, kritik dosyaların silinmesine ve Denial of Service  (DoS) saldırılarına neden olabilir.                                                                                                         |
+| **OPTIONS** | Sunucu hakkında, kabul ettiği yöntemler gibi bilgileri döner.                                                                                                                                                                                                                           |
+| **PATCH**   | Belirtilen kaynağa kısmi değişiklikler uygular.                                                                                                                                                                                                                                         |
 
-Bir methodun kullanılabilirliği, sunucu ve uygulama yapılandırmasına bağlıdır. Tüm HTTP yöntemlerinin listesi için bu [bağlantıyı](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods) ziyaret edebilirsiniz.
+Bir methodun kullanılabilirliği, sunucu ve uygulama yapılandırmasına bağlıdır. Tüm HTTP methodlarının listesi için bu [bağlantıyı](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods) ziyaret edebilirsiniz.
 
-**Not:** Modern web uygulamaları genellikle **GET** ve **POST** yöntemlerini kullanır. Ancak, REST API kullanan uygulamalar genellikle veri güncellemek ve silmek için **PUT** ve **DELETE** yöntemlerini de kullanır.
+**Not:** Modern web uygulamaları genellikle **GET** ve **POST** yöntemlerini kullanır. Ancak, `REST API` kullanan uygulamalar genellikle veri güncellemek ve silmek için **PUT** ve **DELETE** methodlarını da kullanır.
 
 ## Response Codes
 
-| **Tür** | **Açıklama**                                                                             |
-| ------- | ---------------------------------------------------------------------------------------- |
-| **1xx** | Bilgilendirme sağlar ve request'in işlenmesini etkilemez.                                |
-| **2xx** | Request'in başarıyla tamamlandığını belirtir.                                            |
-| **3xx** | Sunucunun client'e başka bir URL'ye yönlendirdiğini belirtir.                            |
-| **4xx** | Clientden gelen hatalı requestleri ifade eder (ör. var olmayan bir kaynağı talep etmek). |
-| **5xx** | HTTP sunucusunun kendisiyle ilgili bir sorun olduğunda döner.                            |
+| **Tür**   | **Açıklama**                                                                             |
+| --------- | ---------------------------------------------------------------------------------------- |
+| **`1xx`** | Bilgilendirme sağlar ve request'in işlenmesini etkilemez.                                |
+| **`2xx`** | Request'in başarıyla tamamlandığını belirtir.                                            |
+| **`3xx`** | Sunucunun client'e başka bir URL'ye yönlendirdiğini belirtir.                            |
+| **`4xx`** | Clientden gelen hatalı requestleri ifade eder (ör. var olmayan bir kaynağı talep etmek). |
+| **`5xx`** | HTTP sunucusunun kendisiyle ilgili bir sorun olduğunda döner.                            |
 
 Aşağıda, yukarıdaki türlere ait sık karşılaşılan yanıt kodları yer almaktadır:
 
@@ -403,7 +412,7 @@ Aşağıda, yukarıdaki türlere ait sık karşılaşılan yanıt kodları yer a
 | **404 Not Found**             | Client'in talep ettiği kaynağın sunucuda bulunmadığını belirtir.                                                       |
 | **500 Internal Server Error** | Sunucunun isteği işleyemediği durumlarda döner.                                                                        |
 
-Standart HTTP yanıt kodlarının tam listesi için bu [bağlantıyı](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) ziyaret edebilirsiniz. Ayrıca, [Cloudflare](https://support.cloudflare.com/hc/en-us/articles/115003014432-HTTP-Status-Codes) veya [AWS](https://docs.aws.amazon.com/AmazonSimpleDB/latest/DeveloperGuide/APIError.html) gibi sağlayıcılar kendi kodlarını uygulayabilir.
+Standart HTTP response kodlarının tam listesi için bu [bağlantıyı](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) ziyaret edebilirsiniz. Ayrıca, [Cloudflare](https://support.cloudflare.com/hc/en-us/articles/115003014432-HTTP-Status-Codes) veya [AWS](https://docs.aws.amazon.com/AmazonSimpleDB/latest/DeveloperGuide/APIError.html) gibi sağlayıcılar kendi kodlarını uygulayabilir.
 
 
 # GET
