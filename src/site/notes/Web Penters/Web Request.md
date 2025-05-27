@@ -2,7 +2,7 @@
 {"dg-publish":true,"permalink":"/web-penters/web-request/"}
 ---
 
- www.hackthebox.com gibi istenen web sitesine ulaşmak için bir ==Uniform Resource Locator (URL)== olarak ==Fully Qualified Domain Name (FQDN)== giriyoruz.
+ `www.hackthebox.com` gibi istenen web sitesine ulaşmak için bir ==Uniform Resource Locator (`URL`)== olarak ==Fully Qualified Domain Name (`FQDN`)== giriyoruz.
 
 
 ## URL
@@ -11,26 +11,26 @@
 
 ![Pasted image 20241224195805.png](/img/user/resimler/Pasted%20image%2020241224195805.png)
 
-| **Bileşen**      | **Örnek**             | **Açıklama**                                                                                                                                                                            |
-| ---------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Schema**       | `http://`, `https://` | Client tarafından erişilen protokolü tanımlamak için kullanılır ve bir iki nokta üst üste ve çift eğik çizgi (://) ile sona erer.                                                       |
-| **User Info**    | `admin:password@`     | Host'a kimlik doğrulaması yapmak için kullanılan kimlik bilgilerini (iki nokta üst üste `:` ile ayrılır) içeren isteğe bağlı bir bileşendir ve host'tan bir at işareti `@` ile ayrılır. |
-| **Host**         | `inlanefreight.com`   | Kaynağın yerini belirten host adını veya bir IP adresini ifade eder.                                                                                                                    |
-| **Port**         | `:80`                 | Port, Host'tan bir iki nokta üst üste `:` ile ayrılır. Eğer bir port belirtilmemişse, `http` şeması varsayılan olarak 80 portunu, `https` ise varsayılan olarak 443 portunu kullanır.   |
-| **Path**         | `/dashboard.php`      | Erişilen kaynağa işaret eder ve bu bir dosya veya klasör olabilir. Eğer bir path belirtilmemişse, sunucu varsayılan index dosyasını döndürür (ör. `index.html`).                        |
-| **Query String** | `?login=true`         | Sorgu stringi bir soru işareti `?` ile başlar ve bir parametre (ör. `login`) ile bir değer (ör. `true`) içerir. Birden fazla parametre, `&` işareti ile ayrılabilir.                    |
-| **Fragments**    | `#status`             | Fragments, client tarafında tarayıcılar tarafından işlenir ve birincil kaynağın içinde bir bölümün (ör. bir başlık veya sayfa bölümü) yerini bulmak için kullanılır.                    |
+| **Bileşen**      | **Örnek**             | **Açıklama**                                                                                                                                                                                   |
+| ---------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Schema**       | `http://`, `https://` | Client tarafından erişilen protokolü tanımlamak için kullanılır ve bir iki nokta üst üste ve çift eğik çizgi (`://`) ile sona erer.                                                            |
+| **User Info**    | `admin:password@`     | Host'a kimlik doğrulaması yapmak için kullanılan kimlik bilgilerini (iki nokta üst üste `:` ile ayrılır) içeren isteğe bağlı bir bileşendir ve host'tan bir at işareti `@` ile ayrılır.        |
+| **Host**         | `inlanefreight.com`   | Kaynağın yerini belirten host adını veya bir IP adresini ifade eder.                                                                                                                           |
+| **Port**         | `:80`                 | Port, Host'tan bir iki nokta üst üste `:` ile ayrılır. Eğer bir port belirtilmemişse, `http` şeması varsayılan olarak 80 portunu, `https` ise varsayılan olarak 443 portunu kullanır.          |
+| **Path**         | `/dashboard.php`      | Erişilen kaynağa işaret eder ve bu bir dosya veya klasör olabilir. Eğer bir path belirtilmemişse, sunucu varsayılan index dosyasını döndürür (ör. `index.html`).                               |
+| **Query String** | `?login=true`         | Query stringi bir soru işareti `?` ile başlar ve bir parametre (ör. `login`) ile bir değer (ör. `true`) içerir. Birden fazla parametre, `&` işareti ile ayrılabilir. (`login=true&user=admin`) |
+| **Fragments**    | `#status`             | Fragments, client tarafında tarayıcılar tarafından işlenir ve birincil kaynağın içinde bir bölümün (ör. bir başlık veya sayfa bölümü) yerini bulmak için kullanılır.                           |
 
-Bir kaynağa erişmek için tüm bileşenler gerekli değildir. Ana zorunlu alanlar ==scheme== ve ==host=='tur, bunlar olmadan istekte bulunulacak kaynak olmaz.
+Bir kaynağa erişmek için tüm bileşenler gerekli değildir. Ana zorunlu alanlar ==scheme== ve ==host=='tur, bunlar olmadan request'te bulunulacak kaynak olmaz.
 
 
 ## HTTP Flow
 
 ![Pasted image 20241224201437.png](/img/user/resimler/Pasted%20image%2020241224201437.png)
 
-Bir kullanıcı URL'yi (ör. `inlanefreight.com`) tarayıcıya girdiğinde, tarayıcı bir **DNS** sunucusuna istek göndererek domain adını çözümler ve IP adresini alır. Öncelikle tarayıcı, local `/etc/hosts` dosyasını kontrol eder, ardından gerekirse DNS sunucusuna yönelir.
+Bir kullanıcı URL'yi (ör. `inlanefreight.com`) tarayıcıya girdiğinde, tarayıcı bir **DNS** sunucusuna request göndererek domain adını çözümler ve IP adresini alır. Öncelikle tarayıcı, local `/etc/hosts` dosyasını kontrol eder, ardından gerekirse DNS sunucusuna yönelir.
 
-IP adresi alındıktan sonra, tarayıcı varsayılan HTTP portuna (ör. 80) bir **GET** isteği gönderir ve root (`/`) dizinini talep eder. Web sunucusu isteği alır, varsayılan **index.html** dosyasını okur ve bir HTTP yanıtıyla birlikte (`200 OK` durum kodu dahil) döndürür. Tarayıcı bu içeriği işler ve kullanıcıya sunar.
+IP adresi alındıktan sonra, tarayıcı varsayılan HTTP portuna (ör. `80`) bir **GET** isteği gönderir ve root (`/`) dizinini talep eder. Web sunucusu isteği alır, varsayılan **`index.html`** dosyasını okur ve bir HTTP yanıtıyla birlikte (`200 OK` status kodu dahil) döndürür. Tarayıcı bu içeriği işler ve kullanıcıya sunar.
 
 ## cURL
 
@@ -42,7 +42,7 @@ M1R4CKCK@htb[/htb]$ curl inlanefreight.com
 ...SNIP...
 ```
 
-cURL'ü bir sayfayı veya dosyayı indirmek ve -O bayrağını kullanarak içeriği bir dosyaya çıktı olarak almak için de kullanabiliriz. Eğer çıktı dosyasının ismini belirtmek istiyorsak -o bayrağını kullanabilir ve ismi belirtebiliriz. Aksi takdirde, -O'yu kullanabiliriz ve cURL aşağıdaki gibi uzaktaki dosya adını kullanacaktır:
+cURL'ü bir sayfayı veya dosyayı indirmek ve `-O` bayrağını kullanarak içeriği bir dosyaya çıktı olarak almak için de kullanabiliriz. Eğer çıktı dosyasının ismini belirtmek istiyorsak -o bayrağını kullanabilir ve ismi belirtebiliriz. Aksi takdirde, -O'yu kullanabiliriz ve cURL aşağıdaki gibi uzaktaki dosya adını kullanacaktır:
 
 ```shell-session
 M1R4CKCK@htb[/htb]$ curl -O inlanefreight.com/index.html
