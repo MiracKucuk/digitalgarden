@@ -42,7 +42,7 @@ M1R4CKCK@htb[/htb]$ curl inlanefreight.com
 ...SNIP...
 ```
 
-cURL'ü bir sayfayı veya dosyayı indirmek ve `-O` bayrağını kullanarak içeriği bir dosyaya çıktı olarak almak için de kullanabiliriz. Eğer çıktı dosyasının ismini belirtmek istiyorsak -o bayrağını kullanabilir ve ismi belirtebiliriz. Aksi takdirde, -O'yu kullanabiliriz ve cURL aşağıdaki gibi uzaktaki dosya adını kullanacaktır:
+cURL'ü bir sayfayı veya dosyayı indirmek ve `-O` bayrağını kullanarak içeriği bir dosyaya çıktı olarak almak için de kullanabiliriz. Eğer çıktı dosyasının ismini belirtmek istiyorsak `-o` bayrağını kullanabilir ve ismi belirtebiliriz. Aksi takdirde, `-O`'yu kullanabiliriz ve cURL aşağıdaki gibi uzaktaki dosya adını kullanacaktır:
 
 ```shell-session
 M1R4CKCK@htb[/htb]$ curl -O inlanefreight.com/index.html
@@ -50,7 +50,7 @@ M1R4CKCK@htb[/htb]$ ls
 index.html
 ```
 
-Gördüğümüz gibi, çıktı bu sefer yazdırılmadı, bunun yerine index.html dosyasına kaydedildi. İstek işlenirken cURL'ün hala bazı durumları yazdırdığını fark ettik. Durumu -s bayrağı ile aşağıdaki gibi susturabiliriz:
+Gördüğümüz gibi, çıktı bu sefer yazdırılmadı, bunun yerine `index.html` dosyasına kaydedildi. Request işlenirken cURL'ün hala bazı durumları yazdırdığını fark ettik. Durumu `-s` bayrağı ile aşağıdaki gibi susturabiliriz:
 
 ```shell-session
 M1R4CKCK@htb[/htb]$ curl -s -O inlanefreight.com/index.html
@@ -76,12 +76,15 @@ Use the user manual `man curl` or the "--help all" flag for all options.
 
 Detaylı yardım için `--help all`, belirli bir bayrak için `--help category` kullanın. Dokümantasyon için `man curl`.
 
+----
 
-Soru : Bayrağı almak için yukarıdaki alıştırmayı başlatın, ardından yukarıda gösterilen sunucuda '/download.php' tarafından döndürülen dosyayı indirmek için cURL kullanın.
+Soru : Flag'i almak için yukarıdaki alıştırmayı başlatın, ardından yukarıda gösterilen sunucuda '`/download.php`' tarafından döndürülen dosyayı indirmek için cURL kullanın.
 
 Cevap : 
 
 ![Pasted image 20241224202430.png](/img/user/resimler/Pasted%20image%2020241224202430.png)
+
+---
 
 
 # Hypertext Transfer Protocol Secure (HTTPS)
